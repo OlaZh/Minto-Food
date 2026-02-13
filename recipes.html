@@ -213,6 +213,33 @@
               <label for="prev-steps">Спосіб приготування</label>
               <textarea id="prev-steps" placeholder="1. Змішайте...&#10;2. Запікайте..."></textarea>
             </div>
+            <div class="form-group">
+              <label for="recipe-image">Фото страви</label>
+
+              <!-- Схований input -->
+              <input type="file" id="recipe-image" accept="image/*" hidden />
+
+              <!-- Красива кнопка -->
+              <button
+                type="button"
+                class="btn-upload"
+                onclick="document.getElementById('recipe-image').click()">
+                Завантажити фото 📸
+              </button>
+
+              <!-- Назва вибраного файлу -->
+              <span id="file-name" class="file-name">Файл не вибрано</span>
+            </div>
+
+            <div class="form-group">
+              <label for="recipe-image-url">Фото за URL</label>
+              <input
+                type="text"
+                id="recipe-image-url"
+                placeholder="https://example.com/photo.jpg" />
+            </div>
+
+            І
 
             <div class="modal-card__actions">
               <button type="button" class="btn-secondary" id="cancel-preview">Скасувати</button>

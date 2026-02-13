@@ -25,11 +25,11 @@
   width: 100%;
   background-color: var(--color-bg-secondary); /* або твій колір */
   border-bottom: 1px solid var(--color-border);
-  
+
   // Внутрішній контейнер шапки робимо флексом
   &__container {
     display: flex;
-      margin: 0 auto;
+    margin: 0 auto;
     align-items: center;
     justify-content: space-between;
     height: 70px; /* або твоя висота */
@@ -263,13 +263,13 @@
     border-radius: 14px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
     display: none;
-    flex-direction: column !important;
+    flex-direction: column ;
     overflow: hidden;
     z-index: 1000;
   }
 
   &.open &__options {
-    display: flex !important;
+    display: flex;
   }
 
   &__option {
@@ -279,7 +279,7 @@
     font-size: 14px;
     color: var(--color-text-secondary);
     transition: all 0.2s;
-    display: block !important;
+    display: block;
     white-space: nowrap;
 
     &:hover {

@@ -580,3 +580,9 @@ document.querySelectorAll('textarea').forEach((txt) => {
   txt.style.overflow = 'hidden'; // Ховаємо скролл
   txt.addEventListener('input', () => autoResizer(txt));
 });
+
+//Кнопка загрузки фото
+document.getElementById('recipe-image').addEventListener('change', function () {
+  const fileName = this.files[0]?.name || 'Файл не вибрано';
+  document.getElementById('file-name').textContent = fileName;
+});

@@ -275,7 +275,7 @@ textarea {
 .column-header h1,
 .column-header h2,
 .column-header h3 {
-  margin: 0 !important;
+  margin: 0;
   padding: 0;
   font-family: var(--font-body);
   font-size: 20px;
@@ -919,6 +919,9 @@ textarea {
     opacity: 1;
   }
 }
+/* ============================================================
+   COMPONENT: BASE BUTTONS (GLOBAL)
+   ============================================================ */
 .button {
   display: inline-block;
   font-family: "Inter", sans-serif;
@@ -948,6 +951,126 @@ textarea {
 .button--secondary:hover, .button--secondary:focus {
   background-color: var(--color-bg-secondary);
   outline: none;
+}
+
+/* ============================================================
+   COMPONENT: BUTTONS (RECIPES PAGE)
+   ============================================================ */
+/* Головна кнопка (Зберегти/Додати) */
+.btn-primary {
+  background: var(--color-accent-soft);
+  color: var(--color-text-primary);
+  backdrop-filter: blur(10px);
+  border: none;
+  padding: 14px 28px;
+  border-radius: 14px;
+  flex: 2;
+  font-weight: 700;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(46, 204, 113, 0.15);
+}
+.btn-primary:hover {
+  background: rgba(111, 207, 186, 0.32);
+  border-color: rgba(111, 207, 186, 0.45);
+  color: var(--color-text-primary);
+  transform: translateY(-3px);
+  box-shadow: 0 15px 25px rgba(46, 204, 113, 0.25);
+}
+.btn-primary:active {
+  transform: translateY(0);
+}
+
+/* Друга кнопка (Скасувати) */
+.btn-secondary {
+  border: 1px solid var(--color-accent-soft);
+  background: var(--color-accent-soft);
+  backdrop-filter: blur(10px);
+  color: var(--color-text-primary);
+  padding: 14px 20px;
+  border-radius: 14px;
+  flex: 1;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(46, 204, 113, 0.15);
+}
+.btn-secondary:hover {
+  background: rgba(111, 207, 186, 0.32);
+  border-color: rgba(111, 207, 186, 0.45);
+  color: var(--color-text-primary);
+  transform: translateY(-3px);
+  box-shadow: 0 15px 25px rgba(46, 204, 113, 0.25);
+}
+
+/* Кнопка загрузки фото */
+.btn-upload {
+  padding: 12px 20px;
+  background: var(--color-accent-soft);
+  border: 1px solid rgba(111, 207, 186, 0.45);
+  border-radius: 14px;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  color: var(--color-text-primary);
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(46, 204, 113, 0.12);
+}
+.btn-upload:hover {
+  background: rgba(111, 207, 186, 0.18);
+  border-color: rgba(111, 207, 186, 0.55);
+  transform: translateY(-3px);
+  box-shadow: 0 15px 25px rgba(46, 204, 113, 0.22);
+}
+
+/* Міні-кнопка збереження */
+.btn-save-mini {
+  margin-top: 12px;
+  padding: 12px 24px;
+  background: var(--color-accent-soft);
+  color: var(--color-text-primary);
+  border: 1px solid rgba(111, 207, 186, 0.45);
+  border-radius: 14px;
+  font-weight: 700;
+  font-size: 14px;
+  align-self: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(46, 204, 113, 0.12);
+}
+.btn-save-mini:hover {
+  background: rgba(111, 207, 186, 0.18);
+  border-color: rgba(111, 207, 186, 0.55);
+  transform: translateY(-3px);
+  box-shadow: 0 15px 25px rgba(46, 204, 113, 0.22);
+}
+.btn-save-mini:active {
+  transform: translateY(0);
+}
+
+/* Кнопки підтвердження */
+.btn-confirm {
+  flex: 1;
+  padding: 14px 20px;
+  border-radius: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  border: none;
+}
+
+.btn-danger {
+  background: #fcede8;
+  color: #c0392b;
+  border: 1px solid #e6b5a8;
+  transition: all 0.3s ease;
+}
+.btn-danger:hover {
+  background: #f8d7cf;
+  color: #a83224;
+  border-color: #d99f90;
+  transform: translateY(-3px);
 }
 
 .card {
@@ -1943,6 +2066,34 @@ textarea {
   transform: translateY(0);
 }
 
+/* Кнопка загрузки фото*/
+.btn-upload {
+  padding: 12px 20px;
+  background: var(--color-accent-soft);
+  border: 1px solid rgba(111, 207, 186, 0.45);
+  border-radius: 14px;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  color: var(--color-text-primary);
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(46, 204, 113, 0.12);
+}
+
+.btn-upload:hover {
+  background: rgba(111, 207, 186, 0.18);
+  border-color: rgba(111, 207, 186, 0.55);
+  transform: translateY(-3px);
+  box-shadow: 0 15px 25px rgba(46, 204, 113, 0.22);
+}
+
+.file-name {
+  display: block;
+  margin-top: 8px;
+  font-size: 13px;
+  color: var(--color-text-secondary);
+}
+
 /* Друрядна кнопка (Скасувати) */
 .btn-secondary {
   background: var(--color-accent-soft);
@@ -2265,8 +2416,32 @@ textarea {
   font-size: 15px;
 }
 
+/* Секція додавання фото*/
+#recipe-image,
+#recipe-image-url {
+  padding: 14px 16px;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+  color: var(--color-text-primary);
+  font-family: inherit;
+  outline: none;
+  box-shadow: inset 0 2px 4px rgba(46, 204, 113, 0.1);
+  transition: all 0.3s ease;
+}
+
+#recipe-image:focus,
+#recipe-image-url:focus {
+  border-color: var(--color-accent);
+  background: var(--color-bg-secondary);
+  box-shadow: 0 0 0 4px rgba(46, 204, 113, 0.1);
+  transform: translateY(-1px);
+}
+
 /* Секція нотаток */
 .recipe-section--notes {
+  display: flex;
+  flex-direction: column;
   margin-top: 30px;
   padding: 20px;
   background: var(--color-bg); /* Легкий теплий відтінок паперу */
@@ -2296,12 +2471,13 @@ textarea {
 .btn-save-mini {
   margin-top: 12px;
   padding: 12px 24px;
-  background: var(--color-surface); /* контрастний фон */
+  background: var(--color-accent-soft); /* контрастний фон */
   color: var(--color-text-primary);
   border: 1px solid rgba(111, 207, 186, 0.45); /* м’ятна рамка */
   border-radius: 14px;
   font-weight: 700;
   font-size: 14px;
+  align-self: center;
   cursor: pointer;
   transition: all 0.3s ease;
   box-shadow: 0 4px 12px rgba(46, 204, 113, 0.12);
@@ -2426,7 +2602,7 @@ textarea {
 .modal-card textarea:focus,
 .preview-form textarea:focus,
 .recipe-section--notes textarea:focus {
-  background: #ffffff;
+  background: var(--color-surface);
   box-shadow: 0 8px 25px rgba(46, 204, 113, 0.12), inset 0 2px 4px rgba(0, 0, 0, 0.01);
   /* Трішки "виштовхуємо" поле вперед при фокусі */
   transform: translateY(-1px);
@@ -2706,12 +2882,12 @@ textarea {
   border-radius: 14px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
   display: none;
-  flex-direction: column !important;
+  flex-direction: column;
   overflow: hidden;
   z-index: 1000;
 }
 .custom-select.open .custom-select__options {
-  display: flex !important;
+  display: flex;
 }
 .custom-select__option {
   width: 100%;
@@ -2720,7 +2896,7 @@ textarea {
   font-size: 14px;
   color: var(--color-text-secondary);
   transition: all 0.2s;
-  display: block !important;
+  display: block;
   white-space: nowrap;
 }
 .custom-select__option:hover {
