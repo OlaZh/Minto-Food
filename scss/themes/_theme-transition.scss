@@ -1,0 +1,14 @@
+/* 🟢 ВИМИКАЄМО ТІЛЬКИ КОЛІРНІ transition НА СТАРТІ */
+html.no-transition,
+html.no-transition * {
+  transition-property: background-color, color, border-color, fill !important;
+  transition-duration: 0s !important;
+}
+
+/* 🟢 Анімація ТІЛЬКИ при кліку */
+html.theme-transition,
+html.theme-transition * {
+  transition-property: background-color, color, border-color, fill;
+  transition-duration: 0.25s;
+  transition-timing-function: ease;
+}

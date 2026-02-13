@@ -1,0 +1,22 @@
+%premium-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: $shadow-sm;
+  padding: $spacing-sm;
+
+  transition:
+    border-color 0.3s ease,
+    box-shadow 0.3s ease,
+    transform 0.3s ease;
+
+  &:hover {
+    border-color: var(--primary-soft);
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.06);
+    transform: translateY(-2px);
+  }
+
+  [data-theme="dark"] & {
+    box-shadow: none;
+  }
+}

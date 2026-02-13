@@ -1,0 +1,115 @@
+/* ===============================
+    Stats Sadebr
+   =============================== */
+
+.stats {
+  display: grid;
+  gap: 16px;
+}
+
+.stat-card {
+  background: var(--color-surface);
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
+}
+
+.stat-card--water {
+  background: var(--water-bg);
+  border: 1px solid rgba(77, 163, 255, 0.12);
+}
+
+.stat-card--water .stat-card__title,
+.stat-card--water .stat-card__row,
+.stat-card--water .stat-card__meta {
+  color: var(--water-text);
+}
+
+/* ===============================
+    Progress Bar
+   =============================== */
+
+.stat-card__progress {
+  width: 100%;
+  height: 8px;
+  background: var(--color-border, #e5e7eb);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.stat-card__progress-bar {
+  height: 100%;
+  width: 0%;
+  border-radius: inherit;
+  transition: width 0.6s ease;
+}
+
+
+/* ===============================
+    Progress Bar Colors
+   =============================== */
+.stat-card--kcal .stat-card__progress-bar {
+  background: linear-gradient(90deg, #22c55e, #16a34a);
+}
+
+.stat-card--protein .stat-card__progress-bar {
+  background: linear-gradient(90deg, #3b82f6, #2563eb);
+}
+
+.stat-card--fat .stat-card__progress-bar {
+  background: linear-gradient(90deg, #f97316, #ea580c);
+}
+
+.stat-card--carbs .stat-card__progress-bar {
+  background: linear-gradient(90deg, #a855f7, #7c3aed);
+}
+
+/* ===============================
+   Animations
+   =============================== */
+
+.stat-card__progress-bar {
+  animation: growBar 0.6s ease-out forwards;
+}
+
+@keyframes growBar {
+  from {
+    width: 0%;
+  }
+}
+
+/* ===============================
+    Water Stat Card
+   =============================== */
+
+
+.stat-card--water .stat-card__progress-bar {
+  background: linear-gradient(90deg, #38bdf8, #0ea5e9);
+}
+
+/* ===============================
+   Stat Card Content
+   =============================== */
+.stat-card__title {
+  font-size: 14px;
+  color: var(--color-muted, #6b7280);
+  margin-bottom: 8px;
+}
+
+.stat-card__row {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.stat-card__value,
+.stat-card__row span:first-child {
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.stat-card__meta {
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--color-muted, #6b7280);
+}

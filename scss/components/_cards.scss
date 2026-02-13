@@ -1,0 +1,84 @@
+.card {
+  background-color: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  padding: 16px 20px;
+
+  box-shadow: $shadow-sm;
+  transition:
+    box-shadow 0.25s ease,
+    transform 0.25s ease;
+
+  &:hover {
+    box-shadow: $shadow-md;
+    transform: translateY(-2px);
+  }
+}
+
+[data-theme='dark'] {
+  .card {
+    box-shadow: none;
+  }
+}
+/* =============================================================
+   PREMIUM CARD PATTERN — ONE SOURCE OF TRUTH
+   ============================================================= */
+
+%premium-card {
+  position: relative;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+
+  /* базова тінь */
+  box-shadow:
+    0 6px 20px rgba(0, 0, 0, 0.04),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+
+  transition:
+    border-color 0.3s ease,
+    box-shadow 0.3s ease,
+    transform 0.3s ease;
+
+  
+
+  /* світловий верхній кант */
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+
+    background: linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.45),
+      rgba(255, 255, 255, 0.05) 40%,
+      transparent 70%
+    );
+
+    opacity: 0.6;
+  }
+
+  &:hover {
+    border-color: var(--color-accent-soft);
+    box-shadow:
+      0 14px 36px rgba(0, 0, 0, 0.08),
+      0 0 0 1px rgba(255, 255, 255, 0.6);
+    transform: translateY(-2px);
+  }
+}
+
+/* dark theme */
+[data-theme='dark'] {
+  %premium-card {
+    background: var(--color-bg-secondary);
+    box-shadow:
+      0 8px 24px rgba(0, 0, 0, 0.4),
+      inset 0 1px 0 rgba(255, 255, 255, 0.04);
+
+    &::before {
+      opacity: 0.25;
+    }
+  }
+}

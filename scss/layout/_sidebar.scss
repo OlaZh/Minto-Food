@@ -1,0 +1,432 @@
+/* =============================================================
+   LEFT SIDEBAR — ДНІ ТИЖНЯ
+   ============================================================= */
+
+.sidebar {
+  padding: 0 0 16px;
+  background-color: transparent;
+  box-sizing: border-box;
+}
+
+.sidebar__days {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.sidebar__day-btn {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  padding: 16px 20px;
+
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-weight: 500;
+
+  color: var(--color-text-secondary);
+  background: var(--color-surface);
+
+  border-radius: 16px;
+  border: 1px solid var(--color-border);
+  cursor: pointer;
+
+  transition: all 0.3s ease;
+}
+
+.sidebar__day-btn:hover {
+  color: var(--color-text-primary);
+  border-color: var(--color-accent-soft);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.05);
+}
+
+.sidebar__day-btn[aria-current='true'] {
+  color: var(--color-text-primary);
+  font-weight: 600;
+  border-color: var(--color-accent);
+  box-shadow: 0 10px 20px rgba(46, 204, 113, 0.12);
+}
+
+.sidebar__day-btn[aria-current='true']::after {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  box-shadow: 0 0 8px var(--color-accent);
+}
+
+/* =============================================================
+   RIGHT SIDEBAR — СТАТИСТИКА
+   ============================================================= */
+
+.right-sidebar {
+  align-self: start;
+  margin-left: -12px;
+}
+
+.right-sidebar__inner {
+  position: sticky;
+  top: calc(var(--header-height, 60px) + 20px);
+
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.stats {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* === CIRCULAR CHARTS === */
+
+.circle-bg {
+  stroke: var(--color-border);
+  fill: none;
+  stroke-width: 3;
+}
+
+.circle-progress {
+  fill: none;
+  stroke-width: 3;
+  stroke-linecap: round;
+
+  stroke: var(--color-accent);
+  transform: rotate(-90deg);
+  transform-origin: center;
+
+  transition:
+    stroke-dasharray 0.3s ease,
+    stroke 0.3s ease,
+    opacity 0.3s ease;
+}
+
+/* WARNING — 80–99% */
+.circle-progress--warning {
+  stroke: #f5a623; // жовто-оранжевий
+}
+
+/* OVER — 100%+ */
+.circle-progress--over {
+  stroke: #e53935; // червоний
+}
+
+/* === MAIN CALORIES CARD === */
+
+.stat-card--main {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+
+  padding: 20px;
+  background: var(--color-surface);
+
+  border-radius: 20px;
+  border: 1px solid var(--color-border);
+}
+
+.stat-card__chart {
+  width: 64px;
+  height: 64px;
+  flex-shrink: 0;
+
+  svg {
+    width: 100%;
+    height: 100%;
+  }
+}
+
+.stat-card__title {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.stat-card__value {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+/* === MACROS === */
+
+.macros-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.macro-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+
+  padding: 10px 16px;
+  background: var(--color-surface);
+
+  border-radius: 16px;
+  border: 1px solid var(--color-border);
+}
+
+.macro-item__chart {
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+
+  svg {
+    width: 100%;
+    height: 100%;
+  }
+}
+
+.macro-item__label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-secondary);
+}
+
+.macro-item__value {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.stat-card--main,
+.macro-item {
+  @extend %premium-card;
+}
+
+/* =============================================================
+   4 КОЛОНКА — WATER SIDEBAR (PREMIUM HEALTH APP)
+   ============================================================= */
+
+.water-sidebar {
+  align-self: start;
+  width: 64px;
+  display: flex;
+  justify-content: center;
+}
+
+.water-sidebar .column-header {
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+/* ================= WATER METER ================= */
+
+.water-meter {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  font-family: var(--font-body);
+}
+
+/* === GLASS / CAPSULE === */
+
+.water-meter__glass {
+  position: relative;
+  width: 100%;
+  height: min(320px, calc(100vh - 360px));
+border-radius: 20px;
+  overflow: hidden;
+  /* Додаємо flex для легкого центрування тексту */
+ display: flex;
+  align-items: center;     /* Центрує по вертикалі */
+  justify-content: center;  /* Центрує по горизонталі */
+
+  background: linear-gradient(180deg, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.18) 100%);
+  border: 1px solid rgba(255,255,255,0.45);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.35), inset 0 -18px 28px rgba(0,0,0,0.08), 0 12px 32px rgba(0,0,0,0.06);
+}
+
+/* === WATER FILL === */
+
+.water-meter__fill {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  height: var(--level, 0%); 
+  z-index: 1; 
+
+  /* НОВИЙ ПАСТЕЛЬНИЙ КОЛІР */
+background: linear-gradient(180deg, 
+  #e0f2f1 0%,    /* Майже білий м'ятний */
+  #b3ded7 55%,   /* Світлий пастельний бірюзовий */
+  #8cc9bb 100%   /* Трішки насиченіший м'ятний знизу */
+);
+
+  border-radius: 999px 999px 0 0;
+  transition: height 0.7s cubic-bezier(.4, 0, .2, 1);
+  
+  /* М'якша тінь, щоб не було "брудного" ефекту */
+  box-shadow: 
+    inset 0 10px 14px rgba(255, 255, 255, 0.4), 
+    inset 0 -10px 18px rgba(0, 0, 0, 0.05);
+}
+/* === VERTICAL VALUE TEXT === */
+
+.water-meter__value {
+  /* 1. Позиціювання: дозволяємо Flexbox-у батька керувати центром */
+  position: relative;
+  z-index: 10 !important;
+  
+  /* 2. Розвертаємо вздовж капсули */
+  /* rotate(-90deg) повертає текст вертикально (читається знизу вгору) */
+  transform: rotate(-90deg);
+  
+  /* 3. Оформлення */
+  font-size: 11px; /* Для вертикального тексту краще трохи менший шрифт */
+  font-weight: 800;
+  white-space: nowrap;
+  
+  /* 4. Колір (темно-м'ятний для контрасту) */
+  color: #2c4e47 !important;
+  
+  /* 5. Читабельність на будь-якому рівні води */
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.9);
+  
+  pointer-events: none;
+}
+
+/* ================= ACTION BUTTONS ================= */
+
+.water-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  margin-top: 10px;
+}
+
+.water-btn {
+  width: 100%;
+  height: 52px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+
+ background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255,255,255,0.6);
+  border-radius: 14px;
+
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+
+  box-shadow:
+    0 6px 16px rgba(0,0,0,0.06);
+
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.water-btn:hover {
+ background: rgba(168, 233, 221, 0.06); /* Трохи яскравіше при наведенні */
+  box-shadow: 0 8px 20px rgba(91, 189, 245, 0.2); /* Блакитне сяйво */
+}
+
+.water-btn:active {
+  transform: translateY(0);
+}
+
+/* IMPORTANT: JS SAFE */
+.water-btn svg {
+  width: 22px;
+  height: 22px;
+  color: #2e5d6c; /* Твій основний синій колір */
+  transition: all 0.3s ease;
+  filter: drop-shadow(0 0 2px rgba(41, 89, 97, 0.452)); /* Легке сяйво самої іконки */
+}
+
+.water-btn:hover svg {
+  color: #2b5965; /* Світліший при наведенні */
+  transform: translateY(-2px);
+}
+
+.water-btn__text {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--color-text-secondary);
+}
+
+/* ================= RESET ================= */
+
+.water-reset-btn {
+  margin-top: 6px;
+  background: none;
+  border: none;
+
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  color: var(--color-text-secondary);
+  opacity: 0.35;
+
+  cursor: pointer;
+  transition: opacity 0.2s ease, color 0.2s ease;
+}
+
+.water-reset-btn:hover {
+  opacity: 1;
+  color: #e06b6b;
+}
+
+
+/* =============================================================
+   ТВОЯ ПАЛІТРА КОЛЬОРІВ — ПІДСИЛЕНА, АЛЕ ТА САМА ГАМА
+   ============================================================= */
+
+.circle-progress--main {
+  stroke: #9fd3c4;
+} /* калорії */
+.circle-progress--p {
+  stroke: #7fbfb6;
+} /* білки */
+.circle-progress--f {
+  stroke: #b7cf8f;
+} /* жири */
+.circle-progress--c {
+  stroke: #8fc79f;
+} /* вуглеводи */
+
+/* OVER STATE — ЧІТКО ВИДНО */
+.circle-progress--main.circle-progress--over {
+  stroke: #e07b7b;
+}
+.circle-progress--p.circle-progress--over {
+  stroke: #4fb3a6;
+}
+.circle-progress--f.circle-progress--over {
+  stroke: #8fbf63;
+}
+.circle-progress--c.circle-progress--over {
+  stroke: #5fbf87;
+}
+
+.circle-progress--over {
+  animation: progress-pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes progress-pulse {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.65;
+  }
+  100% {
+    opacity: 1;
+  }
+}

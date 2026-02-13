@@ -1,0 +1,301 @@
+<!doctype html>
+<html lang="uk">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Рецепти</title>
+
+    <script>
+      (function () {
+        const theme = localStorage.getItem('theme');
+        if (theme === 'dark') {
+          document.documentElement.setAttribute('data-theme', 'dark');
+        }
+      })();
+    </script>
+
+    <link rel="stylesheet" href="./css/main.css" />
+  </head>
+
+  <body class="page">
+    <header class="header">
+      <div class="header__container">
+        <a href="index.html" class="header__logo">Minto Food 🍃</a>
+
+        <nav class="header__nav">
+          <ul class="header__nav-list">
+            <li>
+              <a href="recipes.html" class="header__nav-link header__nav-link--active">Рецепти</a>
+            </li>
+            <li>
+              <a href="index.html" class="header__nav-link">Меню на день</a>
+            </li>
+            <li><a href="#" class="header__nav-link">Меню на тиждень</a></li>
+            <li><a href="#" class="header__nav-link">Список покупок</a></li>
+            <li><a href="#" class="header__nav-link">Статистика</a></li>
+          </ul>
+        </nav>
+
+        <div class="header__actions">
+          <button class="theme-toggle" type="button" aria-label="Змінити тему">
+            <svg
+              class="sun-icon"
+              xmlns="http://www.w3.org/2000/svg"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round">
+              <circle cx="12" cy="12" r="5"></circle>
+              <line x1="12" y1="1" x2="12" y2="3"></line>
+              <line x1="12" y1="21" x2="12" y2="23"></line>
+              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+              <line x1="1" y1="12" x2="3" y2="12"></line>
+              <line x1="21" y1="12" x2="23" y2="12"></line>
+              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+            </svg>
+            <svg
+              class="moon-icon"
+              xmlns="http://www.w3.org/2000/svg"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round">
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+            </svg>
+          </button>
+          <a href="profile.html" class="header__profile-name">Ольга</a>
+        </div>
+      </div>
+    </header>
+
+    <div class="app-bg">
+      <div class="app-shell">
+        <main class="recipe-page">
+          <div class="container">
+            <header class="recipe-page__intro">
+              <h1 class="recipe-page__title">Рецепти</h1>
+              <div class="recipe-page__actions">
+                <button class="btn-add-recipe" id="open-add-modal">
+                  <svg
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2.5">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                  </svg>
+                  <span>Додати рецепт</span>
+                </button>
+              </div>
+              <div class="recipe-page__search">
+                <input
+                  type="text"
+                  class="recipe-page__search-input"
+                  placeholder="Пошук за назвою або інгредієнтом..." />
+              </div>
+            </header>
+
+            <nav class="recipe-filters">
+              <div class="recipe-filters__group">
+                <div class="recipe-filters__list">
+                  <button
+                    class="recipe-filters__item recipe-filters__item--active"
+                    data-category="all">
+                    Всі
+                  </button>
+                  <button class="recipe-filters__item" data-category="breakfast">Сніданок</button>
+                  <button class="recipe-filters__item" data-category="lunch">Обід</button>
+                  <button class="recipe-filters__item" data-category="dinner">Вечеря</button>
+                  <button class="recipe-filters__item" data-category="dessert">Десерти</button>
+                  <button class="recipe-filters__item" data-category="snack">Перекуси</button>
+                  <button class="recipe-filters__item" data-category="drinks">Напої</button>
+                  <button class="recipe-filters__item" data-category="bakery">Випічка</button>
+                  <button class="recipe-filters__item" data-category="fast">
+                    Швидкі рецепти⚡️
+                  </button>
+                </div>
+              </div>
+            </nav>
+
+            <div class="recipe-grid" id="recipe-container"></div>
+          </div>
+        </main>
+      </div>
+    </div>
+    <div class="modal-overlay" id="add-recipe-modal">
+      <div class="modal-card">
+        <button class="modal-card__close" id="close-modal">&times;</button>
+
+        <div id="initial-options-view">
+          <div class="modal-card__header">
+            <h2>Створити магію ✨</h2>
+            <p>Оцифруйте скриншот або запишіть власну ідею</p>
+          </div>
+
+          <div class="modal-card__options">
+            <label class="option-card option-card--ai" for="ai-upload">
+              <input type="file" id="ai-upload" accept="image/*" hidden />
+              <div class="option-card__icon">📸</div>
+              <div class="option-card__info">
+                <h3>Завантажити скриншот</h3>
+                <p>ШІ сам розпізнає текст та інгредієнти</p>
+              </div>
+            </label>
+
+            <button class="option-card" id="manual-entry-btn" type="button">
+              <div class="option-card__icon">✍️</div>
+              <div class="option-card__info">
+                <h3>Ввести вручну</h3>
+                <p>Створіть рецепт з нуля самостійно</p>
+              </div>
+            </button>
+          </div>
+        </div>
+
+        <div id="recipe-preview-form" style="display: none">
+          <div class="modal-card__header">
+            <h2>Додати рецепт</h2>
+            <p>Перевір дані перед збереженням</p>
+          </div>
+
+          <form class="preview-form" id="main-recipe-form">
+            <div class="form-group">
+              <label for="prev-name">Назва страви</label>
+              <input
+                type="text"
+                id="prev-name"
+                required
+                placeholder="Наприклад: Вівсянка з ягодами" />
+            </div>
+
+            <div class="form-row" style="display: flex; gap: 15px">
+              <div class="form-group" style="flex: 1">
+                <label for="prev-calories">Ккал</label>
+                <input type="number" id="prev-calories" placeholder="320" />
+              </div>
+              <div class="form-group" style="flex: 1">
+                <label for="prev-category">Категорія</label>
+                <select id="prev-category">
+                  <option value="breakfast">Сніданок</option>
+                  <option value="lunch">Обід</option>
+                  <option value="dinner">Вечеря</option>
+                  <option value="snack">Перекус</option>
+                  <option value="dessert">Десерт</option>
+                  <option value="drinks">Напої</option>
+                  <option value="bakery">Випічка</option>
+                  <option value="fast">Швидкі рецепти⚡️</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="prev-ingredients"
+                >Інгредієнти (краще писати через кому: Назва, Кількість)</label
+              >
+              <textarea
+                id="prev-ingredients"
+                placeholder="Вівсянка, 50г&#10;Молоко, 100мл"></textarea>
+            </div>
+
+            <div class="form-group">
+              <label for="prev-steps">Спосіб приготування</label>
+              <textarea id="prev-steps" placeholder="1. Змішайте...&#10;2. Запікайте..."></textarea>
+            </div>
+
+            <div class="modal-card__actions">
+              <button type="button" class="btn-secondary" id="cancel-preview">Скасувати</button>
+              <button type="submit" class="btn-primary" id="save-recipe-btn">
+                Зберегти рецепт 🥗
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <div id="confirm-modal" class="modal-overlay">
+      <div class="modal-card confirm-box">
+        <h3>Видалити рецепт?</h3>
+        <p>Цю дію неможливо буде скасувати.</p>
+        <div class="confirm-btns">
+          <button id="confirm-yes" class="btn-confirm btn-danger">Так, видалити</button>
+          <button id="confirm-no" class="btn-confirm btn-secondary">Скасувати</button>
+        </div>
+      </div>
+    </div>
+    <div id="view-recipe-modal" class="modal-overlay">
+      <div class="modal-card recipe-detail">
+        <button class="modal-card__close" id="close-view-modal">&times;</button>
+
+        <div class="recipe-detail__header">
+          <h2 id="view-title">Назва рецепта</h2>
+          <div class="recipe-detail__tags" id="view-tags"></div>
+        </div>
+        <div class="recipe-view__actions">
+          <button class="btn-primary" id="edit-recipe-btn">Редагувати рецепт ✏️</button>
+        </div>
+        <div class="recipe-rating">
+          <span class="star" data-value="1">★</span>
+          <span class="star" data-value="2">★</span>
+          <span class="star" data-value="3">★</span>
+          <span class="star" data-value="4">☆</span>
+          <span class="star" data-value="5">☆</span>
+          <span class="rating-value">3.0</span>
+        </div>
+
+        <div class="nutrition-summary">
+          <div class="nutrition-item">
+            <span class="nutrition-val" id="view-calories">0</span>
+            <span class="nutrition-label">ккал</span>
+          </div>
+          <div class="nutrition-divider"></div>
+          <div class="nutrition-item">
+            <span class="nutrition-val" id="view-proteins">0</span>
+            <span class="nutrition-label">Білки</span>
+          </div>
+          <div class="nutrition-item">
+            <span class="nutrition-val" id="view-carbs">0</span>
+            <span class="nutrition-label">Вугл.</span>
+          </div>
+          <div class="nutrition-item">
+            <span class="nutrition-val" id="view-fats">0</span>
+            <span class="nutrition-label">Жири</span>
+          </div>
+        </div>
+
+        <div class="recipe-detail__body">
+          <section class="recipe-section">
+            <h3><span class="icon">🌱</span> Інгредієнти</h3>
+            <ul id="view-ingredients-list" class="ingredients-list"></ul>
+          </section>
+
+          <section class="recipe-section">
+            <h3><span class="icon">👨‍🍳</span> Спосіб приготування</h3>
+            <div id="view-steps" class="steps-content"></div>
+          </section>
+
+          <section class="recipe-section recipe-section--notes">
+            <h3><span class="icon">📝</span> Мої нотатки</h3>
+            <textarea id="view-notes" placeholder="Додай свої зауваження до рецепта..."></textarea>
+            <button id="save-notes-btn" class="btn-save-mini">Зберегти нотатку</button>
+          </section>
+        </div>
+      </div>
+    </div>
+
+    <script src="js/add-recipe.js"></script>
+    <script src="js/theme-toggle.js"></script>
+  </body>
+</html>

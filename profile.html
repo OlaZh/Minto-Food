@@ -1,0 +1,271 @@
+<!doctype html>
+<html lang="uk">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Minto — Профіль</title>
+
+    <script>
+      (function () {
+        const theme = localStorage.getItem('theme');
+        if (theme === 'dark') {
+          document.documentElement.setAttribute('data-theme', 'dark');
+        }
+      })();
+    </script>
+
+    <link rel="stylesheet" href="./css/main.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  </head>
+
+  <body class="page">
+    <header class="header">
+      <div class="header__container">
+        <a href="index.html" class="header__logo">Minto Food 🍃</a>
+
+        <nav class="header__nav">
+          <ul class="header__nav-list">
+            <li>
+              <a href="recipes.html" class="header__nav-link header__nav-link--active">Рецепти</a>
+            </li>
+            <li>
+              <a href="index.html" class="header__nav-link">Меню на день</a>
+            </li>
+
+            <li><a href="#" class="header__nav-link">Меню на тиждень</a></li>
+            <li><a href="#" class="header__nav-link">Список покупок</a></li>
+            <li><a href="#" class="header__nav-link">Статистика</a></li>
+          </ul>
+        </nav>
+
+        <div class="header__actions">
+          <button class="theme-toggle" type="button" aria-label="Змінити тему">
+            <!-- Sun -->
+            <svg
+              class="sun-icon"
+              xmlns="http://www.w3.org/2000/svg"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round">
+              <circle cx="12" cy="12" r="5"></circle>
+              <line x1="12" y1="1" x2="12" y2="3"></line>
+              <line x1="12" y1="21" x2="12" y2="23"></line>
+              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+              <line x1="1" y1="12" x2="3" y2="12"></line>
+              <line x1="21" y1="12" x2="23" y2="12"></line>
+              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+            </svg>
+
+            <!-- Moon -->
+            <svg
+              class="moon-icon"
+              xmlns="http://www.w3.org/2000/svg"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round">
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+            </svg>
+          </button>
+          <a href="profile.html" class="header__profile-name">Ольга</a>
+        </div>
+      </div>
+    </header>
+
+    <div class="profile-container">
+      <main class="profile-page">
+        <header class="profile-header">
+          <div class="profile-header__avatar"></div>
+          <div class="profile-header__info">
+            <h1 class="profile-header__name">Ольга</h1>
+            <span class="profile-header__email">olga@email.com</span>
+          </div>
+        </header>
+
+        <div class="profile-grid-system">
+          <div class="profile-column-left">
+            <section class="profile-card">
+              <h2 class="profile-card__title">Ваші параметри</h2>
+              <form class="profile-form" id="profileForm">
+                <div class="profile-form__row">
+                  <div class="profile-form__field">
+                    <label class="profile-form__label" for="age">Вік</label>
+                    <input id="age" type="number" name="age" class="profile-form__input" required />
+                  </div>
+                  <div class="profile-form__field">
+                    <label class="profile-form__label" for="height">Зріст (см)</label>
+                    <input
+                      id="height"
+                      type="number"
+                      name="height"
+                      class="profile-form__input"
+                      required />
+                  </div>
+                  <div class="profile-form__field">
+                    <label class="profile-form__label" for="weight">Вага (кг)</label>
+                    <input
+                      id="weight"
+                      type="number"
+                      name="weight"
+                      step="0.1"
+                      class="profile-form__input"
+                      required />
+                  </div>
+                </div>
+
+                <div class="profile-form__field">
+                  <label class="profile-form__label">Стать</label>
+                  <div class="custom-select" id="genderSelect">
+                    <div class="custom-select__trigger">
+                      <span>Жінка</span>
+                      <div class="arrow"></div>
+                    </div>
+                    <div class="custom-select__options">
+                      <span class="custom-select__option selected" data-value="female">Жінка</span>
+                      <span class="custom-select__option" data-value="male">Чоловік</span>
+                    </div>
+                  </div>
+                  <input type="hidden" name="gender" id="genderInput" value="female" />
+                </div>
+
+                <div class="profile-form__field">
+                  <label class="profile-form__label">Спосіб життя</label>
+                  <div class="custom-select" id="activitySelect">
+                    <div class="custom-select__trigger">
+                      <span>Немає навантажень</span>
+                      <div class="arrow"></div>
+                    </div>
+                    <div class="custom-select__options">
+                      <span class="custom-select__option selected" data-value="1.2"
+                        >Немає фізичних навантажень</span
+                      >
+                      <span class="custom-select__option" data-value="1.375"
+                        >Легкі (1-3 рази на тиждень)</span
+                      >
+                      <span class="custom-select__option" data-value="1.55"
+                        >Середні (3-5 разів на тиждень)</span
+                      >
+                      <span class="custom-select__option" data-value="1.725"
+                        >Інтенсивні (щодня)</span
+                      >
+                    </div>
+                  </div>
+                  <input type="hidden" name="activity" id="activityInput" value="1.2" />
+                </div>
+
+                <div class="profile-form__field">
+                  <label class="profile-form__label">Ваша ціль</label>
+                  <div class="custom-select" id="goalSelect">
+                    <div class="custom-select__trigger">
+                      <span>Підтримка ваги</span>
+                      <div class="arrow"></div>
+                    </div>
+                    <div class="custom-select__options">
+                      <span class="custom-select__option" data-value="lose">Схуднути (-10%)</span>
+                      <span class="custom-select__option selected" data-value="maintain"
+                        >Підтримка ваги</span
+                      >
+                      <span class="custom-select__option" data-value="gain">Набрати (+10%)</span>
+                    </div>
+                  </div>
+                  <input type="hidden" name="goal" id="goalInput" value="maintain" />
+                </div>
+
+                <div class="profile-actions">
+                  <button type="submit" class="profile-actions__btn">Оновити дані</button>
+                </div>
+              </form>
+            </section>
+
+            <section class="profile-card">
+              <h2 class="profile-card__title">Денна норма</h2>
+              <div class="profile-result">
+                <span class="profile-result__label">Калорії 🍃</span>
+                <strong class="profile-result__value" id="dailyCalories">—</strong>
+              </div>
+
+              <div class="profile-macros">
+                <div class="profile-macros__item">
+                  <span class="macro-label">Білки</span>
+                  <span class="macro-value"><span id="normProtein">—</span>г</span>
+                </div>
+                <div class="profile-macros__item">
+                  <span class="macro-label">Жири</span>
+                  <span class="macro-value"><span id="normFat">—</span>г</span>
+                </div>
+                <div class="profile-macros__item">
+                  <span class="macro-label">Вуглеводи</span>
+                  <span class="macro-value"><span id="normCarbs">—</span>г</span>
+                </div>
+                <div class="profile-macros__item">
+                  <span class="macro-label">Вода</span>
+                  <span class="macro-value"><span id="normWater">—</span>л</span>
+                </div>
+              </div>
+            </section>
+          </div>
+
+          <div class="profile-column-right">
+            <section class="profile-card">
+              <h2 class="profile-card__title">Аналіз стану тіла</h2>
+              <div class="bmi-analysis">
+                <div class="bmi-analysis__header">
+                  <span class="profile-form__label">Ваш ІМТ</span>
+                  <span class="bmi-analysis__number" id="bmiValue">22.5</span>
+                </div>
+                <div class="bmi-visual-scale">
+                  <div class="bmi-visual-scale__pointer" id="bmiPointer" style="left: 45%"></div>
+                </div>
+                <p class="bmi-analysis__status" id="bmiStatus">Ваша вага в нормі</p>
+              </div>
+              <div id="bmiAdvice" class="bmi-advice-text"></div>
+            </section>
+
+            <section class="profile-card">
+              <h2 class="profile-card__title">Контроль ваги</h2>
+
+              <div class="profile-form__field">
+                <label class="profile-form__label">Бажана вага (кг)</label>
+                <div class="weight-tracker-input">
+                  <input type="number" id="targetWeight" placeholder="Введіть ціль..." step="0.1" />
+                </div>
+              </div>
+
+              <div class="profile-form__field" style="margin-top: 20px">
+                <label class="profile-form__label">Вага сьогодні (кг)</label>
+                <div class="weight-tracker-input">
+                  <input type="number" id="currentWeightInput" placeholder="74.0" step="0.1" />
+                  <button type="button" id="saveWeightBtn">Записати</button>
+                </div>
+              </div>
+            </section>
+
+            <section class="profile-card">
+              <div class="weight-dynamics">
+                <h3>Динаміка ваги</h3>
+
+                <div class="weight-chart-box">
+                  <canvas id="weightChartCanvas"></canvas>
+                </div>
+              </div>
+            </section>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <script src="js/theme-toggle.js"></script>
+    <script type="module" src="js/profile.js"></script>
+  </body>
+</html>

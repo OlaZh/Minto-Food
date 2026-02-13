@@ -1,0 +1,235 @@
+/* ================= DAY HEADER ================= */
+
+.day-header {
+  margin-bottom: 32px;
+
+  &__title {
+    font-family: var(--font-heading);
+    font-size: 32px;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    margin: 0;
+  }
+
+  &__date {
+    margin-top: 8px;
+    font-family: var(--font-body);
+    font-size: 14px;
+    color: var(--color-text-secondary);
+  }
+}
+
+/* ================= DAY MENU ================= */
+
+
+.day-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+
+  width: 100%;
+  max-width: 560px; // 🔑 контроль ширини карток
+  margin: 0 auto;   // 🔑 центруємо в колонці
+
+  box-sizing: border-box;
+}
+
+
+/* ================= MEAL BLOCK ================= */
+
+.meal {
+   @extend %premium-card;
+  width: 100%;
+  box-sizing: border-box;
+
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+
+  padding: 16px 20px;
+
+  transition:
+    border-color 0.3s ease,
+    box-shadow 0.3s ease,
+    transform 0.3s ease;
+    
+
+  &:hover {
+    border-color: var(--color-accent-soft);
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.06);
+    transform: translateY(-2px);
+  }
+
+  [data-theme='dark'] & {
+    box-shadow: none;
+  }
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+
+  &__title {
+    font-family: var(--font-heading);
+    font-size: 20px;
+    font-weight: 500;
+    color: var(--color-text-primary);
+    margin: 0;
+  }
+
+  &__add-button {
+    font-family: var(--font-body);
+    font-size: 14px;
+    color: var(--color-text-secondary);
+
+    background: none;
+    border: none;
+    cursor: pointer;
+
+    padding: 4px 8px;
+
+    transition: color 0.2s ease, transform 0.2s ease;
+
+    &:hover {
+      color: var(--color-accent);
+      transform: translateY(-1px);
+    }
+  }
+
+  &__recipes {
+     @extend %premium-card;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  &__recipe {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    padding: 10px 14px;
+
+    background-color: var(--color-bg-primary);
+    border-radius: 10px;
+    border: 1px solid transparent;
+
+    transition: background-color 0.2s ease;
+
+    &:hover {
+      background-color: var(--color-accent-soft);
+    }
+
+    &-name {
+      margin: 0;
+      flex: 1;
+      text-align: left;
+    }
+
+    &-kcal {
+      margin: 0;
+      margin-left: 12px;
+      white-space: nowrap;
+      text-align: right;
+    }
+  }
+}
+
+/* ================= DAY SUMMARY ================= */
+
+.day-summary {
+   @extend %premium-card;
+  width: 100%;
+  margin-top: 32px;
+
+  padding: 20px;
+
+  background-color: var(--color-accent-soft);
+  border-radius: 16px;
+  border: 1px solid var(--color-accent);
+
+  &__item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  &__label {
+    font-family: var(--font-body);
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--color-text-primary);
+  }
+
+  &__value {
+    font-family: var(--font-heading);
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--color-text-primary);
+  }
+}
+
+/* ================= MEAL ADD BUTTON ================= */
+
+.meal__add {
+  width: 36px;
+  height: 36px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+  background-color: var(--color-bg-primary);
+  border: 1px solid var(--color-border);
+
+  cursor: pointer;
+
+  transition:
+    background-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
+
+  span {
+    position: relative;
+    width: 14px;
+    height: 14px;
+
+    &::before,
+    &::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+
+      width: 14px;
+      height: 2px;
+
+      background-color: var(--color-accent);
+      border-radius: 2px;
+
+      transform: translate(-50%, -50%);
+    }
+
+    &::after {
+      transform: translate(-50%, -50%) rotate(90deg);
+    }
+  }
+
+  &:hover {
+    background-color: var(--color-accent);
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.15);
+    transform: translateY(-1px);
+
+    span::before,
+    span::after {
+      background-color: #fff;
+    }
+  }
+}

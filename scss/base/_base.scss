@@ -1,0 +1,113 @@
+/* ===============================
+   BASE
+   =============================== */
+
+/* Global box model — MUST BE HERE */
+html {
+  box-sizing: border-box;
+
+  font-size: 16px;
+
+  /* theme smoothness (НЕ transition!) */
+  background-color: var(--color-bg-primary);
+  color: var(--color-text-primary);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: inherit;
+}
+
+/* Body */
+body {
+  min-height: 100vh;
+
+  font-family: var(--font-body);
+  font-weight: 400;
+  line-height: 1.6;
+
+  background-color: var(--color-bg-primary);
+  color: var(--color-text-primary);
+
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.app-bg {
+  min-height: 100vh;
+  background-color: var(--color-bg-primary);
+}
+
+.app-shell {
+  max-width: 1320px; // 🔴 регулює “дорогість” вигляду
+  margin: 0 auto;
+  padding: 0 24px; // повітря по краях
+}
+
+/* ===============================
+   HEADINGS
+   =============================== */
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--color-text-primary);
+}
+
+h1 {
+  font-size: 28px;
+}
+h2 {
+  font-size: 20px;
+}
+h3 {
+  font-size: 18px;
+}
+
+/* ===============================
+   TEXT
+   =============================== */
+
+p {
+  margin-bottom: 16px;
+}
+
+span {
+  font: inherit;
+  color: inherit;
+}
+
+small,
+.text-muted {
+  font-size: 14px;
+  color: var(--color-text-secondary);
+}
+
+
+
+/* ===============================
+   FORMS
+   =============================== */
+
+input,
+select,
+textarea {
+  background-color: var(--color-bg-primary);
+  color: var(--color-text-primary);
+}
+
+/* ===============================
+   ACCESSIBILITY
+   =============================== */
+
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}

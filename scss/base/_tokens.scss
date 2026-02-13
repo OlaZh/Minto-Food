@@ -1,0 +1,42 @@
+:root {
+  /* Backgrounds */
+  --color-bg-primary: #{$color-bg-main};
+  --color-bg-secondary: #{$color-bg-surface};
+  --color-bg-sidebar: #{$color-bg-sidebar};
+  --color-bg-hover: rgba(111, 207, 186, 0.12);
+
+  /* Surface */
+  --color-surface: #{$color-bg-surface};
+
+  /* Accent (МʼЯТНИЙ, НЕ СИНІЙ) */
+  --color-accent: #{$color-primary};
+  --color-accent-hover: #{$color-primary-hover};
+  --color-accent-soft: rgba(111, 207, 186, 0.18);
+
+  /* Text */
+  --color-text-primary: #{$color-text-main};
+  --color-text-secondary: #{$color-text-muted};
+  --color-text-inverse: #{$color-text-inverse};
+
+  /* Border */
+  --color-border: #{$color-border};
+}
+
+[data-theme='dark'] {
+  --color-bg-primary: #{$color-bg-main-dark};
+  --color-bg-secondary: #{$color-bg-surface-dark};
+  --color-bg-sidebar: #{$color-bg-sidebar-dark};
+  --color-bg-hover: rgba(111, 207, 186, 0.12);
+
+  --color-surface: #{$color-bg-surface-dark};
+
+  --color-accent: #{$color-primary-dark};
+  --color-accent-hover: #{$color-primary-hover-dark};
+  --color-accent-soft: rgba(111, 207, 186, 0.22);
+
+  --color-text-primary: #{$color-text-main-dark};
+  --color-text-secondary: #{$color-text-muted-dark};
+  --color-text-inverse: #{$color-text-inverse-dark};
+
+  --color-border: #{$color-border-dark};
+}
