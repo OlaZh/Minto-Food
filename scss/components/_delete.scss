@@ -1,0 +1,61 @@
+/* ============================================================
+   COMPONENT: DELETE BUTTON & CONFIRM MODAL (RECIPES PAGE)
+   ============================================================ */
+
+/* Кнопка на картці рецепта */
+.btn-delete-recipe {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background: var(--color-bg);
+  backdrop-filter: blur(4px);
+  border: none;
+  border-radius: 8px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  color: #e74c3c;
+  transition: all 0.2s ease;
+  z-index: 10;
+
+  &:hover {
+    background: #e74c3c;
+    color: white;
+    transform: scale(1.1);
+  }
+}
+
+/* Вікно підтвердження видалення */
+.confirm-box {
+  max-width: 450px;
+  text-align: center;
+  padding: 10px;
+
+  .confirm-btns {
+    display: flex;
+    gap: 12px;
+    margin-top: 25px;
+    justify-content: center;
+    width: 100%;
+  }
+
+  .confirm-btns button {
+    flex: 1;
+    padding: 14px 0;
+    font-size: 15px;
+    font-weight: 700;
+    border-radius: 12px;
+    text-align: center;
+  }
+}
+
+/* Контейнер кнопок */
+.confirm-btns {
+  display: flex;
+  gap: 12px;
+  margin-top: 25px;
+  width: 100%;
+}

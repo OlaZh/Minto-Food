@@ -1,26 +1,33 @@
 // Utils
-@import "./utils/fonts";
-@import "./utils/variables";
-@import "./utils/utilities";
-@import "./utils/mixins";
+
+@import './utils/fonts';
+@import './utils/variables';
+@import './utils/utilities';
+@import './utils/mixins';
 
 // Base
-@import "./base/reset";
-@import "./base/base";
-@import "./base/tokens";
+@import './base/reset';
+@import './base/base';
+@import './base/tokens';
 
 // Layout
-@import "./layout/layout";
-@import "./layout/header";
-@import "./layout/sidebar";
+@import './layout/layout';
+@import './layout/header';
+@import './layout/sidebar';
 
 // Components
-@import "./components/buttons";
-@import "./components/cards";
-@import "./components/modal";
-@import "./components/stats";
+@import './components/buttons';
+@import './components/cards';
+@import './components/modal';
+@import './components/stats';
+@import './components/tost';
+@import './components/rating';
+@import './components/delete';
+@import './components/inputs';
+@import './components/recipe-view';
+@import './components/recipe-add';
 
 // Pages
-@import "./pages/day-menu";
-@import "./pages/recipes";
-@import "./pages/profile";
+@import './pages/day-menu';
+@import './pages/recipes';
+@import './pages/profile';

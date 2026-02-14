@@ -1,9 +1,16 @@
 // ==============================
 // Fonts
 // ==============================
-$font-heading: 'EB Garamond', serif;
-$font-body: 'Vollkorn', serif;
-$font-ui: 'Inter', sans-serif;
+:root {
+  --font-logo: 'Fraunces', serif;
+  --font-heading: 'Rubik', sans-serif;
+  --font-body: 'Mulish', sans-serif;
+  --font-ui: 'Mulish', sans-serif;
+}
+$font-logo: 'Fraunces', serif;
+$font-heading: 'Rubik', sans-serif;
+$font-body: 'Mulish', sans-serif;
+$font-ui: 'Mulish', sans-serif;
 
 $font-weight-heading-regular: 500;
 $font-weight-heading-bold: 600;

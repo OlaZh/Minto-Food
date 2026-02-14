@@ -40,8 +40,6 @@
     box-shadow 0.3s ease,
     transform 0.3s ease;
 
-  
-
   /* світловий верхній кант */
   &::before {
     content: '';
@@ -79,6 +77,104 @@
 
     &::before {
       opacity: 0.25;
+    }
+  }
+}
+
+/* ============================================================
+   COMPONENT: RECIPE CARDS (RECIPES PAGE)
+   ============================================================ */
+
+.recipe-card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--color-surface);
+  border-radius: 20px;
+  border: 1px solid var(--color-border);
+  overflow: hidden;
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
+
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 15px 25px rgba(46, 204, 113, 0.1);
+
+    .recipe-card__img {
+      transform: scale(1.05);
+    }
+  }
+
+  &__image-box {
+    position: relative;
+    height: 220px;
+    overflow: hidden;
+  }
+
+  &__img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+  }
+
+  &__stats {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    padding: 6px 14px;
+    background: var(--color-surface);
+    backdrop-filter: blur(10px);
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 800;
+    color: #2e5d6c;
+    box-shadow: 0 4px 10px rgba(46, 204, 113, 0.1);
+  }
+
+  &__content {
+    padding: 24px;
+  }
+
+  &__name {
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: var(--color-text-primary);
+    display: -webkit-box;
+    -webkit-line-clamp: 2; /* кількість рядків */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    min-height: 48px; /* висота під 2 рядки Rubik 20px */
+  }
+
+  &__macros {
+    font-size: 13px;
+    color: var(--color-text-secondary);
+    margin-bottom: 20px;
+    letter-spacing: 0.3px;
+  }
+
+  &__btn {
+    width: 100%;
+    padding: 12px;
+    border-radius: 14px;
+    border: 1px solid var(--color-accent-soft);
+    background: var(--color-accent-soft);
+    backdrop-filter: blur(10px);
+    color: var(--color-text-primary);
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(46, 204, 113, 0.15);
+
+    &:hover {
+      background: rgba(111, 207, 186, 0.32);
+      border-color: rgba(111, 207, 186, 0.45);
+      color: var(--color-text-primary);
+      transform: translateY(-3px);
+      box-shadow: 0 15px 25px rgba(46, 204, 113, 0.25);
     }
   }
 }
