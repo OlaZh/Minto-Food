@@ -964,7 +964,7 @@ textarea {
 /* ============================================================
    COMPONENT: BUTTONS (RECIPES PAGE)
    ============================================================ */
-/* Головна кнопка (Зберегти/Додати) */
+/* Головна кнопка (Зберегти/Додати у формах) */
 .btn-primary {
   background: var(--color-accent-soft);
   color: var(--color-text-primary);
@@ -982,7 +982,6 @@ textarea {
 .btn-primary:hover {
   background: rgba(111, 207, 186, 0.32);
   border-color: rgba(111, 207, 186, 0.45);
-  color: var(--color-text-primary);
   transform: translateY(-3px);
   box-shadow: 0 15px 25px rgba(46, 204, 113, 0.25);
 }
@@ -1007,7 +1006,6 @@ textarea {
 .btn-secondary:hover {
   background: rgba(111, 207, 186, 0.32);
   border-color: rgba(111, 207, 186, 0.45);
-  color: var(--color-text-primary);
   transform: translateY(-3px);
   box-shadow: 0 15px 25px rgba(46, 204, 113, 0.25);
 }
@@ -1079,6 +1077,36 @@ textarea {
   color: #a83224;
   border-color: #d99f90;
   transform: translateY(-3px);
+}
+
+/* Кнопка "Додати рецепт" */
+.btn-add-recipe {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 28px;
+  background: var(--color-accent-soft);
+  color: var(--color-text-primary);
+  border: 1px solid rgba(111, 207, 186, 0.45);
+  border-radius: 16px;
+  font-weight: 700;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(46, 204, 113, 0.15);
+}
+.btn-add-recipe svg {
+  stroke: var(--color-text-primary);
+  transition: transform 0.25s ease;
+}
+.btn-add-recipe:hover {
+  background: rgba(111, 207, 186, 0.32);
+  border-color: rgba(111, 207, 186, 0.55);
+  transform: translateY(-3px);
+  box-shadow: 0 15px 25px rgba(46, 204, 113, 0.25);
+}
+.btn-add-recipe:hover svg {
+  transform: rotate(90deg);
 }
 
 .card {
@@ -2123,6 +2151,60 @@ textarea {
   align-items: center;
 }
 
+/* Специфічні елементи для додавання рецепта */
+/* Контейнер для кнопок ШІ / Вручну */
+.modal-card__options {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 8px; /* трохи менше, бо у заголовка вже є margin-bottom */
+}
+
+/* Стиль карток-кнопок */
+.option-card {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 20px;
+  width: 100%;
+  border: 2px solid var(--color-border);
+  border-radius: 16px;
+  background: var(--color-bg-secondary);
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.3s ease;
+}
+.option-card:hover {
+  border-color: var(--color-accent);
+  background: var(--color-surface);
+  transform: translateY(-2px);
+}
+.option-card__icon {
+  font-size: 32px;
+  flex-shrink: 0;
+}
+.option-card__info h3 {
+  margin: 0 0 4px 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+.option-card__info p {
+  margin: 0;
+  font-size: 14px;
+  color: var(--color-text-secondary);
+}
+
+/* Блок кнопок у футері форми */
+.modal-card__actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 32px;
+  align-items: center;
+}
+.modal-card__actions button {
+  flex: 1;
+}
+
 /* ================= PREVIEW ACTION BUTTONS ================= */
 .preview-form__actions {
   display: flex;
@@ -2446,71 +2528,89 @@ textarea {
   padding: 40px 0;
   min-height: 100vh;
   background-color: transparent;
+  /* Заголовок + кнопка */
 }
 .recipe-page__intro {
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
   align-items: center;
-  margin-bottom: 32px;
-  gap: 20px;
-}
-@media (max-width: 768px) {
-  .recipe-page__intro {
-    flex-direction: column;
-    align-items: flex-start;
-  }
+  text-align: center;
+  gap: 16px;
+  margin-bottom: 24px;
 }
 .recipe-page__title {
-  font-size: 28px;
-  font-weight: 700;
+  font-size: 32px;
+  font-weight: 800;
   color: var(--color-text-primary);
 }
-.recipe-page__search-input {
-  padding: 12px 20px;
-  width: 300px;
-  border-radius: 14px;
-  border: 1px solid var(--color-border);
-  background: var(--color-surface);
-  transition: all 0.3s ease;
-}
-.recipe-page__search-input:focus {
-  outline: none;
-  border-color: var(--color-accent);
-  box-shadow: 0 0 0 3px rgba(46, 204, 113, 0.1);
-}
 
-/* ================= ADD RECIPE BUTTON ================= */
-.btn-add-recipe {
+/* ================= SEARCH FIELD ================= */
+.recipe-page__search {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 24px;
+}
+.recipe-page__search .search-wrapper {
+  position: relative;
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 10px 20px;
-  background-color: var(--color-bg-secondary);
-  color: var(--color-text-secondary);
+}
+.recipe-page__search .search-wrapper .recipe-page__search-input {
+  width: 100%;
+  padding: 12px 44px 12px 16px;
   border: 1px solid var(--color-border);
   border-radius: 14px;
-  font-weight: 700;
-  font-size: 14px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 12px rgba(46, 204, 113, 0.1);
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  font-size: 15px;
+  transition: 0.2s;
 }
-.btn-add-recipe:hover {
+.recipe-page__search .search-wrapper .recipe-page__search-input:focus {
   border-color: var(--color-accent);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(46, 204, 113, 0.15);
+}
+.recipe-page__search .search-wrapper .search-icon-btn {
+  position: absolute;
+  right: 14px;
+  width: 24px;
+  height: 24px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.recipe-page__search .search-wrapper .search-icon-btn svg {
+  width: 100%;
+  height: 100%;
+  fill: var(--color-text-secondary);
+  transition: 0.2s;
+}
+.recipe-page__search .search-wrapper .search-icon-btn:hover svg {
+  fill: var(--color-accent);
+}
+.recipe-page__search .btn-search-web {
+  align-self: flex-start;
+  padding: 8px 16px;
+  font-size: 14px;
+  border-radius: 10px;
+  border: 1px solid var(--color-accent);
+  background: transparent;
   color: var(--color-accent);
-  transform: translateY(-3px);
-  box-shadow: 0 15px 25px rgba(46, 204, 113, 0.1);
+  cursor: pointer;
+  transition: 0.2s;
 }
-.btn-add-recipe:hover svg {
-  transform: rotate(90deg);
-}
-.btn-add-recipe svg {
-  transition: transform 0.3s ease;
+.recipe-page__search .btn-search-web:hover {
+  background: var(--color-accent);
+  color: #fff;
 }
 
 /* ================= FILTERS ================= */
 .recipe-filters {
-  margin-bottom: 40px;
+  margin-bottom: 32px;
 }
 .recipe-filters__list {
   display: flex;
@@ -2535,9 +2635,8 @@ textarea {
   box-shadow: 0 15px 25px rgba(46, 204, 113, 0.1);
 }
 .recipe-filters__item--active {
-  background: var(--color-surface);
-  color: var(--color-text-secondary);
   border-color: var(--color-accent);
+  color: var(--color-text-primary);
 }
 
 /* ================= RECIPE GRID ================= */
@@ -2547,70 +2646,6 @@ textarea {
   gap: 30px;
   padding: 20px 0;
   width: 100%;
-}
-
-/* ================= Вікно пошуку продукту ================= */
-.recipe-page__search {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  margin-bottom: 20px;
-}
-.recipe-page__search .search-wrapper {
-  position: relative;
-  display: flex;
-  align-items: center;
-}
-.recipe-page__search .search-wrapper .recipe-page__search-input {
-  width: 100%;
-  padding: 10px 40px 10px 14px;
-  border: 1px solid var(--border-color);
-  border-radius: 10px;
-  background: var(--bg-secondary);
-  color: var(--text-color);
-  font-size: 15px;
-  transition: 0.2s;
-}
-.recipe-page__search .search-wrapper .recipe-page__search-input:focus {
-  border-color: var(--accent-color);
-  outline: none;
-}
-.recipe-page__search .search-wrapper .search-icon-btn {
-  position: absolute;
-  right: 10px;
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 22px;
-  height: 22px;
-}
-.recipe-page__search .search-wrapper .search-icon-btn svg {
-  width: 100%;
-  height: 100%;
-  fill: var(--text-color);
-  transition: 0.2s;
-}
-.recipe-page__search .search-wrapper .search-icon-btn:hover svg {
-  fill: var(--accent-color);
-}
-.recipe-page__search .btn-search-web {
-  align-self: flex-start;
-  padding: 6px 14px;
-  font-size: 14px;
-  border-radius: 8px;
-  border: 1px solid var(--accent-color);
-  background: transparent;
-  color: var(--accent-color);
-  cursor: pointer;
-  transition: 0.2s;
-}
-.recipe-page__search .btn-search-web:hover {
-  background: var(--accent-color);
-  color: #fff;
 }
 
 /* =============================================================

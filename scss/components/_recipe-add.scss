@@ -56,6 +56,67 @@
   }
 }
 
+/* Специфічні елементи для додавання рецепта */
+
+/* Контейнер для кнопок ШІ / Вручну */
+.modal-card__options {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 8px; /* трохи менше, бо у заголовка вже є margin-bottom */
+}
+
+/* Стиль карток-кнопок */
+.option-card {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 20px;
+  width: 100%;
+  border: 2px solid var(--color-border); // використовуємо твою змінну
+  border-radius: 16px;
+  background: var(--color-bg-secondary);
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.3s ease;
+
+  &:hover {
+    border-color: var(--color-accent);
+    background: var(--color-surface);
+    transform: translateY(-2px);
+  }
+
+  &__icon {
+    font-size: 32px;
+    flex-shrink: 0;
+  }
+
+  &__info {
+    h3 {
+      margin: 0 0 4px 0;
+      font-size: 18px;
+      font-weight: 600;
+    }
+    p {
+      margin: 0;
+      font-size: 14px;
+      color: var(--color-text-secondary);
+    }
+  }
+}
+
+/* Блок кнопок у футері форми */
+.modal-card__actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 32px;
+  align-items: center;
+
+  button {
+    flex: 1; // щоб кнопки Скасувати/Зберегти були однаковими
+  }
+}
+
 /* ================= PREVIEW ACTION BUTTONS ================= */
 
 .preview-form__actions {
