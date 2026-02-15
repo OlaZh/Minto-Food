@@ -78,12 +78,15 @@
   background: var(--color-bg-secondary);
   cursor: pointer;
   text-align: left;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
   transition: all 0.3s ease;
 
   &:hover {
     border-color: var(--color-accent);
     background: var(--color-surface);
-    transform: translateY(-2px);
+    transform: translateY(-3px);
+    border-color: rgba(111, 207, 186, 0.55);
+    box-shadow: 0 15px 25px rgba(46, 204, 113, 0.15);
   }
 
   &__icon {
@@ -114,6 +117,105 @@
 
   button {
     flex: 1; // щоб кнопки Скасувати/Зберегти були однаковими
+  }
+}
+
+/* Загальний контейнер для варіантів у модалці */
+.recipe-creation-options {
+  display: flex;
+  flex-direction: column;
+  gap: 16px; /* Це створить рівномірні відступи між усіма блоками */
+}
+
+/* Твій блок швидкого додавання */
+.recipe-add__smart-import {
+  background: var(--color-surface);
+  padding: 24px; // Трохи більше простору всередині
+  border-radius: 18px;
+  border: 1px solid var(--color-border);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+  margin-bottom: 0; // Gap у батьківському контейнері все зробить сам
+  margin-top: 16px;
+
+  &:hover {
+    transform: translateY(-3px);
+    border-color: rgba(111, 207, 186, 0.55);
+    box-shadow: 0 15px 25px rgba(46, 204, 113, 0.15);
+  }
+
+  .smart-import__label {
+    display: block;
+    margin-bottom: 12px;
+    font-weight: 700;
+    color: var(--color-text-primary);
+    font-size: 16px;
+    text-align: left;
+  }
+
+  .smart-import__wrapper {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    width: 100%;
+
+    .smart-import__input {
+      flex: 3;
+      height: 48px; // Вирівнюємо висоту з кнопкою
+      padding: 0 16px;
+      border-radius: 14px;
+      border: 1px solid var(--color-border);
+      background: #f9fbfb;
+      color: var(--color-text-primary);
+      font-size: 14px;
+      transition: 0.2s;
+
+      &:focus {
+        border-color: var(--color-accent);
+        background: #fff;
+        outline: none;
+      }
+    }
+
+    /* Застосовуємо твій стиль .btn-upload до кнопки */
+    .smart-import__btn {
+      flex: 1; // Кнопка стає компактнішою
+      max-width: 140px; // Обмежуємо максимальну ширину, щоб не розповзалась
+      height: 48px;
+      padding: 0 12px; // Менші відступи всередині
+      background: var(--color-accent-soft); // Використовуємо твою змінну
+      border: 1px solid rgba(111, 207, 186, 0.45);
+      border-radius: 14px;
+      font-weight: 700;
+      font-size: 13px;
+      cursor: pointer;
+      color: var(--color-text-primary);
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 12px rgba(46, 204, 113, 0.12);
+      white-space: nowrap;
+
+      &:hover {
+        background: rgba(111, 207, 186, 0.18);
+        border-color: rgba(111, 207, 186, 0.55);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 15px rgba(46, 204, 113, 0.2);
+      }
+
+      &:active {
+        transform: translateY(0);
+      }
+    }
+  }
+
+  .smart-import__hint {
+    font-size: 12px;
+    color: var(--color-text-secondary);
+    margin-top: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    opacity: 0.9;
   }
 }
 

@@ -39,17 +39,17 @@
 .recipe-page__search {
   display: flex;
   flex-direction: column;
-  gap: 10px;
   margin-bottom: 24px;
 
   .search-wrapper {
     position: relative;
     display: flex;
     align-items: center;
+    width: 100%;
 
     .recipe-page__search-input {
       width: 100%;
-      padding: 12px 44px 12px 16px;
+      padding: 12px 48px 12px 16px; /* Збільшив правий паддінг для кнопки */
 
       border: 1px solid var(--color-border);
       border-radius: 14px;
@@ -69,10 +69,10 @@
 
     .search-icon-btn {
       position: absolute;
-      right: 14px;
+      right: 12px;
 
-      width: 24px;
-      height: 24px;
+      width: 28px;
+      height: 28px;
 
       background: none;
       border: none;
@@ -81,37 +81,33 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      padding: 0;
+      
+      /* Додаємо плавний перехід для кольору */
+      color: var(--color-text-secondary);
+      transition: all 0.3s ease;
 
       svg {
-        width: 100%;
-        height: 100%;
-        fill: var(--color-text-secondary);
-        transition: 0.2s;
+        width: 20px;
+        height: 20px;
+        /* Використовуємо currentColor, щоб колір керувався з батька (search-icon-btn) */
+        stroke: currentColor; 
+        fill: none; 
       }
 
-      &:hover svg {
-        fill: var(--color-accent);
+      &:hover {
+        transform: scale(1.1);
+        color: var(--color-accent);
       }
-    }
-  }
 
-  .btn-search-web {
-    align-self: flex-start;
-    padding: 8px 16px;
-
-    font-size: 14px;
-    border-radius: 10px;
-
-    border: 1px solid var(--color-accent);
-    background: transparent;
-    color: var(--color-accent);
-
-    cursor: pointer;
-    transition: 0.2s;
-
-    &:hover {
-      background: var(--color-accent);
-      color: #fff;
+      /* Клас, який ми будемо додавати через JS, коли з'являється планета */
+      &.is-active {
+        color: #3498db; /* Красивий синій колір для "всесвіту" */
+        
+        &:hover {
+          color: #2980b9;
+        }
+      }
     }
   }
 }

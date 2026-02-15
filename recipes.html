@@ -130,22 +130,16 @@
             </header>
             <!-- i18n: SEARCH FIELD -->
             <div class="recipe-page__search">
-              <div class="search-wrapper">
+              <div class="search-wrapper" style="position: relative; width: 100%">
                 <input
                   type="text"
                   class="recipe-page__search-input"
                   placeholder="Пошук за назвою або інгредієнтом..."
                   data-i18n-placeholder="searchPlaceholder"
-                  id="recipe-search-input" />
-
-                <!-- ІКОНКА СПРАВА (лупа → планета) -->
-                <button class="search-icon-btn" id="search-mode-btn" type="button">
-                  <!-- тут буде SVG лупи, а потім SVG планети -->
-                </button>
+                  id="recipe-search-input"
+                  style="padding-right: 45px" />
+                <button class="search-icon-btn" id="search-mode-btn" type="button"></button>
               </div>
-
-              <!-- КНОПКА ПОШУКУ В ІНТЕРНЕТІ -->
-              <button class="btn-search-web" id="search-web-btn">🔍 Пошук в інтернеті</button>
             </div>
 
             <!-- i18n: FILTERS -->
@@ -247,6 +241,25 @@
               </div>
             </button>
           </div>
+        </div>
+        <div class="recipe-add__smart-import">
+          <label class="smart-import__label" data-i18n="importLabel">
+            Швидке додавання за посиланням
+          </label>
+          <div class="smart-import__wrapper">
+            <input
+              type="url"
+              id="import-url"
+              class="smart-import__input"
+              data-i18n-placeholder="importPlaceholder"
+              placeholder="Вставте URL-адресу рецепта..." />
+            <button type="button" id="btn-magic-import" class="recipe-card__btn smart-import__btn">
+              <span data-i18n="importBtn">Аналізувати</span>
+            </button>
+          </div>
+          <p class="smart-import__hint" data-i18n="importHint">
+            Minto Food автоматично знайде назву, фото та склад, видаливши зайву рекламу. 🍃
+          </p>
         </div>
 
         <!-- i18n: ADD RECIPE — PREVIEW FORM -->

@@ -489,6 +489,96 @@ function initAiUpload() {
   });
 }
 
+// --- ФУНКЦІЯ РОЗУМНОГО ІМПОРТУ (Minto Food) ---
+async function smartImportRecipe() {
+  const urlInput = document.getElementById('import-url');
+  const btn = document.getElementById('btn-magic-import');
+  const btnText = btn ? btn.querySelector('span') : null;
+  const url = urlInput ? urlInput.value.trim() : '';
+
+  if (!url) {
+    if (urlInput) urlInput.focus();
+    return;
+  }
+
+  const originalText = btnText ? btnText.innerText : 'Аналізувати';
+  if (btnText) btnText.innerText = '...';
+  if (btn) btn.disabled = true;
+
+  try {
+    // 1. Отримуємо дані (працює через активоване розширення CORS)
+    const response = await fetch(url);
+    if (!response.ok) throw new Error('Сайт не відповідає');
+
+    const htmlText = await response.text();
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(htmlText, 'text/html');
+
+    // 2. Витягуємо назву
+    const rawTitle = doc.querySelector('h1')?.innerText || doc.title || 'Новий рецепт';
+    const cleanTitle = rawTitle.split('|')[0].split('-')[0].trim();
+
+    // 3. Витягуємо фото
+    const image = doc.querySelector('meta[property="og:image"]')?.content || '';
+
+    // 4. Витягуємо інгредієнти (шукаємо в списках li)
+    // --- ПОКРАЩЕНИЙ ПАРСИНГ ---
+    let ingredientsList = [];
+
+    // 1. Шукаємо спочатку в спеціальних блоках (більшість сайтів їх мають)
+    const ingredientSelectors = [
+      '[class*="ingredient"]',
+      '[class*="recipe-ing"]',
+      '[itemprop="recipeIngredient"]',
+      '.ingredients-list',
+    ];
+
+    let foundSource = null;
+    ingredientSelectors.forEach((sel) => {
+      const found = doc.querySelectorAll(sel);
+      if (found.length > 0 && !foundSource) foundSource = found;
+    });
+
+    // 2. Якщо знайшли спеціальні блоки — беремо з них, якщо ні — шукаємо по li
+    const elementsToParse = foundSource || doc.querySelectorAll('li');
+
+    elementsToParse.forEach((el) => {
+      const text = el.innerText.replace(/\s+/g, ' ').trim();
+
+      // Фільтр "Справжнього інгредієнта":
+      const isIngredient =
+        text.length > 2 &&
+        text.length < 120 &&
+        !/написати|коментар|підписатися|пошук|меню|головна|автор|поділитися/i.test(text) &&
+        /[0-9]|гр|мл|кг|ст\.л|ч\.л|шт/.test(text); // Шукаємо цифри або одиниці виміру
+
+      if (isIngredient) {
+        ingredientsList.push(text);
+      }
+    });
+
+    // 5. Відкриваємо твою форму showForm (переконайся, що вона є в коді)
+    if (typeof showForm === 'function') {
+      showForm({
+        name: cleanTitle,
+        image: image,
+        ingredients: [...new Set(ingredientsList)].join('\n'),
+        category: 'lunch',
+      });
+      showToast('Рецепт проаналізовано! 🍃');
+      if (urlInput) urlInput.value = '';
+    } else {
+      console.error('Функція showForm не знайдена!');
+    }
+  } catch (err) {
+    console.error('Minto Import Error:', err);
+    showToast('Помилка! Перевір чи увімкнено CORS розширення 🍃', 'info');
+  } finally {
+    if (btnText) btnText.innerText = originalText;
+    if (btn) btn.disabled = false;
+  }
+}
+
 // =============================================================
 // 9. СЛУХАЧІ ПОДІЙ ТА ІНІЦІАЛІЗАЦІЯ
 // =============================================================
@@ -505,6 +595,11 @@ const toBase64 = (file) =>
 document.addEventListener('DOMContentLoaded', () => {
   displayRecipes();
   initAiUpload();
+
+  const magicBtn = document.getElementById('btn-magic-import');
+  if (magicBtn) {
+    magicBtn.addEventListener('click', smartImportRecipe);
+  }
 
   // Логіка кліку по зірках
   const ratingContainer = document.querySelector('.recipe-rating');
@@ -638,8 +733,18 @@ document.querySelectorAll('textarea').forEach((txt) => {
 });
 
 // =============================================================
-// 10. ПОШУК ТА ФІЛЬТРАЦІЯ
+// 10. ПОШУК ТА ФІЛЬТРАЦІЯ (SMART SEARCH)
 // =============================================================
+
+const searchInput = document.getElementById('recipe-search-input');
+const searchModeBtn = document.getElementById('search-mode-btn');
+
+// Іконки (використовуємо stroke для чіткості в інпуті)
+const iconSearch = `<svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>`;
+const iconPlanet = `<svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>`;
+
+// Встановлюємо початковий стан
+if (searchModeBtn) searchModeBtn.innerHTML = iconSearch;
 
 // 1. Пошук по тексту (назва або інгредієнти)
 function filterRecipes(query) {
@@ -648,21 +753,17 @@ function filterRecipes(query) {
     const ingMatch = (recipe.ingredients || '').toLowerCase().includes(query);
     return nameMatch || ingMatch;
   });
-
-  renderFilteredRecipes(filtered); // Використовуємо нову функцію для малювання
+  renderFilteredRecipes(filtered);
 }
 
 // 2. Фільтрація за кнопками категорій
 const categoryButtons = document.querySelectorAll('.recipe-filters__item');
-
 if (categoryButtons.length > 0) {
   categoryButtons.forEach((btn) => {
     btn.addEventListener('click', () => {
       categoryButtons.forEach((b) => b.classList.remove('recipe-filters__item--active'));
       btn.classList.add('recipe-filters__item--active');
-
       const selectedCategory = btn.getAttribute('data-category');
-
       if (selectedCategory === 'all') {
         displayRecipes();
       } else {
@@ -673,7 +774,7 @@ if (categoryButtons.length > 0) {
   });
 }
 
-// 3. Універсальна функція малювання карток (замість дублювання коду)
+// 3. Універсальна функція малювання карток
 function renderFilteredRecipes(recipes) {
   const recipeGrid = document.querySelector('.recipe-grid');
   if (!recipeGrid) return;
@@ -691,9 +792,8 @@ function renderFilteredRecipes(recipes) {
   };
 
   recipeGrid.innerHTML = '';
-
   if (recipes.length === 0) {
-    recipeGrid.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: #888;"><p>Нічого не знайдено 🍃</p></div>`;
+    recipeGrid.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: #888;"><p>У власній базі нічого не знайдено. Спробуй пошук в інтернеті 🌐</p></div>`;
     return;
   }
 
@@ -701,8 +801,6 @@ function renderFilteredRecipes(recipes) {
     const rating = recipe.rating || 0;
     const cardImage =
       recipe.image || 'https://images.unsplash.com/photo-1495521821757-a1efb6729352?q=80&w=500';
-
-    // Перекладаємо категорію
     const displayCategory = categoryTranslations[recipe.category] || recipe.category;
 
     const card = document.createElement('div');
@@ -727,42 +825,41 @@ function renderFilteredRecipes(recipes) {
   });
 }
 
-// Слухач на введення
+// 4. Логіка "Живого пошуку" та зміни кнопки
 if (searchInput) {
   searchInput.addEventListener('input', () => {
     const query = searchInput.value.trim().toLowerCase();
 
     if (query.length > 0) {
-      searchModeBtn.innerHTML = iconPlanet;
+      if (searchModeBtn) {
+        searchModeBtn.innerHTML = iconPlanet;
+        searchModeBtn.classList.add('is-active'); // Змінюємо колір на "інтернет-синій"
+      }
+      filterRecipes(query);
     } else {
-      searchModeBtn.innerHTML = iconSearch;
+      if (searchModeBtn) {
+        searchModeBtn.innerHTML = iconSearch;
+        searchModeBtn.classList.remove('is-active'); // Повертаємо стандартний колір
+      }
+      displayRecipes();
     }
-
-    filterRecipes(query);
   });
 }
 
-// Клік по планеті
+// 5. Клік по кнопці (Пошук в інтернеті)
 if (searchModeBtn) {
   searchModeBtn.addEventListener('click', () => {
     const query = searchInput.value.trim();
-    if (!query) return;
-
-    alert(`Пошук в інтернеті за запитом: "${query}" (пізніше підключимо)`);
+    if (query) {
+      const googleUrl = `https://www.google.com/search?q=${encodeURIComponent(query + ' рецепт ПП')}`;
+      window.open(googleUrl, '_blank');
+    } else {
+      searchInput.focus();
+    }
   });
 }
 
-// Кнопка "Пошук в інтернеті"
-if (searchWebBtn) {
-  searchWebBtn.addEventListener('click', () => {
-    const query = searchInput.value.trim();
-    if (!query) return;
-
-    alert(`Пошук в інтернеті за запитом: "${query}" (пізніше підключимо)`);
-  });
-}
-
-// Кнопка загрузки фото (покращимо відображення назви файлу)
+// 6. Обробка завантаження файлу
 const fileInputEl = document.getElementById('recipe-image');
 if (fileInputEl) {
   fileInputEl.addEventListener('change', function () {

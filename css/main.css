@@ -2172,12 +2172,15 @@ textarea {
   background: var(--color-bg-secondary);
   cursor: pointer;
   text-align: left;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
   transition: all 0.3s ease;
 }
 .option-card:hover {
   border-color: var(--color-accent);
   background: var(--color-surface);
-  transform: translateY(-2px);
+  transform: translateY(-3px);
+  border-color: rgba(111, 207, 186, 0.55);
+  box-shadow: 0 15px 25px rgba(46, 204, 113, 0.15);
 }
 .option-card__icon {
   font-size: 32px;
@@ -2203,6 +2206,98 @@ textarea {
 }
 .modal-card__actions button {
   flex: 1;
+}
+
+/* Загальний контейнер для варіантів у модалці */
+.recipe-creation-options {
+  display: flex;
+  flex-direction: column;
+  gap: 16px; /* Це створить рівномірні відступи між усіма блоками */
+}
+
+/* Твій блок швидкого додавання */
+.recipe-add__smart-import {
+  background: var(--color-surface);
+  padding: 24px;
+  border-radius: 18px;
+  border: 1px solid var(--color-border);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+  margin-bottom: 0;
+  margin-top: 16px;
+}
+.recipe-add__smart-import:hover {
+  transform: translateY(-3px);
+  border-color: rgba(111, 207, 186, 0.55);
+  box-shadow: 0 15px 25px rgba(46, 204, 113, 0.15);
+}
+.recipe-add__smart-import .smart-import__label {
+  display: block;
+  margin-bottom: 12px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  font-size: 16px;
+  text-align: left;
+}
+.recipe-add__smart-import .smart-import__wrapper {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  width: 100%;
+}
+.recipe-add__smart-import .smart-import__wrapper .smart-import__input {
+  flex: 3;
+  height: 48px;
+  padding: 0 16px;
+  border-radius: 14px;
+  border: 1px solid var(--color-border);
+  background: #f9fbfb;
+  color: var(--color-text-primary);
+  font-size: 14px;
+  transition: 0.2s;
+}
+.recipe-add__smart-import .smart-import__wrapper .smart-import__input:focus {
+  border-color: var(--color-accent);
+  background: #fff;
+  outline: none;
+}
+.recipe-add__smart-import .smart-import__wrapper {
+  /* Застосовуємо твій стиль .btn-upload до кнопки */
+}
+.recipe-add__smart-import .smart-import__wrapper .smart-import__btn {
+  flex: 1;
+  max-width: 140px;
+  height: 48px;
+  padding: 0 12px;
+  background: var(--color-accent-soft);
+  border: 1px solid rgba(111, 207, 186, 0.45);
+  border-radius: 14px;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  color: var(--color-text-primary);
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(46, 204, 113, 0.12);
+  white-space: nowrap;
+}
+.recipe-add__smart-import .smart-import__wrapper .smart-import__btn:hover {
+  background: rgba(111, 207, 186, 0.18);
+  border-color: rgba(111, 207, 186, 0.55);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 15px rgba(46, 204, 113, 0.2);
+}
+.recipe-add__smart-import .smart-import__wrapper .smart-import__btn:active {
+  transform: translateY(0);
+}
+.recipe-add__smart-import .smart-import__hint {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  margin-top: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  opacity: 0.9;
 }
 
 /* ================= PREVIEW ACTION BUTTONS ================= */
@@ -2548,17 +2643,17 @@ textarea {
 .recipe-page__search {
   display: flex;
   flex-direction: column;
-  gap: 10px;
   margin-bottom: 24px;
 }
 .recipe-page__search .search-wrapper {
   position: relative;
   display: flex;
   align-items: center;
+  width: 100%;
 }
 .recipe-page__search .search-wrapper .recipe-page__search-input {
   width: 100%;
-  padding: 12px 44px 12px 16px;
+  padding: 12px 48px 12px 16px; /* Збільшив правий паддінг для кнопки */
   border: 1px solid var(--color-border);
   border-radius: 14px;
   background: var(--color-surface);
@@ -2573,39 +2668,39 @@ textarea {
 }
 .recipe-page__search .search-wrapper .search-icon-btn {
   position: absolute;
-  right: 14px;
-  width: 24px;
-  height: 24px;
+  right: 12px;
+  width: 28px;
+  height: 28px;
   background: none;
   border: none;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 0;
+  /* Додаємо плавний перехід для кольору */
+  color: var(--color-text-secondary);
+  transition: all 0.3s ease;
 }
 .recipe-page__search .search-wrapper .search-icon-btn svg {
-  width: 100%;
-  height: 100%;
-  fill: var(--color-text-secondary);
-  transition: 0.2s;
+  width: 20px;
+  height: 20px;
+  /* Використовуємо currentColor, щоб колір керувався з батька (search-icon-btn) */
+  stroke: currentColor;
+  fill: none;
 }
-.recipe-page__search .search-wrapper .search-icon-btn:hover svg {
-  fill: var(--color-accent);
-}
-.recipe-page__search .btn-search-web {
-  align-self: flex-start;
-  padding: 8px 16px;
-  font-size: 14px;
-  border-radius: 10px;
-  border: 1px solid var(--color-accent);
-  background: transparent;
+.recipe-page__search .search-wrapper .search-icon-btn:hover {
+  transform: scale(1.1);
   color: var(--color-accent);
-  cursor: pointer;
-  transition: 0.2s;
 }
-.recipe-page__search .btn-search-web:hover {
-  background: var(--color-accent);
-  color: #fff;
+.recipe-page__search .search-wrapper .search-icon-btn {
+  /* Клас, який ми будемо додавати через JS, коли з'являється планета */
+}
+.recipe-page__search .search-wrapper .search-icon-btn.is-active {
+  color: #3498db; /* Красивий синій колір для "всесвіту" */
+}
+.recipe-page__search .search-wrapper .search-icon-btn.is-active:hover {
+  color: #2980b9;
 }
 
 /* ================= FILTERS ================= */
