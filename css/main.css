@@ -21,7 +21,7 @@
   margin-bottom: 32px !important;
 }
 
-.day-summary, .meal__recipes, .meal, .stat-card--main,
+.day-summary, .meal, .stat-card--main,
 .macro-item {
   background: var(--bg-surface);
   border: 1px solid var(--border);
@@ -30,13 +30,13 @@
   padding: 24px;
   transition: border-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
 }
-.day-summary:hover, .meal__recipes:hover, .meal:hover, .stat-card--main:hover,
+.day-summary:hover, .meal:hover, .stat-card--main:hover,
 .macro-item:hover {
   border-color: var(--primary-soft);
   box-shadow: 0 10px 24px rgba(0, 0, 0, 0.06);
   transform: translateY(-2px);
 }
-[data-theme=dark] .day-summary, [data-theme=dark] .meal__recipes, [data-theme=dark] .meal, [data-theme=dark] .stat-card--main,
+[data-theme=dark] .day-summary, [data-theme=dark] .meal, [data-theme=dark] .stat-card--main,
 [data-theme=dark] .macro-item {
   box-shadow: none;
 }
@@ -1101,7 +1101,7 @@ textarea {
 /* =============================================================
    PREMIUM CARD PATTERN — ONE SOURCE OF TRUTH
    ============================================================= */
-.day-summary, .meal__recipes, .meal, .stat-card--main,
+.day-summary, .meal, .stat-card--main,
 .macro-item {
   position: relative;
   background: var(--color-surface);
@@ -1112,7 +1112,7 @@ textarea {
   transition: border-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
   /* світловий верхній кант */
 }
-.day-summary::before, .meal__recipes::before, .meal::before, .stat-card--main::before,
+.day-summary::before, .meal::before, .stat-card--main::before,
 .macro-item::before {
   content: "";
   position: absolute;
@@ -1122,7 +1122,7 @@ textarea {
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.45), rgba(255, 255, 255, 0.05) 40%, transparent 70%);
   opacity: 0.6;
 }
-.day-summary:hover, .meal__recipes:hover, .meal:hover, .stat-card--main:hover,
+.day-summary:hover, .meal:hover, .stat-card--main:hover,
 .macro-item:hover {
   border-color: var(--color-accent-soft);
   box-shadow: 0 14px 36px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(255, 255, 255, 0.6);
@@ -1130,12 +1130,12 @@ textarea {
 }
 
 /* dark theme */
-[data-theme=dark] .day-summary, [data-theme=dark] .meal__recipes, [data-theme=dark] .meal, [data-theme=dark] .stat-card--main,
+[data-theme=dark] .day-summary, [data-theme=dark] .meal, [data-theme=dark] .stat-card--main,
 [data-theme=dark] .macro-item {
   background: var(--color-bg-secondary);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.04);
 }
-[data-theme=dark] .day-summary::before, [data-theme=dark] .meal__recipes::before, [data-theme=dark] .meal::before, [data-theme=dark] .stat-card--main::before,
+[data-theme=dark] .day-summary::before, [data-theme=dark] .meal::before, [data-theme=dark] .stat-card--main::before,
 [data-theme=dark] .macro-item::before {
   opacity: 0.25;
 }
@@ -2185,7 +2185,6 @@ textarea {
   box-sizing: border-box;
 }
 
-/* ================= MEAL BLOCK ================= */
 .meal {
   width: 100%;
   box-sizing: border-box;
@@ -2193,42 +2192,18 @@ textarea {
   border: 1px solid var(--color-border);
   border-radius: 16px;
   padding: 16px 20px;
-  transition: border-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
+  transition: all 0.3s ease;
 }
 .meal:hover {
   border-color: var(--color-accent-soft);
   box-shadow: 0 10px 24px rgba(0, 0, 0, 0.06);
   transform: translateY(-2px);
 }
-[data-theme=dark] .meal {
-  box-shadow: none;
-}
 .meal__header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   margin-bottom: 12px;
-}
-.meal__title {
-  font-family: var(--font-heading);
-  font-size: 20px;
-  font-weight: 500;
-  color: var(--color-text-primary);
-  margin: 0;
-}
-.meal__add-button {
-  font-family: var(--font-body);
-  font-size: 14px;
-  color: var(--color-text-secondary);
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 4px 8px;
-  transition: color 0.2s ease, transform 0.2s ease;
-}
-.meal__add-button:hover {
-  color: var(--color-accent);
-  transform: translateY(-1px);
 }
 .meal__recipes {
   list-style: none;
@@ -2238,29 +2213,45 @@ textarea {
   flex-direction: column;
   gap: 10px;
 }
+
+/* ================= MEAL RECIPE (Картка страви) ================= */
 .meal__recipe {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10px 14px;
+  position: relative;
+  padding: 12px 14px;
+  padding-right: 45px;
   background-color: var(--color-bg-primary);
   border-radius: 10px;
-  border: 1px solid transparent;
+  cursor: pointer;
   transition: background-color 0.2s ease;
 }
 .meal__recipe:hover {
   background-color: var(--color-accent-soft);
 }
+.meal__recipe-line {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+.meal__recipe .meal__recipe-info {
+  flex: 1 1 auto;
+  min-width: 0;
+}
 .meal__recipe-name {
-  margin: 0;
-  flex: 1;
-  text-align: left;
+  font-family: var(--font-body);
+  font-weight: 500;
+  color: var(--color-text-primary);
+  line-height: 1.4;
+  word-break: break-word;
 }
 .meal__recipe-kcal {
-  margin: 0;
-  margin-left: 12px;
-  white-space: nowrap;
-  text-align: right;
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  margin-top: 2px;
+}
+.meal__recipe .meal__delete-btn {
+  flex: 0 0 auto;
+  margin-left: auto;
+  align-self: flex-start;
 }
 
 /* ================= DAY SUMMARY ================= */
@@ -2330,6 +2321,115 @@ textarea {
 .meal__add:hover span::before,
 .meal__add:hover span::after {
   background-color: #fff;
+}
+
+/* ================= CONFIRM MODAL (Видалення) ================= */
+.confirm-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+.confirm-modal.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+.confirm-modal__overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+}
+.confirm-modal__content {
+  position: relative;
+  background-color: var(--color-surface);
+  padding: 24px;
+  border-radius: 16px;
+  width: 90%;
+  max-width: 320px;
+  text-align: center;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--color-border);
+}
+.confirm-modal__text {
+  font-family: var(--font-body);
+  font-size: 18px;
+  margin-bottom: 24px;
+  color: var(--color-text-primary);
+}
+.confirm-modal__buttons {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+.confirm-modal__yes, .confirm-modal__no {
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-weight: 500;
+  transition: transform 0.2s ease;
+}
+.confirm-modal__yes:active, .confirm-modal__no:active {
+  transform: scale(0.95);
+}
+.confirm-modal__yes {
+  background-color: #ff4d4d;
+  color: white;
+}
+.confirm-modal__no {
+  background-color: var(--color-bg-primary);
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-border);
+}
+
+.header__right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.lang-switcher select {
+  appearance: none;
+  background: var(--color-bg-primary);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 6px 28px 6px 10px;
+  font-size: 14px;
+  cursor: pointer;
+  color: var(--color-text-primary);
+  transition: 0.2s ease;
+}
+
+.lang-switcher select:hover {
+  border-color: var(--color-accent);
+}
+
+.lang-switcher {
+  position: relative;
+}
+
+.lang-switcher::after {
+  content: "▾";
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  font-size: 12px;
+  color: var(--color-text-secondary);
 }
 
 /* ============================================================

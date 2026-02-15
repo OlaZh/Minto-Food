@@ -18,26 +18,43 @@
   </head>
 
   <body class="page">
+    <!-- i18n: HEADER -->
     <header class="header">
       <div class="header__container">
-        <a href="index.html" class="header__logo">Minto Food 🍃</a>
+        <a href="index.html" class="header__logo" data-i18n="logo">Minto Food 🍃</a>
 
+        <!-- i18n: NAVIGATION -->
         <nav class="header__nav">
           <ul class="header__nav-list">
             <li>
-              <a href="recipes.html" class="header__nav-link header__nav-link--active">Рецепти</a>
+              <a
+                href="recipes.html"
+                class="header__nav-link header__nav-link--active"
+                data-i18n="navRecipes"
+                >Рецепти</a
+              >
             </li>
             <li>
-              <a href="index.html" class="header__nav-link">Меню на день</a>
+              <a href="index.html" class="header__nav-link" data-i18n="navDayMenu">Меню на день</a>
             </li>
-            <li><a href="#" class="header__nav-link">Меню на тиждень</a></li>
-            <li><a href="#" class="header__nav-link">Список покупок</a></li>
-            <li><a href="#" class="header__nav-link">Статистика</a></li>
+            <li>
+              <a href="#" class="header__nav-link" data-i18n="navWeekMenu">Меню на тиждень</a>
+            </li>
+            <li>
+              <a href="#" class="header__nav-link" data-i18n="navShoppingList">Список покупок</a>
+            </li>
+            <li><a href="#" class="header__nav-link" data-i18n="navStats">Статистика</a></li>
           </ul>
         </nav>
 
+        <!-- i18n: HEADER ACTIONS -->
         <div class="header__actions">
-          <button class="theme-toggle" type="button" aria-label="Змінити тему">
+          <button
+            class="theme-toggle"
+            type="button"
+            aria-label="Змінити тему"
+            data-i18n-aria="toggleTheme">
+            <!-- Sun -->
             <svg
               class="sun-icon"
               xmlns="http://www.w3.org/2000/svg"
@@ -59,6 +76,8 @@
               <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
               <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
             </svg>
+
+            <!-- Moon -->
             <svg
               class="moon-icon"
               xmlns="http://www.w3.org/2000/svg"
@@ -73,7 +92,14 @@
               <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
             </svg>
           </button>
-          <a href="profile.html" class="header__profile-name">Ольга</a>
+          <a href="profile.html" class="header__profile-name" data-i18n="profileName">Ольга</a>
+          <div class="lang-switcher">
+        <select id="langSwitcher">
+          <option value="ua">UA</option>
+          <option value="pl">PL</option>
+          <option value="en">EN</option>
+        </select>
+      </div>
         </div>
       </div>
     </header>
@@ -82,8 +108,10 @@
       <div class="app-shell">
         <main class="recipe-page">
           <div class="container">
+            <!-- i18n: PAGE INTRO -->
             <header class="recipe-page__intro">
-              <h1 class="recipe-page__title">Рецепти</h1>
+              <h1 class="recipe-page__title" data-i18n="recipesTitle">Рецепти</h1>
+
               <div class="recipe-page__actions">
                 <button class="btn-add-recipe" id="open-add-modal">
                   <svg
@@ -96,33 +124,74 @@
                     <line x1="12" y1="5" x2="12" y2="19"></line>
                     <line x1="5" y1="12" x2="19" y2="12"></line>
                   </svg>
-                  <span>Додати рецепт</span>
+                  <span data-i18n="addRecipe">Додати рецепт</span>
                 </button>
               </div>
+
               <div class="recipe-page__search">
                 <input
                   type="text"
                   class="recipe-page__search-input"
-                  placeholder="Пошук за назвою або інгредієнтом..." />
+                  placeholder="Пошук за назвою або інгредієнтом..."
+                  data-i18n-placeholder="searchPlaceholder" />
               </div>
             </header>
 
+            <!-- i18n: FILTERS -->
             <nav class="recipe-filters">
               <div class="recipe-filters__group">
                 <div class="recipe-filters__list">
                   <button
                     class="recipe-filters__item recipe-filters__item--active"
-                    data-category="all">
+                    data-category="all"
+                    data-i18n="filterAll">
                     Всі
                   </button>
-                  <button class="recipe-filters__item" data-category="breakfast">Сніданок</button>
-                  <button class="recipe-filters__item" data-category="lunch">Обід</button>
-                  <button class="recipe-filters__item" data-category="dinner">Вечеря</button>
-                  <button class="recipe-filters__item" data-category="dessert">Десерти</button>
-                  <button class="recipe-filters__item" data-category="snack">Перекуси</button>
-                  <button class="recipe-filters__item" data-category="drinks">Напої</button>
-                  <button class="recipe-filters__item" data-category="bakery">Випічка</button>
-                  <button class="recipe-filters__item" data-category="fast">
+
+                  <button
+                    class="recipe-filters__item"
+                    data-category="breakfast"
+                    data-i18n="filterBreakfast">
+                    Сніданок
+                  </button>
+                  <button
+                    class="recipe-filters__item"
+                    data-category="lunch"
+                    data-i18n="filterLunch">
+                    Обід
+                  </button>
+                  <button
+                    class="recipe-filters__item"
+                    data-category="dinner"
+                    data-i18n="filterDinner">
+                    Вечеря
+                  </button>
+                  <button
+                    class="recipe-filters__item"
+                    data-category="dessert"
+                    data-i18n="filterDessert">
+                    Десерти
+                  </button>
+                  <button
+                    class="recipe-filters__item"
+                    data-category="snack"
+                    data-i18n="filterSnack">
+                    Перекуси
+                  </button>
+                  <button
+                    class="recipe-filters__item"
+                    data-category="drinks"
+                    data-i18n="filterDrinks">
+                    Напої
+                  </button>
+                  <button
+                    class="recipe-filters__item"
+                    data-category="bakery"
+                    data-i18n="filterBakery">
+                    Випічка
+                  </button>
+
+                  <button class="recipe-filters__item" data-category="fast" data-i18n="filterFast">
                     Швидкі рецепти⚡️
                   </button>
                 </div>
@@ -134,116 +203,141 @@
         </main>
       </div>
     </div>
+
+    <!-- i18n: ADD RECIPE MODAL -->
     <div class="modal-overlay" id="add-recipe-modal">
       <div class="modal-card">
         <button class="modal-card__close" id="close-modal">&times;</button>
 
+        <!-- i18n: ADD RECIPE — INITIAL OPTIONS -->
         <div id="initial-options-view">
           <div class="modal-card__header">
-            <h2>Створити магію ✨</h2>
-            <p>Оцифруйте скриншот або запишіть власну ідею</p>
+            <h2 data-i18n="createMagic">Створити магію ✨</h2>
+            <p data-i18n="createMagicSubtitle">Оцифруйте скриншот або запишіть власну ідею</p>
           </div>
 
           <div class="modal-card__options">
+            <!-- i18n: AI UPLOAD -->
             <label class="option-card option-card--ai" for="ai-upload">
               <input type="file" id="ai-upload" accept="image/*" hidden />
               <div class="option-card__icon">📸</div>
               <div class="option-card__info">
-                <h3>Завантажити скриншот</h3>
-                <p>ШІ сам розпізнає текст та інгредієнти</p>
+                <h3 data-i18n="uploadScreenshot">Завантажити скриншот</h3>
+                <p data-i18n="aiRecognize">ШІ сам розпізнає текст та інгредієнти</p>
               </div>
             </label>
 
+            <!-- i18n: MANUAL ENTRY -->
             <button class="option-card" id="manual-entry-btn" type="button">
               <div class="option-card__icon">✍️</div>
               <div class="option-card__info">
-                <h3>Ввести вручну</h3>
-                <p>Створіть рецепт з нуля самостійно</p>
+                <h3 data-i18n="manualEntry">Ввести вручну</h3>
+                <p data-i18n="manualEntrySubtitle">Створіть рецепт з нуля самостійно</p>
               </div>
             </button>
           </div>
         </div>
 
+        <!-- i18n: ADD RECIPE — PREVIEW FORM -->
         <div id="recipe-preview-form" style="display: none">
           <div class="modal-card__header">
-            <h2>Додати рецепт</h2>
-            <p>Перевір дані перед збереженням</p>
+            <h2 data-i18n="addRecipe">Додати рецепт</h2>
+            <p data-i18n="checkBeforeSave">Перевір дані перед збереженням</p>
           </div>
 
           <form class="preview-form" id="main-recipe-form">
+            <!-- i18n: FIELD — NAME -->
             <div class="form-group">
-              <label for="prev-name">Назва страви</label>
+              <label for="prev-name" data-i18n="dishName">Назва страви</label>
               <input
                 type="text"
                 id="prev-name"
                 required
-                placeholder="Наприклад: Вівсянка з ягодами" />
+                placeholder="Наприклад: Вівсянка з ягодами"
+                data-i18n-placeholder="dishNamePlaceholder" />
             </div>
 
+            <!-- i18n: FIELD — CALORIES + CATEGORY -->
             <div class="form-row" style="display: flex; gap: 15px">
               <div class="form-group" style="flex: 1">
-                <label for="prev-calories">Ккал</label>
-                <input type="number" id="prev-calories" placeholder="320" />
+                <label for="prev-calories" data-i18n="calories">Ккал</label>
+                <input
+                  type="number"
+                  id="prev-calories"
+                  placeholder="320"
+                  data-i18n-placeholder="caloriesPlaceholder" />
               </div>
+
               <div class="form-group" style="flex: 1">
-                <label for="prev-category">Категорія</label>
+                <label for="prev-category" data-i18n="category">Категорія</label>
                 <select id="prev-category">
-                  <option value="breakfast">Сніданок</option>
-                  <option value="lunch">Обід</option>
-                  <option value="dinner">Вечеря</option>
-                  <option value="snack">Перекус</option>
-                  <option value="dessert">Десерт</option>
-                  <option value="drinks">Напої</option>
-                  <option value="bakery">Випічка</option>
-                  <option value="fast">Швидкі рецепти⚡️</option>
+                  <option value="breakfast" data-i18n="filterBreakfast">Сніданок</option>
+                  <option value="lunch" data-i18n="filterLunch">Обід</option>
+                  <option value="dinner" data-i18n="filterDinner">Вечеря</option>
+                  <option value="snack" data-i18n="filterSnack">Перекус</option>
+                  <option value="dessert" data-i18n="filterDessert">Десерт</option>
+                  <option value="drinks" data-i18n="filterDrinks">Напої</option>
+                  <option value="bakery" data-i18n="filterBakery">Випічка</option>
+                  <option value="fast" data-i18n="filterFast">Швидкі рецепти⚡️</option>
                 </select>
               </div>
             </div>
 
+            <!-- i18n: FIELD — INGREDIENTS -->
             <div class="form-group">
-              <label for="prev-ingredients"
-                >Інгредієнти (краще писати через кому: Назва, Кількість)</label
-              >
+              <label for="prev-ingredients" data-i18n="ingredientsHint">
+                Інгредієнти (краще писати через кому: Назва, Кількість)
+              </label>
               <textarea
                 id="prev-ingredients"
-                placeholder="Вівсянка, 50г&#10;Молоко, 100мл"></textarea>
+                placeholder="Вівсянка, 50г&#10;Молоко, 100мл"
+                data-i18n-placeholder="ingredientsPlaceholder"></textarea>
             </div>
 
+            <!-- i18n: FIELD — STEPS -->
             <div class="form-group">
-              <label for="prev-steps">Спосіб приготування</label>
-              <textarea id="prev-steps" placeholder="1. Змішайте...&#10;2. Запікайте..."></textarea>
+              <label for="prev-steps" data-i18n="cookingMethod">Спосіб приготування</label>
+              <textarea
+                id="prev-steps"
+                placeholder="1. Змішайте...&#10;2. Запікайте..."
+                data-i18n-placeholder="stepsPlaceholder"></textarea>
             </div>
-            <div class="form-group">
-              <label for="recipe-image">Фото страви</label>
 
-              <!-- Схований input -->
+            <!-- i18n: FIELD — IMAGE UPLOAD -->
+            <div class="form-group">
+              <label for="recipe-image" data-i18n="dishPhoto">Фото страви</label>
+
               <input type="file" id="recipe-image" accept="image/*" hidden />
 
-              <!-- Красива кнопка -->
               <button
                 type="button"
                 class="btn-upload"
-                onclick="document.getElementById('recipe-image').click()">
+                onclick="document.getElementById('recipe-image').click()"
+                data-i18n="uploadPhoto">
                 Завантажити фото 📸
               </button>
 
-              <!-- Назва вибраного файлу -->
-              <span id="file-name" class="file-name">Файл не вибрано</span>
+              <span id="file-name" class="file-name" data-i18n="fileNotSelected"
+                >Файл не вибрано</span
+              >
             </div>
 
+            <!-- i18n: FIELD — IMAGE URL -->
             <div class="form-group">
-              <label for="recipe-image-url">Фото за URL</label>
+              <label for="recipe-image-url" data-i18n="photoByUrl">Фото за URL</label>
               <input
                 type="text"
                 id="recipe-image-url"
-                placeholder="https://example.com/photo.jpg" />
+                placeholder="https://example.com/photo.jpg"
+                data-i18n-placeholder="photoUrlPlaceholder" />
             </div>
 
-            І
-
+            <!-- i18n: FORM ACTIONS -->
             <div class="modal-card__actions">
-              <button type="button" class="btn-secondary" id="cancel-preview">Скасувати</button>
-              <button type="submit" class="btn-primary" id="save-recipe-btn">
+              <button type="button" class="btn-secondary" id="cancel-preview" data-i18n="cancel">
+                Скасувати
+              </button>
+              <button type="submit" class="btn-primary" id="save-recipe-btn" data-i18n="saveRecipe">
                 Зберегти рецепт 🥗
               </button>
             </div>
@@ -252,27 +346,41 @@
       </div>
     </div>
 
+    <!-- i18n: CONFIRM DELETE MODAL -->
     <div id="confirm-modal" class="modal-overlay">
       <div class="modal-card confirm-box">
-        <h3>Видалити рецепт?</h3>
-        <p>Цю дію неможливо буде скасувати.</p>
+        <h3 data-i18n="deleteRecipeTitle">Видалити рецепт?</h3>
+        <p data-i18n="deleteRecipeWarning">Цю дію неможливо буде скасувати.</p>
         <div class="confirm-btns">
-          <button id="confirm-yes" class="btn-confirm btn-danger">Так, видалити</button>
-          <button id="confirm-no" class="btn-confirm btn-secondary">Скасувати</button>
+          <button id="confirm-yes" class="btn-confirm btn-danger" data-i18n="confirmDelete">
+            Так, видалити
+          </button>
+          <button id="confirm-no" class="btn-confirm btn-secondary" data-i18n="cancel">
+            Скасувати
+          </button>
         </div>
       </div>
     </div>
+
+    <!-- i18n: VIEW RECIPE MODAL -->
     <div id="view-recipe-modal" class="modal-overlay">
       <div class="modal-card recipe-detail">
         <button class="modal-card__close" id="close-view-modal">&times;</button>
 
+        <!-- i18n: VIEW HEADER -->
         <div class="recipe-detail__header">
-          <h2 id="view-title">Назва рецепта</h2>
+          <h2 id="view-title" data-i18n="viewRecipeTitle">Назва рецепта</h2>
           <div class="recipe-detail__tags" id="view-tags"></div>
         </div>
+
+        <!-- i18n: VIEW ACTIONS -->
         <div class="recipe-view__actions">
-          <button class="btn-primary" id="edit-recipe-btn">Редагувати рецепт ✏️</button>
+          <button class="btn-primary" id="edit-recipe-btn" data-i18n="editRecipe">
+            Редагувати рецепт ✏️
+          </button>
         </div>
+
+        <!-- i18n: RATING -->
         <div class="recipe-rating">
           <span class="star" data-value="1">★</span>
           <span class="star" data-value="2">★</span>
@@ -282,41 +390,60 @@
           <span class="rating-value">3.0</span>
         </div>
 
+        <!-- i18n: NUTRITION SUMMARY -->
         <div class="nutrition-summary">
           <div class="nutrition-item">
             <span class="nutrition-val" id="view-calories">0</span>
-            <span class="nutrition-label">ккал</span>
+            <span class="nutrition-label" data-i18n="nutrCalories">ккал</span>
           </div>
+
           <div class="nutrition-divider"></div>
+
           <div class="nutrition-item">
             <span class="nutrition-val" id="view-proteins">0</span>
-            <span class="nutrition-label">Білки</span>
+            <span class="nutrition-label" data-i18n="nutrProteins">Білки</span>
           </div>
+
           <div class="nutrition-item">
             <span class="nutrition-val" id="view-carbs">0</span>
-            <span class="nutrition-label">Вугл.</span>
+            <span class="nutrition-label" data-i18n="nutrCarbs">Вугл.</span>
           </div>
+
           <div class="nutrition-item">
             <span class="nutrition-val" id="view-fats">0</span>
-            <span class="nutrition-label">Жири</span>
+            <span class="nutrition-label" data-i18n="nutrFats">Жири</span>
           </div>
         </div>
 
+        <!-- i18n: VIEW BODY -->
         <div class="recipe-detail__body">
+          <!-- i18n: INGREDIENTS SECTION -->
           <section class="recipe-section">
-            <h3><span class="icon">🌱</span> Інгредієнти</h3>
+            <h3>
+              <span class="icon">🌱</span> <span data-i18n="ingredientsTitle">Інгредієнти</span>
+            </h3>
             <ul id="view-ingredients-list" class="ingredients-list"></ul>
           </section>
 
+          <!-- i18n: STEPS SECTION -->
           <section class="recipe-section">
-            <h3><span class="icon">👨‍🍳</span> Спосіб приготування</h3>
+            <h3>
+              <span class="icon">👨‍🍳</span> <span data-i18n="stepsTitle">Спосіб приготування</span>
+            </h3>
             <div id="view-steps" class="steps-content"></div>
           </section>
 
+          <!-- i18n: NOTES SECTION -->
           <section class="recipe-section recipe-section--notes">
-            <h3><span class="icon">📝</span> Мої нотатки</h3>
-            <textarea id="view-notes" placeholder="Додай свої зауваження до рецепта..."></textarea>
-            <button id="save-notes-btn" class="btn-save-mini">Зберегти нотатку</button>
+            <h3><span class="icon">📝</span> <span data-i18n="notesTitle">Мої нотатки</span></h3>
+            <textarea
+              id="view-notes"
+              placeholder="Додай свої зауваження до рецепта..."
+              data-i18n-placeholder="notesPlaceholder"></textarea>
+
+            <button id="save-notes-btn" class="btn-save-mini" data-i18n="saveNote">
+              Зберегти нотатку
+            </button>
           </section>
         </div>
       </div>

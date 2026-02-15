@@ -21,7 +21,6 @@
 
 /* ================= DAY MENU ================= */
 
-
 .day-menu {
   display: flex;
   flex-direction: column;
@@ -29,39 +28,26 @@
 
   width: 100%;
   max-width: 560px; // 🔑 контроль ширини карток
-  margin: 0 auto;   // 🔑 центруємо в колонці
+  margin: 0 auto; // 🔑 центруємо в колонці
 
   box-sizing: border-box;
 }
 
-
-/* ================= MEAL BLOCK ================= */
-
+//* ================= MEAL BLOCK ================= */
 .meal {
-   @extend %premium-card;
+  @extend %premium-card;
   width: 100%;
   box-sizing: border-box;
-
   background-color: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: 16px;
-
   padding: 16px 20px;
-
-  transition:
-    border-color 0.3s ease,
-    box-shadow 0.3s ease,
-    transform 0.3s ease;
-    
+  transition: all 0.3s ease;
 
   &:hover {
     border-color: var(--color-accent-soft);
     box-shadow: 0 10px 24px rgba(0, 0, 0, 0.06);
     transform: translateY(-2px);
-  }
-
-  [data-theme='dark'] & {
-    box-shadow: none;
   }
 
   &__header {
@@ -71,80 +57,65 @@
     margin-bottom: 12px;
   }
 
-  &__title {
-    font-family: var(--font-heading);
-    font-size: 20px;
-    font-weight: 500;
-    color: var(--color-text-primary);
-    margin: 0;
-  }
-
-  &__add-button {
-    font-family: var(--font-body);
-    font-size: 14px;
-    color: var(--color-text-secondary);
-
-    background: none;
-    border: none;
-    cursor: pointer;
-
-    padding: 4px 8px;
-
-    transition: color 0.2s ease, transform 0.2s ease;
-
-    &:hover {
-      color: var(--color-accent);
-      transform: translateY(-1px);
-    }
-  }
-
   &__recipes {
-     @extend %premium-card;
     list-style: none;
     margin: 0;
     padding: 0;
-
     display: flex;
     flex-direction: column;
     gap: 10px;
   }
+} // <--- КІНЕЦЬ БЛОКУ .meal (ВАЖЛИВО!)
 
-  &__recipe {
+/* ================= MEAL RECIPE (Картка страви) ================= */
+.meal__recipe {
+  position: relative;
+  padding: 12px 14px;
+  padding-right: 45px; // 🔑 ЗАПАС для смітника, щоб текст не налізав
+  background-color: var(--color-bg-primary);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+
+  &:hover {
+    background-color: var(--color-accent-soft);
+  }
+
+  &-line {
     display: flex;
-    align-items: center;
-    justify-content: space-between;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  .meal__recipe-info {
+    flex: 1 1 auto;
+    min-width: 0; // 🔥 ОБОВʼЯЗКОВО для переносів у flex
+  }
 
-    padding: 10px 14px;
+  &-name {
+    font-family: var(--font-body);
+    font-weight: 500;
+    color: var(--color-text-primary);
+    line-height: 1.4;
+    word-break: break-word;
+  }
 
-    background-color: var(--color-bg-primary);
-    border-radius: 10px;
-    border: 1px solid transparent;
+  &-kcal {
+    font-size: 13px;
+    color: var(--color-text-secondary);
+    margin-top: 2px;
+  }
 
-    transition: background-color 0.2s ease;
-
-    &:hover {
-      background-color: var(--color-accent-soft);
-    }
-
-    &-name {
-      margin: 0;
-      flex: 1;
-      text-align: left;
-    }
-
-    &-kcal {
-      margin: 0;
-      margin-left: 12px;
-      white-space: nowrap;
-      text-align: right;
-    }
+  .meal__delete-btn {
+    flex: 0 0 auto;
+    margin-left: auto;
+    align-self: flex-start;
   }
 }
 
 /* ================= DAY SUMMARY ================= */
 
 .day-summary {
-   @extend %premium-card;
+  @extend %premium-card;
   width: 100%;
   margin-top: 32px;
 
@@ -232,4 +203,119 @@
       background-color: #fff;
     }
   }
+}
+/* ================= CONFIRM MODAL (Видалення) ================= */
+
+.confirm-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+
+  // Коли вікно має клас active, ми його показуємо
+  &.active {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  &__overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5); // Затемнення фону
+    backdrop-filter: blur(4px);
+  }
+
+  &__content {
+    position: relative;
+    background-color: var(--color-surface);
+    padding: 24px;
+    border-radius: 16px;
+    width: 90%;
+    max-width: 320px;
+    text-align: center;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+    border: 1px solid var(--color-border);
+  }
+
+  &__text {
+    font-family: var(--font-body);
+    font-size: 18px;
+    margin-bottom: 24px;
+    color: var(--color-text-primary);
+  }
+
+  &__buttons {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+  }
+
+  &__yes,
+  &__no {
+    padding: 10px 20px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    font-family: var(--font-body);
+    font-weight: 500;
+    transition: transform 0.2s ease;
+
+    &:active {
+      transform: scale(0.95);
+    }
+  }
+
+  &__yes {
+    background-color: #ff4d4d; // Червоний для видалення
+    color: white;
+  }
+
+  &__no {
+    background-color: var(--color-bg-primary);
+    color: var(--color-text-primary);
+    border: 1px solid var(--color-border);
+  }
+}
+.header__right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.lang-switcher select {
+  appearance: none;
+  background: var(--color-bg-primary);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 6px 28px 6px 10px;
+  font-size: 14px;
+  cursor: pointer;
+  color: var(--color-text-primary);
+  transition: 0.2s ease;
+}
+.lang-switcher select:hover {
+  border-color: var(--color-accent);
+}
+.lang-switcher {
+  position: relative;
+}
+.lang-switcher::after {
+  content: '▾';
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  font-size: 12px;
+  color: var(--color-text-secondary);
 }

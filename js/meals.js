@@ -1,11 +1,29 @@
-console.log("meals.js запустився");
-console.log(document.querySelectorAll(".meal__add"));
+console.log('meals.js запустився');
+console.log(document.querySelectorAll('.meal__add'));
 
-// js/meals.js
-import { updateStats } from "./stats.js";
-import { searchFood } from "./food-api.js";
+import { updateStats } from './stats.js';
+import { searchFood } from './food-api.js';
+import { i18n } from './i18n.js';
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener('DOMContentLoaded', () => {
+  // ================== LANGUAGE ==================
+  let lang = localStorage.getItem('lang') || 'ua';
+
+  const langSwitcher = document.getElementById('langSwitcher');
+  if (langSwitcher) {
+    langSwitcher.value = lang;
+    langSwitcher.addEventListener('change', () => {
+      lang = langSwitcher.value;
+      localStorage.setItem('lang', lang);
+      renderAllMeals();
+      renderSummary();
+    });
+  }
+
+  function t(key) {
+    return i18n[lang][key];
+  }
+
   // ================== STATE ==================
   const mealsState = {
     breakfast: [],
@@ -15,16 +33,16 @@ document.addEventListener("DOMContentLoaded", () => {
     dinner: [],
   };
 
-  const STORAGE_KEY = "mealsState";
+  const STORAGE_KEY = 'mealsState';
 
   let activeMealKey = null;
   let selectedFood = null;
   let editingIndex = null;
 
-  const summaryValue = document.querySelector(".day-summary__value");
+  const summaryValue = document.querySelector('.day-summary__value');
 
   // ================== DAILY NORM ==================
-  const dailyNorm = Number(localStorage.getItem("dailyCaloriesNorm")) || 0;
+  const dailyNorm = Number(localStorage.getItem('dailyCaloriesNorm')) || 0;
 
   // ================== STORAGE ==================
   function saveMealsToStorage() {
@@ -57,33 +75,53 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // ================== RENDER ==================
+  function renderAllMeals() {
+    Object.keys(mealsState).forEach(renderMeal);
+  }
+
   function renderMeal(mealKey) {
     const mealBlock = document.querySelector(`.meal[data-meal="${mealKey}"]`);
     if (!mealBlock) return;
 
-    const list = mealBlock.querySelector(".meal__recipes");
-    list.innerHTML = "";
+    const list = mealBlock.querySelector('.meal__recipes');
+    list.innerHTML = '';
 
     mealsState[mealKey].forEach((item, index) => {
-      const li = document.createElement("li");
-      li.className = "meal__recipe";
+      const li = document.createElement('li');
+      li.className = 'meal__recipe';
 
       li.innerHTML = `
-        <span class="meal__recipe-name">${item.name}</span>
-        <span class="meal__recipe-kcal">
-          ${item.kcal} ккал · Б ${item.protein} · Ж ${item.fat} · В ${item.carbs}
-        </span>
-      `;
+      <div class="meal__recipe-line">
+        <div class="meal__recipe-info">
+          <div class="meal__recipe-name">${item.name}</div>
+          <div class="meal__recipe-kcal">
+            ${item.kcal} ${t('kcal')} · 
+            ${t('protein')} ${item.protein} · 
+            ${t('fat')} ${item.fat} · 
+            ${t('carbs')} ${item.carbs}
+          </div>
+        </div>
+        <button class="meal__delete-btn" data-index="${index}">🗑</button>
+      </div>
+    `;
 
-      li.addEventListener("click", () => {
+      li.addEventListener('click', (e) => {
+        if (e.target.closest('.meal__delete-btn')) return;
         editingIndex = index;
         openModal(mealKey, item);
+      });
+
+      const deleteBtn = li.querySelector('.meal__delete-btn');
+      deleteBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        openDeleteConfirm(mealKey, index);
       });
 
       list.appendChild(li);
     });
   }
 
+  // ================== SUMMARY ==================
   function renderSummary() {
     const total = Object.values(mealsState)
       .flat()
@@ -99,10 +137,9 @@ document.addEventListener("DOMContentLoaded", () => {
       );
 
     if (summaryValue) {
-      summaryValue.textContent = `${total.kcal} ккал · Б ${total.protein} · Ж ${total.fat} · В ${total.carbs}`;
+      summaryValue.textContent = `${total.kcal} ${t('kcal')} · ${t('protein')} ${total.protein.toFixed(1)} · ${t('fat')} ${total.fat.toFixed(1)} · ${t('carbs')} ${total.carbs.toFixed(1)}`;
     }
 
-    // ===== PROGRESS =====
     const progress = dailyNorm ? total.kcal / dailyNorm : 0;
 
     updateStats({
@@ -112,26 +149,51 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // ================== MODAL ELEMENTS ==================
-  const modal = document.getElementById("addFoodModal");
-  const overlay = modal.querySelector(".modal__overlay");
-  const closeBtn = modal.querySelector(".modal__close");
-  const confirmBtn = modal.querySelector(".modal__confirm");
-  const resultsList = modal.querySelector("#foodResults");
-  const body = modal.querySelector(".modal__body");
+  // ================== DELETE CONFIRM ==================
+  function openDeleteConfirm(mealKey, index) {
+    const modal = document.getElementById('confirm-modal');
+    if (!modal) return;
 
-  // ===== INPUT NAME =====
-  let nameInput = body.querySelector(".modal__input");
+    modal.classList.add('active');
+    modal.hidden = false;
+
+    const yes = document.getElementById('confirm-yes');
+    const no = document.getElementById('confirm-no');
+
+    yes.onclick = () => {
+      mealsState[mealKey].splice(index, 1);
+      saveMealsToStorage();
+      renderMeal(mealKey);
+      renderSummary();
+      modal.classList.remove('active');
+      modal.hidden = true;
+    };
+
+    no.onclick = () => {
+      modal.classList.remove('active');
+      modal.hidden = true;
+    };
+  }
+
+  // ================== MODAL ELEMENTS ==================
+  const modal = document.getElementById('addFoodModal');
+  const overlay = modal.querySelector('.modal__overlay');
+  const closeBtn = modal.querySelector('.modal__close');
+  const confirmBtn = modal.querySelector('.modal__confirm');
+  const resultsList = modal.querySelector('#foodResults');
+  const body = modal.querySelector('.modal__body');
+
+  let nameInput = body.querySelector('.modal__input');
   if (!nameInput) {
-    nameInput = document.createElement("input");
-    nameInput.type = "text";
-    nameInput.placeholder = "Назва продукту";
-    nameInput.className = "modal__input";
+    nameInput = document.createElement('input');
+    nameInput.type = 'text';
+    nameInput.placeholder = t('addProduct');
+    nameInput.className = 'modal__input';
     body.prepend(nameInput);
   }
 
-  // ===== INPUT WEIGHT =====
-  const weightInput = body.querySelector(".modal__weight");
+  const weightInput = body.querySelector('.modal__weight');
+  weightInput.placeholder = t('weight');
 
   // ================== MODAL LOGIC ==================
   function updateConfirmState() {
@@ -143,11 +205,11 @@ document.addEventListener("DOMContentLoaded", () => {
     activeMealKey = mealKey;
     selectedFood = null;
 
-    resultsList.innerHTML = "";
+    resultsList.innerHTML = '';
     confirmBtn.disabled = true;
 
-    nameInput.value = item ? item.name.replace(/\s\(.*?\)$/, "") : "";
-    weightInput.value = item ? item.weight : "";
+    nameInput.value = item ? item.name.replace(/\s\(.*?\)$/, '') : '';
+    weightInput.value = item ? item.weight : '';
 
     modal.hidden = false;
     nameInput.focus();
@@ -159,16 +221,15 @@ document.addEventListener("DOMContentLoaded", () => {
     selectedFood = null;
     editingIndex = null;
 
-    nameInput.value = "";
-    weightInput.value = "";
-    resultsList.innerHTML = "";
+    nameInput.value = '';
+    weightInput.value = '';
+    resultsList.innerHTML = '';
   }
 
   // ================== SEARCH ==================
-  // ================== SEARCH ==================
   async function handleSearch() {
     const query = nameInput.value.trim();
-    resultsList.innerHTML = "";
+    resultsList.innerHTML = '';
     selectedFood = null;
     confirmBtn.disabled = true;
 
@@ -178,34 +239,28 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!results.length) return;
 
     results.forEach((food) => {
-      const li = document.createElement("li");
-      li.className = "modal__item";
-      li.textContent = `${food.name} — ${food.kcal} ккал / 100г`;
+      const li = document.createElement('li');
+      li.className = 'modal__item';
 
-      li.addEventListener("click", () => {
+      li.textContent = `${food.name} — ${food.kcal} ${t('kcal')} / ${t('per100')}`;
+
+      li.addEventListener('click', () => {
         selectedFood = food;
 
-        // 1. Встановлюємо повну назву
         nameInput.value = food.name;
 
-        // 2. Підсвічуємо вибраний елемент
-        [...resultsList.children].forEach((el) =>
-          el.classList.remove("modal__item--active"),
-        );
-        li.classList.add("modal__item--active");
+        [...resultsList.children].forEach((el) => el.classList.remove('modal__item--active'));
+        li.classList.add('modal__item--active');
 
-        // 3. Оновлюємо стан кнопки "Додати"
         updateConfirmState();
 
-        // 4. Переводимо фокус на вагу, щоб можна було одразу писати цифри
         if (weightInput) weightInput.focus();
-
-        // СПИСОК БІЛЬШЕ НЕ ОЧИЩАЄМО, щоб він не "стрибав"
       });
 
       resultsList.appendChild(li);
     });
   }
+
   // ================== ADD FOOD ==================
   function addSelectedFood() {
     if (!activeMealKey || !selectedFood) return;
@@ -219,9 +274,9 @@ document.addEventListener("DOMContentLoaded", () => {
       name: `${selectedFood.name} (${grams} г)`,
       weight: grams,
       kcal: Math.round(selectedFood.kcal * factor),
-      protein: +(selectedFood.protein * factor).toFixed(1),
-      fat: +(selectedFood.fat * factor).toFixed(1),
-      carbs: +(selectedFood.carbs * factor).toFixed(1),
+      protein: Number((selectedFood.protein * factor).toFixed(1)),
+      fat: Number((selectedFood.fat * factor).toFixed(1)),
+      carbs: Number((selectedFood.carbs * factor).toFixed(1)),
     };
 
     if (editingIndex !== null) {
@@ -237,9 +292,9 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // ================== EVENTS ==================
-  document.querySelectorAll(".meal__add").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const mealBlock = btn.closest(".meal");
+  document.querySelectorAll('.meal__add').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const mealBlock = btn.closest('.meal');
       if (!mealBlock) return;
 
       const mealKey = mealBlock.dataset.meal;
@@ -250,16 +305,18 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  nameInput.addEventListener("input", handleSearch);
-  weightInput.addEventListener("input", updateConfirmState);
+  nameInput.addEventListener('input', handleSearch);
+  weightInput.addEventListener('input', updateConfirmState);
 
-  confirmBtn.addEventListener("click", addSelectedFood);
-  closeBtn.addEventListener("click", closeModal);
-  overlay.addEventListener("click", closeModal);
+  confirmBtn.textContent = t('add');
+  confirmBtn.addEventListener('click', addSelectedFood);
 
-  const clearBtn = document.getElementById("clearDayBtn");
+  closeBtn.addEventListener('click', closeModal);
+  overlay.addEventListener('click', closeModal);
+
+  const clearBtn = document.getElementById('clearDayBtn');
   if (clearBtn) {
-    clearBtn.addEventListener("click", clearDay);
+    clearBtn.addEventListener('click', clearDay);
   }
 
   // ================== INIT ==================

@@ -1,0 +1,32 @@
+export const i18n = {
+  ua: {
+    kcal: 'ккал',
+    protein: 'Б',
+    fat: 'Ж',
+    carbs: 'В',
+    per100: '100г',
+    addProduct: 'Додати продукт',
+    weight: 'Вага, г',
+    add: 'Додати',
+  },
+  pl: {
+    kcal: 'kcal',
+    protein: 'B',
+    fat: 'T',
+    carbs: 'W',
+    per100: '100g',
+    addProduct: 'Dodaj produkt',
+    weight: 'Waga, g',
+    add: 'Dodaj',
+  },
+  en: {
+    kcal: 'kcal',
+    protein: 'P',
+    fat: 'F',
+    carbs: 'C',
+    per100: '100g',
+    addProduct: 'Add product',
+    weight: 'Weight, g',
+    add: 'Add',
+  },
+};
