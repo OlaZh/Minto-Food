@@ -94,12 +94,12 @@
           </button>
           <a href="profile.html" class="header__profile-name" data-i18n="profileName">Ольга</a>
           <div class="lang-switcher">
-        <select id="langSwitcher">
-          <option value="ua">UA</option>
-          <option value="pl">PL</option>
-          <option value="en">EN</option>
-        </select>
-      </div>
+            <select id="langSwitcher">
+              <option value="ua">UA</option>
+              <option value="pl">PL</option>
+              <option value="en">EN</option>
+            </select>
+          </div>
         </div>
       </div>
     </header>
@@ -128,12 +128,24 @@
                 </button>
               </div>
 
+              <!-- i18n: SEARCH FIELD -->
               <div class="recipe-page__search">
-                <input
-                  type="text"
-                  class="recipe-page__search-input"
-                  placeholder="Пошук за назвою або інгредієнтом..."
-                  data-i18n-placeholder="searchPlaceholder" />
+                <div class="search-wrapper">
+                  <input
+                    type="text"
+                    class="recipe-page__search-input"
+                    placeholder="Пошук за назвою або інгредієнтом..."
+                    data-i18n-placeholder="searchPlaceholder"
+                    id="recipe-search-input" />
+
+                  <!-- ІКОНКА СПРАВА (лупа → планета) -->
+                  <button class="search-icon-btn" id="search-mode-btn" type="button">
+                    <!-- тут буде SVG лупи, а потім SVG планети -->
+                  </button>
+                </div>
+
+                <!-- КНОПКА ПОШУКУ В ІНТЕРНЕТІ -->
+                <button class="btn-search-web" id="search-web-btn">🔍 Пошук в інтернеті</button>
               </div>
             </header>
 
