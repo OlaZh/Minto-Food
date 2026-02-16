@@ -2,32 +2,15 @@
    COMPONENT: INPUTS & TEXTAREAS (RECIPES PAGE)
    ============================================================ */
 
-/* Універсальні стилі textarea всередині модалки */
-.modal-card textarea {
-  width: 100%;
-  min-height: 160px;
-  line-height: 1.6;
-  background-color: var(--color-bg-secondary);
-  border: 1px solid var(--color-border);
-  border-left: 4px solid #7a9a9a;
-  font-size: 15px;
-  padding: 18px;
-  box-sizing: border-box;
-  display: block;
-  border-radius: 12px;
-  outline: none;
-  resize: vertical;
-  transition: border-color 0.3s;
+/* 1. Універсальні стилі для всіх полів вводу (Input, Select, URL + Smart Search) */
+/* _inputs.scss */
 
-  &:focus {
-    transform: translateY(-3px);
-    box-shadow: 0 15px 25px rgba(46, 204, 113, 0.1);
-  }
-}
-
-/* Поля вводу у формі додавання рецепта */
 .preview-form .form-group input,
-.preview-form .form-group select {
+.preview-form .form-group select,
+.smart-import__input,             /* Пошук у базі */
+#recipe-image,
+#recipe-image-url {
+  width: 100%; 
   padding: 14px 16px;
   background: var(--color-bg);
   border: 1px solid var(--color-border);
@@ -46,80 +29,54 @@
   }
 }
 
-/* Поля для завантаження фото */
-#recipe-image,
-#recipe-image-url {
-  padding: 14px 16px;
-  background: var(--color-bg);
-  border: 1px solid var(--color-border);
-  border-radius: 14px;
-  color: var(--color-text-primary);
-  font-family: inherit;
-  outline: none;
-  box-shadow: inset 0 2px 4px rgba(46, 204, 113, 0.1);
-  transition: all 0.3s ease;
-}
+/* Решта файлу (textarea та file-name) залишається без змін, як ти скидала */
 
-#recipe-image:focus,
-#recipe-image-url:focus {
-  border-color: var(--color-accent);
-  background: var(--color-bg-secondary);
-  box-shadow: 0 0 0 4px rgba(46, 204, 113, 0.1);
-  transform: translateY(-1px);
-}
-
-/* Назва файлу після завантаження */
-.file-name {
-  display: block;
-  margin-top: 8px;
-  font-size: 13px;
-  color: var(--color-text-secondary);
-}
-
-/* ============================================================
-   COMPONENT: TEXTAREA AUTO-GROW (RECIPES PAGE)
-   ============================================================ */
-
+/* 2. Стилі для Textarea */
 .modal-card textarea,
 .preview-form textarea,
 .recipe-section--notes textarea {
-  overflow: hidden;
-  resize: none;
-  transition:
+  width: 100%;
+  min-height: 160px;
+  line-height: 1.6;
+  background-color: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
+  border-left: 4px solid #7a9a9a;
+  font-size: 15px;
+  padding: 18px;
+  box-sizing: border-box;
+  display: block;
+  border-radius: 12px;
+  outline: none;
+  overflow: hidden; /* для auto-grow */
+  resize: none;     /* забороняємо ручний ресайз, якщо є скрипт */
+  transition: 
     height 0.2s cubic-bezier(0.4, 0, 0.2, 1),
     background-color 0.3s ease,
     border-color 0.3s ease,
     box-shadow 0.3s ease,
-    padding 0.3s ease;
+    transform 0.3s ease;
+
+  &:focus {
+    background: var(--color-surface);
+    border-color: var(--color-accent);
+    box-shadow: 0 8px 25px rgba(46, 204, 113, 0.12);
+    transform: translateY(-1px);
+  }
+
+  &:not(:placeholder-shown) {
+    padding-top: 18px;
+    padding-bottom: 18px;
+    background-color: var(--color-bg-secondary);
+  }
 }
 
-/* Ефект активного поля */
-.modal-card textarea:focus,
-.preview-form textarea:focus,
-.recipe-section--notes textarea:focus {
-  background: var(--color-surface);
-  box-shadow:
-    0 8px 25px rgba(46, 204, 113, 0.12),
-    inset 0 2px 4px rgba(0, 0, 0, 0.01);
-  transform: translateY(-1px);
-}
-
-/* Динамічні падінги */
-.modal-card textarea:not(:placeholder-shown),
-.preview-form textarea:not(:placeholder-shown),
-.recipe-section--notes textarea:not(:placeholder-shown) {
-  padding-top: 18px;
-  padding-bottom: 18px;
-  background-color: var(--color-bg-secondary);
-}
-
-/* Основні textarea у прев’ю */
+/* 3. Основні великі textarea (Інгредієнти та Кроки) */
 #prev-ingredients,
 #prev-steps {
-  transition:
-    min-height 0.3s ease,
-    height 0.2s cubic-bezier(0.4, 0, 0.2, 1),
-    box-shadow 0.3s ease;
+  min-height: 300px !important;
+  font-size: 16px;
+  padding: 20px 18px;
+  line-height: 1.7;
 
   &:not(:placeholder-shown) {
     border-left-width: 6px;
@@ -127,12 +84,10 @@
   }
 }
 
-.modal-card .preview-form textarea#prev-ingredients,
-.modal-card .preview-form textarea#prev-steps {
-  min-height: 300px;
-  font-size: 16px;
-  padding: 20px 18px;
-  line-height: 1.7;
-  resize: none;
-  overflow: hidden;
+/* 4. Назва файлу після завантаження */
+.file-name {
+  display: block;
+  margin-top: 8px;
+  font-size: 13px;
+  color: var(--color-text-secondary);
 }

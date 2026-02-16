@@ -49,14 +49,11 @@
 
     .recipe-page__search-input {
       width: 100%;
-      padding: 12px 48px 12px 16px; /* Збільшив правий паддінг для кнопки */
-
+      padding: 12px 48px 12px 16px;
       border: 1px solid var(--color-border);
       border-radius: 14px;
-
       background: var(--color-surface);
       color: var(--color-text-primary);
-
       font-size: 15px;
       transition: 0.2s;
 
@@ -70,29 +67,23 @@
     .search-icon-btn {
       position: absolute;
       right: 12px;
-
       width: 28px;
       height: 28px;
-
       background: none;
       border: none;
       cursor: pointer;
-
       display: flex;
       align-items: center;
       justify-content: center;
       padding: 0;
-      
-      /* Додаємо плавний перехід для кольору */
       color: var(--color-text-secondary);
       transition: all 0.3s ease;
 
       svg {
         width: 20px;
         height: 20px;
-        /* Використовуємо currentColor, щоб колір керувався з батька (search-icon-btn) */
-        stroke: currentColor; 
-        fill: none; 
+        stroke: currentColor;
+        fill: none;
       }
 
       &:hover {
@@ -100,18 +91,18 @@
         color: var(--color-accent);
       }
 
-      /* Клас, який ми будемо додавати через JS, коли з'являється планета */
       &.is-active {
-        color: #3498db; /* Красивий синій колір для "всесвіту" */
-        
+        color: var(--color-accent);
+        filter: drop-shadow(0 0 5px rgba(46, 204, 113, 0.4));
+
         &:hover {
-          color: #2980b9;
+          color: #27ae60;
+          transform: scale(1.15) rotate(15deg);
         }
       }
     }
   }
 }
-
 /* ================= FILTERS ================= */
 
 .recipe-filters {

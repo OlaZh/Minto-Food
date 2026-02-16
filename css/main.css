@@ -457,6 +457,7 @@ textarea {
   padding: 0;
 }
 
+/* Базовий стан посилання */
 .header__nav-link {
   font-family: var(--font-body);
   font-size: 16px;
@@ -466,13 +467,20 @@ textarea {
   padding-bottom: 4px;
   transition: color 0.2s ease;
 }
-.header__nav-link:hover, .header__nav-link:focus-visible {
+
+/* Ховер */
+.header__nav-link:hover,
+.header__nav-link:focus-visible {
   color: var(--color-text-primary);
 }
-.header__nav-link--active {
+
+/* АКТИВНИЙ СТАН (без вкладеності, для надійності) */
+.header__nav-link.header__nav-link--active {
   color: var(--color-text-primary);
 }
-.header__nav-link--active::after {
+
+/* Сама лінія */
+.header__nav-link.header__nav-link--active::after {
   content: "";
   position: absolute;
   left: 0;
@@ -1799,8 +1807,40 @@ textarea {
 /* ============================================================
    COMPONENT: INPUTS & TEXTAREAS (RECIPES PAGE)
    ============================================================ */
-/* Універсальні стилі textarea всередині модалки */
-.modal-card textarea {
+/* 1. Універсальні стилі для всіх полів вводу (Input, Select, URL + Smart Search) */
+/* _inputs.scss */
+.preview-form .form-group input,
+.preview-form .form-group select,
+.smart-import__input,
+#recipe-image,
+#recipe-image-url {
+  width: 100%;
+  padding: 14px 16px;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+  color: var(--color-text-primary);
+  font-family: inherit;
+  outline: none;
+  box-shadow: inset 0 2px 4px rgba(46, 204, 113, 0.1);
+  transition: all 0.3s ease;
+}
+.preview-form .form-group input:focus,
+.preview-form .form-group select:focus,
+.smart-import__input:focus,
+#recipe-image:focus,
+#recipe-image-url:focus {
+  border-color: var(--color-accent);
+  background: var(--color-bg-secondary);
+  box-shadow: 0 0 0 4px rgba(46, 204, 113, 0.1);
+  transform: translateY(-1px);
+}
+
+/* Решта файлу (textarea та file-name) залишається без змін, як ти скидала */
+/* 2. Стилі для Textarea */
+.modal-card textarea,
+.preview-form textarea,
+.recipe-section--notes textarea {
   width: 100%;
   min-height: 160px;
   line-height: 1.6;
@@ -1813,86 +1853,18 @@ textarea {
   display: block;
   border-radius: 12px;
   outline: none;
-  resize: vertical;
-  transition: border-color 0.3s;
+  overflow: hidden; /* для auto-grow */
+  resize: none; /* забороняємо ручний ресайз, якщо є скрипт */
+  transition: height 0.2s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
 }
-.modal-card textarea:focus {
-  transform: translateY(-3px);
-  box-shadow: 0 15px 25px rgba(46, 204, 113, 0.1);
-}
-
-/* Поля вводу у формі додавання рецепта */
-.preview-form .form-group input,
-.preview-form .form-group select {
-  padding: 14px 16px;
-  background: var(--color-bg);
-  border: 1px solid var(--color-border);
-  border-radius: 14px;
-  color: var(--color-text-primary);
-  font-family: inherit;
-  outline: none;
-  box-shadow: inset 0 2px 4px rgba(46, 204, 113, 0.1);
-  transition: all 0.3s ease;
-}
-.preview-form .form-group input:focus,
-.preview-form .form-group select:focus {
-  border-color: var(--color-accent);
-  background: var(--color-bg-secondary);
-  box-shadow: 0 0 0 4px rgba(46, 204, 113, 0.1);
-  transform: translateY(-1px);
-}
-
-/* Поля для завантаження фото */
-#recipe-image,
-#recipe-image-url {
-  padding: 14px 16px;
-  background: var(--color-bg);
-  border: 1px solid var(--color-border);
-  border-radius: 14px;
-  color: var(--color-text-primary);
-  font-family: inherit;
-  outline: none;
-  box-shadow: inset 0 2px 4px rgba(46, 204, 113, 0.1);
-  transition: all 0.3s ease;
-}
-
-#recipe-image:focus,
-#recipe-image-url:focus {
-  border-color: var(--color-accent);
-  background: var(--color-bg-secondary);
-  box-shadow: 0 0 0 4px rgba(46, 204, 113, 0.1);
-  transform: translateY(-1px);
-}
-
-/* Назва файлу після завантаження */
-.file-name {
-  display: block;
-  margin-top: 8px;
-  font-size: 13px;
-  color: var(--color-text-secondary);
-}
-
-/* ============================================================
-   COMPONENT: TEXTAREA AUTO-GROW (RECIPES PAGE)
-   ============================================================ */
-.modal-card textarea,
-.preview-form textarea,
-.recipe-section--notes textarea {
-  overflow: hidden;
-  resize: none;
-  transition: height 0.2s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease, padding 0.3s ease;
-}
-
-/* Ефект активного поля */
 .modal-card textarea:focus,
 .preview-form textarea:focus,
 .recipe-section--notes textarea:focus {
   background: var(--color-surface);
-  box-shadow: 0 8px 25px rgba(46, 204, 113, 0.12), inset 0 2px 4px rgba(0, 0, 0, 0.01);
+  border-color: var(--color-accent);
+  box-shadow: 0 8px 25px rgba(46, 204, 113, 0.12);
   transform: translateY(-1px);
 }
-
-/* Динамічні падінги */
 .modal-card textarea:not(:placeholder-shown),
 .preview-form textarea:not(:placeholder-shown),
 .recipe-section--notes textarea:not(:placeholder-shown) {
@@ -1901,10 +1873,13 @@ textarea {
   background-color: var(--color-bg-secondary);
 }
 
-/* Основні textarea у прев’ю */
+/* 3. Основні великі textarea (Інгредієнти та Кроки) */
 #prev-ingredients,
 #prev-steps {
-  transition: min-height 0.3s ease, height 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease;
+  min-height: 300px !important;
+  font-size: 16px;
+  padding: 20px 18px;
+  line-height: 1.7;
 }
 #prev-ingredients:not(:placeholder-shown),
 #prev-steps:not(:placeholder-shown) {
@@ -1912,14 +1887,12 @@ textarea {
   border-left-color: var(--color-accent);
 }
 
-.modal-card .preview-form textarea#prev-ingredients,
-.modal-card .preview-form textarea#prev-steps {
-  min-height: 300px;
-  font-size: 16px;
-  padding: 20px 18px;
-  line-height: 1.7;
-  resize: none;
-  overflow: hidden;
+/* 4. Назва файлу після завантаження */
+.file-name {
+  display: block;
+  margin-top: 8px;
+  font-size: 13px;
+  color: var(--color-text-secondary);
 }
 
 /* ============================================================
@@ -2116,54 +2089,44 @@ textarea {
   text-transform: uppercase;
   letter-spacing: 0.5px;
   padding-left: 4px;
-}
-.preview-form .form-group input,
-.preview-form .form-group select {
-  padding: 14px 16px;
-  background: var(--color-bg);
-  border: 1px solid var(--color-border);
-  border-radius: 14px;
-  color: var(--color-text-primary);
   font-family: inherit;
-  outline: none;
-  box-shadow: inset 0 2px 4px rgba(46, 204, 113, 0.1);
-  transition: all 0.3s ease;
 }
-.preview-form .form-group input:focus,
-.preview-form .form-group select:focus {
-  border-color: var(--color-accent);
-  background: var(--color-bg-secondary);
-  box-shadow: 0 0 0 4px rgba(46, 204, 113, 0.1);
-  transform: translateY(-1px);
+.preview-form .recipe-macros-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 24px;
+}
+.preview-form .recipe-macros-grid .form-group {
+  margin-bottom: 0;
+}
+.preview-form .recipe-macros-grid .form-group input {
+  text-align: center;
+  padding: 12px 8px;
+  font-family: inherit;
+}
+@media (max-width: 480px) {
+  .preview-form .recipe-macros-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 .preview-form .form-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 16px;
 }
-.preview-form {
-  /* Блок кнопок у футері модалки */
-}
-.preview-form .modal-card__actions {
-  display: flex;
-  gap: 12px;
-  margin-top: 32px;
-  align-items: center;
-}
 
-/* Специфічні елементи для додавання рецепта */
-/* Контейнер для кнопок ШІ / Вручну */
+/* ================= OPTION CARDS ================= */
 .modal-card__options {
   display: flex;
   flex-direction: column;
   gap: 16px;
-  margin-top: 8px; /* трохи менше, бо у заголовка вже є margin-bottom */
+  margin-top: 8px;
 }
 
-/* Стиль карток-кнопок */
 .option-card {
   display: flex;
-  align-items: center;
+  align-items: flex-start; /* ВИПРАВЛЕНО: текст більше не стрибає */
   gap: 20px;
   padding: 20px;
   width: 100%;
@@ -2176,7 +2139,6 @@ textarea {
   transition: all 0.3s ease;
 }
 .option-card:hover {
-  border-color: var(--color-accent);
   background: var(--color-surface);
   transform: translateY(-3px);
   border-color: rgba(111, 207, 186, 0.55);
@@ -2185,19 +2147,22 @@ textarea {
 .option-card__icon {
   font-size: 32px;
   flex-shrink: 0;
+  margin-top: 2px; /* ВИПРАВЛЕНО: іконка тепер ідеально вирівняна */
 }
 .option-card__info h3 {
   margin: 0 0 4px 0;
   font-size: 18px;
   font-weight: 600;
+  font-family: inherit;
 }
 .option-card__info p {
   margin: 0;
   font-size: 14px;
   color: var(--color-text-secondary);
+  font-family: inherit;
 }
 
-/* Блок кнопок у футері форми */
+/* ================= ACTION BUTTONS ================= */
 .modal-card__actions {
   display: flex;
   gap: 12px;
@@ -2206,16 +2171,34 @@ textarea {
 }
 .modal-card__actions button {
   flex: 1;
+  height: 50px;
+  border-radius: 14px;
+  font-weight: 700;
+  font-size: 15px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: inherit;
+}
+.modal-card__actions .btn-save {
+  background: var(--color-accent);
+  color: white;
+  border: none;
+  box-shadow: 0 4px 12px rgba(46, 204, 113, 0.2);
+}
+.modal-card__actions .btn-save:hover {
+  filter: brightness(1.1);
+  transform: translateY(-2px);
+}
+.modal-card__actions .btn-cancel {
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-secondary);
+}
+.modal-card__actions .btn-cancel:hover {
+  background: var(--color-border);
 }
 
-/* Загальний контейнер для варіантів у модалці */
-.recipe-creation-options {
-  display: flex;
-  flex-direction: column;
-  gap: 16px; /* Це створить рівномірні відступи між усіма блоками */
-}
-
-/* Твій блок швидкого додавання */
+/* ================= SMART IMPORT ================= */
 .recipe-add__smart-import {
   background: var(--color-surface);
   padding: 24px;
@@ -2223,81 +2206,71 @@ textarea {
   border: 1px solid var(--color-border);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
   transition: all 0.3s ease;
-  margin-bottom: 0;
   margin-top: 16px;
 }
-.recipe-add__smart-import:hover {
-  transform: translateY(-3px);
-  border-color: rgba(111, 207, 186, 0.55);
-  box-shadow: 0 15px 25px rgba(46, 204, 113, 0.15);
-}
 .recipe-add__smart-import .smart-import__label {
-  display: block;
-  margin-bottom: 12px;
-  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 20px;
+  font-size: 18px;
+  font-weight: 600;
   color: var(--color-text-primary);
-  font-size: 16px;
-  text-align: left;
+  padding-left: 6px;
+}
+.recipe-add__smart-import .smart-import__label span {
+  font-size: 32px;
+  flex-shrink: 0;
+  width: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 2px;
 }
 .recipe-add__smart-import .smart-import__wrapper {
   display: flex;
   gap: 12px;
   align-items: center;
-  width: 100%;
 }
 .recipe-add__smart-import .smart-import__wrapper .smart-import__input {
   flex: 3;
   height: 48px;
-  padding: 0 16px;
-  border-radius: 14px;
-  border: 1px solid var(--color-border);
-  background: #f9fbfb;
-  color: var(--color-text-primary);
-  font-size: 14px;
-  transition: 0.2s;
-}
-.recipe-add__smart-import .smart-import__wrapper .smart-import__input:focus {
-  border-color: var(--color-accent);
-  background: #fff;
-  outline: none;
-}
-.recipe-add__smart-import .smart-import__wrapper {
-  /* Застосовуємо твій стиль .btn-upload до кнопки */
+  font-family: inherit;
 }
 .recipe-add__smart-import .smart-import__wrapper .smart-import__btn {
   flex: 1;
   max-width: 140px;
   height: 48px;
-  padding: 0 12px;
   background: var(--color-accent-soft);
   border: 1px solid rgba(111, 207, 186, 0.45);
   border-radius: 14px;
   font-weight: 700;
-  font-size: 13px;
-  cursor: pointer;
+  font-family: inherit;
   color: var(--color-text-primary);
+  cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 12px rgba(46, 204, 113, 0.12);
-  white-space: nowrap;
 }
 .recipe-add__smart-import .smart-import__wrapper .smart-import__btn:hover {
   background: rgba(111, 207, 186, 0.18);
-  border-color: rgba(111, 207, 186, 0.55);
   transform: translateY(-2px);
-  box-shadow: 0 8px 15px rgba(46, 204, 113, 0.2);
 }
-.recipe-add__smart-import .smart-import__wrapper .smart-import__btn:active {
-  transform: translateY(0);
-}
-.recipe-add__smart-import .smart-import__hint {
+
+/* ================= HINT (ОБ’ЄДНАНО В ОДИН, ВИПРАВЛЕНО) ================= */
+.smart-import__hint {
   font-size: 12px;
-  color: var(--color-text-secondary);
+  color: #7fb4a9;
   margin-top: 12px;
   display: flex;
   align-items: center;
-  justify-content: center;
   gap: 8px;
+  line-height: 1.4;
   opacity: 0.9;
+  font-weight: 500;
+  font-family: inherit;
+  padding-left: 0;
+}
+.smart-import__hint::after {
+  font-size: 14px;
 }
 
 /* ================= PREVIEW ACTION BUTTONS ================= */
@@ -2310,6 +2283,7 @@ textarea {
 }
 .preview-form__actions > button, .preview-form__actions > .btn-primary, .preview-form__actions > .btn-secondary {
   flex: 1;
+  font-family: inherit;
 }
 
 /* ================= CANCEL PREVIEW BUTTON ================= */
@@ -2324,6 +2298,7 @@ textarea {
   cursor: pointer;
   transition: all 0.3s ease;
   box-shadow: 0 2px 6px rgba(46, 204, 113, 0.1);
+  font-family: inherit;
 }
 #cancel-preview:hover {
   background: var(--color-bg-secondary);
@@ -2653,7 +2628,7 @@ textarea {
 }
 .recipe-page__search .search-wrapper .recipe-page__search-input {
   width: 100%;
-  padding: 12px 48px 12px 16px; /* Збільшив правий паддінг для кнопки */
+  padding: 12px 48px 12px 16px;
   border: 1px solid var(--color-border);
   border-radius: 14px;
   background: var(--color-surface);
@@ -2678,14 +2653,12 @@ textarea {
   align-items: center;
   justify-content: center;
   padding: 0;
-  /* Додаємо плавний перехід для кольору */
   color: var(--color-text-secondary);
   transition: all 0.3s ease;
 }
 .recipe-page__search .search-wrapper .search-icon-btn svg {
   width: 20px;
   height: 20px;
-  /* Використовуємо currentColor, щоб колір керувався з батька (search-icon-btn) */
   stroke: currentColor;
   fill: none;
 }
@@ -2693,14 +2666,13 @@ textarea {
   transform: scale(1.1);
   color: var(--color-accent);
 }
-.recipe-page__search .search-wrapper .search-icon-btn {
-  /* Клас, який ми будемо додавати через JS, коли з'являється планета */
-}
 .recipe-page__search .search-wrapper .search-icon-btn.is-active {
-  color: #3498db; /* Красивий синій колір для "всесвіту" */
+  color: var(--color-accent);
+  filter: drop-shadow(0 0 5px rgba(46, 204, 113, 0.4));
 }
 .recipe-page__search .search-wrapper .search-icon-btn.is-active:hover {
-  color: #2980b9;
+  color: #27ae60;
+  transform: scale(1.15) rotate(15deg);
 }
 
 /* ================= FILTERS ================= */
@@ -3379,4 +3351,371 @@ textarea {
   background: var(--color-accent-soft);
   border-color: var(--color-accent-soft);
   box-shadow: 0 4px 10px rgba(46, 204, 113, 0.25);
+}
+
+/*==================
+  Поле пошуку
+  ==================*/
+.product-search {
+  margin: 24px 0;
+}
+.product-search__input {
+  width: 100%;
+  padding: 14px 18px;
+  border-radius: 16px;
+  border: 1px solid var(--color-border);
+  background: var(--color-bg);
+  color: var(--color-text-primary);
+  font-size: 15px;
+  box-shadow: inset 0 2px 4px rgba(46, 204, 113, 0.08);
+  transition: all 0.25s ease;
+}
+.product-search__input::placeholder {
+  color: var(--color-text-secondary);
+}
+.product-search__input:focus {
+  border-color: var(--color-accent);
+  background: var(--color-bg-secondary);
+  box-shadow: 0 0 0 4px rgba(46, 204, 113, 0.12);
+  transform: translateY(-1px);
+  outline: none;
+}
+.product-search {
+  /* ВИПРАВЛЕНИЙ hover */
+}
+.product-search__input:hover {
+  background: var(--color-bg-secondary);
+  border-color: rgba(111, 207, 186, 0.35);
+  box-shadow: 0 2px 6px rgba(46, 204, 113, 0.08);
+  transform: translateY(-1px);
+}
+
+.product-modal__macros {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr); /* Ділимо на 4 рівні колонки */
+  gap: 8px;
+  background: var(--color-bg-secondary);
+  padding: 12px;
+  border-radius: 12px;
+  text-align: center;
+}
+
+.macro {
+  display: block;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+/*=======================
+   Панель фільтрів
+   =======================*/
+.product-filters {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 24px;
+}
+.product-filters__item {
+  padding: 10px 16px;
+  border-radius: 14px;
+  border: 1px solid var(--color-border);
+  background: var(--color-bg-secondary);
+  color: var(--color-text-primary);
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+.product-filters__item:hover {
+  background: var(--color-surface);
+  border-color: rgba(111, 207, 186, 0.55);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 15px rgba(46, 204, 113, 0.12);
+}
+.product-filters__item.is-active {
+  background: var(--color-accent);
+  color: var(--color-text-inverse);
+  border-color: var(--color-accent);
+  box-shadow: 0 8px 20px rgba(46, 204, 113, 0.25);
+}
+
+/*================================
+         Міні‑картка продукту
+=================================*/
+.product-card-mini {
+  display: flex; /* ВИПРАВЛЕНО: повернули горизонтальний layout */
+  gap: 16px;
+  padding: 18px;
+  border-radius: 18px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+.product-card-mini:hover {
+  transform: translateY(-3px);
+  border-color: rgba(111, 207, 186, 0.55);
+  box-shadow: 0 15px 25px rgba(46, 204, 113, 0.15);
+}
+.product-card-mini__image {
+  width: 72px;
+  height: 72px;
+  border-radius: 14px;
+  object-fit: cover;
+}
+.product-card-mini__content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.product-card-mini__title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+.product-card-mini__desc {
+  font-size: 14px;
+  color: var(--color-text-secondary);
+}
+.product-card-mini__macros {
+  display: flex;
+  gap: 12px;
+  font-size: 13px;
+  color: var(--color-text-primary);
+}
+.product-card-mini__tags {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.product-card-mini__tags .tag {
+  padding: 4px 10px;
+  background: var(--color-bg-secondary);
+  border-radius: 10px;
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border);
+}
+
+/* ===============================
+   PRODUCT MODAL
+   =============================== */
+/* Базовий контейнер модалки (той, що з атрибутом hidden) */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5); /* Затемнення фону */
+  display: flex; /* Центруємо контент */
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+/* Коли модалка схована */
+.modal[hidden] {
+  display: none !important;
+}
+
+/* Сама картка всередині */
+.product-modal {
+  background: var(--color-surface, #fff);
+  width: 100%;
+  max-width: 500px; /* Обмежуємо ширину, щоб не була на весь екран */
+  max-height: 90vh; /* Обмежуємо висоту, щоб з'явився скрол */
+  border-radius: 24px;
+  overflow: hidden; /* Щоб шапка не тікала */
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+/* Фікс для скролу внутрішньої частини */
+.product-modal__body {
+  flex: 1;
+  overflow-y: auto; /* Дозволяємо скролити тільки вміст */
+  padding: 20px;
+}
+
+.product-modal {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-bottom: 12px;
+  animation: modalFadeIn 0.35s ease;
+}
+.product-modal__body {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  overflow-y: auto;
+  padding: 16px 20px;
+}
+.product-modal {
+  /* ВИПРАВЛЕНО: перекриваємо overflow:hidden */
+}
+.product-modal .modal__body.product-modal__body {
+  overflow-y: auto !important;
+}
+.product-modal__image-wrapper {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+.product-modal__image {
+  width: 100%;
+  max-height: 220px;
+  object-fit: cover;
+  border-radius: 16px;
+  border: 1px solid var(--color-border);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+.product-modal__description {
+  font-size: 15px;
+  color: var(--color-text-secondary);
+  line-height: 1.45;
+}
+.product-modal__macros {
+  display: flex;
+  gap: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+.product-modal__tags {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.product-modal__tags .tag {
+  padding: 6px 12px;
+  border-radius: 12px;
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+.product-modal {
+  /* ВИПРАВЛЕНО: додано gap між акордеонами */
+}
+.product-modal__accordion {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.product-modal__carousel {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+}
+.product-modal__carousel::-webkit-scrollbar {
+  display: none;
+}
+.product-modal__recipe, .product-modal__similar {
+  padding: 10px 14px;
+  background: var(--color-bg-secondary);
+  border-radius: 12px;
+  border: 1px solid var(--color-border);
+  white-space: nowrap;
+  font-size: 14px;
+  transition: 0.25s ease;
+}
+.product-modal__recipe:hover, .product-modal__similar:hover {
+  background: var(--color-surface);
+  border-color: rgba(111, 207, 186, 0.55);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 15px rgba(46, 204, 113, 0.12);
+}
+
+/* Анімація */
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.modal__content {
+  animation: modalPop 0.35s ease;
+}
+
+@keyframes modalPop {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+/* ===============================
+   ACCORDION
+   =============================== */
+.accordion {
+  border-radius: 16px;
+  border: 1px solid var(--color-border);
+  background: var(--color-bg-secondary);
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+.accordion__toggle {
+  width: 100%;
+  padding: 14px 18px;
+  background: transparent;
+  border: none;
+  text-align: left;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+.accordion__toggle:hover {
+  background: var(--color-surface);
+  border-color: rgba(111, 207, 186, 0.55);
+}
+.accordion__content {
+  max-height: 0;
+  overflow: hidden;
+  padding: 0 18px;
+  transition: max-height 0.35s ease, padding 0.35s ease;
+}
+.accordion__content.open {
+  padding: 14px 18px 18px;
+  max-height: 600px;
+}
+.accordion__list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.accordion__list li {
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  line-height: 1.45;
+}
+.accordion__subtitle {
+  margin: 12px 0 6px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.accordion__toggle::after {
+  content: "▾";
+  float: right;
+  transition: transform 0.3s ease;
+}
+
+.accordion__toggle.active::after {
+  transform: rotate(180deg);
 }/*# sourceMappingURL=main.css.map */

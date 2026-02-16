@@ -138,7 +138,7 @@ const displayRecipes = () => {
           <span style="color:#f1c40f;">★</span>
           <span>${rating > 0 ? rating.toFixed(1) : '0'}</span>
         </div>
-        <div class="recipe-card__stats">${recipe.calories} ккал</div>
+        <div class="recipe-card__stats">${recipe.calories || 0} ккал</div>
         <button class="btn-delete-recipe" onclick="deleteRecipe(event, ${index})">✕</button>
       </div>
       <div class="recipe-card__content">
@@ -378,7 +378,18 @@ const closeModal = () => {
 const showForm = (data = null) => {
   if (!optionsView || !previewForm) return;
 
+  // 1. Ховаємо кнопки вибору
   optionsView.style.display = 'none';
+
+  // 2. ЗНАХОДИМО І ХОВАЄМО ПОШУК (той самий фікс)
+  const apiSearchView =
+    document.querySelector('.api-search-container') ||
+    document.getElementById('api-search-results')?.parentElement;
+  if (apiSearchView) {
+    apiSearchView.style.display = 'none';
+  }
+
+  // 3. Показуємо форму
   previewForm.style.display = 'block';
 
   if (data) {
@@ -648,9 +659,30 @@ const toBase64 = (file) =>
     reader.onerror = (error) => reject(error);
   });
 
+// --- Функція авто-розрахунку калорій ---
+const calculateKcal = () => {
+  const p = parseFloat(document.getElementById('prev-proteins')?.value) || 0;
+  const c = parseFloat(document.getElementById('prev-carbs')?.value) || 0;
+  const f = parseFloat(document.getElementById('prev-fats')?.value) || 0;
+
+  const totalKcal = Math.round(p * 4 + c * 4 + f * 9);
+
+  const kcalInput =
+    document.getElementById('prev-kcal') || document.getElementById('prev-calories');
+  if (kcalInput) {
+    kcalInput.value = totalKcal > 0 ? totalKcal : '';
+  }
+};
+
 document.addEventListener('DOMContentLoaded', () => {
   displayRecipes();
   initAiUpload();
+
+  // Ініціалізація авто-розрахунку БЖУ
+  ['prev-proteins', 'prev-carbs', 'prev-fats'].forEach((id) => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('input', calculateKcal);
+  });
 
   // Логіка кліку по зірках
   const ratingContainer = document.querySelector('.recipe-rating');
@@ -731,16 +763,12 @@ if (previewFormElement) {
     let finalImageUrl = 'https://images.unsplash.com/photo-1495521821757-a1efb6729352?q=80&w=500';
 
     if (fileInput && fileInput.files && fileInput.files[0]) {
-      // 1. Пріоритет: Нове завантажене фото
       finalImageUrl = await toBase64(fileInput.files[0]);
     } else if (urlInput && urlInput.value.trim() !== '') {
-      // 2. Пріоритет: Посилання (URL)
       finalImageUrl = urlInput.value.trim();
     } else if (window.tempAiImage) {
-      // 3. Пріоритет: Фото, яке ми отримали від ШІ-сканування
       finalImageUrl = window.tempAiImage;
     } else if (editingRecipeIndex !== null) {
-      // 4. Пріоритет: Старе фото при редагуванні
       finalImageUrl = globalRecipes[editingRecipeIndex].image || finalImageUrl;
     }
 
@@ -773,7 +801,6 @@ if (previewFormElement) {
 
     localStorage.setItem('minto_recipes', JSON.stringify(globalRecipes));
 
-    // Очищаємо тимчасові дані
     editingRecipeIndex = null;
     window.tempAiImage = null;
 
@@ -789,138 +816,157 @@ document.querySelectorAll('textarea').forEach((txt) => {
 });
 
 // =============================================================
-// 10. ПОШУК ТА ФІЛЬТРАЦІЯ (SMART SEARCH)
+// 10. ПОШУК ТА ФІЛЬТРАЦІЯ (SMART SEARCH - IN PLACE)
 // =============================================================
 
 const searchInput = document.getElementById('recipe-search-input');
 const searchModeBtn = document.getElementById('search-mode-btn');
+// Додаємо хрестик
+const clearSearchBtn = document.getElementById('clear-search-btn'); 
 
-// Іконки (використовуємо stroke для чіткості в інпуті)
 const iconSearch = `<svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>`;
-const iconPlanet = `<svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>`;
+const iconGlobal = `<svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M2 12h20M12 2a15.3 15.3 0 0 1 0 20 15.3 15.3 0 0 1 0-20"></path></svg>`;
 
-// Встановлюємо початковий стан
 if (searchModeBtn) searchModeBtn.innerHTML = iconSearch;
 
-// 1. Пошук по тексту (назва або інгредієнти)
+// 1. ФУНКЦІЯ ФІЛЬТРАЦІЇ ВЛАСНИХ РЕЦЕПТІВ
 function filterRecipes(query) {
   const filtered = globalRecipes.filter((recipe) => {
     const nameMatch = recipe.name.toLowerCase().includes(query);
     const ingMatch = (recipe.ingredients || '').toLowerCase().includes(query);
     return nameMatch || ingMatch;
   });
-  renderFilteredRecipes(filtered);
+  renderFilteredRecipes(filtered, query, false);
 }
 
-// 2. Фільтрація за кнопками категорій
-const categoryButtons = document.querySelectorAll('.recipe-filters__item');
-if (categoryButtons.length > 0) {
-  categoryButtons.forEach((btn) => {
-    btn.addEventListener('click', () => {
-      categoryButtons.forEach((b) => b.classList.remove('recipe-filters__item--active'));
-      btn.classList.add('recipe-filters__item--active');
-      const selectedCategory = btn.getAttribute('data-category');
-      if (selectedCategory === 'all') {
-        displayRecipes();
-      } else {
-        const filtered = globalRecipes.filter((recipe) => recipe.category === selectedCategory);
-        renderFilteredRecipes(filtered);
-      }
-    });
-  });
-}
-
-// 3. Універсальна функція малювання карток
-function renderFilteredRecipes(recipes) {
+// 2. УНІВЕРСАЛЬНИЙ РЕНДЕР (ДЛЯ СВОЇХ І ДЛЯ ГЛОБАЛЬНИХ)
+function renderFilteredRecipes(recipes, query = '', isGlobal = false) {
   const recipeGrid = document.querySelector('.recipe-grid');
   if (!recipeGrid) return;
 
-  const categoryTranslations = {
-    all: 'Всі',
-    breakfast: 'Сніданок',
-    lunch: 'Обід',
-    dinner: 'Вечеря',
-    dessert: 'Десерти',
-    snack: 'Перекуси',
-    drinks: 'Напої',
-    bakery: 'Випічка',
-    fast: 'Швидкі рецепти ⚡',
-  };
-
   recipeGrid.innerHTML = '';
-  if (recipes.length === 0) {
-    recipeGrid.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: #888;"><p>У власній базі нічого не знайдено. Спробуй пошук в інтернеті 🌐</p></div>`;
+
+  if (recipes.length === 0 && !isGlobal) {
+    recipeGrid.innerHTML = `
+      <div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: #888;">
+        <p>У власній базі немає "<strong>${query}</strong>". Натисніть на планету 🌐 для пошуку ідей.</p>
+      </div>`;
     return;
   }
 
+  const categoryTranslations = {
+    all: 'Всі', breakfast: 'Сніданок', lunch: 'Обід', dinner: 'Вечеря',
+    dessert: 'Десерти', snack: 'Перекуси', drinks: 'Напої', bakery: 'Випічка', fast: 'Швидкі ⚡'
+  };
+
   recipes.forEach((recipe, index) => {
     const rating = recipe.rating || 0;
-    const cardImage =
-      recipe.image || 'https://images.unsplash.com/photo-1495521821757-a1efb6729352?q=80&w=500';
-    const displayCategory = categoryTranslations[recipe.category] || recipe.category;
+    const title = isGlobal ? (recipe.title || recipe.name) : recipe.name;
+    const cardImage = recipe.image || 'https://images.unsplash.com/photo-1495521821757-a1efb6729352?q=80&w=500';
 
     const card = document.createElement('div');
     card.className = 'recipe-card';
     card.innerHTML = `
       <div class="recipe-card__image-box">
-        <img src="${cardImage}" alt="${recipe.name}" class="recipe-card__img">
-        <div class="recipe-card__rating-badge" style="position:absolute;top:12px;left:48px;background:rgba(255,255,255,0.95);padding:3px 8px;border-radius:6px;font-weight:800;color:#333;font-size:11px;display:flex;align-items:center;gap:4px;box-shadow:0 2px 5px rgba(0,0,0,0.15);z-index:2;">
-          <span style="color:#f1c40f;">★</span>
-          <span>${rating > 0 ? rating.toFixed(1) : '0'}</span>
-        </div>
-        <div class="recipe-card__stats">${recipe.calories} ккал</div>
-        <button class="btn-delete-recipe" onclick="deleteRecipe(event, ${index})">✕</button>
+        <img src="${cardImage}" alt="${title}" class="recipe-card__img">
+        ${!isGlobal ? `
+          <div class="recipe-card__rating-badge" style="position:absolute;top:12px;left:48px;background:rgba(255,255,255,0.95);padding:3px 8px;border-radius:6px;font-weight:800;color:#333;font-size:11px;display:flex;align-items:center;gap:4px;z-index:2;">
+            <span style="color:#f1c40f;">★</span><span>${rating > 0 ? rating.toFixed(1) : '0'}</span>
+          </div>
+          <button class="btn-delete-recipe" onclick="deleteRecipe(event, ${index})">✕</button>
+        ` : `<div class="recipe-card__stats" style="background:var(--color-accent); color:#fff;">Світ</div>`}
       </div>
       <div class="recipe-card__content">
-        <h3 class="recipe-card__name">${recipe.name}</h3>
-        <p class="recipe-card__macros">Категорія: ${displayCategory}</p>
-        <button class="recipe-card__btn" onclick="openRecipeView(${index})">Переглянути</button>
+        <h3 class="recipe-card__name">${title}</h3>
+        <p class="recipe-card__macros">${isGlobal ? 'Знайдено в мережі' : 'Категорія: ' + (categoryTranslations[recipe.category] || recipe.category)}</p>
+        <button class="recipe-card__btn">${isGlobal ? 'Додати собі' : 'Переглянути'}</button>
       </div>
     `;
+
+    const btn = card.querySelector('.recipe-card__btn');
+    btn.addEventListener('click', () => {
+      if (isGlobal) {
+        showForm({
+          name: title,
+          image: recipe.image,
+          ingredients: recipe.ingredients,
+          steps: recipe.steps,
+          category: 'lunch'
+        });
+        modal.classList.add('is-active');
+      } else {
+        openRecipeView(index);
+      }
+    });
+
     recipeGrid.appendChild(card);
   });
 }
 
-// 4. Логіка "Живого пошуку" та зміни кнопки
+// 3. СЛУХАЧ ІНПУТУ (ЗМІНА ІКОНКИ, ХРЕСТИК ТА ФІЛЬТРАЦІЯ)
 if (searchInput) {
   searchInput.addEventListener('input', () => {
     const query = searchInput.value.trim().toLowerCase();
+    
+    // Керуємо видимістю хрестика
+    if (clearSearchBtn) {
+      clearSearchBtn.style.display = query.length > 0 ? 'flex' : 'none';
+    }
 
     if (query.length > 0) {
-      if (searchModeBtn) {
-        searchModeBtn.innerHTML = iconPlanet;
-        searchModeBtn.classList.add('is-active'); // Змінюємо колір на "інтернет-синій"
-      }
+      searchModeBtn.innerHTML = iconGlobal;
+      searchModeBtn.classList.add('is-active');
       filterRecipes(query);
     } else {
-      if (searchModeBtn) {
-        searchModeBtn.innerHTML = iconSearch;
-        searchModeBtn.classList.remove('is-active'); // Повертаємо стандартний колір
-      }
+      searchModeBtn.innerHTML = iconSearch;
+      searchModeBtn.classList.remove('is-active');
       displayRecipes();
     }
   });
 }
 
-// 5. Клік по кнопці (Пошук в інтернеті)
-if (searchModeBtn) {
-  searchModeBtn.addEventListener('click', () => {
-    const query = searchInput.value.trim();
-    if (query) {
-      const googleUrl = `https://www.google.com/search?q=${encodeURIComponent(query + ' рецепт ПП')}`;
-      window.open(googleUrl, '_blank');
-    } else {
-      searchInput.focus();
-    }
+// 🔑 НОВА ЧАСТИНА: КЛІК НА ХРЕСТИК (ОЧИЩЕННЯ)
+if (clearSearchBtn) {
+  clearSearchBtn.addEventListener('click', () => {
+    searchInput.value = '';
+    clearSearchBtn.style.display = 'none';
+    searchModeBtn.innerHTML = iconSearch;
+    searchModeBtn.classList.remove('is-active');
+    displayRecipes(); // Скидаємо фільтр
+    searchInput.focus();
   });
 }
 
-// 6. Обробка завантаження файлу
-const fileInputEl = document.getElementById('recipe-image');
-if (fileInputEl) {
-  fileInputEl.addEventListener('change', function () {
-    const fileName = this.files[0]?.name || 'Файл не вибрано';
-    const fileNameDisplay = document.getElementById('file-name');
-    if (fileNameDisplay) fileNameDisplay.textContent = fileName;
+// 4. КЛІК НА ПЛАНЕТУ: ЗАМІНА ТВОЇХ РЕЦЕПТІВ НА ГЛОБАЛЬНІ ПРЯМО В GRID
+if (searchModeBtn) {
+  searchModeBtn.addEventListener('click', async () => {
+    const query = searchInput.value.trim();
+    if (!query) {
+      searchInput.focus();
+      return;
+    }
+
+    const recipeGrid = document.querySelector('.recipe-grid');
+    recipeGrid.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; padding: 50px;">
+      <p>🌎 Шукаємо нові ідеї для "<strong>${query}</strong>"...</p>
+    </div>`;
+
+    const SPOON_KEY = 'YOUR_SPOON_KEY'; 
+    try {
+      const resp = await fetch(`https://api.spoonacular.com/recipes/complexSearch?query=${encodeURIComponent(query)}&number=12&addRecipeInformation=true&apiKey=${SPOON_KEY}`);
+      const data = await resp.json();
+      
+      const results = (data.results || []).map(r => ({
+        title: r.title,
+        image: r.image,
+        ingredients: (r.extendedIngredients || []).map(i => i.original).join('\n'),
+        steps: (r.analyzedInstructions?.[0]?.steps || []).map((s, i) => `${i + 1}. ${s.step}`).join('\n')
+      }));
+
+      renderFilteredRecipes(results, query, true);
+
+    } catch (err) {
+      recipeGrid.innerHTML = `<p style="grid-column: 1 / -1; text-align: center;">Не вдалося підключитися до глобальної бази.</p>`;
+    }
   });
 }

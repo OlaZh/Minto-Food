@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="uk">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Minto Food</title>
+
+    <script>
+      document.documentElement.classList.add('no-transition');
+
+      (function () {
+        const theme = localStorage.getItem('theme');
+        if (theme === 'dark') {
+          document.documentElement.setAttribute('data-theme', 'dark');
+        }
+      })();
+    </script>
+
+    <link rel="stylesheet" href="./css/main.css" />
+  </head>
+  <body class="page">
+    <header class="header">
+      <div class="header__container">
+        <a href="index.html" class="header__logo" data-i18n="logo">Minto Food 🍃</a>
+
+        <nav class="header__nav">
+          <ul class="header__nav-list">
+            <li>
+              <a href="index.html" class="header__nav-link" data-i18n="navDayMenu">Меню на день</a>
+            </li>
+            <li>
+              <a href="week-menu.html" class="header__nav-link" data-i18n="navWeekMenu"
+                >Меню на тиждень</a
+              >
+            </li>
+            <li>
+              <a href="./recipes.html" class="header__nav-link" data-i18n="navRecipes">Рецепти</a>
+            </li>
+            <li>
+              <a href="product-guide.html" class="header__nav-link" data-i18n="navShoppingList"
+                >Путівник по продуктам</a
+              >
+            </li>
+            <li>
+              <a href="#" class="header__nav-link" data-i18n="navShoppingList">Список покупок</a>
+            </li>
+            <li>
+              <a
+                href="statistics.html"
+                class="header__nav-link header__nav-link--active"
+                data-i18n="navStats"
+                >Статистика</a
+              >
+            </li>
+          </ul>
+        </nav>
+
+        <div class="header__actions">
+          <button
+            class="theme-toggle"
+            type="button"
+            aria-label="Змінити тему"
+            data-i18n-aria="toggleTheme">
+            <svg
+              class="sun-icon"
+              xmlns="http://www.w3.org/2000/svg"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round">
+              <circle cx="12" cy="12" r="5"></circle>
+              <line x1="12" y1="1" x2="12" y2="3"></line>
+              <line x1="12" y1="21" x2="12" y2="23"></line>
+              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+              <line x1="1" y1="12" x2="3" y2="12"></line>
+              <line x1="21" y1="12" x2="23" y2="12"></line>
+              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+            </svg>
+
+            <svg
+              class="moon-icon"
+              xmlns="http://www.w3.org/2000/svg"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round">
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+            </svg>
+          </button>
+        </div>
+
+        <div class="header__right">
+          <a href="profile.html" class="header__profile-name" data-i18n="profileName">Ольга</a>
+
+          <div class="lang-switcher">
+            <select id="langSwitcher">
+              <option value="ua">UA</option>
+              <option value="pl">PL</option>
+              <option value="en">EN</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </header>
+    <div class="app-bg">
+      <div class="app-shell">
+        <main class="main">
+          <section class="statistics">
+            <div class="column-header">
+              <h1 class="column-header__title" data-i18n="statisticsTitle">Статистика</h1>
+            </div>
+
+            <!-- БЛОК 1 — КРУГОВА ДІАГРАМА -->
+            <div class="statistics-block statistics-block--pie">
+              <h2 class="statistics-block__title" data-i18n="statsBalanceTitle">Баланс страв</h2>
+
+              <div class="statistics-chart">
+                <canvas id="balancePieChart"></canvas>
+              </div>
+
+              <p class="statistics-block__note" data-i18n="statsBalanceNote">
+                Цього тижня було більше жирних страв
+              </p>
+            </div>
+
+            <!-- БЛОК 2 — ЛІНІЙНИЙ ГРАФІК КБЖУ -->
+            <div class="statistics-block statistics-block--line">
+              <h2 class="statistics-block__title" data-i18n="statsKbjuTitle">Динаміка КБЖУ</h2>
+
+              <div class="statistics-chart">
+                <canvas id="kbjuLineChart"></canvas>
+              </div>
+
+              <p class="statistics-block__note" data-i18n="statsKbjuNote">
+                Невеликі перепади — це нормально
+              </p>
+            </div>
+
+            <!-- БЛОК 3 — СТОВПЧИКОВА ДІАГРАМА КОРИСНОСТІ -->
+            <div class="statistics-block statistics-block--bars">
+              <h2 class="statistics-block__title" data-i18n="statsUsefulnessTitle">
+                Корисність страв
+              </h2>
+
+              <div class="statistics-chart">
+                <canvas id="usefulnessBarChart"></canvas>
+              </div>
+
+              <p class="statistics-block__note" data-i18n="statsUsefulnessNote">
+                Було трохи важких страв — додай більше овочів
+              </p>
+            </div>
+
+            <!-- БЛОК 4 — ПОРІВНЯННЯ ТИЖНІВ -->
+            <div class="statistics-block statistics-block--compare">
+              <h2 class="statistics-block__title" data-i18n="statsCompareTitle">
+                Порівняння тижнів
+              </h2>
+
+              <div class="statistics-compare">
+                <div class="statistics-compare__item">
+                  <h3 class="statistics-compare__label" data-i18n="statsLastWeek">
+                    Минулий тиждень
+                  </h3>
+                  <canvas id="lastWeekChart"></canvas>
+                </div>
+
+                <div class="statistics-compare__item">
+                  <h3 class="statistics-compare__label" data-i18n="statsThisWeek">Цей тиждень</h3>
+                  <canvas id="thisWeekChart"></canvas>
+                </div>
+              </div>
+
+              <p class="statistics-block__note" data-i18n="statsCompareNote">
+                Цей тиждень був більш збалансованим
+              </p>
+            </div>
+
+            <!-- БЛОК 5 — ТОПИ ТИЖНЯ -->
+            <div class="statistics-block statistics-block--tops">
+              <h2 class="statistics-block__title" data-i18n="statsTopsTitle">Топи тижня</h2>
+
+              <ul class="statistics-tops">
+                <li class="statistics-tops__item">
+                  <span class="statistics-tops__icon">⭐</span>
+                  <span data-i18n="statsTopCooked">Найчастіше готувала:</span>
+                  <span class="statistics-tops__value" data-i18n="statsTopCookedValue">—</span>
+                </li>
+
+                <li class="statistics-tops__item">
+                  <span class="statistics-tops__icon">🔥</span>
+                  <span data-i18n="statsTopCaloric">Найкалорійніша страва:</span>
+                  <span class="statistics-tops__value" data-i18n="statsTopCaloricValue">—</span>
+                </li>
+
+                <li class="statistics-tops__item">
+                  <span class="statistics-tops__icon">🥗</span>
+                  <span data-i18n="statsTopHealthy">Найкорисніша страва:</span>
+                  <span class="statistics-tops__value" data-i18n="statsTopHealthyValue">—</span>
+                </li>
+              </ul>
+            </div>
+
+            <!-- БЛОК 6 — МІНІ-РЕКОМЕНДАЦІЇ -->
+            <div class="statistics-block statistics-block--tips">
+              <h2 class="statistics-block__title" data-i18n="statsTipsTitle">Рекомендації</h2>
+
+              <ul class="statistics-tips">
+                <li data-i18n="statsTip1">Додай 1–2 білкові страви наступного тижня</li>
+                <li data-i18n="statsTip2">Спробуй легші вечері</li>
+                <li data-i18n="statsTip3">Ти чудово тримаєш баланс</li>
+              </ul>
+            </div>
+          </section>
+        </main>
+      </div>
+    </div>
+    <!---------------СКРИПТИ--------------- -->
+    <script src="js/theme-toggle.js"></script>
+  </body>
+</html>
