@@ -490,93 +490,149 @@ function initAiUpload() {
 }
 
 // --- ФУНКЦІЯ РОЗУМНОГО ІМПОРТУ (Minto Food) ---
-async function smartImportRecipe() {
-  const urlInput = document.getElementById('import-url');
-  const btn = document.getElementById('btn-magic-import');
+// --- ПОШУК РЕЦЕПТІВ ЧЕРЕЗ API (Spoonacular + TheMealDB + Edamam) ---
+async function searchRecipesFromApi() {
+  const queryInput = document.getElementById('api-search');
+  const btn = document.getElementById('btn-api-search');
   const btnText = btn ? btn.querySelector('span') : null;
-  const url = urlInput ? urlInput.value.trim() : '';
+  const resultsContainer = document.getElementById('api-search-results');
 
-  if (!url) {
-    if (urlInput) urlInput.focus();
+  if (!queryInput || !btn || !resultsContainer) return;
+
+  const query = queryInput.value.trim();
+  if (!query) {
+    queryInput.focus();
     return;
   }
 
-  const originalText = btnText ? btnText.innerText : 'Аналізувати';
+  const originalText = btnText ? btnText.innerText : 'Пошук';
   if (btnText) btnText.innerText = '...';
-  if (btn) btn.disabled = true;
+  btn.disabled = true;
+  resultsContainer.innerHTML = '';
 
-  try {
-    // 1. Отримуємо дані (працює через активоване розширення CORS)
-    const response = await fetch(url);
-    if (!response.ok) throw new Error('Сайт не відповідає');
+  // 🔑 ТУТ ВСТАВИШ СВОЇ КЛЮЧІ
+  const SPOON_KEY = 'YOUR_SPOON_KEY';
+  const EDAMAM_ID = 'YOUR_EDAMAM_ID';
+  const EDAMAM_KEY = 'YOUR_EDAMAM_KEY';
 
-    const htmlText = await response.text();
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(htmlText, 'text/html');
+  // --- 1) Spoonacular ---
+  async function fetchSpoon() {
+    try {
+      const resp = await fetch(
+        `https://api.spoonacular.com/recipes/complexSearch?query=${encodeURIComponent(
+          query,
+        )}&number=10&addRecipeInformation=true&apiKey=${SPOON_KEY}`,
+      );
+      const data = await resp.json();
+      return data.results || [];
+    } catch {
+      return [];
+    }
+  }
 
-    // 2. Витягуємо назву
-    const rawTitle = doc.querySelector('h1')?.innerText || doc.title || 'Новий рецепт';
-    const cleanTitle = rawTitle.split('|')[0].split('-')[0].trim();
+  // --- 2) TheMealDB ---
+  async function fetchMealDB() {
+    try {
+      const resp = await fetch(
+        `https://www.themealdb.com/api/json/v1/1/search.php?s=${encodeURIComponent(query)}`,
+      );
+      const data = await resp.json();
+      return data.meals || [];
+    } catch {
+      return [];
+    }
+  }
 
-    // 3. Витягуємо фото
-    const image = doc.querySelector('meta[property="og:image"]')?.content || '';
+  // --- 3) Edamam (fallback) ---
+  async function fetchEdamam() {
+    try {
+      const resp = await fetch(
+        `https://api.edamam.com/search?q=${encodeURIComponent(
+          query,
+        )}&app_id=${EDAMAM_ID}&app_key=${EDAMAM_KEY}&to=10`,
+      );
+      const data = await resp.json();
+      return data.hits || [];
+    } catch {
+      return [];
+    }
+  }
 
-    // 4. Витягуємо інгредієнти (шукаємо в списках li)
-    // --- ПОКРАЩЕНИЙ ПАРСИНГ ---
-    let ingredientsList = [];
+  // --- Паралельний пошук Spoonacular + MealDB ---
+  const [spoon, mealdb] = await Promise.all([fetchSpoon(), fetchMealDB()]);
 
-    // 1. Шукаємо спочатку в спеціальних блоках (більшість сайтів їх мають)
-    const ingredientSelectors = [
-      '[class*="ingredient"]',
-      '[class*="recipe-ing"]',
-      '[itemprop="recipeIngredient"]',
-      '.ingredients-list',
-    ];
+  let results = [];
 
-    let foundSource = null;
-    ingredientSelectors.forEach((sel) => {
-      const found = doc.querySelectorAll(sel);
-      if (found.length > 0 && !foundSource) foundSource = found;
-    });
+  if (spoon.length > 0) {
+    results = spoon.map((r) => ({
+      title: r.title,
+      image: r.image,
+      ingredients: (r.extendedIngredients || []).map((i) => i.original).join('\n'),
+      steps:
+        (r.analyzedInstructions?.[0]?.steps || [])
+          .map((s, i) => `${i + 1}. ${s.step}`)
+          .join('\n') || '',
+    }));
+  } else if (mealdb.length > 0) {
+    results = mealdb.map((m) => ({
+      title: m.strMeal,
+      image: m.strMealThumb,
+      ingredients: Object.keys(m)
+        .filter((k) => k.startsWith('strIngredient') && m[k])
+        .map((k, i) => `${m[k]} ${m[`strMeasure${i + 1}`] || ''}`)
+        .join('\n'),
+      steps: m.strInstructions || '',
+    }));
+  } else {
+    // --- Якщо нічого не знайдено — Edamam ---
+    const edamam = await fetchEdamam();
+    results = edamam.map((e) => ({
+      title: e.recipe.label,
+      image: e.recipe.image,
+      ingredients: e.recipe.ingredientLines.join('\n'),
+      steps: '',
+    }));
+  }
 
-    // 2. Якщо знайшли спеціальні блоки — беремо з них, якщо ні — шукаємо по li
-    const elementsToParse = foundSource || doc.querySelectorAll('li');
+  if (results.length === 0) {
+    resultsContainer.innerHTML = `<p>Нічого не знайдено. Спробуйте інший запит.</p>`;
+    btn.disabled = false;
+    if (btnText) btnText.innerText = originalText;
+    return;
+  }
 
-    elementsToParse.forEach((el) => {
-      const text = el.innerText.replace(/\s+/g, ' ').trim();
+  // --- Відображення результатів ---
+  results.forEach((r) => {
+    const card = document.createElement('div');
+    card.className = 'api-result-card';
+    card.innerHTML = `
+      <div class="api-result-card__image-box">
+        <img src="${r.image || ''}" alt="${r.title || ''}">
+      </div>
+      <div class="api-result-card__content">
+        <h4>${r.title || 'Без назви'}</h4>
+        <button type="button" class="recipe-card__btn api-add-btn">
+          Додати цей рецепт
+        </button>
+      </div>
+    `;
 
-      // Фільтр "Справжнього інгредієнта":
-      const isIngredient =
-        text.length > 2 &&
-        text.length < 120 &&
-        !/написати|коментар|підписатися|пошук|меню|головна|автор|поділитися/i.test(text) &&
-        /[0-9]|гр|мл|кг|ст\.л|ч\.л|шт/.test(text); // Шукаємо цифри або одиниці виміру
-
-      if (isIngredient) {
-        ingredientsList.push(text);
-      }
-    });
-
-    // 5. Відкриваємо твою форму showForm (переконайся, що вона є в коді)
-    if (typeof showForm === 'function') {
+    const addBtn = card.querySelector('.api-add-btn');
+    addBtn.addEventListener('click', () => {
       showForm({
-        name: cleanTitle,
-        image: image,
-        ingredients: [...new Set(ingredientsList)].join('\n'),
+        name: r.title,
+        image: r.image,
+        ingredients: r.ingredients,
+        steps: r.steps,
         category: 'lunch',
       });
-      showToast('Рецепт проаналізовано! 🍃');
-      if (urlInput) urlInput.value = '';
-    } else {
-      console.error('Функція showForm не знайдена!');
-    }
-  } catch (err) {
-    console.error('Minto Import Error:', err);
-    showToast('Помилка! Перевір чи увімкнено CORS розширення 🍃', 'info');
-  } finally {
-    if (btnText) btnText.innerText = originalText;
-    if (btn) btn.disabled = false;
-  }
+    });
+
+    resultsContainer.appendChild(card);
+  });
+
+  if (btnText) btnText.innerText = originalText;
+  btn.disabled = false;
 }
 
 // =============================================================
@@ -595,11 +651,6 @@ const toBase64 = (file) =>
 document.addEventListener('DOMContentLoaded', () => {
   displayRecipes();
   initAiUpload();
-
-  const magicBtn = document.getElementById('btn-magic-import');
-  if (magicBtn) {
-    magicBtn.addEventListener('click', smartImportRecipe);
-  }
 
   // Логіка кліку по зірках
   const ratingContainer = document.querySelector('.recipe-rating');
@@ -649,6 +700,11 @@ if (saveNotesBtn) {
       showToast('Нотатку збережено!');
     }
   });
+}
+
+const apiSearchBtn = document.getElementById('btn-api-search');
+if (apiSearchBtn) {
+  apiSearchBtn.addEventListener('click', searchRecipesFromApi);
 }
 
 window.addEventListener('click', (e) => {

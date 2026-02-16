@@ -38,7 +38,9 @@
               <a href="index.html" class="header__nav-link" data-i18n="navDayMenu">Меню на день</a>
             </li>
             <li>
-              <a href="#" class="header__nav-link" data-i18n="navWeekMenu">Меню на тиждень</a>
+              <a href="week-menu.html" class="header__nav-link" data-i18n="navWeekMenu"
+                >Меню на тиждень</a
+              >
             </li>
             <li>
               <a href="#" class="header__nav-link" data-i18n="navShoppingList">Список покупок</a>
@@ -243,23 +245,28 @@
           </div>
         </div>
         <div class="recipe-add__smart-import">
-          <label class="smart-import__label" data-i18n="importLabel">
-            Швидке додавання за посиланням
+          <label class="smart-import__label" data-i18n="apiImportLabel">
+            Знайти рецепт у базі
           </label>
+
           <div class="smart-import__wrapper">
             <input
-              type="url"
-              id="import-url"
+              type="text"
+              id="api-search"
               class="smart-import__input"
-              data-i18n-placeholder="importPlaceholder"
-              placeholder="Вставте URL-адресу рецепта..." />
-            <button type="button" id="btn-magic-import" class="recipe-card__btn smart-import__btn">
-              <span data-i18n="importBtn">Аналізувати</span>
+              data-i18n-placeholder="apiImportPlaceholder"
+              placeholder="Введіть назву страви..." />
+
+            <button type="button" id="btn-api-search" class="recipe-card__btn smart-import__btn">
+              <span data-i18n="apiImportBtn">Пошук</span>
             </button>
           </div>
-          <p class="smart-import__hint" data-i18n="importHint">
-            Minto Food автоматично знайде назву, фото та склад, видаливши зайву рекламу. 🍃
+
+          <p class="smart-import__hint" data-i18n="apiImportHint">
+            Пошук у відкритій базі рецептів. Оберіть страву та додайте її до своїх рецептів. 🍃
           </p>
+
+          <div id="api-search-results" class="api-results"></div>
         </div>
 
         <!-- i18n: ADD RECIPE — PREVIEW FORM -->

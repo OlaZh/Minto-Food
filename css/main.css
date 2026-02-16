@@ -21,7 +21,7 @@
   margin-bottom: 32px !important;
 }
 
-.day-summary, .meal, .stat-card--main,
+.day-summary, .meal, .card, .stat-card--main,
 .macro-item {
   background: var(--bg-surface);
   border: 1px solid var(--border);
@@ -30,13 +30,13 @@
   padding: 24px;
   transition: border-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
 }
-.day-summary:hover, .meal:hover, .stat-card--main:hover,
+.day-summary:hover, .meal:hover, .card:hover, .stat-card--main:hover,
 .macro-item:hover {
   border-color: var(--primary-soft);
   box-shadow: 0 10px 24px rgba(0, 0, 0, 0.06);
   transform: translateY(-2px);
 }
-[data-theme=dark] .day-summary, [data-theme=dark] .meal, [data-theme=dark] .stat-card--main,
+[data-theme=dark] .day-summary, [data-theme=dark] .meal, [data-theme=dark] .card, [data-theme=dark] .stat-card--main,
 [data-theme=dark] .macro-item {
   box-shadow: none;
 }
@@ -1130,7 +1130,7 @@ textarea {
    PREMIUM CARD PATTERN — ONE SOURCE OF TRUTH
    ============================================================= */
 .day-summary, .meal, .stat-card--main,
-.macro-item {
+.macro-item, .card {
   position: relative;
   background: var(--color-surface);
   border: 1px solid var(--color-border);
@@ -1141,7 +1141,7 @@ textarea {
   /* світловий верхній кант */
 }
 .day-summary::before, .meal::before, .stat-card--main::before,
-.macro-item::before {
+.macro-item::before, .card::before {
   content: "";
   position: absolute;
   inset: 0;
@@ -1151,7 +1151,7 @@ textarea {
   opacity: 0.6;
 }
 .day-summary:hover, .meal:hover, .stat-card--main:hover,
-.macro-item:hover {
+.macro-item:hover, .card:hover {
   border-color: var(--color-accent-soft);
   box-shadow: 0 14px 36px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(255, 255, 255, 0.6);
   transform: translateY(-2px);
@@ -1159,12 +1159,12 @@ textarea {
 
 /* dark theme */
 [data-theme=dark] .day-summary, [data-theme=dark] .meal, [data-theme=dark] .stat-card--main,
-[data-theme=dark] .macro-item {
+[data-theme=dark] .macro-item, [data-theme=dark] .card {
   background: var(--color-bg-secondary);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.04);
 }
 [data-theme=dark] .day-summary::before, [data-theme=dark] .meal::before, [data-theme=dark] .stat-card--main::before,
-[data-theme=dark] .macro-item::before {
+[data-theme=dark] .macro-item::before, [data-theme=dark] .card::before {
   opacity: 0.25;
 }
 
@@ -3220,4 +3220,163 @@ textarea {
 .profile-actions__btn:hover {
   transform: translateY(-3px);
   box-shadow: 0 15px 25px rgba(111, 207, 186, 0.4);
+}
+
+/* ================= WEEK MENU ================= */
+.week-menu {
+  width: 100%;
+}
+
+/* ================= GRID ================= */
+.week-grid {
+  display: grid;
+  grid-auto-rows: minmax(60px, auto);
+  gap: 8px;
+  margin-top: 16px;
+}
+
+/* 1 колонка — день, 5 — їжа, 1 — підсумок */
+.week-grid__row {
+  display: grid;
+  grid-template-columns: 140px minmax(160px, 1fr) minmax(160px, 1fr) minmax(160px, 1fr) minmax(160px, 1fr) minmax(160px, 1fr) 220px; /* 🔥 РАЗОМ */
+  gap: 8px;
+}
+
+/* ================= CELLS ================= */
+.week-grid__cell {
+  position: relative;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  padding: 10px 12px;
+  box-sizing: border-box;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
+  /* легкий верхній “premium‑блік” */
+}
+.week-grid__cell::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.35), rgba(255, 255, 255, 0.05) 45%, transparent 75%);
+  opacity: 0.5;
+}
+.week-grid__cell:hover {
+  border-color: var(--color-accent-soft);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(255, 255, 255, 0.5);
+  transform: translateY(-1px);
+}
+
+.week-grid__cell--summary {
+  font-size: 13px;
+  line-height: 1.4;
+  background: var(--color-surface);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 4px;
+}
+
+.summary-kcal {
+  font-weight: 700;
+}
+
+.summary-macros {
+  display: block;
+  white-space: normal;
+  opacity: 0.8;
+  font-size: 13px;
+  color: var(--color-text-secondary);
+}
+
+/* Header row */
+.week-grid__row--header .week-grid__cell {
+  display: flex;
+  background-color: var(--color-bg-primary);
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-weight: 600;
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+/* Day name */
+.week-grid__day-name {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+[data-theme=dark] .week-grid__cell {
+  background: var(--color-bg-secondary);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+[data-theme=dark] .week-grid__cell::before {
+  opacity: 0.25;
+}
+
+/* ================= meal-cell ================= */
+.meal-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+}
+
+.meal-cell__list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-height: 28px;
+}
+
+/* ================= кнопка додавання ================= */
+.meal-cell__add {
+  align-self: flex-end;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  border: 1px dashed var(--color-border);
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+.meal-cell__add span {
+  display: block;
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+.meal-cell__add span::before, .meal-cell__add span::after {
+  content: "";
+  position: absolute;
+  background: var(--color-text-secondary);
+  border-radius: 1px;
+}
+.meal-cell__add span::before {
+  width: 12px;
+  height: 2px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+.meal-cell__add span::after {
+  width: 2px;
+  height: 12px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+.meal-cell__add:hover {
+  background: var(--color-accent-soft);
+  border-color: var(--color-accent-soft);
+  box-shadow: 0 4px 10px rgba(46, 204, 113, 0.25);
 }/*# sourceMappingURL=main.css.map */

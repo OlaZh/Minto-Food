@@ -1,4 +1,5 @@
 .card {
+  @extend %premium-card;
   background-color: var(--color-bg-secondary);
   border: 1px solid var(--color-border);
   border-radius: 12px;

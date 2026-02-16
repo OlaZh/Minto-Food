@@ -1,0 +1,190 @@
+/* ================= WEEK MENU ================= */
+.week-menu {
+  width: 100%;
+}
+
+/* ================= GRID ================= */
+.week-grid {
+  display: grid;
+  grid-auto-rows: minmax(60px, auto);
+  gap: 8px;
+  margin-top: 16px;
+}
+
+/* 1 колонка — день, 5 — їжа, 1 — підсумок */
+.week-grid__row {
+  display: grid;
+  grid-template-columns:
+    140px /* день */
+    minmax(160px, 1fr) /* сніданок */
+    minmax(160px, 1fr) /* перекус 1 */
+    minmax(160px, 1fr) /* обід */
+    minmax(160px, 1fr) /* перекус 2 */
+    minmax(160px, 1fr) /* вечеря */
+    220px; /* 🔥 РАЗОМ */
+  gap: 8px;
+}
+
+/* ================= CELLS ================= */
+.week-grid__cell {
+  position: relative;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  padding: 10px 12px;
+  box-sizing: border-box;
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.04),
+    inset 0 1px 0 rgba(255, 255, 255, 0.35);
+
+  transition:
+    border-color 0.25s ease,
+    box-shadow 0.25s ease,
+    transform 0.25s ease;
+
+  /* легкий верхній “premium‑блік” */
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    background: linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.35),
+      rgba(255, 255, 255, 0.05) 45%,
+      transparent 75%
+    );
+    opacity: 0.5;
+  }
+
+  &:hover {
+    border-color: var(--color-accent-soft);
+    box-shadow:
+      0 8px 18px rgba(0, 0, 0, 0.08),
+      0 0 0 1px rgba(255, 255, 255, 0.5);
+    transform: translateY(-1px);
+  }
+}
+
+.week-grid__cell--summary {
+  font-size: 13px;
+  line-height: 1.4;
+  background: var(--color-surface);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 4px;
+}
+.summary-kcal {
+  font-weight: 700;
+}
+
+.summary-macros {
+  display: block;
+  white-space: normal;
+  opacity: 0.8;
+  font-size: 13px;
+  color: var(--color-text-secondary);
+}
+
+/* Header row */
+.week-grid__row--header .week-grid__cell {
+  display: flex;
+  background-color: var(--color-bg-primary);
+  align-items: center; // вертикально
+  justify-content: center; // горизонтально
+  text-align: center;
+
+  font-weight: 600;
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+/* Day name */
+.week-grid__day-name {
+  display: flex;
+  align-items: center;
+  justify-content: center; // ← якщо хочеш по центру
+  text-align: center;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+[data-theme='dark'] {
+  .week-grid__cell {
+    background: var(--color-bg-secondary);
+    box-shadow:
+      0 6px 16px rgba(0, 0, 0, 0.45),
+      inset 0 1px 0 rgba(255, 255, 255, 0.04);
+
+    &::before {
+      opacity: 0.25;
+    }
+  }
+}
+
+/* ================= meal-cell ================= */
+.meal-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+}
+
+.meal-cell__list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-height: 28px;
+}
+/* ================= кнопка додавання ================= */
+.meal-cell__add {
+  align-self: flex-end;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  border: 1px dashed var(--color-border);
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.25s ease;
+
+  span {
+    display: block;
+    width: 100%;
+    height: 100%;
+    position: relative;
+
+    &::before,
+    &::after {
+      content: '';
+      position: absolute;
+      background: var(--color-text-secondary);
+      border-radius: 1px;
+    }
+
+    &::before {
+      width: 12px;
+      height: 2px;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    &::after {
+      width: 2px;
+      height: 12px;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+  }
+
+  &:hover {
+    background: var(--color-accent-soft);
+    border-color: var(--color-accent-soft);
+    box-shadow: 0 4px 10px rgba(46, 204, 113, 0.25);
+  }
+}
