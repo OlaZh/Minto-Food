@@ -1,0 +1,2081 @@
+[
+  {
+    "id": "chicken_breast",
+    "name_ua": "Куряче філе",
+    "name_pl": "Pierś z kurczaka",
+    "name_en": "Chicken breast",
+    "category": "meat",
+    "tags": ["high_protein", "diet"],
+    "gi": null,
+    "search_key_en": "chicken breast raw"
+  },
+  {
+    "id": "oat_milk",
+    "name_ua": "Молоко вівсяне",
+    "name_pl": "Mleko owsiane",
+    "name_en": "Oat milk",
+    "category": "plant_milk",
+    "tags": ["lactose_free", "vegan"],
+    "gi": 60,
+    "search_key_en": "oat milk unsweetened"
+  },
+
+  {
+    "id": "beef_tenderloin",
+    "name_ua": "Яловичина вирізка",
+    "name_pl": "Polędwica wołowa",
+    "name_en": "Beef tenderloin",
+    "category": "meat",
+    "tags": ["high_protein"],
+    "gi": null,
+    "search_key_en": "beef tenderloin raw"
+  },
+  {
+    "id": "beef_shoulder",
+    "name_ua": "Яловичина лопатка",
+    "name_pl": "Łopatka wołowa",
+    "name_en": "Beef shoulder",
+    "category": "meat",
+    "tags": ["high_protein"],
+    "gi": null,
+    "search_key_en": "beef shoulder raw"
+  },
+  {
+    "id": "veal",
+    "name_ua": "Телятина",
+    "name_pl": "Cielęcina",
+    "name_en": "Veal",
+    "category": "meat",
+    "tags": ["high_protein", "diet"],
+    "gi": null,
+    "search_key_en": "veal raw"
+  },
+  {
+    "id": "pork_neck",
+    "name_ua": "Свинина ошийок",
+    "name_pl": "Karkówka wieprzowa",
+    "name_en": "Pork neck",
+    "category": "meat",
+    "tags": ["high_fat"],
+    "gi": null,
+    "search_key_en": "pork neck raw"
+  },
+  {
+    "id": "pork_loin",
+    "name_ua": "Свинина корейка",
+    "name_pl": "Schab wieprzowy",
+    "name_en": "Pork loin",
+    "category": "meat",
+    "tags": ["high_protein"],
+    "gi": null,
+    "search_key_en": "pork loin raw"
+  },
+  {
+    "id": "pork_tenderloin",
+    "name_ua": "Свиняча вирізка",
+    "name_pl": "Polędwiczka wieprzowa",
+    "name_en": "Pork tenderloin",
+    "category": "meat",
+    "tags": ["high_protein", "diet"],
+    "gi": null,
+    "search_key_en": "pork tenderloin raw"
+  },
+  {
+    "id": "lamb",
+    "name_ua": "Баранина",
+    "name_pl": "Baranina",
+    "name_en": "Lamb",
+    "category": "meat",
+    "tags": ["high_fat"],
+    "gi": null,
+    "search_key_en": "lamb raw"
+  },
+  {
+    "id": "rabbit",
+    "name_ua": "Кролятина",
+    "name_pl": "Królik",
+    "name_en": "Rabbit meat",
+    "category": "meat",
+    "tags": ["diet", "high_protein"],
+    "gi": null,
+    "search_key_en": "rabbit meat raw"
+  },
+  {
+    "id": "ground_beef",
+    "name_ua": "Фарш яловичий",
+    "name_pl": "Mięso mielone wołowe",
+    "name_en": "Ground beef",
+    "category": "meat",
+    "tags": ["high_protein"],
+    "gi": null,
+    "search_key_en": "ground beef raw"
+  },
+  {
+    "id": "ground_pork",
+    "name_ua": "Фарш свинячий",
+    "name_pl": "Mięso mielone wieprzowe",
+    "name_en": "Ground pork",
+    "category": "meat",
+    "tags": ["high_fat"],
+    "gi": null,
+    "search_key_en": "ground pork raw"
+  },
+  {
+    "id": "ground_mix",
+    "name_ua": "Фарш змішаний",
+    "name_pl": "Mięso mielone mieszane",
+    "name_en": "Mixed ground meat",
+    "category": "meat",
+    "tags": ["high_protein"],
+    "gi": null,
+    "search_key_en": "ground meat mixed raw"
+  },
+
+  {
+    "id": "chicken_breast",
+    "name_ua": "Куряче філе",
+    "name_pl": "Pierś z kurczaka",
+    "name_en": "Chicken breast",
+    "category": "poultry",
+    "tags": ["high_protein", "diet"],
+    "gi": null,
+    "search_key_en": "chicken breast raw"
+  },
+  {
+    "id": "chicken_thigh",
+    "name_ua": "Куряче стегно",
+    "name_pl": "Udko z kurczaka",
+    "name_en": "Chicken thigh",
+    "category": "poultry",
+    "tags": ["high_protein"],
+    "gi": null,
+    "search_key_en": "chicken thigh raw"
+  },
+  {
+    "id": "chicken_drumstick",
+    "name_ua": "Куряча гомілка",
+    "name_pl": "Podudzie z kurczaka",
+    "name_en": "Chicken drumstick",
+    "category": "poultry",
+    "tags": ["high_protein"],
+    "gi": null,
+    "search_key_en": "chicken drumstick raw"
+  },
+  {
+    "id": "chicken_wings",
+    "name_ua": "Курячі крильця",
+    "name_pl": "Skrzydełka z kurczaka",
+    "name_en": "Chicken wings",
+    "category": "poultry",
+    "tags": ["high_fat"],
+    "gi": null,
+    "search_key_en": "chicken wings raw"
+  },
+  {
+    "id": "ground_chicken",
+    "name_ua": "Фарш курячий",
+    "name_pl": "Mięso mielone z kurczaka",
+    "name_en": "Ground chicken",
+    "category": "poultry",
+    "tags": ["high_protein"],
+    "gi": null,
+    "search_key_en": "ground chicken raw"
+  },
+  {
+    "id": "turkey_breast",
+    "name_ua": "Індиче філе",
+    "name_pl": "Pierś z indyka",
+    "name_en": "Turkey breast",
+    "category": "poultry",
+    "tags": ["high_protein", "diet"],
+    "gi": null,
+    "search_key_en": "turkey breast raw"
+  },
+  {
+    "id": "turkey_thigh",
+    "name_ua": "Індиче стегно",
+    "name_pl": "Udko z indyka",
+    "name_en": "Turkey thigh",
+    "category": "poultry",
+    "tags": ["high_protein"],
+    "gi": null,
+    "search_key_en": "turkey thigh raw"
+  },
+  {
+    "id": "ground_turkey",
+    "name_ua": "Фарш індичий",
+    "name_pl": "Mięso mielone z indyka",
+    "name_en": "Ground turkey",
+    "category": "poultry",
+    "tags": ["high_protein", "diet"],
+    "gi": null,
+    "search_key_en": "ground turkey raw"
+  },
+  {
+    "id": "duck",
+    "name_ua": "Качка",
+    "name_pl": "Kaczka",
+    "name_en": "Duck",
+    "category": "poultry",
+    "tags": ["high_fat"],
+    "gi": null,
+    "search_key_en": "duck raw"
+  },
+  {
+    "id": "goose",
+    "name_ua": "Гуска",
+    "name_pl": "Gęś",
+    "name_en": "Goose",
+    "category": "poultry",
+    "tags": ["high_fat"],
+    "gi": null,
+    "search_key_en": "goose raw"
+  },
+
+  {
+    "id": "salmon",
+    "name_ua": "Лосось",
+    "name_pl": "Łosoś",
+    "name_en": "Salmon",
+    "category": "fish",
+    "tags": ["high_protein", "high_omega3"],
+    "gi": null,
+    "search_key_en": "salmon raw"
+  },
+  {
+    "id": "trout",
+    "name_ua": "Форель",
+    "name_pl": "Pstrąg",
+    "name_en": "Trout",
+    "category": "fish",
+    "tags": ["high_protein"],
+    "gi": null,
+    "search_key_en": "trout raw"
+  },
+  {
+    "id": "tuna_fresh",
+    "name_ua": "Тунець (свіжий)",
+    "name_pl": "Tuńczyk świeży",
+    "name_en": "Tuna fresh",
+    "category": "fish",
+    "tags": ["high_protein"],
+    "gi": null,
+    "search_key_en": "tuna raw"
+  },
+  {
+    "id": "cod",
+    "name_ua": "Тріска",
+    "name_pl": "Dorsz",
+    "name_en": "Cod",
+    "category": "fish",
+    "tags": ["diet", "high_protein"],
+    "gi": null,
+    "search_key_en": "cod raw"
+  },
+  {
+    "id": "hake",
+    "name_ua": "Хек",
+    "name_pl": "Morszczuk",
+    "name_en": "Hake",
+    "category": "fish",
+    "tags": ["diet"],
+    "gi": null,
+    "search_key_en": "hake raw"
+  },
+  {
+    "id": "pollock",
+    "name_ua": "Минтай",
+    "name_pl": "Mintaj",
+    "name_en": "Pollock",
+    "category": "fish",
+    "tags": ["diet"],
+    "gi": null,
+    "search_key_en": "pollock raw"
+  },
+  {
+    "id": "mackerel",
+    "name_ua": "Скумбрія",
+    "name_pl": "Makrela",
+    "name_en": "Mackerel",
+    "category": "fish",
+    "tags": ["high_omega3", "high_fat"],
+    "gi": null,
+    "search_key_en": "mackerel raw"
+  },
+  {
+    "id": "herring",
+    "name_ua": "Оселедець",
+    "name_pl": "Śledź",
+    "name_en": "Herring",
+    "category": "fish",
+    "tags": ["high_omega3"],
+    "gi": null,
+    "search_key_en": "herring raw"
+  },
+  {
+    "id": "dorado",
+    "name_ua": "Дорадо",
+    "name_pl": "Dorada",
+    "name_en": "Dorado",
+    "category": "fish",
+    "tags": ["high_protein"],
+    "gi": null,
+    "search_key_en": "gilt-head bream raw"
+  },
+  {
+    "id": "seabass",
+    "name_ua": "Сібас",
+    "name_pl": "Okoń morski",
+    "name_en": "Sea bass",
+    "category": "fish",
+    "tags": ["high_protein"],
+    "gi": null,
+    "search_key_en": "sea bass raw"
+  },
+  {
+    "id": "halibut",
+    "name_ua": "Палтус",
+    "name_pl": "Halibut",
+    "name_en": "Halibut",
+    "category": "fish",
+    "tags": ["high_protein"],
+    "gi": null,
+    "search_key_en": "halibut raw"
+  },
+  {
+    "id": "flounder",
+    "name_ua": "Камбала",
+    "name_pl": "Flądra",
+    "name_en": "Flounder",
+    "category": "fish",
+    "tags": ["diet"],
+    "gi": null,
+    "search_key_en": "flounder raw"
+  },
+
+  {
+    "id": "shrimp",
+    "name_ua": "Креветки",
+    "name_pl": "Krewetki",
+    "name_en": "Shrimp",
+    "category": "seafood",
+    "tags": ["high_protein", "diet", "low_fat"],
+    "gi": null,
+    "search_key_en": "shrimp raw"
+  },
+  {
+    "id": "mussels",
+    "name_ua": "Мідії",
+    "name_pl": "Małże",
+    "name_en": "Mussels",
+    "category": "seafood",
+    "tags": ["high_protein"],
+    "gi": null,
+    "search_key_en": "mussels raw"
+  },
+  {
+    "id": "squid",
+    "name_ua": "Кальмари",
+    "name_pl": "Kalmary",
+    "name_en": "Squid",
+    "category": "seafood",
+    "tags": ["high_protein", "diet"],
+    "gi": null,
+    "search_key_en": "squid raw"
+  },
+  {
+    "id": "octopus",
+    "name_ua": "Восьминіг",
+    "name_pl": "Ośmiornica",
+    "name_en": "Octopus",
+    "category": "seafood",
+    "tags": ["high_protein", "diet"],
+    "gi": null,
+    "search_key_en": "octopus raw"
+  },
+  {
+    "id": "scallops",
+    "name_ua": "Гребінці",
+    "name_pl": "Przegrzebki",
+    "name_en": "Scallops",
+    "category": "seafood",
+    "tags": ["high_protein", "diet"],
+    "gi": null,
+    "search_key_en": "scallops raw"
+  },
+  {
+    "id": "crab",
+    "name_ua": "Краб",
+    "name_pl": "Krab",
+    "name_en": "Crab",
+    "category": "seafood",
+    "tags": ["high_protein"],
+    "gi": null,
+    "search_key_en": "crab raw"
+  },
+  {
+    "id": "surimi",
+    "name_ua": "Крабові палички (сурімі)",
+    "name_pl": "Paluszki krabowe (surimi)",
+    "name_en": "Surimi",
+    "category": "seafood",
+    "tags": ["processed"],
+    "gi": null,
+    "search_key_en": "surimi"
+  },
+  {
+    "id": "oysters",
+    "name_ua": "Устриці",
+    "name_pl": "Ostrygi",
+    "name_en": "Oysters",
+    "category": "seafood",
+    "tags": ["high_protein"],
+    "gi": null,
+    "search_key_en": "oysters raw"
+  },
+
+  {
+    "id": "chicken_liver",
+    "name_ua": "Куряча печінка",
+    "name_pl": "Wątróbka drobiowa",
+    "name_en": "Chicken liver",
+    "category": "offal",
+    "tags": ["high_protein", "high_iron"],
+    "gi": null,
+    "search_key_en": "chicken liver raw"
+  },
+  {
+    "id": "beef_liver",
+    "name_ua": "Яловича печінка",
+    "name_pl": "Wątróbka wołowa",
+    "name_en": "Beef liver",
+    "category": "offal",
+    "tags": ["high_iron", "high_protein"],
+    "gi": null,
+    "search_key_en": "beef liver raw"
+  },
+  {
+    "id": "pork_liver",
+    "name_ua": "Свиняча печінка",
+    "name_pl": "Wątróbka wieprzowa",
+    "name_en": "Pork liver",
+    "category": "offal",
+    "tags": ["high_iron"],
+    "gi": null,
+    "search_key_en": "pork liver raw"
+  },
+  {
+    "id": "beef_heart",
+    "name_ua": "Яловиче серце",
+    "name_pl": "Serce wołowe",
+    "name_en": "Beef heart",
+    "category": "offal",
+    "tags": ["high_protein"],
+    "gi": null,
+    "search_key_en": "beef heart raw"
+  },
+  {
+    "id": "chicken_hearts",
+    "name_ua": "Курячі сердечка",
+    "name_pl": "Serduszka drobiowe",
+    "name_en": "Chicken hearts",
+    "category": "offal",
+    "tags": ["high_protein"],
+    "gi": null,
+    "search_key_en": "chicken hearts raw"
+  },
+  {
+    "id": "chicken_stomachs",
+    "name_ua": "Курячі шлунки",
+    "name_pl": "Żołądki drobiowe",
+    "name_en": "Chicken gizzards",
+    "category": "offal",
+    "tags": ["high_protein"],
+    "gi": null,
+    "search_key_en": "chicken gizzards raw"
+  },
+  {
+    "id": "beef_tongue",
+    "name_ua": "Яловичий язик",
+    "name_pl": "Język wołowy",
+    "name_en": "Beef tongue",
+    "category": "offal",
+    "tags": ["high_fat", "high_protein"],
+    "gi": null,
+    "search_key_en": "beef tongue raw"
+  },
+  {
+    "id": "pork_kidneys",
+    "name_ua": "Свинячі нирки",
+    "name_pl": "Nerki wieprzowe",
+    "name_en": "Pork kidneys",
+    "category": "offal",
+    "tags": [],
+    "gi": null,
+    "search_key_en": "pork kidneys raw"
+  },
+  {
+    "id": "beef_lungs",
+    "name_ua": "Яловичі легені",
+    "name_pl": "Płuca wołowe",
+    "name_en": "Beef lungs",
+    "category": "offal",
+    "tags": [],
+    "gi": null,
+    "search_key_en": "beef lungs raw"
+  },
+
+  {
+    "id": "chicken_eggs_c1",
+    "name_ua": "Яйця курячі C1",
+    "name_pl": "Jajka kurze C1",
+    "name_en": "Chicken eggs C1",
+    "category": "eggs",
+    "tags": ["high_protein"],
+    "gi": null,
+    "search_key_en": "chicken eggs"
+  },
+  {
+    "id": "chicken_eggs_c0",
+    "name_ua": "Яйця курячі C0",
+    "name_pl": "Jajka kurze C0",
+    "name_en": "Chicken eggs C0",
+    "category": "eggs",
+    "tags": ["high_protein"],
+    "gi": null,
+    "search_key_en": "chicken eggs organic"
+  },
+  {
+    "id": "chicken_eggs_home",
+    "name_ua": "Яйця курячі домашні",
+    "name_pl": "Jajka wiejskie",
+    "name_en": "Farm eggs",
+    "category": "eggs",
+    "tags": ["high_protein"],
+    "gi": null,
+    "search_key_en": "farm eggs"
+  },
+  {
+    "id": "quail_eggs",
+    "name_ua": "Яйця перепелині",
+    "name_pl": "Jajka przepiórcze",
+    "name_en": "Quail eggs",
+    "category": "eggs",
+    "tags": ["diet"],
+    "gi": null,
+    "search_key_en": "quail eggs"
+  },
+  {
+    "id": "duck_eggs",
+    "name_ua": "Яйця качині",
+    "name_pl": "Jajka kacze",
+    "name_en": "Duck eggs",
+    "category": "eggs",
+    "tags": ["high_fat"],
+    "gi": null,
+    "search_key_en": "duck eggs"
+  },
+  {
+    "id": "goose_eggs",
+    "name_ua": "Яйця гусячі",
+    "name_pl": "Jajka gęsie",
+    "name_en": "Goose eggs",
+    "category": "eggs",
+    "tags": ["high_fat"],
+    "gi": null,
+    "search_key_en": "goose eggs"
+  },
+  {
+    "id": "egg_whites",
+    "name_ua": "Яєчний білок пастеризований",
+    "name_pl": "Białko jaj pasteryzowane",
+    "name_en": "Liquid egg whites",
+    "category": "eggs",
+    "tags": ["high_protein", "diet"],
+    "gi": null,
+    "search_key_en": "liquid egg whites"
+  },
+  {
+    "id": "egg_powder",
+    "name_ua": "Яєчний порошок (меланж)",
+    "name_pl": "Proszek jajeczny",
+    "name_en": "Egg powder",
+    "category": "eggs",
+    "tags": [],
+    "gi": null,
+    "search_key_en": "egg powder"
+  },
+
+  {
+    "id": "milk_2",
+    "name_ua": "Молоко 2%",
+    "name_pl": "Mleko 2%",
+    "name_en": "Milk 2%",
+    "category": "dairy",
+    "tags": [],
+    "gi": 30,
+    "search_key_en": "milk 2%"
+  },
+  {
+    "id": "milk_lactose_free",
+    "name_ua": "Молоко безлактозне",
+    "name_pl": "Mleko bez laktozy",
+    "name_en": "Lactose-free milk",
+    "category": "dairy",
+    "tags": ["lactose_free"],
+    "gi": 30,
+    "search_key_en": "lactose free milk"
+  },
+  {
+    "id": "kefir",
+    "name_ua": "Кефір",
+    "name_pl": "Kefir",
+    "name_en": "Kefir",
+    "category": "dairy",
+    "tags": ["probiotic"],
+    "gi": 25,
+    "search_key_en": "kefir"
+  },
+  {
+    "id": "yogurt_plain",
+    "name_ua": "Йогурт натуральний",
+    "name_pl": "Jogurt naturalny",
+    "name_en": "Plain yogurt",
+    "category": "dairy",
+    "tags": ["probiotic"],
+    "gi": 35,
+    "search_key_en": "plain yogurt"
+  },
+  {
+    "id": "yogurt_lf",
+    "name_ua": "Йогурт безлактозний",
+    "name_pl": "Jogurt bez laktozy",
+    "name_en": "Lactose-free yogurt",
+    "category": "dairy",
+    "tags": ["lactose_free"],
+    "gi": 35,
+    "search_key_en": "lactose free yogurt"
+  },
+  {
+    "id": "cottage_cheese",
+    "name_ua": "Творог (сир кисломолочний)",
+    "name_pl": "Twaróg",
+    "name_en": "Cottage cheese",
+    "category": "dairy",
+    "tags": ["high_protein"],
+    "gi": 30,
+    "search_key_en": "cottage cheese"
+  },
+  {
+    "id": "sour_cream",
+    "name_ua": "Сметана",
+    "name_pl": "Śmietana",
+    "name_en": "Sour cream",
+    "category": "dairy",
+    "tags": ["high_fat"],
+    "gi": 30,
+    "search_key_en": "sour cream"
+  },
+  {
+    "id": "butter",
+    "name_ua": "Вершкове масло",
+    "name_pl": "Masło",
+    "name_en": "Butter",
+    "category": "dairy",
+    "tags": ["high_fat"],
+    "gi": null,
+    "search_key_en": "butter"
+  },
+
+  {
+    "id": "cheddar",
+    "name_ua": "Чеддер",
+    "name_pl": "Cheddar",
+    "name_en": "Cheddar",
+    "category": "cheese",
+    "tags": ["high_fat"],
+    "gi": null,
+    "search_key_en": "cheddar cheese"
+  },
+  {
+    "id": "mozzarella",
+    "name_ua": "Моцарела",
+    "name_pl": "Mozzarella",
+    "name_en": "Mozzarella",
+    "category": "cheese",
+    "tags": ["high_protein"],
+    "gi": null,
+    "search_key_en": "mozzarella cheese"
+  },
+  {
+    "id": "feta",
+    "name_ua": "Фета",
+    "name_pl": "Feta",
+    "name_en": "Feta cheese",
+    "category": "cheese",
+    "tags": ["high_fat"],
+    "gi": null,
+    "search_key_en": "feta cheese"
+  },
+  {
+    "id": "parmesan",
+    "name_ua": "Пармезан",
+    "name_pl": "Parmezan",
+    "name_en": "Parmesan",
+    "category": "cheese",
+    "tags": ["high_protein"],
+    "gi": null,
+    "search_key_en": "parmesan cheese"
+  },
+  {
+    "id": "ricotta",
+    "name_ua": "Рікотта",
+    "name_pl": "Ricotta",
+    "name_en": "Ricotta",
+    "category": "cheese",
+    "tags": ["diet"],
+    "gi": null,
+    "search_key_en": "ricotta cheese"
+  },
+  {
+    "id": "cream_cheese",
+    "name_ua": "Вершковий сир",
+    "name_pl": "Serek śmietankowy",
+    "name_en": "Cream cheese",
+    "category": "cheese",
+    "tags": ["high_fat"],
+    "gi": null,
+    "search_key_en": "cream cheese"
+  },
+
+  {
+    "id": "carrot",
+    "name_ua": "Морква",
+    "name_pl": "Marchew",
+    "name_en": "Carrot",
+    "category": "vegetables",
+    "tags": ["high_gi"],
+    "gi": 70,
+    "search_key_en": "carrot raw"
+  },
+  {
+    "id": "potato",
+    "name_ua": "Картопля",
+    "name_pl": "Ziemniaki",
+    "name_en": "Potato",
+    "category": "vegetables",
+    "tags": ["high_gi"],
+    "gi": 85,
+    "search_key_en": "potato raw"
+  },
+  {
+    "id": "tomato",
+    "name_ua": "Помідор",
+    "name_pl": "Pomidor",
+    "name_en": "Tomato",
+    "category": "vegetables",
+    "tags": [],
+    "gi": 30,
+    "search_key_en": "tomato raw"
+  },
+  {
+    "id": "cucumber",
+    "name_ua": "Огірок",
+    "name_pl": "Ogórek",
+    "name_en": "Cucumber",
+    "category": "vegetables",
+    "tags": ["diet"],
+    "gi": 15,
+    "search_key_en": "cucumber raw"
+  },
+  {
+    "id": "onion",
+    "name_ua": "Цибуля",
+    "name_pl": "Cebula",
+    "name_en": "Onion",
+    "category": "vegetables",
+    "tags": [],
+    "gi": 10,
+    "search_key_en": "onion raw"
+  },
+  {
+    "id": "garlic",
+    "name_ua": "Часник",
+    "name_pl": "Czosnek",
+    "name_en": "Garlic",
+    "category": "vegetables",
+    "tags": [],
+    "gi": 30,
+    "search_key_en": "garlic raw"
+  },
+  {
+    "id": "broccoli",
+    "name_ua": "Броколі",
+    "name_pl": "Brokuły",
+    "name_en": "Broccoli",
+    "category": "vegetables",
+    "tags": ["diet"],
+    "gi": 15,
+    "search_key_en": "broccoli raw"
+  },
+  {
+    "id": "cauliflower",
+    "name_ua": "Цвітна капуста",
+    "name_pl": "Kalafior",
+    "name_en": "Cauliflower",
+    "category": "vegetables",
+    "tags": ["diet"],
+    "gi": 15,
+    "search_key_en": "cauliflower raw"
+  },
+  {
+    "id": "cabbage",
+    "name_ua": "Капуста",
+    "name_pl": "Kapusta",
+    "name_en": "Cabbage",
+    "category": "vegetables",
+    "tags": ["diet"],
+    "gi": 15,
+    "search_key_en": "cabbage raw"
+  },
+  {
+    "id": "pepper",
+    "name_ua": "Перець солодкий",
+    "name_pl": "Papryka",
+    "name_en": "Bell pepper",
+    "category": "vegetables",
+    "tags": [],
+    "gi": 30,
+    "search_key_en": "bell pepper raw"
+  },
+
+  {
+    "id": "champignon",
+    "name_ua": "Печериці",
+    "name_pl": "Pieczarki",
+    "name_en": "Champignons",
+    "category": "mushrooms",
+    "tags": ["diet"],
+    "gi": 10,
+    "search_key_en": "white mushrooms raw"
+  },
+  {
+    "id": "oyster_mushrooms",
+    "name_ua": "Гливи",
+    "name_pl": "Boczniaki",
+    "name_en": "Oyster mushrooms",
+    "category": "mushrooms",
+    "tags": ["diet"],
+    "gi": 10,
+    "search_key_en": "oyster mushrooms raw"
+  },
+  {
+    "id": "porcini",
+    "name_ua": "Білі гриби",
+    "name_pl": "Borowiki",
+    "name_en": "Porcini",
+    "category": "mushrooms",
+    "tags": ["diet"],
+    "gi": 10,
+    "search_key_en": "porcini raw"
+  },
+  {
+    "id": "shiitake",
+    "name_ua": "Шиітаке",
+    "name_pl": "Shiitake",
+    "name_en": "Shiitake",
+    "category": "mushrooms",
+    "tags": ["superfood"],
+    "gi": 10,
+    "search_key_en": "shiitake raw"
+  },
+  {
+    "id": "portobello",
+    "name_ua": "Портобелло",
+    "name_pl": "Portobello",
+    "name_en": "Portobello",
+    "category": "mushrooms",
+    "tags": ["diet"],
+    "gi": 10,
+    "search_key_en": "portobello raw"
+  },
+
+  {
+    "id": "dill",
+    "name_ua": "Кріп",
+    "name_pl": "Koper",
+    "name_en": "Dill",
+    "category": "greens",
+    "tags": ["diet"],
+    "gi": 5,
+    "search_key_en": "dill fresh"
+  },
+  {
+    "id": "parsley",
+    "name_ua": "Петрушка",
+    "name_pl": "Pietruszka",
+    "name_en": "Parsley",
+    "category": "greens",
+    "tags": ["diet"],
+    "gi": 5,
+    "search_key_en": "parsley fresh"
+  },
+  {
+    "id": "cilantro",
+    "name_ua": "Кінза",
+    "name_pl": "Kolendra",
+    "name_en": "Cilantro",
+    "category": "greens",
+    "tags": ["diet"],
+    "gi": 5,
+    "search_key_en": "cilantro fresh"
+  },
+  {
+    "id": "green_onion",
+    "name_ua": "Зелена цибуля",
+    "name_pl": "Szczypiorek",
+    "name_en": "Green onion",
+    "category": "greens",
+    "tags": ["diet"],
+    "gi": 5,
+    "search_key_en": "green onion raw"
+  },
+  {
+    "id": "spinach",
+    "name_ua": "Шпинат",
+    "name_pl": "Szpinak",
+    "name_en": "Spinach",
+    "category": "greens",
+    "tags": ["diet", "superfood"],
+    "gi": 15,
+    "search_key_en": "spinach raw"
+  },
+  {
+    "id": "arugula",
+    "name_ua": "Рукола",
+    "name_pl": "Rukola",
+    "name_en": "Arugula",
+    "category": "greens",
+    "tags": ["diet"],
+    "gi": 15,
+    "search_key_en": "arugula raw"
+  },
+
+  {
+    "id": "apple",
+    "name_ua": "Яблуко",
+    "name_pl": "Jabłko",
+    "name_en": "Apple",
+    "category": "fruits",
+    "tags": ["low_gi"],
+    "gi": 35,
+    "search_key_en": "apple raw"
+  },
+  {
+    "id": "banana",
+    "name_ua": "Банан",
+    "name_pl": "Banan",
+    "name_en": "Banana",
+    "category": "fruits",
+    "tags": ["high_gi"],
+    "gi": 60,
+    "search_key_en": "banana raw"
+  },
+  {
+    "id": "orange",
+    "name_ua": "Апельсин",
+    "name_pl": "Pomarańcza",
+    "name_en": "Orange",
+    "category": "fruits",
+    "tags": ["low_gi"],
+    "gi": 40,
+    "search_key_en": "orange raw"
+  },
+  {
+    "id": "pear",
+    "name_ua": "Груша",
+    "name_pl": "Gruszka",
+    "name_en": "Pear",
+    "category": "fruits",
+    "tags": ["low_gi"],
+    "gi": 38,
+    "search_key_en": "pear raw"
+  },
+  {
+    "id": "kiwi",
+    "name_ua": "Ківі",
+    "name_pl": "Kiwi",
+    "name_en": "Kiwi",
+    "category": "fruits",
+    "tags": ["vitamin_c"],
+    "gi": 50,
+    "search_key_en": "kiwi raw"
+  },
+  {
+    "id": "grapefruit",
+    "name_ua": "Грейпфрут",
+    "name_pl": "Grejpfrut",
+    "name_en": "Grapefruit",
+    "category": "fruits",
+    "tags": ["low_gi"],
+    "gi": 25,
+    "search_key_en": "grapefruit raw"
+  },
+  {
+    "id": "pineapple",
+    "name_ua": "Ананас",
+    "name_pl": "Ananas",
+    "name_en": "Pineapple",
+    "category": "fruits",
+    "tags": ["high_gi"],
+    "gi": 65,
+    "search_key_en": "pineapple raw"
+  },
+  {
+    "id": "mango",
+    "name_ua": "Манго",
+    "name_pl": "Mango",
+    "name_en": "Mango",
+    "category": "fruits",
+    "tags": ["high_gi"],
+    "gi": 55,
+    "search_key_en": "mango raw"
+  },
+  {
+    "id": "avocado",
+    "name_ua": "Авокадо",
+    "name_pl": "Awokado",
+    "name_en": "Avocado",
+    "category": "fruits",
+    "tags": ["high_fat", "superfood"],
+    "gi": 10,
+    "search_key_en": "avocado raw"
+  },
+
+  {
+    "id": "strawberry",
+    "name_ua": "Полуниця",
+    "name_pl": "Truskawki",
+    "name_en": "Strawberries",
+    "category": "berries",
+    "tags": ["low_gi", "diet"],
+    "gi": 25,
+    "search_key_en": "strawberries raw"
+  },
+  {
+    "id": "blueberry",
+    "name_ua": "Чорниця",
+    "name_pl": "Jagody",
+    "name_en": "Blueberries",
+    "category": "berries",
+    "tags": ["superfood"],
+    "gi": 53,
+    "search_key_en": "blueberries raw"
+  },
+  {
+    "id": "raspberry",
+    "name_ua": "Малина",
+    "name_pl": "Maliny",
+    "name_en": "Raspberries",
+    "category": "berries",
+    "tags": ["diet"],
+    "gi": 32,
+    "search_key_en": "raspberries raw"
+  },
+  {
+    "id": "blackberry",
+    "name_ua": "Ожина",
+    "name_pl": "Jeżyny",
+    "name_en": "Blackberries",
+    "category": "berries",
+    "tags": ["diet"],
+    "gi": 25,
+    "search_key_en": "blackberries raw"
+  },
+  {
+    "id": "cranberry",
+    "name_ua": "Журавлина",
+    "name_pl": "Żurawina",
+    "name_en": "Cranberries",
+    "category": "berries",
+    "tags": ["superfood"],
+    "gi": 45,
+    "search_key_en": "cranberries raw"
+  },
+  {
+    "id": "beans_white",
+    "name_ua": "Квасоля біла",
+    "name_pl": "Fasola biała",
+    "name_en": "White beans",
+    "category": "legumes",
+    "tags": ["high_protein", "fiber"],
+    "gi": 35,
+    "search_key_en": "white beans raw"
+  },
+  {
+    "id": "beans_red",
+    "name_ua": "Квасоля червона",
+    "name_pl": "Fasola czerwona",
+    "name_en": "Red beans",
+    "category": "legumes",
+    "tags": ["high_protein", "fiber"],
+    "gi": 30,
+    "search_key_en": "red beans raw"
+  },
+  {
+    "id": "lentils",
+    "name_ua": "Сочевиця",
+    "name_pl": "Soczewica",
+    "name_en": "Lentils",
+    "category": "legumes",
+    "tags": ["high_protein", "fiber"],
+    "gi": 32,
+    "search_key_en": "lentils raw"
+  },
+  {
+    "id": "peas",
+    "name_ua": "Горох",
+    "name_pl": "Groch",
+    "name_en": "Peas",
+    "category": "legumes",
+    "tags": ["fiber"],
+    "gi": 35,
+    "search_key_en": "peas raw"
+  },
+  {
+    "id": "chickpeas",
+    "name_ua": "Нут",
+    "name_pl": "Ciecierzyca",
+    "name_en": "Chickpeas",
+    "category": "legumes",
+    "tags": ["high_protein"],
+    "gi": 28,
+    "search_key_en": "chickpeas raw"
+  },
+
+  {
+    "id": "rice_white",
+    "name_ua": "Рис білий",
+    "name_pl": "Ryż biały",
+    "name_en": "White rice",
+    "category": "grains",
+    "tags": ["high_gi"],
+    "gi": 70,
+    "search_key_en": "white rice raw"
+  },
+  {
+    "id": "rice_brown",
+    "name_ua": "Рис коричневий",
+    "name_pl": "Ryż brązowy",
+    "name_en": "Brown rice",
+    "category": "grains",
+    "tags": ["low_gi"],
+    "gi": 50,
+    "search_key_en": "brown rice raw"
+  },
+  {
+    "id": "buckwheat",
+    "name_ua": "Гречка",
+    "name_pl": "Kasza gryczana",
+    "name_en": "Buckwheat",
+    "category": "grains",
+    "tags": ["low_gi"],
+    "gi": 45,
+    "search_key_en": "buckwheat raw"
+  },
+  {
+    "id": "oatmeal",
+    "name_ua": "Вівсянка",
+    "name_pl": "Płatki owsiane",
+    "name_en": "Oatmeal",
+    "category": "grains",
+    "tags": ["low_gi", "fiber"],
+    "gi": 40,
+    "search_key_en": "oatmeal raw"
+  },
+  {
+    "id": "bulgur",
+    "name_ua": "Булгур",
+    "name_pl": "Bulgur",
+    "name_en": "Bulgur",
+    "category": "grains",
+    "tags": ["low_gi"],
+    "gi": 48,
+    "search_key_en": "bulgur raw"
+  },
+  {
+    "id": "couscous",
+    "name_ua": "Кускус",
+    "name_pl": "Kuskus",
+    "name_en": "Couscous",
+    "category": "grains",
+    "tags": ["high_gi"],
+    "gi": 65,
+    "search_key_en": "couscous raw"
+  },
+  {
+    "id": "quinoa",
+    "name_ua": "Кіноа",
+    "name_pl": "Komosa ryżowa",
+    "name_en": "Quinoa",
+    "category": "grains",
+    "tags": ["superfood", "high_protein"],
+    "gi": 53,
+    "search_key_en": "quinoa raw"
+  },
+
+  {
+    "id": "beans_white",
+    "name_ua": "Квасоля біла",
+    "name_pl": "Fasola biała",
+    "name_en": "White beans",
+    "category": "legumes",
+    "tags": ["high_protein", "fiber"],
+    "gi": 35,
+    "search_key_en": "white beans raw"
+  },
+  {
+    "id": "beans_red",
+    "name_ua": "Квасоля червона",
+    "name_pl": "Fasola czerwona",
+    "name_en": "Red beans",
+    "category": "legumes",
+    "tags": ["high_protein", "fiber"],
+    "gi": 30,
+    "search_key_en": "red beans raw"
+  },
+  {
+    "id": "lentils",
+    "name_ua": "Сочевиця",
+    "name_pl": "Soczewica",
+    "name_en": "Lentils",
+    "category": "legumes",
+    "tags": ["high_protein", "fiber"],
+    "gi": 32,
+    "search_key_en": "lentils raw"
+  },
+  {
+    "id": "peas",
+    "name_ua": "Горох",
+    "name_pl": "Groch",
+    "name_en": "Peas",
+    "category": "legumes",
+    "tags": ["fiber"],
+    "gi": 35,
+    "search_key_en": "peas raw"
+  },
+  {
+    "id": "chickpeas",
+    "name_ua": "Нут",
+    "name_pl": "Ciecierzyca",
+    "name_en": "Chickpeas",
+    "category": "legumes",
+    "tags": ["high_protein"],
+    "gi": 28,
+    "search_key_en": "chickpeas raw"
+  },
+
+  {
+    "id": "flour_wheat",
+    "name_ua": "Борошно пшеничне",
+    "name_pl": "Mąka pszenna",
+    "name_en": "Wheat flour",
+    "category": "flour",
+    "tags": ["high_gi"],
+    "gi": 85,
+    "search_key_en": "wheat flour"
+  },
+  {
+    "id": "flour_wholegrain",
+    "name_ua": "Борошно цільнозернове",
+    "name_pl": "Mąka pełnoziarnista",
+    "name_en": "Whole grain flour",
+    "category": "flour",
+    "tags": ["fiber"],
+    "gi": 60,
+    "search_key_en": "whole grain flour"
+  },
+  {
+    "id": "flour_rice",
+    "name_ua": "Борошно рисове",
+    "name_pl": "Mąka ryżowa",
+    "name_en": "Rice flour",
+    "category": "flour",
+    "tags": ["gluten_free"],
+    "gi": 95,
+    "search_key_en": "rice flour"
+  },
+  {
+    "id": "flour_corn",
+    "name_ua": "Борошно кукурудзяне",
+    "name_pl": "Mąka kukurydziana",
+    "name_en": "Corn flour",
+    "category": "flour",
+    "tags": ["gluten_free"],
+    "gi": 70,
+    "search_key_en": "corn flour"
+  },
+  {
+    "id": "flour_oat",
+    "name_ua": "Борошно вівсяне",
+    "name_pl": "Mąka owsiana",
+    "name_en": "Oat flour",
+    "category": "flour",
+    "tags": ["fiber"],
+    "gi": 44,
+    "search_key_en": "oat flour"
+  },
+
+  {
+    "id": "bread_white",
+    "name_ua": "Хліб білий",
+    "name_pl": "Chleb biały",
+    "name_en": "White bread",
+    "category": "bread",
+    "tags": ["high_gi"],
+    "gi": 75,
+    "search_key_en": "white bread"
+  },
+  {
+    "id": "bread_wholegrain",
+    "name_ua": "Хліб цільнозерновий",
+    "name_pl": "Chleb pełnoziarnisty",
+    "name_en": "Whole grain bread",
+    "category": "bread",
+    "tags": ["fiber"],
+    "gi": 50,
+    "search_key_en": "whole grain bread"
+  },
+  {
+    "id": "bread_rye",
+    "name_ua": "Хліб житній",
+    "name_pl": "Chleb żytni",
+    "name_en": "Rye bread",
+    "category": "bread",
+    "tags": ["fiber"],
+    "gi": 45,
+    "search_key_en": "rye bread"
+  },
+  {
+    "id": "bread_gluten_free",
+    "name_ua": "Хліб безглютеновий",
+    "name_pl": "Chleb bezglutenowy",
+    "name_en": "Gluten-free bread",
+    "category": "bread",
+    "tags": ["gluten_free"],
+    "gi": 70,
+    "search_key_en": "gluten free bread"
+  },
+
+  {
+    "id": "crispbread_rye",
+    "name_ua": "Хлібці житні",
+    "name_pl": "Pieczywo chrupkie żytnie",
+    "name_en": "Rye crispbread",
+    "category": "crispbread",
+    "tags": ["diet", "fiber"],
+    "gi": 45,
+    "search_key_en": "rye crispbread"
+  },
+  {
+    "id": "crispbread_corn",
+    "name_ua": "Хлібці кукурудзяні",
+    "name_pl": "Pieczywo chrupkie kukurydziane",
+    "name_en": "Corn crispbread",
+    "category": "crispbread",
+    "tags": [],
+    "gi": 70,
+    "search_key_en": "corn crispbread"
+  },
+  {
+    "id": "rice_cakes",
+    "name_ua": "Рисові хлібці",
+    "name_pl": "Wafle ryżowe",
+    "name_en": "Rice cakes",
+    "category": "crispbread",
+    "tags": ["high_gi"],
+    "gi": 82,
+    "search_key_en": "rice cakes"
+  },
+
+  {
+    "id": "pasta_white",
+    "name_ua": "Макарони з білого борошна",
+    "name_pl": "Makaron pszenny",
+    "name_en": "Wheat pasta",
+    "category": "pasta",
+    "tags": ["high_gi"],
+    "gi": 70,
+    "search_key_en": "pasta raw"
+  },
+  {
+    "id": "pasta_wholegrain",
+    "name_ua": "Макарони цільнозернові",
+    "name_pl": "Makaron pełnoziarnisty",
+    "name_en": "Whole grain pasta",
+    "category": "pasta",
+    "tags": ["fiber"],
+    "gi": 50,
+    "search_key_en": "whole grain pasta raw"
+  },
+  {
+    "id": "pasta_gluten_free",
+    "name_ua": "Макарони безглютенові",
+    "name_pl": "Makaron bezglutenowy",
+    "name_en": "Gluten-free pasta",
+    "category": "pasta",
+    "tags": ["gluten_free"],
+    "gi": 65,
+    "search_key_en": "gluten free pasta raw"
+  },
+  {
+    "id": "almonds",
+    "name_ua": "Мигдаль",
+    "name_pl": "Migdały",
+    "name_en": "Almonds",
+    "category": "nuts_seeds",
+    "tags": ["high_fat", "fiber"],
+    "gi": 15,
+    "search_key_en": "almonds raw"
+  },
+  {
+    "id": "walnuts",
+    "name_ua": "Волоські горіхи",
+    "name_pl": "Orzechy włoskie",
+    "name_en": "Walnuts",
+    "category": "nuts_seeds",
+    "tags": ["high_fat", "omega3"],
+    "gi": 15,
+    "search_key_en": "walnuts raw"
+  },
+  {
+    "id": "cashews",
+    "name_ua": "Кеш'ю",
+    "name_pl": "Orzechy nerkowca",
+    "name_en": "Cashews",
+    "category": "nuts_seeds",
+    "tags": ["high_fat"],
+    "gi": 25,
+    "search_key_en": "cashews raw"
+  },
+  {
+    "id": "hazelnuts",
+    "name_ua": "Фундук",
+    "name_pl": "Orzechy laskowe",
+    "name_en": "Hazelnuts",
+    "category": "nuts_seeds",
+    "tags": ["high_fat"],
+    "gi": 15,
+    "search_key_en": "hazelnuts raw"
+  },
+  {
+    "id": "peanuts",
+    "name_ua": "Арахіс",
+    "name_pl": "Orzeszki ziemne",
+    "name_en": "Peanuts",
+    "category": "nuts_seeds",
+    "tags": ["high_protein"],
+    "gi": 20,
+    "search_key_en": "peanuts raw"
+  },
+  {
+    "id": "chia",
+    "name_ua": "Насіння чіа",
+    "name_pl": "Nasiona chia",
+    "name_en": "Chia seeds",
+    "category": "nuts_seeds",
+    "tags": ["superfood", "omega3"],
+    "gi": 1,
+    "search_key_en": "chia seeds"
+  },
+  {
+    "id": "flaxseed",
+    "name_ua": "Лляне насіння",
+    "name_pl": "Siemię lniane",
+    "name_en": "Flaxseed",
+    "category": "nuts_seeds",
+    "tags": ["omega3", "fiber"],
+    "gi": 35,
+    "search_key_en": "flaxseed"
+  },
+  {
+    "id": "pumpkin_seeds",
+    "name_ua": "Гарбузове насіння",
+    "name_pl": "Pestki dyni",
+    "name_en": "Pumpkin seeds",
+    "category": "nuts_seeds",
+    "tags": ["high_fat"],
+    "gi": 25,
+    "search_key_en": "pumpkin seeds"
+  },
+  {
+    "id": "sunflower_seeds",
+    "name_ua": "Соняшникове насіння",
+    "name_pl": "Pestki słonecznika",
+    "name_en": "Sunflower seeds",
+    "category": "nuts_seeds",
+    "tags": ["high_fat"],
+    "gi": 35,
+    "search_key_en": "sunflower seeds"
+  },
+  {
+    "id": "spirulina",
+    "name_ua": "Спіруліна",
+    "name_pl": "Spirulina",
+    "name_en": "Spirulina",
+    "category": "superfoods",
+    "tags": ["superfood"],
+    "gi": null,
+    "search_key_en": "spirulina powder"
+  },
+  {
+    "id": "chlorella",
+    "name_ua": "Хлорела",
+    "name_pl": "Chlorella",
+    "name_en": "Chlorella",
+    "category": "superfoods",
+    "tags": ["superfood"],
+    "gi": null,
+    "search_key_en": "chlorella powder"
+  },
+  {
+    "id": "goji",
+    "name_ua": "Ягоди годжі",
+    "name_pl": "Jagody goji",
+    "name_en": "Goji berries",
+    "category": "superfoods",
+    "tags": ["superfood"],
+    "gi": 30,
+    "search_key_en": "goji berries"
+  },
+  {
+    "id": "matcha",
+    "name_ua": "Матча",
+    "name_pl": "Matcha",
+    "name_en": "Matcha",
+    "category": "superfoods",
+    "tags": ["superfood"],
+    "gi": null,
+    "search_key_en": "matcha powder"
+  },
+  {
+    "id": "sugar_white",
+    "name_ua": "Цукор білий",
+    "name_pl": "Cukier biały",
+    "name_en": "White sugar",
+    "category": "sweeteners",
+    "tags": ["high_gi"],
+    "gi": 70,
+    "search_key_en": "white sugar"
+  },
+  {
+    "id": "honey",
+    "name_ua": "Мед",
+    "name_pl": "Miód",
+    "name_en": "Honey",
+    "category": "sweeteners",
+    "tags": ["high_gi"],
+    "gi": 55,
+    "search_key_en": "honey"
+  },
+  {
+    "id": "stevia",
+    "name_ua": "Стевія",
+    "name_pl": "Stewia",
+    "name_en": "Stevia",
+    "category": "sweeteners",
+    "tags": ["low_gi"],
+    "gi": 0,
+    "search_key_en": "stevia"
+  },
+  {
+    "id": "erythritol",
+    "name_ua": "Еритритол",
+    "name_pl": "Erytrol",
+    "name_en": "Erythritol",
+    "category": "sweeteners",
+    "tags": ["low_gi"],
+    "gi": 0,
+    "search_key_en": "erythritol"
+  },
+  {
+    "id": "maple_syrup",
+    "name_ua": "Кленовий сироп",
+    "name_pl": "Syrop klonowy",
+    "name_en": "Maple syrup",
+    "category": "sweeteners",
+    "tags": [],
+    "gi": 54,
+    "search_key_en": "maple syrup"
+  },
+  {
+    "id": "ketchup",
+    "name_ua": "Кетчуп",
+    "name_pl": "Ketchup",
+    "name_en": "Ketchup",
+    "category": "sauces",
+    "tags": [],
+    "gi": 55,
+    "search_key_en": "ketchup"
+  },
+  {
+    "id": "mayonnaise",
+    "name_ua": "Майонез",
+    "name_pl": "Majonez",
+    "name_en": "Mayonnaise",
+    "category": "sauces",
+    "tags": ["high_fat"],
+    "gi": null,
+    "search_key_en": "mayonnaise"
+  },
+  {
+    "id": "soy_sauce",
+    "name_ua": "Соєвий соус",
+    "name_pl": "Sos sojowy",
+    "name_en": "Soy sauce",
+    "category": "sauces",
+    "tags": ["salty"],
+    "gi": null,
+    "search_key_en": "soy sauce"
+  },
+  {
+    "id": "bbq_sauce",
+    "name_ua": "BBQ соус",
+    "name_pl": "Sos BBQ",
+    "name_en": "BBQ sauce",
+    "category": "sauces",
+    "tags": [],
+    "gi": 60,
+    "search_key_en": "bbq sauce"
+  },
+  {
+    "id": "pesto",
+    "name_ua": "Песто",
+    "name_pl": "Pesto",
+    "name_en": "Pesto",
+    "category": "sauces",
+    "tags": ["high_fat"],
+    "gi": null,
+    "search_key_en": "pesto"
+  },
+  {
+    "id": "salt",
+    "name_ua": "Сіль",
+    "name_pl": "Sól",
+    "name_en": "Salt",
+    "category": "spices",
+    "tags": ["salty"],
+    "gi": null,
+    "search_key_en": "salt"
+  },
+  {
+    "id": "black_pepper",
+    "name_ua": "Перець чорний",
+    "name_pl": "Pieprz czarny",
+    "name_en": "Black pepper",
+    "category": "spices",
+    "tags": [],
+    "gi": null,
+    "search_key_en": "black pepper"
+  },
+  {
+    "id": "paprika",
+    "name_ua": "Паприка",
+    "name_pl": "Papryka",
+    "name_en": "Paprika",
+    "category": "spices",
+    "tags": [],
+    "gi": null,
+    "search_key_en": "paprika"
+  },
+  {
+    "id": "turmeric",
+    "name_ua": "Куркума",
+    "name_pl": "Kurkuma",
+    "name_en": "Turmeric",
+    "category": "spices",
+    "tags": ["superfood"],
+    "gi": null,
+    "search_key_en": "turmeric"
+  },
+  {
+    "id": "cinnamon",
+    "name_ua": "Кориця",
+    "name_pl": "Cynamon",
+    "name_en": "Cinnamon",
+    "category": "spices",
+    "tags": [],
+    "gi": null,
+    "search_key_en": "cinnamon"
+  },
+  {
+    "id": "olive_oil",
+    "name_ua": "Оливкова олія",
+    "name_pl": "Oliwa z oliwek",
+    "name_en": "Olive oil",
+    "category": "fats",
+    "tags": ["healthy_fat"],
+    "gi": null,
+    "search_key_en": "olive oil"
+  },
+  {
+    "id": "sunflower_oil",
+    "name_ua": "Олія соняшникова",
+    "name_pl": "Olej słonecznikowy",
+    "name_en": "Sunflower oil",
+    "category": "fats",
+    "tags": [],
+    "gi": null,
+    "search_key_en": "sunflower oil"
+  },
+  {
+    "id": "butter_ghee",
+    "name_ua": "Гхі",
+    "name_pl": "Masło ghee",
+    "name_en": "Ghee",
+    "category": "fats",
+    "tags": ["high_fat"],
+    "gi": null,
+    "search_key_en": "ghee"
+  },
+  {
+    "id": "coconut_oil",
+    "name_ua": "Кокосова олія",
+    "name_pl": "Olej kokosowy",
+    "name_en": "Coconut oil",
+    "category": "fats",
+    "tags": ["high_fat"],
+    "gi": null,
+    "search_key_en": "coconut oil"
+  },
+  {
+    "id": "water",
+    "name_ua": "Вода",
+    "name_pl": "Woda",
+    "name_en": "Water",
+    "category": "drinks",
+    "tags": [],
+    "gi": null,
+    "search_key_en": "water"
+  },
+  {
+    "id": "tea_black",
+    "name_ua": "Чай чорний",
+    "name_pl": "Herbata czarna",
+    "name_en": "Black tea",
+    "category": "drinks",
+    "tags": [],
+    "gi": null,
+    "search_key_en": "black tea"
+  },
+  {
+    "id": "tea_green",
+    "name_ua": "Чай зелений",
+    "name_pl": "Herbata zielona",
+    "name_en": "Green tea",
+    "category": "drinks",
+    "tags": ["superfood"],
+    "gi": null,
+    "search_key_en": "green tea"
+  },
+  {
+    "id": "coffee",
+    "name_ua": "Кава",
+    "name_pl": "Kawa",
+    "name_en": "Coffee",
+    "category": "drinks",
+    "tags": [],
+    "gi": null,
+    "search_key_en": "coffee"
+  },
+  {
+    "id": "juice_orange",
+    "name_ua": "Сік апельсиновий",
+    "name_pl": "Sok pomarańczowy",
+    "name_en": "Orange juice",
+    "category": "drinks",
+    "tags": ["high_gi"],
+    "gi": 50,
+    "search_key_en": "orange juice"
+  },
+  {
+    "id": "cola",
+    "name_ua": "Кола",
+    "name_pl": "Cola",
+    "name_en": "Cola",
+    "category": "soda",
+    "tags": ["high_sugar"],
+    "gi": 63,
+    "search_key_en": "cola"
+  },
+  {
+    "id": "sprite",
+    "name_ua": "Спрайт",
+    "name_pl": "Sprite",
+    "name_en": "Sprite",
+    "category": "soda",
+    "tags": ["high_sugar"],
+    "gi": 62,
+    "search_key_en": "sprite"
+  },
+  {
+    "id": "tonic",
+    "name_ua": "Тонік",
+    "name_pl": "Tonic",
+    "name_en": "Tonic",
+    "category": "soda",
+    "tags": [],
+    "gi": 50,
+    "search_key_en": "tonic water"
+  },
+  {
+    "id": "redbull",
+    "name_ua": "Red Bull",
+    "name_pl": "Red Bull",
+    "name_en": "Red Bull",
+    "category": "energy_drinks",
+    "tags": ["high_sugar", "caffeine"],
+    "gi": 60,
+    "search_key_en": "red bull"
+  },
+  {
+    "id": "monster",
+    "name_ua": "Monster",
+    "name_pl": "Monster",
+    "name_en": "Monster",
+    "category": "energy_drinks",
+    "tags": ["high_sugar", "caffeine"],
+    "gi": 60,
+    "search_key_en": "monster energy"
+  },
+  {
+    "id": "burn",
+    "name_ua": "Burn",
+    "name_pl": "Burn",
+    "name_en": "Burn",
+    "category": "energy_drinks",
+    "tags": ["high_sugar", "caffeine"],
+    "gi": 60,
+    "search_key_en": "burn energy"
+  },
+  {
+    "id": "tuna_canned",
+    "name_ua": "Тунець консервований",
+    "name_pl": "Tuńczyk w puszce",
+    "name_en": "Canned tuna",
+    "category": "canned_fish",
+    "tags": ["high_protein"],
+    "gi": null,
+    "search_key_en": "canned tuna in water"
+  },
+  {
+    "id": "sardines_canned",
+    "name_ua": "Сардини консервовані",
+    "name_pl": "Sardynki w puszce",
+    "name_en": "Canned sardines",
+    "category": "canned_fish",
+    "tags": ["omega3"],
+    "gi": null,
+    "search_key_en": "canned sardines"
+  },
+  {
+    "id": "mackerel_canned",
+    "name_ua": "Скумбрія консервована",
+    "name_pl": "Makrela w puszce",
+    "name_en": "Canned mackerel",
+    "category": "canned_fish",
+    "tags": ["omega3"],
+    "gi": null,
+    "search_key_en": "canned mackerel"
+  },
+  {
+    "id": "herring_canned",
+    "name_ua": "Оселедець консервований",
+    "name_pl": "Śledź w puszce",
+    "name_en": "Canned herring",
+    "category": "canned_fish",
+    "tags": ["omega3"],
+    "gi": null,
+    "search_key_en": "canned herring"
+  },
+  {
+    "id": "corn_canned",
+    "name_ua": "Кукурудза консервована",
+    "name_pl": "Kukurydza konserwowa",
+    "name_en": "Canned corn",
+    "category": "canned_vegetables",
+    "tags": [],
+    "gi": 55,
+    "search_key_en": "canned corn"
+  },
+  {
+    "id": "peas_canned",
+    "name_ua": "Горох консервований",
+    "name_pl": "Groszek konserwowy",
+    "name_en": "Canned peas",
+    "category": "canned_vegetables",
+    "tags": [],
+    "gi": 48,
+    "search_key_en": "canned peas"
+  },
+  {
+    "id": "beans_canned",
+    "name_ua": "Квасоля консервована",
+    "name_pl": "Fasola konserwowa",
+    "name_en": "Canned beans",
+    "category": "canned_vegetables",
+    "tags": ["fiber"],
+    "gi": 40,
+    "search_key_en": "canned beans"
+  },
+  {
+    "id": "tomatoes_canned",
+    "name_ua": "Томати консервовані",
+    "name_pl": "Pomidory w puszce",
+    "name_en": "Canned tomatoes",
+    "category": "canned_vegetables",
+    "tags": [],
+    "gi": 30,
+    "search_key_en": "canned tomatoes"
+  },
+  {
+    "id": "peaches_canned",
+    "name_ua": "Персики консервовані",
+    "name_pl": "Brzoskwinie w puszce",
+    "name_en": "Canned peaches",
+    "category": "canned_fruits",
+    "tags": ["high_sugar"],
+    "gi": 60,
+    "search_key_en": "canned peaches"
+  },
+  {
+    "id": "pineapple_canned",
+    "name_ua": "Ананас консервований",
+    "name_pl": "Ananas w puszce",
+    "name_en": "Canned pineapple",
+    "category": "canned_fruits",
+    "tags": ["high_sugar"],
+    "gi": 65,
+    "search_key_en": "canned pineapple"
+  },
+  {
+    "id": "fruit_cocktail",
+    "name_ua": "Фруктовий коктейль",
+    "name_pl": "Koktajl owocowy",
+    "name_en": "Fruit cocktail",
+    "category": "canned_fruits",
+    "tags": ["high_sugar"],
+    "gi": 60,
+    "search_key_en": "canned fruit cocktail"
+  },
+  {
+    "id": "chicken_soup_canned",
+    "name_ua": "Курячий суп консервований",
+    "name_pl": "Zupa drobiowa w puszce",
+    "name_en": "Canned chicken soup",
+    "category": "canned_soups",
+    "tags": [],
+    "gi": null,
+    "search_key_en": "canned chicken soup"
+  },
+  {
+    "id": "tomato_soup_canned",
+    "name_ua": "Томатний суп консервований",
+    "name_pl": "Zupa pomidorowa w puszce",
+    "name_en": "Canned tomato soup",
+    "category": "canned_soups",
+    "tags": [],
+    "gi": 38,
+    "search_key_en": "canned tomato soup"
+  },
+  {
+    "id": "vegetable_soup_canned",
+    "name_ua": "Овочевий суп консервований",
+    "name_pl": "Zupa warzywna w puszce",
+    "name_en": "Canned vegetable soup",
+    "category": "canned_soups",
+    "tags": [],
+    "gi": null,
+    "search_key_en": "canned vegetable soup"
+  },
+  {
+    "id": "dumplings_meat",
+    "name_ua": "Пельмені з м’ясом",
+    "name_pl": "Pierogi z mięsem",
+    "name_en": "Meat dumplings",
+    "category": "semi_finished",
+    "tags": ["processed"],
+    "gi": 65,
+    "search_key_en": "frozen meat dumplings"
+  },
+  {
+    "id": "dumplings_potato",
+    "name_ua": "Вареники з картоплею",
+    "name_pl": "Pierogi ruskie",
+    "name_en": "Potato dumplings",
+    "category": "semi_finished",
+    "tags": ["processed"],
+    "gi": 70,
+    "search_key_en": "frozen potato dumplings"
+  },
+  {
+    "id": "fish_sticks",
+    "name_ua": "Рибні палички",
+    "name_pl": "Paluszki rybne",
+    "name_en": "Fish sticks",
+    "category": "semi_finished",
+    "tags": ["processed"],
+    "gi": 60,
+    "search_key_en": "fish sticks"
+  },
+  {
+    "id": "chicken_nuggets",
+    "name_ua": "Нагетси курячі",
+    "name_pl": "Nuggetsy z kurczaka",
+    "name_en": "Chicken nuggets",
+    "category": "semi_finished",
+    "tags": ["processed"],
+    "gi": 55,
+    "search_key_en": "chicken nuggets"
+  },
+  {
+    "id": "tofu",
+    "name_ua": "Тоффу",
+    "name_pl": "Tofu",
+    "name_en": "Tofu",
+    "category": "vegan_proteins",
+    "tags": ["vegan", "high_protein"],
+    "gi": 15,
+    "search_key_en": "tofu"
+  },
+  {
+    "id": "tempeh",
+    "name_ua": "Темпе",
+    "name_pl": "Tempeh",
+    "name_en": "Tempeh",
+    "category": "vegan_proteins",
+    "tags": ["vegan", "high_protein"],
+    "gi": 20,
+    "search_key_en": "tempeh"
+  },
+  {
+    "id": "seitan",
+    "name_ua": "Сейтан",
+    "name_pl": "Seitan",
+    "name_en": "Seitan",
+    "category": "vegan_proteins",
+    "tags": ["vegan", "high_protein"],
+    "gi": 35,
+    "search_key_en": "seitan"
+  },
+  {
+    "id": "soy_cutlets",
+    "name_ua": "Соєві котлети",
+    "name_pl": "Kotleciki sojowe",
+    "name_en": "Soy cutlets",
+    "category": "vegan_proteins",
+    "tags": ["vegan"],
+    "gi": 30,
+    "search_key_en": "soy cutlets"
+  }
+]
