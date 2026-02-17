@@ -1,10 +1,6 @@
 /* ============================================================
-   PRODUCT GUIDE PAGE JS (FINAL)
-   ============================================================ */
-
-/* -----------------------------
    1. Дані продуктів (приклад)
-   ----------------------------- */
+   ============================================================ */
 
 const products = [
   {
@@ -15,7 +11,6 @@ const products = [
     macros: { kcal: 113, protein: 23, fat: 1.9, carbs: 0 },
     tags: ['білковий', 'дієтичний', 'спортсменам'],
 
-    /* ДОДАНО НОВІ ПОЛЯ ДЛЯ ФІЛЬТРІВ */
     macrosType: 'protein',
     gi: 'low',
     type: 'meat',
@@ -61,17 +56,16 @@ const products = [
   },
 ];
 
-/* -----------------------------
+/* ============================================================
    2. Елементи DOM
-   ----------------------------- */
+   ============================================================ */
 
-const searchInput = document.querySelector('.product-search__input');
 const productCards = document.querySelectorAll('.product-card-mini');
 const modal = document.querySelector('[data-modal="product"]');
 
-/* -----------------------------
+/* ============================================================
    3. Відкриття модалки
-   ----------------------------- */
+   ============================================================ */
 
 function openProductModal(product) {
   modal.querySelectorAll('.accordion__content').forEach((el) => el.classList.remove('open'));
@@ -198,9 +192,9 @@ function openProductModal(product) {
   modal.hidden = false;
 }
 
-/* -----------------------------
+/* ============================================================
    4. Допоміжна функція
-   ----------------------------- */
+   ============================================================ */
 
 function fillList(listElement, items) {
   if (!listElement || !items) return;
@@ -212,9 +206,9 @@ function fillList(listElement, items) {
   });
 }
 
-/* -----------------------------
+/* ============================================================
    5. Закриття модалки
-   ----------------------------- */
+   ============================================================ */
 
 document.addEventListener('click', (e) => {
   if (e.target.matches('[data-modal-close]')) {
@@ -223,9 +217,9 @@ document.addEventListener('click', (e) => {
   }
 });
 
-/* -----------------------------
+/* ============================================================
    6. Клік по міні-картці
-   ----------------------------- */
+   ============================================================ */
 
 productCards.forEach((card) => {
   card.addEventListener('click', () => {
@@ -237,27 +231,9 @@ productCards.forEach((card) => {
   });
 });
 
-/* -----------------------------
-   7. Пошук продуктів
-   ----------------------------- */
-
-if (searchInput) {
-  searchInput.addEventListener('input', () => {
-    const value = searchInput.value.toLowerCase().trim();
-
-    productCards.forEach((card) => {
-      const titleEl = card.querySelector('.product-card-mini__title');
-      if (!titleEl) return;
-
-      const title = titleEl.textContent.toLowerCase();
-      card.style.display = title.includes(value) ? '' : 'none';
-    });
-  });
-}
-
-/* -----------------------------
-   8. Акордеони
-   ----------------------------- */
+/* ============================================================
+   7. Акордеони
+   ============================================================ */
 
 document.addEventListener('click', (e) => {
   if (!e.target.classList.contains('accordion__toggle')) return;
@@ -269,121 +245,117 @@ document.addEventListener('click', (e) => {
   e.target.classList.toggle('active');
 });
 
-/* -----------------------------
-   9. Активні фільтри (старе)
-   ----------------------------- */
-
-document.querySelectorAll('.product-filters__item').forEach((btn) => {
-  btn.addEventListener('click', () => {
-    btn.classList.toggle('is-active');
-  });
-});
-
 /* ============================================================
-   10. DROPDOWN‑ФІЛЬТРИ (НОВЕ)
+   8. ПІДФІЛЬТРИ ТА СИСТЕМА ЧІПСІВ (ОНОВЛЕНО: БЕЗ НАШАРУВАНЬ)
    ============================================================ */
 
-/* Структура фільтрів */
-const filterOptions = {
-  macros: [
-    { value: 'protein', label: 'Білкові' },
-    { value: 'fat', label: 'Жирні' },
-    { value: 'carbs', label: 'Вуглеводні' },
-    { value: 'lowKcal', label: 'Низькокалорійні' },
-    { value: 'balanced', label: 'Збалансовані' },
-  ],
-  gi: [
-    { value: 'low', label: 'Низький ГІ' },
-    { value: 'medium', label: 'Середній ГІ' },
-    { value: 'high', label: 'Високий ГІ' },
-  ],
-  type: [
-    { value: 'meat', label: 'М’ясо' },
-    { value: 'fish', label: 'Риба' },
-    { value: 'fruit', label: 'Фрукти' },
-    { value: 'vegetable', label: 'Овочі' },
-    { value: 'grain', label: 'Крупи' },
-    { value: 'dairy', label: 'Молочка' },
-    { value: 'nuts', label: 'Горіхи' },
-    { value: 'drink', label: 'Напої' },
-  ],
-  purpose: [
-    { value: 'diet', label: 'Дієта' },
-    { value: 'weightGain', label: 'Набір ваги' },
-    { value: 'sport', label: 'Спорт' },
-    { value: 'healthy', label: 'Здорове харчування' },
-    { value: 'snack', label: 'Перекус' },
-  ],
-  timeOfDay: [
-    { value: 'morning', label: 'Ранок' },
-    { value: 'day', label: 'День' },
-    { value: 'evening', label: 'Вечір' },
-    { value: 'snack', label: 'Перекус' },
-  ],
-};
+(function () {
+  const initFilterSystem = () => {
+    const inputEl = document.querySelector('.product-search__input');
+    const containerEl = document.querySelector('.product-search');
+    const filterBtns = document.querySelectorAll('.product-filters__item');
+    const subGroups = document.querySelectorAll('.subfilter-group');
 
-/* Активні фільтри */
-const activeFilters = {
-  macros: null,
-  gi: null,
-  type: null,
-  purpose: null,
-  timeOfDay: null,
-};
+    if (!inputEl || filterBtns.length === 0) return;
 
-/* Генерація dropdown */
-document.querySelectorAll('.product-filters__item').forEach((btn) => {
-  btn.addEventListener('click', (e) => {
-    e.stopPropagation();
+    // 1. Фільтрація продуктів
+    const activeFilterProducts = () => {
+      const text = inputEl.value.trim().toLowerCase();
+      const chips = [...document.querySelectorAll('.search-chip')].map((c) =>
+        c.dataset.value.toLowerCase(),
+      );
 
-    const filterType = btn.dataset.filter;
-    if (!filterType) return;
+      productCards.forEach((card) => {
+        const title = card.querySelector('.product-card-mini__title')?.textContent.toLowerCase() || '';
+        const tags = [...card.querySelectorAll('.tag')].map((t) => t.textContent.toLowerCase());
 
-    document.querySelectorAll('.filter-dropdown').forEach((d) => d.remove());
+        let isVisible = true;
+        if (text && !title.includes(text)) isVisible = false;
 
-    const dropdown = document.createElement('div');
-    dropdown.className = 'filter-dropdown';
+        chips.forEach((chip) => {
+          const matchTitle = title.includes(chip);
+          const matchTags = tags.some((tag) => tag.includes(chip));
+          if (!matchTitle && !matchTags) isVisible = false;
+        });
 
-    filterOptions[filterType].forEach((opt) => {
-      const optionBtn = document.createElement('button');
-      optionBtn.textContent = opt.label;
-      optionBtn.dataset.value = opt.value;
-
-      optionBtn.addEventListener('click', () => {
-        activeFilters[filterType] = opt.value;
-        applyFilters();
-        dropdown.remove();
+        card.style.display = isVisible ? '' : 'none';
       });
+    };
 
-      dropdown.appendChild(optionBtn);
+    // 2. Додавання чіпса
+    const addNewChip = (label) => {
+      if (document.querySelector(`.search-chip[data-value="${label}"]`)) return;
+
+      const chip = document.createElement('span');
+      chip.className = 'search-chip';
+      chip.dataset.value = label;
+      chip.innerHTML = `${label}<button class="chip-remove">✕</button>`;
+
+      chip.querySelector('.chip-remove').onclick = (e) => {
+        e.stopPropagation();
+        chip.remove();
+        activeFilterProducts();
+      };
+
+      containerEl.insertBefore(chip, inputEl);
+      activeFilterProducts();
+    };
+
+    // 3. Клік по фільтрах (ГОРЯЧА ПРАВКА: прибирає нашарування)
+    filterBtns.forEach((btn) => {
+      btn.onclick = (e) => {
+        e.stopPropagation();
+        const target = btn.dataset.filter;
+        const targetGroup = document.querySelector(`.subfilter-group[data-subfilter="${target}"]`);
+        
+        const wasActive = targetGroup?.classList.contains('active');
+
+        // Спочатку ГАРАНТОВАНО закриваємо абсолютно всі підменю
+        subGroups.forEach((g) => g.classList.remove('active'));
+        filterBtns.forEach((b) => b.classList.remove('is-active'));
+
+        // Відкриваємо тільки те, на яке натиснули (якщо воно не було вже відкрите)
+        if (targetGroup && !wasActive) {
+          targetGroup.classList.add('active');
+          btn.classList.add('is-active');
+        }
+      };
     });
 
-    btn.appendChild(dropdown);
-    dropdown.classList.add('open');
-  });
-});
+    // 4. Клік по елементу підменю (Закриваємо шторку після вибору)
+    subGroups.forEach((group) => {
+      group.onclick = (e) => {
+        const item = e.target.closest('.subfilter-item');
+        if (!item) return;
 
-/* Закриття dropdown при кліку поза ним */
-document.addEventListener('click', () => {
-  document.querySelectorAll('.filter-dropdown').forEach((d) => d.remove());
-});
+        addNewChip(item.textContent.trim());
+        
+        // Вибрали? Ховаємо меню, щоб побачити результат
+        group.classList.remove('active');
+        filterBtns.forEach((b) => b.classList.remove('is-active'));
+      };
+    });
 
-/* Логіка фільтрації */
-function applyFilters() {
-  productCards.forEach((card) => {
-    const id = Number(card.dataset.productId);
-    const product = products.find((p) => p.id === id);
-    if (!product) return;
+    // 5. Пошук при вводі
+    inputEl.oninput = () => {
+      subGroups.forEach((g) => g.classList.remove('active'));
+      filterBtns.forEach((b) => b.classList.remove('is-active'));
+      activeFilterProducts();
+    };
 
-    let visible = true;
+    // 6. Закриття при кліку повз (ОНОВЛЕНО)
+    document.addEventListener('click', (e) => {
+      // Якщо клікнули не по фільтрах і не по самому меню — ховаємо все
+      if (!e.target.closest('.product-filters') && !e.target.closest('.subfilter-group')) {
+        subGroups.forEach((g) => g.classList.remove('active'));
+        filterBtns.forEach((b) => b.classList.remove('is-active'));
+      }
+    });
+  };
 
-    if (activeFilters.macros && product.macrosType !== activeFilters.macros) visible = false;
-    if (activeFilters.gi && product.gi !== activeFilters.gi) visible = false;
-    if (activeFilters.type && product.type !== activeFilters.type) visible = false;
-    if (activeFilters.purpose && !product.purpose.includes(activeFilters.purpose)) visible = false;
-    if (activeFilters.timeOfDay && !product.timeOfDay.includes(activeFilters.timeOfDay))
-      visible = false;
-
-    card.style.display = visible ? '' : 'none';
-  });
-}
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initFilterSystem);
+  } else {
+    initFilterSystem();
+  }
+})();

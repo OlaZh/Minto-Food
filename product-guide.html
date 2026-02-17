@@ -132,8 +132,11 @@
 
             <!-- Фільтри -->
             <div class="product-filters">
-              <button class="product-filters__item" data-filter="macros" data-i18n="filterMacros">
-                КБЖУ
+              <button
+                class="product-filters__item"
+                data-filter="nutrition"
+                data-i18n="filterNutrition">
+                Харчова цінність
               </button>
 
               <button class="product-filters__item" data-filter="gi" data-i18n="filterGI">
@@ -148,9 +151,208 @@
                 Призначення
               </button>
 
+              <button
+                class="product-filters__item"
+                data-filter="restrictions"
+                data-i18n="filterRestrictions">
+                Обмеження
+              </button>
+
               <button class="product-filters__item" data-filter="daytime" data-i18n="filterDaytime">
                 Час доби
               </button>
+            </div>
+            <div class="product-subfilters">
+              <!-- Харчова цінність -->
+              <div class="subfilter-group" data-subfilter="nutrition">
+                <button class="subfilter-item" data-i18n="subfilterNutritionHighProtein">
+                  Високобілкові
+                </button>
+                <button class="subfilter-item" data-i18n="subfilterNutritionLowCarb">
+                  Низьковуглеводні
+                </button>
+                <button class="subfilter-item" data-i18n="subfilterNutritionHighCarb">
+                  Високовуглеводні
+                </button>
+                <button class="subfilter-item" data-i18n="subfilterNutritionLowKcal">
+                  Низькокалорійні
+                </button>
+                <button class="subfilter-item" data-i18n="subfilterNutritionHighKcal">
+                  Висококалорійні
+                </button>
+                <button class="subfilter-item" data-i18n="subfilterNutritionBalanced">
+                  Збалансовані
+                </button>
+                <button class="subfilter-item" data-i18n="subfilterNutritionHighFat">
+                  Високожирні
+                </button>
+                <button class="subfilter-item" data-i18n="subfilterNutritionLowFat">
+                  Низькожирні
+                </button>
+                <button class="subfilter-item" data-i18n="subfilterNutritionFiber">
+                  Багаті на клітковину
+                </button>
+                <button class="subfilter-item" data-i18n="subfilterNutritionOmega3">
+                  Багаті на Омега‑3
+                </button>
+                <button class="subfilter-item" data-i18n="subfilterNutritionCalcium">
+                  Багаті на кальцій
+                </button>
+                <button class="subfilter-item" data-i18n="subfilterNutritionIron">
+                  Багаті на залізо
+                </button>
+              </div>
+
+              <!-- Глікемічний індекс -->
+              <div class="subfilter-group" data-subfilter="gi">
+                <button class="subfilter-item" data-i18n="subfilterGILow">Низький ГІ</button>
+                <button class="subfilter-item" data-i18n="subfilterGIMedium">Середній ГІ</button>
+                <button class="subfilter-item" data-i18n="subfilterGIHigh">Високий ГІ</button>
+                <button class="subfilter-item" data-i18n="subfilterGIUnknown">ГІ невідомий</button>
+              </div>
+
+              <!-- Тип продукту -->
+              <div class="subfilter-group" data-subfilter="type">
+                <button class="subfilter-item" data-i18n="subfilterTypeMeat">М’ясо</button>
+                <button class="subfilter-item" data-i18n="subfilterTypePoultry">Птиця</button>
+                <button class="subfilter-item" data-i18n="subfilterTypeFish">Риба</button>
+                <button class="subfilter-item" data-i18n="subfilterTypeSeafood">
+                  Морепродукти
+                </button>
+                <button class="subfilter-item" data-i18n="subfilterTypeOffal">Субпродукти</button>
+                <button class="subfilter-item" data-i18n="subfilterTypeEggs">Яйця</button>
+                <button class="subfilter-item" data-i18n="subfilterTypeDairy">Молочні</button>
+                <button class="subfilter-item" data-i18n="subfilterTypePlantMilk">
+                  Рослинне молоко
+                </button>
+                <button class="subfilter-item" data-i18n="subfilterTypeCheese">Сири</button>
+                <button class="subfilter-item" data-i18n="subfilterTypeGrains">Крупи</button>
+                <button class="subfilter-item" data-i18n="subfilterTypeLegumes">Бобові</button>
+                <button class="subfilter-item" data-i18n="subfilterTypeFlour">Борошно</button>
+                <button class="subfilter-item" data-i18n="subfilterTypeBread">Хліб</button>
+                <button class="subfilter-item" data-i18n="subfilterTypeCrisps">Хлібці</button>
+                <button class="subfilter-item" data-i18n="subfilterTypePasta">Макарони</button>
+                <button class="subfilter-item" data-i18n="subfilterTypeVegetables">Овочі</button>
+                <button class="subfilter-item" data-i18n="subfilterTypeMushrooms">Гриби</button>
+                <button class="subfilter-item" data-i18n="subfilterTypeGreens">Зелень</button>
+                <button class="subfilter-item" data-i18n="subfilterTypeFruits">Фрукти</button>
+                <button class="subfilter-item" data-i18n="subfilterTypeBerries">Ягоди</button>
+                <button class="subfilter-item" data-i18n="subfilterTypeNuts">Горіхи</button>
+                <button class="subfilter-item" data-i18n="subfilterTypeSeeds">Насіння</button>
+                <button class="subfilter-item" data-i18n="subfilterTypeSuperfoods">
+                  Суперфуди
+                </button>
+                <button class="subfilter-item" data-i18n="subfilterTypeSweeteners">
+                  Підсолоджувачі
+                </button>
+                <button class="subfilter-item" data-i18n="subfilterTypeSauces">Соуси</button>
+                <button class="subfilter-item" data-i18n="subfilterTypeSpices">Спеції</button>
+                <button class="subfilter-item" data-i18n="subfilterTypeFats">Жири</button>
+                <button class="subfilter-item" data-i18n="subfilterTypeDrinks">Напої</button>
+                <button class="subfilter-item" data-i18n="subfilterTypeSoda">Газовані напої</button>
+                <button class="subfilter-item" data-i18n="subfilterTypeEnergy">Енергетики</button>
+                <button class="subfilter-item" data-i18n="subfilterTypeCannedFish">
+                  Консерви рибні
+                </button>
+                <button class="subfilter-item" data-i18n="subfilterTypeCannedVeg">
+                  Консерви овочеві
+                </button>
+                <button class="subfilter-item" data-i18n="subfilterTypeCannedFruit">
+                  Консерви фруктові
+                </button>
+                <button class="subfilter-item" data-i18n="subfilterTypeCannedSoup">
+                  Консервовані супи
+                </button>
+                <button class="subfilter-item" data-i18n="subfilterTypeSemiFinished">
+                  Напівфабрикати
+                </button>
+                <button class="subfilter-item" data-i18n="subfilterTypeVeganProtein">
+                  Веганські білки
+                </button>
+              </div>
+
+              <!-- Призначення -->
+              <div class="subfilter-group" data-subfilter="purpose">
+                <button class="subfilter-item" data-i18n="subfilterPurposeWeightLoss">
+                  Для схуднення
+                </button>
+                <button class="subfilter-item" data-i18n="subfilterPurposeWeightGain">
+                  Для набору ваги
+                </button>
+                <button class="subfilter-item" data-i18n="subfilterPurposeSport">
+                  Для спортсменів
+                </button>
+                <button class="subfilter-item" data-i18n="subfilterPurposeVegan">
+                  Для веганів
+                </button>
+                <button class="subfilter-item" data-i18n="subfilterPurposeDiabetic">
+                  Для діабетиків
+                </button>
+                <button class="subfilter-item" data-i18n="subfilterPurposeKids">Для дітей</button>
+                <button class="subfilter-item" data-i18n="subfilterPurposeSnack">
+                  Для перекусу
+                </button>
+                <button class="subfilter-item" data-i18n="subfilterPurposeBreakfast">
+                  Для сніданку
+                </button>
+                <button class="subfilter-item" data-i18n="subfilterPurposeLunch">Для обіду</button>
+                <button class="subfilter-item" data-i18n="subfilterPurposeDinner">
+                  Для вечері
+                </button>
+                <button class="subfilter-item" data-i18n="subfilterPurposeBaking">
+                  Для випічки
+                </button>
+                <button class="subfilter-item" data-i18n="subfilterPurposeSalads">
+                  Для салатів
+                </button>
+                <button class="subfilter-item" data-i18n="subfilterPurposeSoups">Для супів</button>
+                <button class="subfilter-item" data-i18n="subfilterPurposePasta">Для пасти</button>
+                <button class="subfilter-item" data-i18n="subfilterPurposeSandwich">
+                  Для сендвічів
+                </button>
+              </div>
+
+              <!-- Обмеження -->
+              <div class="subfilter-group" data-subfilter="restrictions">
+                <button class="subfilter-item" data-i18n="subfilterRestrictionsLactoseFree">
+                  Безлактозні
+                </button>
+                <button class="subfilter-item" data-i18n="subfilterRestrictionsGlutenFree">
+                  Безглютенові
+                </button>
+                <button class="subfilter-item" data-i18n="subfilterRestrictionsSugarFree">
+                  Безцукрові
+                </button>
+                <button class="subfilter-item" data-i18n="subfilterRestrictionsEggFree">
+                  Без яєць
+                </button>
+                <button class="subfilter-item" data-i18n="subfilterRestrictionsNutFree">
+                  Без горіхів
+                </button>
+                <button class="subfilter-item" data-i18n="subfilterRestrictionsVegan">
+                  Веганські
+                </button>
+                <button class="subfilter-item" data-i18n="subfilterRestrictionsVegetarian">
+                  Вегетаріанські
+                </button>
+                <button class="subfilter-item" data-i18n="subfilterRestrictionsLowFodmap">
+                  Low‑FODMAP
+                </button>
+                <button class="subfilter-item" data-i18n="subfilterRestrictionsHalal">Halal</button>
+                <button class="subfilter-item" data-i18n="subfilterRestrictionsKosher">
+                  Kosher
+                </button>
+              </div>
+
+              <!-- Час доби -->
+              <div class="subfilter-group" data-subfilter="daytime">
+                <button class="subfilter-item" data-i18n="subfilterDaytimeBreakfast">
+                  Сніданок
+                </button>
+                <button class="subfilter-item" data-i18n="subfilterDaytimeLunch">Обід</button>
+                <button class="subfilter-item" data-i18n="subfilterDaytimeDinner">Вечеря</button>
+                <button class="subfilter-item" data-i18n="subfilterDaytimeSnack">Перекус</button>
+              </div>
             </div>
 
             <!-- Сітка продуктів -->

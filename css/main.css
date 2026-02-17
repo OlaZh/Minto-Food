@@ -3354,67 +3354,88 @@ textarea {
 }
 
 /*==================
-  Поле пошуку
-  ==================*/
+  Оновлене поле пошуку (Контейнер)
+==================*/
 .product-search {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
   margin: 24px 0;
-}
-.product-search__input {
-  width: 100%;
-  padding: 14px 18px;
+  padding: 8px 14px; /* Менший падінг, бо чіпси мають свій */
   border-radius: 16px;
   border: 1px solid var(--color-border);
   background: var(--color-bg);
-  color: var(--color-text-primary);
-  font-size: 15px;
   box-shadow: inset 0 2px 4px rgba(46, 204, 113, 0.08);
   transition: all 0.25s ease;
+  cursor: text; /* Робимо вигляд, що це все — поле вводу */
 }
-.product-search__input::placeholder {
-  color: var(--color-text-secondary);
-}
-.product-search__input:focus {
+
+/* Коли фокус всередині будь-якого елемента пошуку */
+.product-search:focus-within {
   border-color: var(--color-accent);
   background: var(--color-bg-secondary);
   box-shadow: 0 0 0 4px rgba(46, 204, 113, 0.12);
   transform: translateY(-1px);
+}
+
+.product-search__input {
+  flex: 1;
+  min-width: 120px;
+  border: none !important; /* Прибираємо внутрішню рамку */
+  background: transparent !important; /* Прибираємо фон */
+  padding: 6px 0;
+  font-size: 15px;
+  color: var(--color-text-primary);
   outline: none;
-}
-.product-search {
-  /* ВИПРАВЛЕНИЙ hover */
-}
-.product-search__input:hover {
-  background: var(--color-bg-secondary);
-  border-color: rgba(111, 207, 186, 0.35);
-  box-shadow: 0 2px 6px rgba(46, 204, 113, 0.08);
-  transform: translateY(-1px);
+  box-shadow: none !important;
+  transform: none !important;
 }
 
-.product-modal__macros {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr); /* Ділимо на 4 рівні колонки */
-  gap: 8px;
-  background: var(--color-bg-secondary);
-  padding: 12px;
-  border-radius: 12px;
-  text-align: center;
-}
-
-.macro {
-  display: block;
+/* Стиль чіпсів під твій дизайн */
+.search-chip {
+  display: inline-flex;
+  align-items: center;
+  background: var(--color-accent);
+  color: var(--color-text-inverse);
+  padding: 6px 12px;
+  border-radius: 10px;
   font-size: 13px;
-  white-space: nowrap;
+  font-weight: 600;
+  box-shadow: 0 4px 10px rgba(46, 204, 113, 0.2);
+  animation: modalFadeIn 0.2s ease; /* Використовуємо твою анімацію */
+}
+
+.chip-remove {
+  margin-left: 8px;
+  cursor: pointer;
+  border: none;
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border-radius: 50%;
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  transition: 0.2s;
+}
+
+.chip-remove:hover {
+  background: #c0392b; /* Твій колір небезпеки */
 }
 
 /*=======================
    Панель фільтрів
-   =======================*/
+=======================*/
 .product-filters {
   display: flex;
   gap: 10px;
   flex-wrap: wrap;
   margin-bottom: 24px;
 }
+
 .product-filters__item {
   padding: 10px 16px;
   border-radius: 14px;
@@ -3426,12 +3447,14 @@ textarea {
   transition: all 0.25s ease;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
 }
+
 .product-filters__item:hover {
   background: var(--color-surface);
   border-color: rgba(111, 207, 186, 0.55);
   transform: translateY(-2px);
   box-shadow: 0 8px 15px rgba(46, 204, 113, 0.12);
 }
+
 .product-filters__item.is-active {
   background: var(--color-accent);
   color: var(--color-text-inverse);
@@ -3440,10 +3463,10 @@ textarea {
 }
 
 /*================================
-         Міні‑картка продукту
+   Міні‑картка продукту
 =================================*/
 .product-card-mini {
-  display: flex; /* ВИПРАВЛЕНО: повернули горизонтальний layout */
+  display: flex;
   gap: 16px;
   padding: 18px;
   border-radius: 18px;
@@ -3453,43 +3476,51 @@ textarea {
   cursor: pointer;
   transition: all 0.3s ease;
 }
+
 .product-card-mini:hover {
   transform: translateY(-3px);
   border-color: rgba(111, 207, 186, 0.55);
   box-shadow: 0 15px 25px rgba(46, 204, 113, 0.15);
 }
+
 .product-card-mini__image {
   width: 72px;
   height: 72px;
   border-radius: 14px;
   object-fit: cover;
 }
+
 .product-card-mini__content {
   flex: 1;
   display: flex;
   flex-direction: column;
   gap: 6px;
 }
+
 .product-card-mini__title {
   font-size: 16px;
   font-weight: 700;
   color: var(--color-text-primary);
 }
+
 .product-card-mini__desc {
   font-size: 14px;
   color: var(--color-text-secondary);
 }
+
 .product-card-mini__macros {
   display: flex;
   gap: 12px;
   font-size: 13px;
   color: var(--color-text-primary);
 }
+
 .product-card-mini__tags {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
 }
+
 .product-card-mini__tags .tag {
   padding: 4px 10px;
   background: var(--color-bg-secondary);
@@ -3501,72 +3532,54 @@ textarea {
 
 /* ===============================
    PRODUCT MODAL
-   =============================== */
-/* Базовий контейнер модалки (той, що з атрибутом hidden) */
+===============================*/
 .modal {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.5); /* Затемнення фону */
-  display: flex; /* Центруємо контент */
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
   padding: 20px;
 }
 
-/* Коли модалка схована */
 .modal[hidden] {
   display: none !important;
 }
 
-/* Сама картка всередині */
 .product-modal {
   background: var(--color-surface, #fff);
   width: 100%;
-  max-width: 500px; /* Обмежуємо ширину, щоб не була на весь екран */
-  max-height: 90vh; /* Обмежуємо висоту, щоб з'явився скрол */
+  max-width: 500px;
+  max-height: 90vh;
   border-radius: 24px;
-  overflow: hidden; /* Щоб шапка не тікала */
-  display: flex;
-  flex-direction: column;
-  position: relative;
-}
-
-/* Фікс для скролу внутрішньої частини */
-.product-modal__body {
-  flex: 1;
-  overflow-y: auto; /* Дозволяємо скролити тільки вміст */
-  padding: 20px;
-}
-
-.product-modal {
+  overflow: hidden;
   display: flex;
   flex-direction: column;
   gap: 16px;
   padding-bottom: 12px;
   animation: modalFadeIn 0.35s ease;
 }
+
 .product-modal__body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 20px;
   display: flex;
   flex-direction: column;
   gap: 20px;
-  overflow-y: auto;
-  padding: 16px 20px;
 }
-.product-modal {
-  /* ВИПРАВЛЕНО: перекриваємо overflow:hidden */
-}
-.product-modal .modal__body.product-modal__body {
-  overflow-y: auto !important;
-}
+
 .product-modal__image-wrapper {
   width: 100%;
   display: flex;
   justify-content: center;
 }
+
 .product-modal__image {
   width: 100%;
   max-height: 220px;
@@ -3575,11 +3588,13 @@ textarea {
   border: 1px solid var(--color-border);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
+
 .product-modal__description {
   font-size: 15px;
   color: var(--color-text-secondary);
   line-height: 1.45;
 }
+
 .product-modal__macros {
   display: flex;
   gap: 12px;
@@ -3587,11 +3602,13 @@ textarea {
   font-weight: 600;
   color: var(--color-text-primary);
 }
+
 .product-modal__tags {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
 }
+
 .product-modal__tags .tag {
   padding: 6px 12px;
   border-radius: 12px;
@@ -3600,23 +3617,25 @@ textarea {
   font-size: 12px;
   color: var(--color-text-secondary);
 }
-.product-modal {
-  /* ВИПРАВЛЕНО: додано gap між акордеонами */
-}
+
 .product-modal__accordion {
   display: flex;
   flex-direction: column;
   gap: 16px;
 }
+
 .product-modal__carousel {
   display: flex;
   gap: 12px;
   overflow-x: auto;
 }
+
 .product-modal__carousel::-webkit-scrollbar {
   display: none;
 }
-.product-modal__recipe, .product-modal__similar {
+
+.product-modal__recipe,
+.product-modal__similar {
   padding: 10px 14px;
   background: var(--color-bg-secondary);
   border-radius: 12px;
@@ -3625,14 +3644,16 @@ textarea {
   font-size: 14px;
   transition: 0.25s ease;
 }
-.product-modal__recipe:hover, .product-modal__similar:hover {
+
+.product-modal__recipe:hover,
+.product-modal__similar:hover {
   background: var(--color-surface);
   border-color: rgba(111, 207, 186, 0.55);
   transform: translateY(-2px);
   box-shadow: 0 8px 15px rgba(46, 204, 113, 0.12);
 }
 
-/* Анімація */
+/* Анімації */
 @keyframes modalFadeIn {
   from {
     opacity: 0;
@@ -3643,23 +3664,9 @@ textarea {
     transform: translateY(0);
   }
 }
-.modal__content {
-  animation: modalPop 0.35s ease;
-}
-
-@keyframes modalPop {
-  from {
-    opacity: 0;
-    transform: translateY(12px) scale(0.98);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
 /* ===============================
    ACCORDION
-   =============================== */
+===============================*/
 .accordion {
   border-radius: 16px;
   border: 1px solid var(--color-border);
@@ -3667,6 +3674,7 @@ textarea {
   overflow: hidden;
   transition: all 0.3s ease;
 }
+
 .accordion__toggle {
   width: 100%;
   padding: 14px 18px;
@@ -3679,35 +3687,10 @@ textarea {
   cursor: pointer;
   transition: all 0.25s ease;
 }
+
 .accordion__toggle:hover {
   background: var(--color-surface);
   border-color: rgba(111, 207, 186, 0.55);
-}
-.accordion__content {
-  max-height: 0;
-  overflow: hidden;
-  padding: 0 18px;
-  transition: max-height 0.35s ease, padding 0.35s ease;
-}
-.accordion__content.open {
-  padding: 14px 18px 18px;
-  max-height: 600px;
-}
-.accordion__list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-.accordion__list li {
-  font-size: 14px;
-  color: var(--color-text-secondary);
-  line-height: 1.45;
-}
-.accordion__subtitle {
-  margin: 12px 0 6px;
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--color-text-primary);
 }
 
 .accordion__toggle::after {
@@ -3720,86 +3703,261 @@ textarea {
   transform: rotate(180deg);
 }
 
+.accordion__content {
+  max-height: 0;
+  overflow: hidden;
+  padding: 0 18px;
+  transition: max-height 0.35s ease, padding 0.35s ease;
+}
+
+.accordion__content.open {
+  padding: 14px 18px 18px;
+  max-height: 600px;
+}
+
+.accordion__list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.accordion__list li {
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  line-height: 1.45;
+}
+
 /* ===============================
    PRODUCT LIST GRID
-   =============================== */
+===============================*/
 .product-list {
   display: grid;
   grid-template-columns: 1fr;
   gap: 16px;
 }
 
-/* 2 колонки на планшеті */
 @media (min-width: 600px) {
   .product-list {
     grid-template-columns: repeat(2, 1fr);
   }
 }
-/* 3 колонки на десктопі */
 @media (min-width: 900px) {
   .product-list {
     grid-template-columns: repeat(3, 1fr);
   }
 }
 /* ===============================
-   FILTER DROPDOWN
-   =============================== */
-.filter-dropdown {
-  position: absolute;
-  top: calc(100% + 8px);
-  left: 0;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: 14px;
-  padding: 10px;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+   SUBFILTERS (FIXED & STYLED)
+=============================== */
+.product-subfilters {
+  margin-bottom: 24px; /* Збільшив відступ до карток */
+  min-height: 0;
+  position: relative;
+}
+
+/* Випадаючий блок */
+.subfilter-group {
   display: none;
-  flex-direction: column;
-  gap: 8px;
-  z-index: 200;
-}
-.filter-dropdown.open {
-  display: flex;
-}
-.filter-dropdown button {
-  padding: 8px 14px;
-  border-radius: 12px;
+  /* Прибираємо position: absolute! */
+  position: relative;
+  width: 100%;
+  margin-top: 10px; /* Відступ від кнопок */
   background: var(--color-bg-secondary);
   border: 1px solid var(--color-border);
+  border-radius: 18px;
+  padding: 16px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+  flex-wrap: wrap;
+  gap: 10px;
+  z-index: 5;
+}
+
+.subfilter-group.active {
+  display: flex;
+}
+
+/* Елементи підфільтра */
+.subfilter-item {
+  padding: 10px 16px;
+  border-radius: 12px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
   font-size: 14px;
+  font-weight: 600; /* Трішки жирніший текст */
   color: var(--color-text-primary);
   cursor: pointer;
-  transition: 0.25s ease;
+  transition: all 0.25s ease;
+  white-space: nowrap;
 }
-.filter-dropdown button:hover {
-  background: var(--color-surface);
+
+.subfilter-item:hover {
+  background: var(--color-bg-secondary);
   border-color: var(--color-accent);
+  color: var(--color-accent); /* Текст стає акцентним */
   transform: translateY(-2px);
-  box-shadow: 0 6px 12px rgba(46, 204, 113, 0.12);
+  box-shadow: 0 4px 12px rgba(46, 204, 113, 0.15);
 }
 
-/* Контейнер для позиціонування */
-.product-filters__item {
-  position: relative;
+/* ===============================
+   SEARCH CHIPS (NEW COMPONENT)
+=============================== */
+/* Контейнер пошуку */
+.product-search {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 24px 0;
+  padding: 8px 14px;
+  border-radius: 16px;
+  border: 1px solid var(--color-border);
+  background: var(--color-bg-surface); /* Твій колір surface */
+  box-shadow: inset 0 2px 4px rgba(45, 90, 76, 0.05);
+  transition: all 0.25s ease;
 }
 
-/* Стрілочка для фільтрів */
+.product-search:focus-within {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 4px rgba(111, 207, 186, 0.15);
+}
+
+.product-search__input {
+  flex: 1;
+  min-width: 150px;
+  border: none !important;
+  background: transparent !important;
+  padding: 8px 0;
+  font-family: var(--font-ui);
+  font-size: 15px;
+  color: var(--color-text-main);
+  outline: none;
+}
+
+/* Чіпси (теги в пошуку) */
+.search-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--color-primary);
+  color: #fff;
+  padding: 6px 12px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  animation: chipPop 0.2s ease-out;
+}
+
+.chip-remove {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  color: white;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 10px;
+  transition: 0.2s;
+}
+
+.chip-remove:hover {
+  background: #c0392b;
+}
+
+/* Кнопки категорій */
+.product-filters {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 24px;
+}
+
 .product-filters__item {
-  position: relative;
-  padding-right: 26px; /* щоб стрілочка не налазила на текст */
+  padding: 10px 20px;
+  border-radius: 14px;
+  border: 1px solid var(--color-border);
+  background: var(--color-bg-surface);
+  color: var(--color-text-main);
+  font-weight: 500;
+  cursor: pointer;
+  transition: 0.25s;
 }
-.product-filters__item::after {
-  content: "▾";
-  position: absolute;
-  right: 10px;
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: 12px;
-  color: var(--color-text-secondary);
-  opacity: 0.7;
-  transition: transform 0.25s ease, opacity 0.25s ease;
+
+.product-filters__item.is-active {
+  background: var(--color-primary);
+  color: #fff;
+  border-color: var(--color-primary);
+  box-shadow: 0 4px 12px rgba(111, 207, 186, 0.3);
 }
-.product-filters__item.is-active::after {
-  transform: translateY(-50%) rotate(180deg);
-  opacity: 1;
+
+/* СУБФІЛЬТРИ (Шторка, що накладається зверху) */
+.product-subfilters {
+  position: relative; /* Важливо для absolute всередині */
+  width: 100%;
+  z-index: 100;
+}
+
+.subfilter-group {
+  display: none;
+  position: absolute; /* Накладається зверху на картки */
+  top: 0;
+  left: 0;
+  width: 100%;
+  /* Скляний ефект */
+  background: var(--color-bg-secondary);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid var(--color-border);
+  border-radius: 20px;
+  padding: 24px;
+  box-shadow: 0 15px 35px rgba(15, 31, 27, 0.15); /* Твоя $shadow-lg */
+  flex-wrap: wrap;
+  gap: 12px;
+  animation: subfilterSlideDown 0.3s ease-out;
+}
+
+.subfilter-group.active {
+  display: flex;
+}
+
+.subfilter-item {
+  padding: 12px 24px;
+  min-width: 150px;
+  text-align: center;
+  background: var(--color-bg-main);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  color: var(--color-text-main);
+  font-weight: 500;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.subfilter-item:hover {
+  background: var(--color-primary);
+  color: #fff;
+  transform: translateY(-2px);
+}
+
+@keyframes chipPop {
+  from {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+@keyframes subfilterSlideDown {
+  from {
+    transform: translateY(-10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }/*# sourceMappingURL=main.css.map */
