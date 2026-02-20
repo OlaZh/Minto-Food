@@ -12,9 +12,8 @@ const manualBtn = document.getElementById('manual-entry-btn');
 const optionsView = document.getElementById('initial-options-view');
 const previewForm = document.getElementById('recipe-preview-form');
 
-// ✅ Повертаємо простий селектор
+// ✅ Простий селектор для форми
 const previewFormElement = document.querySelector('.preview-form');
-
 const cancelPreview = document.getElementById('cancel-preview');
 
 // Елементи модального вікна видалення
@@ -38,7 +37,7 @@ let recipeIndexToDelete = null;
 let currentViewingIndex = null;
 let editingRecipeIndex = null;
 
-// Твоя важлива логіка ваг
+// Твоя важлива логіка ваг (виправлено синтаксис)
 const unitGrades = {
   гр: 1,
   г: 1,
@@ -69,11 +68,17 @@ const showToast = (message, type = 'success') => {
 function parseAmount(amountStr) {
   if (typeof amountStr === 'number') return amountStr;
   if (!amountStr) return 0;
-  if (amountStr.includes('/')) {
-    const [num, den] = amountStr.split('/').map(Number);
-    return num / den;
+
+  // Перетворюємо в рядок на випадок, якщо прийшло щось дивне
+  const str = amountStr.toString().trim();
+
+  if (str.includes('/')) {
+    const [num, den] = str.split('/').map(Number);
+    // Додано перевірку на нуль у знаменнику та валідність чисел
+    return den && !isNaN(num) ? num / den : 0;
   }
-  return parseFloat(amountStr.toString().replace(',', '.')) || 0;
+
+  return parseFloat(str.replace(',', '.')) || 0;
 }
 
 // Функція для візуального оновлення зірок (ФІКС БАГУ №2)
@@ -96,7 +101,9 @@ const updateStarsUI = (rating) => {
     }
   });
 
-  if (valDisplay) valDisplay.textContent = numericRating > 0 ? numericRating.toFixed(1) : '0.0';
+  if (valDisplay) {
+    valDisplay.textContent = numericRating > 0 ? numericRating.toFixed(1) : '0.0';
+  }
 };
 // =============================================================
 // 4. ЛОГІКА ВІДОБРАЖЕННЯ КАРТОК (З РЕЙТИНГОМ)
@@ -106,17 +113,18 @@ const displayRecipes = () => {
   const recipeGrid = document.querySelector('.recipe-grid');
   if (!recipeGrid) return;
 
-  // Словник для перекладу
+  // Оновлений словник: додано множину та твої обрані емодзі
   const categoryTranslations = {
     all: 'Всі',
-    breakfast: 'Сніданок',
-    lunch: 'Обід',
-    dinner: 'Вечеря',
+    breakfast: 'Сніданки',
+    lunch: 'Обіди',
+    dinner: 'Вечері',
     dessert: 'Десерти',
     snack: 'Перекуси',
     drinks: 'Напої',
     bakery: 'Випічка',
     fast: 'Швидкі рецепти ⚡',
+    no_power: 'Без світла 🔋',
   };
 
   recipeGrid.innerHTML = '';
@@ -169,9 +177,27 @@ window.openRecipeView = function (index) {
     if (el) el.textContent = val || '0';
   };
 
+  // Тимчасовий словник для виводу гарної категорії (такий самий, як у Блоці 4)
+  const categoryTranslations = {
+    all: 'Всі',
+    breakfast: 'Сніданки',
+    lunch: 'Обіди',
+    dinner: 'Вечері',
+    dessert: 'Десерти',
+    snack: 'Перекуси',
+    drinks: 'Напої',
+    bakery: 'Випічка',
+    fast: 'Швидкі рецепти ⚡',
+    no_power: 'Без світла 🔋',
+  };
+
   setT('view-title', recipe.name);
   setT('view-calories', recipe.kcal || recipe.calories);
-  setT('view-category', recipe.category);
+
+  // ✅ ФІКС: Виводимо перекладену категорію замість системної назви
+  const translatedCategory = categoryTranslations[recipe.category] || recipe.category;
+  setT('view-category', translatedCategory);
+
   setT('view-proteins', recipe.proteins);
   setT('view-carbs', recipe.carbs);
   setT('view-fats', recipe.fats);
@@ -191,7 +217,6 @@ window.openRecipeView = function (index) {
       const li = document.createElement('li');
       li.className = 'ingredient-item-row';
 
-      // Логіка розділення назви та кількості
       const match = line
         .trim()
         .match(/^(.*?)\s+(\d+[\s.,x]*([г|мл|шт|ст\.?\s?л|ч\.?\s?л|кг|гр]+)?)$/i);
@@ -204,21 +229,18 @@ window.openRecipeView = function (index) {
     });
   }
 
-  // --- СПОСІБ ПРИГОТУВАННЯ (ФІКС ЦИФР І ПУСТОТИ) ---
+  // --- СПОСІБ ПРИГОТУВАННЯ ---
   const stepsContainer = document.getElementById('view-steps');
   if (stepsContainer) {
     stepsContainer.innerHTML = '';
 
-    // Фільтруємо: тільки рядки, де є хоча б одна буква/цифра
     const stepLines = (recipe.steps || '')
       .split('\n')
       .map((s) => s.trim())
       .filter((s) => /[a-zA-Zа-яА-ЯіїєґІЇЄҐ0-9]/.test(s));
 
     stepLines.forEach((text, i) => {
-      // Прибираємо старі цифри на початку
       const cleanText = text.replace(/^\d+[\s.)-]*\s*/, '');
-
       const stepDiv = document.createElement('div');
       stepDiv.className = 'step-item';
       stepDiv.style.display = 'flex';
@@ -242,13 +264,11 @@ window.openRecipeView = function (index) {
 
       if (modal) {
         modal.classList.add('is-active');
-        // Показуємо форму редагування
         const options = document.getElementById('initial-options-view');
         const form = document.getElementById('recipe-preview-form');
         if (options) options.style.display = 'none';
         if (form) form.style.display = 'block';
 
-        // Заповнюємо поля (пробуємо різні ID для надійності)
         const setVal = (id, val) => {
           const el = document.getElementById(id);
           if (el) el.value = val || '';
@@ -266,7 +286,6 @@ window.openRecipeView = function (index) {
     };
   }
 
-  // Відкриваємо модалку
   if (viewModal) {
     viewModal.classList.add('is-active');
     document.body.style.overflow = 'hidden';
@@ -292,15 +311,26 @@ if (confirmYesBtn) {
     if (recipeIndexToDelete !== null) {
       globalRecipes.splice(recipeIndexToDelete, 1);
       localStorage.setItem('minto_recipes', JSON.stringify(globalRecipes));
+
+      // Оновлюємо відображення
       displayRecipes();
+
+      // Повідомлення (використовуємо твій тост)
       showToast('Рецепт видалено', 'info');
+
+      // ✅ Додатковий фікс: якщо була відкрита модалка перегляду, закриваємо її
+      if (viewModal) {
+        viewModal.classList.remove('is-active');
+        document.body.style.overflow = '';
+      }
     }
     closeConfirmModal();
   });
 }
 
-if (confirmNoBtn) confirmNoBtn.addEventListener('click', closeConfirmModal);
-
+if (confirmNoBtn) {
+  confirmNoBtn.addEventListener('click', closeConfirmModal);
+}
 // =============================================================
 // 7. ДОДАВАННЯ ТА ФОРМИ
 // =============================================================
@@ -318,7 +348,7 @@ function normalizeIngredients(text) {
 
   const result = [];
   const isNumber = (s) => /^\d+([.,]\d+)?$/.test(s);
-  const isUnit = (s) => /^(г|гр|мл|л|шт|ст\.?\s?л|ч\.?\s?л)$/i.test(s);
+  const isUnit = (s) => /^(г|гр|мл|л|шт|ст\.?\s?л|ч\.?\s?л|кг)$/i.test(s); // Додав кг
 
   for (let i = 0; i < lines.length; i++) {
     const name = lines[i];
@@ -354,12 +384,10 @@ const closeModal = () => {
     modal.classList.remove('is-active');
     editingRecipeIndex = null;
 
-    // Очищаємо тимчасову картинку від ШІ при закритті
     window.tempAiImage = null;
 
     if (previewFormElement) previewFormElement.reset();
 
-    // Очищаємо підпис файлу в інпуті
     const fileNameDisplay = document.getElementById('file-name');
     if (fileNameDisplay) fileNameDisplay.textContent = 'Файл не вибрано';
 
@@ -378,10 +406,8 @@ const closeModal = () => {
 const showForm = (data = null) => {
   if (!optionsView || !previewForm) return;
 
-  // 1. Ховаємо кнопки вибору
   optionsView.style.display = 'none';
 
-  // 2. ЗНАХОДИМО І ХОВАЄМО ПОШУК (той самий фікс)
   const apiSearchView =
     document.querySelector('.api-search-container') ||
     document.getElementById('api-search-results')?.parentElement;
@@ -389,42 +415,42 @@ const showForm = (data = null) => {
     apiSearchView.style.display = 'none';
   }
 
-  // 3. Показуємо форму
   previewForm.style.display = 'block';
 
   if (data) {
-    // Якщо ШІ передав картинку — запам'ятовуємо її
     if (data.image) {
       window.tempAiImage = data.image;
     }
 
-    document.getElementById('prev-name').value = data.name || '';
+    const setVal = (id, val) => {
+      const el = document.getElementById(id);
+      if (el) el.value = val || '';
+    };
 
+    setVal('prev-name', data.name);
+
+    // Гнучкий вибір поля для калорій
+    const kcalVal = data.kcal || data.calories || '';
     const kcalInput =
       document.getElementById('prev-kcal') || document.getElementById('prev-calories');
-    if (kcalInput) kcalInput.value = data.kcal || data.calories || '';
+    if (kcalInput) kcalInput.value = kcalVal;
 
-    document.getElementById('prev-ingredients').value = data.ingredients || '';
-    document.getElementById('prev-steps').value = data.steps || '';
-    document.getElementById('prev-category').value = data.category || 'breakfast';
+    setVal('prev-ingredients', data.ingredients);
+    setVal('prev-steps', data.steps);
+    setVal('prev-category', data.category || 'breakfast');
 
-    // БЖУ (якщо прийшли від ШІ)
-    if (document.getElementById('prev-proteins'))
-      document.getElementById('prev-proteins').value = data.proteins || '';
-    if (document.getElementById('prev-carbs'))
-      document.getElementById('prev-carbs').value = data.carbs || '';
-    if (document.getElementById('prev-fats'))
-      document.getElementById('prev-fats').value = data.fats || '';
+    // БЖУ
+    setVal('prev-proteins', data.proteins);
+    setVal('prev-carbs', data.carbs);
+    setVal('prev-fats', data.fats);
 
     setTimeout(() => {
-      const ingField = document.getElementById('prev-ingredients');
-      const stepField = document.getElementById('prev-steps');
-      autoResizer(ingField);
-      autoResizer(stepField);
+      autoResizer(document.getElementById('prev-ingredients'));
+      autoResizer(document.getElementById('prev-steps'));
     }, 50);
   } else if (previewFormElement) {
     previewFormElement.reset();
-    window.tempAiImage = null; // Скидаємо для ручного вводу
+    window.tempAiImage = null;
     const ingField = document.getElementById('prev-ingredients');
     const stepField = document.getElementById('prev-steps');
     if (ingField) ingField.style.height = 'auto';
@@ -435,27 +461,30 @@ const showForm = (data = null) => {
 function addIngredientsToCart(ingredientsString) {
   const lines = (ingredientsString || '').split('\n');
   lines.forEach((line) => {
-    const parts = line.split(',').map((p) => p.trim());
+    // Враховуємо і кому, і пробіл як роздільник для кошика
+    const parts = line
+      .split(/[\s,]+/)
+      .map((p) => p.trim())
+      .filter(Boolean);
     if (parts.length >= 2) {
-      const newItem = {
-        name: parts[0],
-        amount: parseAmount(parts[1]),
-        unit: parts[2] || 'шт',
-      };
+      const name = parts[0];
+      const amount = parseAmount(parts[1]);
+      const unit = parts[2] || 'шт';
+
       const existingItem = globalShoppingList.find(
-        (i) => i.name.toLowerCase() === newItem.name.toLowerCase() && i.unit === newItem.unit,
+        (i) => i.name.toLowerCase() === name.toLowerCase() && i.unit === unit,
       );
       if (existingItem) {
-        existingItem.amount += newItem.amount;
+        existingItem.amount += amount;
       } else {
-        globalShoppingList.push(newItem);
+        globalShoppingList.push({ name, amount, unit });
       }
     }
   });
   localStorage.setItem('minto_shopping_list', JSON.stringify(globalShoppingList));
 }
 // =============================================================
-// 8. ШІ ТА ФОТО
+// 8. ШІ ТА ФОТО (ІМПОРТ)
 // =============================================================
 
 function initAiUpload() {
@@ -468,40 +497,53 @@ function initAiUpload() {
 
     showToast('Зображення отримано! Аналізуємо...', 'info');
 
-    // Перетворюємо фото в рядок відразу, щоб воно не загубилося
-    const aiImageBase64 = await toBase64(file);
+    try {
+      // Перетворюємо фото в рядок
+      const aiImageBase64 = await toBase64(file);
 
-    const optionCard = aiInput.closest('.option-card');
-    const originalContent = optionCard.innerHTML;
-    optionsView.style.opacity = '0.5';
-    optionsView.style.pointerEvents = 'none';
-    optionCard.innerHTML = `<h3>⏳ Аналізую...</h3>`;
+      const optionCard = aiInput.closest('.option-card');
+      const originalContent = optionCard ? optionCard.innerHTML : '';
 
-    setTimeout(() => {
-      optionCard.innerHTML = originalContent;
-      optionsView.style.opacity = '1';
-      optionsView.style.pointerEvents = 'all';
+      if (optionsView) {
+        optionsView.style.opacity = '0.5';
+        optionsView.style.pointerEvents = 'none';
+      }
 
-      // Перезапускаємо слухач, бо ми переписали innerHTML
-      initAiUpload();
+      if (optionCard) optionCard.innerHTML = `<h3>⏳ Аналізую...</h3>`;
 
-      showForm({
-        name: 'Вівсянка (AI скан)',
-        image: aiImageBase64, // <--- ПЕРЕДАЄМО ФОТО СЮДИ
-        calories: 320,
-        proteins: 12,
-        carbs: 45,
-        fats: 6,
-        category: 'breakfast',
-        ingredients: 'Вівсянка, 50, г\nМолоко, 100, мл',
-        steps: '1. Залити молоком.',
-      });
-    }, 1500);
+      // Імітація роботи ШІ (твоя логіка)
+      setTimeout(() => {
+        if (optionCard) {
+          optionCard.innerHTML = originalContent;
+          // Після заміни innerHTML потрібно заново ініціалізувати слухач
+          initAiUpload();
+        }
+
+        if (optionsView) {
+          optionsView.style.opacity = '1';
+          optionsView.style.pointerEvents = 'all';
+        }
+
+        showForm({
+          name: 'Вівсянка (AI скан)',
+          image: aiImageBase64,
+          calories: 320,
+          proteins: 12,
+          carbs: 45,
+          fats: 6,
+          category: 'breakfast',
+          ingredients: 'Вівсянка, 50, г\nМолоко, 100, мл',
+          steps: '1. Залити молоком.',
+        });
+      }, 1500);
+    } catch (err) {
+      console.error('Помилка обробки фото:', err);
+      showToast('Не вдалося обробити фото', 'error');
+    }
   });
 }
 
-// --- ФУНКЦІЯ РОЗУМНОГО ІМПОРТУ (Minto Food) ---
-// --- ПОШУК РЕЦЕПТІВ ЧЕРЕЗ API (Spoonacular + TheMealDB + Edamam) ---
+// --- ПОШУК РЕЦЕПТІВ ЧЕРЕЗ API ---
 async function searchRecipesFromApi() {
   const queryInput = document.getElementById('api-search');
   const btn = document.getElementById('btn-api-search');
@@ -521,18 +563,15 @@ async function searchRecipesFromApi() {
   btn.disabled = true;
   resultsContainer.innerHTML = '';
 
-  // 🔑 ТУТ ВСТАВИШ СВОЇ КЛЮЧІ
+  // 🔑 КЛЮЧІ (Залишив твої плейсхолдери)
   const SPOON_KEY = 'YOUR_SPOON_KEY';
   const EDAMAM_ID = 'YOUR_EDAMAM_ID';
   const EDAMAM_KEY = 'YOUR_EDAMAM_KEY';
 
-  // --- 1) Spoonacular ---
   async function fetchSpoon() {
     try {
       const resp = await fetch(
-        `https://api.spoonacular.com/recipes/complexSearch?query=${encodeURIComponent(
-          query,
-        )}&number=10&addRecipeInformation=true&apiKey=${SPOON_KEY}`,
+        `https://api.spoonacular.com/recipes/complexSearch?query=${encodeURIComponent(query)}&number=10&addRecipeInformation=true&apiKey=${SPOON_KEY}`,
       );
       const data = await resp.json();
       return data.results || [];
@@ -541,7 +580,6 @@ async function searchRecipesFromApi() {
     }
   }
 
-  // --- 2) TheMealDB ---
   async function fetchMealDB() {
     try {
       const resp = await fetch(
@@ -554,13 +592,10 @@ async function searchRecipesFromApi() {
     }
   }
 
-  // --- 3) Edamam (fallback) ---
   async function fetchEdamam() {
     try {
       const resp = await fetch(
-        `https://api.edamam.com/search?q=${encodeURIComponent(
-          query,
-        )}&app_id=${EDAMAM_ID}&app_key=${EDAMAM_KEY}&to=10`,
+        `https://api.edamam.com/search?q=${encodeURIComponent(query)}&app_id=${EDAMAM_ID}&app_key=${EDAMAM_KEY}&to=10`,
       );
       const data = await resp.json();
       return data.hits || [];
@@ -569,7 +604,7 @@ async function searchRecipesFromApi() {
     }
   }
 
-  // --- Паралельний пошук Spoonacular + MealDB ---
+  // Паралельний запуск
   const [spoon, mealdb] = await Promise.all([fetchSpoon(), fetchMealDB()]);
 
   let results = [];
@@ -579,10 +614,9 @@ async function searchRecipesFromApi() {
       title: r.title,
       image: r.image,
       ingredients: (r.extendedIngredients || []).map((i) => i.original).join('\n'),
-      steps:
-        (r.analyzedInstructions?.[0]?.steps || [])
-          .map((s, i) => `${i + 1}. ${s.step}`)
-          .join('\n') || '',
+      steps: (r.analyzedInstructions?.[0]?.steps || [])
+        .map((s, i) => `${i + 1}. ${s.step}`)
+        .join('\n'),
     }));
   } else if (mealdb.length > 0) {
     results = mealdb.map((m) => ({
@@ -595,7 +629,6 @@ async function searchRecipesFromApi() {
       steps: m.strInstructions || '',
     }));
   } else {
-    // --- Якщо нічого не знайдено — Edamam ---
     const edamam = await fetchEdamam();
     results = edamam.map((e) => ({
       title: e.recipe.label,
@@ -606,30 +639,26 @@ async function searchRecipesFromApi() {
   }
 
   if (results.length === 0) {
-    resultsContainer.innerHTML = `<p>Нічого не знайдено. Спробуйте інший запит.</p>`;
+    resultsContainer.innerHTML = `<p style="padding:20px; text-align:center;">Нічого не знайдено.</p>`;
     btn.disabled = false;
     if (btnText) btnText.innerText = originalText;
     return;
   }
 
-  // --- Відображення результатів ---
   results.forEach((r) => {
     const card = document.createElement('div');
     card.className = 'api-result-card';
     card.innerHTML = `
       <div class="api-result-card__image-box">
-        <img src="${r.image || ''}" alt="${r.title || ''}">
+        <img src="${r.image || ''}" alt="${r.title || ''}" onerror="this.src='https://via.placeholder.com/150?text=No+Image'">
       </div>
       <div class="api-result-card__content">
         <h4>${r.title || 'Без назви'}</h4>
-        <button type="button" class="recipe-card__btn api-add-btn">
-          Додати цей рецепт
-        </button>
+        <button type="button" class="recipe-card__btn api-add-btn">Додати цей рецепт</button>
       </div>
     `;
 
-    const addBtn = card.querySelector('.api-add-btn');
-    addBtn.addEventListener('click', () => {
+    card.querySelector('.api-add-btn').addEventListener('click', () => {
       showForm({
         name: r.title,
         image: r.image,
@@ -638,7 +667,6 @@ async function searchRecipesFromApi() {
         category: 'lunch',
       });
     });
-
     resultsContainer.appendChild(card);
   });
 
@@ -696,7 +724,7 @@ document.addEventListener('DOMContentLoaded', () => {
           localStorage.setItem('minto_recipes', JSON.stringify(globalRecipes));
 
           updateStarsUI(newRating);
-          displayRecipes(); // Оновлюємо бейдж на головній
+          displayRecipes();
           showToast('Оцінку збережено!');
         }
       }
@@ -705,11 +733,12 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // Інші слухачі
-if (addBtn)
+if (addBtn) {
   addBtn.addEventListener('click', () => {
     modal.classList.add('is-active');
     document.body.style.overflow = 'hidden';
   });
+}
 
 const closeViewModal = () => {
   if (viewModal) {
@@ -734,9 +763,8 @@ if (saveNotesBtn) {
   });
 }
 
-const apiSearchBtn = document.getElementById('btn-api-search');
-if (apiSearchBtn) {
-  apiSearchBtn.addEventListener('click', searchRecipesFromApi);
+if (document.getElementById('btn-api-search')) {
+  document.getElementById('btn-api-search').addEventListener('click', searchRecipesFromApi);
 }
 
 window.addEventListener('click', (e) => {
@@ -745,11 +773,12 @@ window.addEventListener('click', (e) => {
   if (e.target === viewModal) closeViewModal();
 });
 
-if (cancelPreview)
+if (cancelPreview) {
   cancelPreview.addEventListener('click', () => {
     previewForm.style.display = 'none';
     optionsView.style.display = 'block';
   });
+}
 
 if (manualBtn) manualBtn.addEventListener('click', () => showForm());
 
@@ -757,14 +786,14 @@ if (previewFormElement) {
   previewFormElement.addEventListener('submit', async (e) => {
     e.preventDefault();
 
-    // --- ЛОГІКА ФОТО ---
     const fileInput = document.getElementById('recipe-image');
     const urlInput = document.getElementById('recipe-image-url');
     let finalImageUrl = 'https://images.unsplash.com/photo-1495521821757-a1efb6729352?q=80&w=500';
 
-    if (fileInput && fileInput.files && fileInput.files[0]) {
+    // Пріоритет вибору фото
+    if (fileInput?.files?.[0]) {
       finalImageUrl = await toBase64(fileInput.files[0]);
-    } else if (urlInput && urlInput.value.trim() !== '') {
+    } else if (urlInput?.value.trim()) {
       finalImageUrl = urlInput.value.trim();
     } else if (window.tempAiImage) {
       finalImageUrl = window.tempAiImage;
@@ -772,7 +801,6 @@ if (previewFormElement) {
       finalImageUrl = globalRecipes[editingRecipeIndex].image || finalImageUrl;
     }
 
-    // Збираємо дані з форми
     const recipeData = {
       name: document.getElementById('prev-name').value,
       image: finalImageUrl,
@@ -800,36 +828,32 @@ if (previewFormElement) {
     }
 
     localStorage.setItem('minto_recipes', JSON.stringify(globalRecipes));
-
     editingRecipeIndex = null;
     window.tempAiImage = null;
-
     displayRecipes();
     closeModal();
   });
 }
 
-// Застосовуємо до інгредієнтів та кроків
+// Авто-ресайз для полів вводу
 document.querySelectorAll('textarea').forEach((txt) => {
   txt.style.overflow = 'hidden';
   txt.addEventListener('input', () => autoResizer(txt));
 });
-
 // =============================================================
 // 10. ПОШУК ТА ФІЛЬТРАЦІЯ (SMART SEARCH - IN PLACE)
 // =============================================================
 
 const searchInput = document.getElementById('recipe-search-input');
 const searchModeBtn = document.getElementById('search-mode-btn');
-// Додаємо хрестик
-const clearSearchBtn = document.getElementById('clear-search-btn'); 
+const clearSearchBtn = document.getElementById('clear-search-btn');
 
 const iconSearch = `<svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>`;
 const iconGlobal = `<svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M2 12h20M12 2a15.3 15.3 0 0 1 0 20 15.3 15.3 0 0 1 0-20"></path></svg>`;
 
 if (searchModeBtn) searchModeBtn.innerHTML = iconSearch;
 
-// 1. ФУНКЦІЯ ФІЛЬТРАЦІЇ ВЛАСНИХ РЕЦЕПТІВ
+// 1. ФІЛЬТРАЦІЯ ВЛАСНИХ РЕЦЕПТІВ
 function filterRecipes(query) {
   const filtered = globalRecipes.filter((recipe) => {
     const nameMatch = recipe.name.toLowerCase().includes(query);
@@ -839,7 +863,7 @@ function filterRecipes(query) {
   renderFilteredRecipes(filtered, query, false);
 }
 
-// 2. УНІВЕРСАЛЬНИЙ РЕНДЕР (ДЛЯ СВОЇХ І ДЛЯ ГЛОБАЛЬНИХ)
+// 2. УНІВЕРСАЛЬНИЙ РЕНДЕР (БЕЗ ДУБЛЮВАННЯ СЛОВНИКА)
 function renderFilteredRecipes(recipes, query = '', isGlobal = false) {
   const recipeGrid = document.querySelector('.recipe-grid');
   if (!recipeGrid) return;
@@ -854,44 +878,57 @@ function renderFilteredRecipes(recipes, query = '', isGlobal = false) {
     return;
   }
 
-  const categoryTranslations = {
-    all: 'Всі', breakfast: 'Сніданок', lunch: 'Обід', dinner: 'Вечеря',
-    dessert: 'Десерти', snack: 'Перекуси', drinks: 'Напої', bakery: 'Випічка', fast: 'Швидкі ⚡'
-  };
+  // ✅ Хірургічно: використовуємо існуючий словник або спрощений для пошуку
+  const translations =
+    typeof categoryTranslations !== 'undefined'
+      ? categoryTranslations
+      : {
+          breakfast: 'Сніданки',
+          lunch: 'Обіди',
+          dinner: 'Вечері',
+          dessert: 'Десерти',
+          snack: 'Перекуси',
+          fast: 'Швидкі ⚡',
+          no_power: 'Без світла 🔋',
+        };
 
   recipes.forEach((recipe, index) => {
     const rating = recipe.rating || 0;
-    const title = isGlobal ? (recipe.title || recipe.name) : recipe.name;
-    const cardImage = recipe.image || 'https://images.unsplash.com/photo-1495521821757-a1efb6729352?q=80&w=500';
+    const title = isGlobal ? recipe.title || recipe.name : recipe.name;
+    const cardImage =
+      recipe.image || 'https://images.unsplash.com/photo-1495521821757-a1efb6729352?q=80&w=500';
 
     const card = document.createElement('div');
     card.className = 'recipe-card';
     card.innerHTML = `
       <div class="recipe-card__image-box">
         <img src="${cardImage}" alt="${title}" class="recipe-card__img">
-        ${!isGlobal ? `
+        ${
+          !isGlobal
+            ? `
           <div class="recipe-card__rating-badge" style="position:absolute;top:12px;left:48px;background:rgba(255,255,255,0.95);padding:3px 8px;border-radius:6px;font-weight:800;color:#333;font-size:11px;display:flex;align-items:center;gap:4px;z-index:2;">
             <span style="color:#f1c40f;">★</span><span>${rating > 0 ? rating.toFixed(1) : '0'}</span>
           </div>
           <button class="btn-delete-recipe" onclick="deleteRecipe(event, ${index})">✕</button>
-        ` : `<div class="recipe-card__stats" style="background:var(--color-accent); color:#fff;">Світ</div>`}
+        `
+            : `<div class="recipe-card__stats" style="background:var(--color-accent); color:#fff;">Світ</div>`
+        }
       </div>
       <div class="recipe-card__content">
         <h3 class="recipe-card__name">${title}</h3>
-        <p class="recipe-card__macros">${isGlobal ? 'Знайдено в мережі' : 'Категорія: ' + (categoryTranslations[recipe.category] || recipe.category)}</p>
+        <p class="recipe-card__macros">${isGlobal ? 'Знайдено в мережі' : 'Категорія: ' + (translations[recipe.category] || recipe.category)}</p>
         <button class="recipe-card__btn">${isGlobal ? 'Додати собі' : 'Переглянути'}</button>
       </div>
     `;
 
-    const btn = card.querySelector('.recipe-card__btn');
-    btn.addEventListener('click', () => {
+    card.querySelector('.recipe-card__btn').addEventListener('click', () => {
       if (isGlobal) {
         showForm({
           name: title,
           image: recipe.image,
           ingredients: recipe.ingredients,
           steps: recipe.steps,
-          category: 'lunch'
+          category: 'lunch',
         });
         modal.classList.add('is-active');
       } else {
@@ -903,15 +940,11 @@ function renderFilteredRecipes(recipes, query = '', isGlobal = false) {
   });
 }
 
-// 3. СЛУХАЧ ІНПУТУ (ЗМІНА ІКОНКИ, ХРЕСТИК ТА ФІЛЬТРАЦІЯ)
+// 3. СЛУХАЧІ ІНПУТУ
 if (searchInput) {
   searchInput.addEventListener('input', () => {
     const query = searchInput.value.trim().toLowerCase();
-    
-    // Керуємо видимістю хрестика
-    if (clearSearchBtn) {
-      clearSearchBtn.style.display = query.length > 0 ? 'flex' : 'none';
-    }
+    if (clearSearchBtn) clearSearchBtn.style.display = query.length > 0 ? 'flex' : 'none';
 
     if (query.length > 0) {
       searchModeBtn.innerHTML = iconGlobal;
@@ -925,19 +958,18 @@ if (searchInput) {
   });
 }
 
-// 🔑 НОВА ЧАСТИНА: КЛІК НА ХРЕСТИК (ОЧИЩЕННЯ)
 if (clearSearchBtn) {
   clearSearchBtn.addEventListener('click', () => {
     searchInput.value = '';
     clearSearchBtn.style.display = 'none';
     searchModeBtn.innerHTML = iconSearch;
     searchModeBtn.classList.remove('is-active');
-    displayRecipes(); // Скидаємо фільтр
+    displayRecipes();
     searchInput.focus();
   });
 }
 
-// 4. КЛІК НА ПЛАНЕТУ: ЗАМІНА ТВОЇХ РЕЦЕПТІВ НА ГЛОБАЛЬНІ ПРЯМО В GRID
+// 4. КЛІК НА ПЛАНЕТУ
 if (searchModeBtn) {
   searchModeBtn.addEventListener('click', async () => {
     const query = searchInput.value.trim();
@@ -947,26 +979,25 @@ if (searchModeBtn) {
     }
 
     const recipeGrid = document.querySelector('.recipe-grid');
-    recipeGrid.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; padding: 50px;">
-      <p>🌎 Шукаємо нові ідеї для "<strong>${query}</strong>"...</p>
-    </div>`;
+    recipeGrid.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; padding: 50px;"><p>🌎 Шукаємо "<strong>${query}</strong>"...</p></div>`;
 
-    const SPOON_KEY = 'YOUR_SPOON_KEY'; 
+    const SPOON_KEY = 'YOUR_SPOON_KEY';
     try {
-      const resp = await fetch(`https://api.spoonacular.com/recipes/complexSearch?query=${encodeURIComponent(query)}&number=12&addRecipeInformation=true&apiKey=${SPOON_KEY}`);
+      const resp = await fetch(
+        `https://api.spoonacular.com/recipes/complexSearch?query=${encodeURIComponent(query)}&number=12&addRecipeInformation=true&apiKey=${SPOON_KEY}`,
+      );
       const data = await resp.json();
-      
-      const results = (data.results || []).map(r => ({
+      const results = (data.results || []).map((r) => ({
         title: r.title,
         image: r.image,
-        ingredients: (r.extendedIngredients || []).map(i => i.original).join('\n'),
-        steps: (r.analyzedInstructions?.[0]?.steps || []).map((s, i) => `${i + 1}. ${s.step}`).join('\n')
+        ingredients: (r.extendedIngredients || []).map((i) => i.original).join('\n'),
+        steps: (r.analyzedInstructions?.[0]?.steps || [])
+          .map((s, i) => `${i + 1}. ${s.step}`)
+          .join('\n'),
       }));
-
       renderFilteredRecipes(results, query, true);
-
     } catch (err) {
-      recipeGrid.innerHTML = `<p style="grid-column: 1 / -1; text-align: center;">Не вдалося підключитися до глобальної бази.</p>`;
+      recipeGrid.innerHTML = `<p style="grid-column: 1 / -1; text-align: center;">Помилка зв'язку з планетою.</p>`;
     }
   });
 }

@@ -1,361 +1,301 @@
 /* ============================================================
-   1. Дані продуктів (приклад)
+   1. КОНФІГУРАЦІЯ SUPABASE
    ============================================================ */
+const SUPABASE_URL = 'https://xpaibteyntflrixmigfx.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_5aziCmaq0rxAJ24MznPycw_eY5iVZxZ';
+const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-const products = [
-  {
-    id: 1,
-    name: 'Куряче філе',
-    shortDesc: 'Нежирне джерело білка.',
-    image: 'img/chicken.jpg',
-    macros: { kcal: 113, protein: 23, fat: 1.9, carbs: 0 },
-    tags: ['білковий', 'дієтичний', 'спортсменам'],
-
-    macrosType: 'protein',
-    gi: 'low',
-    type: 'meat',
-    purpose: ['diet', 'sport'],
-    timeOfDay: ['morning', 'day', 'evening'],
-
-    benefits: [
-      'Високий вміст білка',
-      'Низький вміст жиру',
-      'Добре для відновлення після тренування',
-    ],
-
-    harm: [
-      'Може бути сухим при неправильному приготуванні',
-      'У великій кількості може перевантажувати травлення',
-    ],
-
-    whenToEat: [
-      'Вранці — добре для білкового сніданку',
-      'Вдень — оптимально для обіду',
-      'Ввечері — можна без важких соусів',
-      'Перед тренуванням — легке джерело білка',
-      'Після тренування — ідеально',
-    ],
-
-    whenNotToEat: ['Перед сном у великій кількості', 'При проблемах зі шлунком'],
-
-    goodComb: ['Овочі', 'Крупи', 'Зелень'],
-    badComb: ['Жирні соуси', 'Смажена картопля'],
-
-    reaction: ['Довго тримає ситість', 'Стабілізує рівень цукру', 'Допомагає відновленню м’язів'],
-
-    myths: [{ myth: 'Міф: курка суха', truth: 'Правда: при правильному приготуванні соковита' }],
-
-    recipes: ['Курка з овочами', 'Філе в йогуртовому маринаді', 'Салат з куркою'],
-
-    substitutes: {
-      can: ['Індичка', 'Кролик'],
-      cannot: ['Яйця'],
-    },
-
-    similar: ['Індичка', 'Кролик', 'Тунець'],
-  },
-];
+let products = [];
 
 /* ============================================================
-   2. Елементи DOM
+   2. ДОПОМІЖНІ ФУНКЦІЇ НОРМАЛІЗАЦІЇ
    ============================================================ */
 
-const productCards = document.querySelectorAll('.product-card-mini');
+// Нормалізація масивів ID (int8[])
+function normalizeIdArray(value) {
+  if (!value) return [];
+  if (Array.isArray(value)) return value.map(Number);
+
+  if (typeof value === 'string' && value.startsWith('{')) {
+    return value
+      .replace('{', '')
+      .replace('}', '')
+      .split(',')
+      .map(Number)
+      .filter((n) => !isNaN(n));
+  }
+
+  return [];
+}
+
+// Нормалізація списків benefits, harm, body_effects (text[])
+function normalizeList(value) {
+  if (!value) return [];
+
+  if (Array.isArray(value)) return value;
+
+  if (typeof value === 'string') {
+    return value
+      .replace('{', '')
+      .replace('}', '')
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean);
+  }
+
+  return [];
+}
+
+/* ============================================================
+   3. ЕЛЕМЕНТИ DOM
+   ============================================================ */
+const productList = document.querySelector('.product-list');
 const modal = document.querySelector('[data-modal="product"]');
+const searchInput = document.querySelector('.product-search__input');
+const searchContainer = document.querySelector('.product-search');
+const filterBtns = document.querySelectorAll('.product-filters__item');
+const subGroups = document.querySelectorAll('.subfilter-group');
 
 /* ============================================================
-   3. Відкриття модалки
+   4. ЗАВАНТАЖЕННЯ ДАНИХ
    ============================================================ */
+async function loadProducts() {
+  try {
+    const { data, error } = await supabaseClient.from('products').select('*');
+    if (error) throw error;
+    products = data || [];
+    renderProducts(products);
+  } catch (err) {
+    console.error('Помилка Supabase:', err.message);
+    if (productList) productList.innerHTML = `<p style="color:red">Помилка завантаження даних</p>`;
+  }
+}
 
+/* ============================================================
+   5. РЕНДЕР КАРТОК
+   ============================================================ */
+function renderProducts(items) {
+  if (!productList) return;
+  productList.innerHTML = '';
+
+  if (!items || items.length === 0) {
+    productList.innerHTML = '<p class="no-results">Продуктів не знайдено 🌿</p>';
+    return;
+  }
+
+  items.forEach((product) => {
+    const card = document.createElement('div');
+    card.className = 'product-card-mini';
+
+    const imgSrc =
+      typeof product.image === 'string' && product.image.trim() !== '' && product.image !== 'NULL'
+        ? product.image
+        : 'img/placeholder.jpg';
+
+    card.innerHTML = `
+      <div class="product-card-mini__img-wrapper">
+        <img src="${imgSrc}" alt="${product.name_ua || ''}" 
+             class="product-card-mini__image" 
+             onerror="this.src='img/placeholder.jpg'">
+      </div>
+      <div class="product-card-mini__content">
+        <h3 class="product-card-mini__title">${product.name_ua || 'Без назви'}</h3>
+        <p class="product-card-mini__desc">${product.short_desc || ''}</p>
+        <div class="product-card-mini__macros">
+          <span>${product.kcal || 0} ккал</span>
+          <span>${product.protein || 0}Б</span>
+          <span>${product.fat || 0}Ж</span>
+          <span>${product.carbs || 0}В</span>
+        </div>
+      </div>
+    `;
+    card.onclick = () => openProductModal(product);
+    productList.appendChild(card);
+  });
+}
+
+/* ============================================================
+   6. ЛОГІКА ФІЛЬТРАЦІЇ
+   ============================================================ */
+const checkCondition = (product, filterValue) => {
+  if (!product || !filterValue) return false;
+  const val = filterValue.toLowerCase().trim();
+  const p = product;
+
+  // КБЖУ
+  if (val.includes('високобілкові')) return (Number(p.protein) || 0) >= 15;
+  if (val.includes('низьковуглеводні')) return (Number(p.carbs) || 0) <= 10;
+  if (val.includes('високовуглеводні')) return (Number(p.carbs) || 0) >= 40;
+  if (val.includes('низькокалорійні')) return (Number(p.kcal) || 0) <= 100;
+  if (val.includes('висококалорійні')) return (Number(p.kcal) || 0) >= 400;
+  if (val.includes('низькожирні')) return (Number(p.fat) || 0) <= 3;
+
+  // ГІ
+  const giVal = parseInt(p.gi) || 0;
+  if (val === 'низький гі') return giVal > 0 && giVal <= 55;
+  if (val === 'середній гі') return giVal > 55 && giVal <= 69;
+  if (val === 'високий гі') return giVal >= 70;
+
+  // Текстові поля
+  const searchFields = [
+    p.name_ua,
+    p.category,
+    p.tags,
+    p.purpose,
+    p.time_of_day,
+    p.best_time_to_eat,
+    p.alt_names,
+  ];
+
+  return searchFields.some((field) => field && String(field).toLowerCase().includes(val));
+};
+
+const applyFilters = () => {
+  const searchText = (searchInput.value || '').toLowerCase().trim();
+  const activeChips = [...document.querySelectorAll('.search-chip')].map((c) => c.dataset.value);
+
+  const filtered = products.filter((p) => {
+    const nameStr = String(p.name_ua || '').toLowerCase();
+    const altStr = String(p.alt_names || '').toLowerCase();
+    const matchesSearch =
+      !searchText || nameStr.includes(searchText) || altStr.includes(searchText);
+
+    const matchesChips = activeChips.every((chip) => checkCondition(p, chip));
+
+    return matchesSearch && matchesChips;
+  });
+
+  renderProducts(filtered);
+};
+
+/* ============================================================
+   7. ОБРОБКА ПОДІЙ
+   ============================================================ */
+const addNewChip = (label) => {
+  if (document.querySelector(`.search-chip[data-value="${label}"]`)) return;
+  const chip = document.createElement('span');
+  chip.className = 'search-chip';
+  chip.dataset.value = label;
+  chip.innerHTML = `${label}<button class="chip-remove">✕</button>`;
+  chip.querySelector('.chip-remove').onclick = () => {
+    chip.remove();
+    applyFilters();
+  };
+  searchContainer.insertBefore(chip, searchInput);
+  applyFilters();
+};
+
+filterBtns.forEach((btn) => {
+  btn.onclick = (e) => {
+    e.stopPropagation();
+    const target = btn.dataset.filter;
+    const group = document.querySelector(`.subfilter-group[data-subfilter="${target}"]`);
+    const isAlreadyOpen = group?.classList.contains('active');
+    subGroups.forEach((g) => g.classList.remove('active'));
+    filterBtns.forEach((b) => b.classList.remove('is-active'));
+    if (group && !isAlreadyOpen) {
+      group.classList.add('active');
+      btn.classList.add('is-active');
+    }
+  };
+});
+
+subGroups.forEach((group) => {
+  group.onclick = (e) => {
+    const item = e.target.closest('.subfilter-item');
+    if (!item) return;
+    addNewChip(item.textContent.trim());
+    group.classList.remove('active');
+    filterBtns.forEach((b) => b.classList.remove('is-active'));
+  };
+});
+
+if (searchInput) {
+  searchInput.oninput = applyFilters;
+}
+
+/* ============================================================
+   8. МОДАЛКА
+   ============================================================ */
 function openProductModal(product) {
-  modal.querySelectorAll('.accordion__content').forEach((el) => el.classList.remove('open'));
-  modal.querySelectorAll('.accordion__toggle').forEach((el) => el.classList.remove('active'));
-  if (!modal) return;
+  if (!modal || !product) return;
 
-  const titleEl = modal.querySelector('[data-i18n="productName"]');
-  if (titleEl) titleEl.textContent = product.name;
+  modal.querySelector('[data-i18n="productName"]').textContent = product.name_ua || '';
+  modal.querySelector('.product-modal__image').src =
+    typeof product.image === 'string' && product.image.trim() !== '' && product.image !== 'NULL'
+      ? product.image
+      : 'img/placeholder.jpg';
 
-  const imgEl = modal.querySelector('.product-modal__image');
-  if (imgEl) imgEl.src = product.image;
+  modal.querySelector('[data-i18n="productShortDesc"]').textContent = product.short_desc || '';
 
-  const descEl = modal.querySelector('[data-i18n="productShortDesc"]');
-  if (descEl) descEl.textContent = product.shortDesc;
+  modal.querySelector('[data-i18n="kcal"]').textContent = `${product.kcal || 0} ккал`;
+  modal.querySelector('[data-i18n="protein"]').textContent = `${product.protein || 0}Б`;
+  modal.querySelector('[data-i18n="fat"]').textContent = `${product.fat || 0}Ж`;
+  modal.querySelector('[data-i18n="carbs"]').textContent = `${product.carbs || 0}В`;
 
-  const kcalEl = modal.querySelector('[data-i18n="kcal"]');
-  const proteinEl = modal.querySelector('[data-i18n="protein"]');
-  const fatEl = modal.querySelector('[data-i18n="fat"]');
-  const carbsEl = modal.querySelector('[data-i18n="carbs"]');
+  const updateList = (i18nKey, value) => {
+    const list = modal
+      .querySelector(`[data-i18n="${i18nKey}"]`)
+      ?.closest('.accordion')
+      ?.querySelector('.accordion__list');
 
-  if (kcalEl) kcalEl.textContent = product.macros.kcal + ' ккал';
-  if (proteinEl) proteinEl.textContent = product.macros.protein + 'Б';
-  if (fatEl) fatEl.textContent = product.macros.fat + 'Ж';
-  if (carbsEl) carbsEl.textContent = product.macros.carbs + 'В';
+    if (list) {
+      const items = normalizeList(value);
+      list.innerHTML =
+        items.length > 0 ? items.map((i) => `<li>${i}</li>`).join('') : '<li>Немає інформації</li>';
+    }
+  };
 
-  const tagsContainer = modal.querySelector('.product-modal__tags');
-  if (tagsContainer) {
-    tagsContainer.innerHTML = '';
-    product.tags.forEach((tag) => {
-      const span = document.createElement('span');
-      span.className = 'tag';
-      span.textContent = tag;
-      tagsContainer.appendChild(span);
-    });
-  }
+  updateList('benefit1', product.benefits);
+  updateList('harm1', product.harm);
+  updateList('eatMorning', product.best_time_to_eat);
+  updateList('notEatNight', product.when_to_avoid);
+  updateList('reaction1', product.body_effects);
+  updateList('myths1', product.myths_and_truths);
 
-  const benefitsList =
-    modal
-      .querySelector('[data-i18n="benefit1"]')
-      ?.closest('.accordion__content')
-      ?.querySelector('.accordion__list') || null;
-  fillList(benefitsList, product.benefits);
+  const updateLinked = (selector, ids) => {
+    const box = modal.querySelector(selector);
+    if (!box) return;
+    box.innerHTML = '';
 
-  const harmList =
-    modal
-      .querySelector('[data-i18n="harm1"]')
-      ?.closest('.accordion__content')
-      ?.querySelector('.accordion__list') || null;
-  fillList(harmList, product.harm);
+    const idList = normalizeIdArray(ids);
 
-  const whenToEatList =
-    modal
-      .querySelector('[data-i18n="eatMorning"]')
-      ?.closest('.accordion__content')
-      ?.querySelector('.accordion__list') || null;
-  fillList(whenToEatList, product.whenToEat);
+    if (idList.length === 0) {
+      box.innerHTML = '<span class="no-data">Не знайдено</span>';
+      return;
+    }
 
-  const whenNotToEatList =
-    modal
-      .querySelector('[data-i18n="notEatNight"]')
-      ?.closest('.accordion__content')
-      ?.querySelector('.accordion__list') || null;
-  fillList(whenNotToEatList, product.whenNotToEat);
-
-  const reactionList =
-    modal
-      .querySelector('[data-i18n="reaction1"]')
-      ?.closest('.accordion__content')
-      ?.querySelector('.accordion__list') || null;
-  fillList(reactionList, product.reaction);
-
-  const combContent = modal.querySelector('[data-i18n="goodComb"]')?.closest('.accordion__content');
-  if (combContent) {
-    const combLists = combContent.querySelectorAll('.accordion__list');
-    fillList(combLists[0], product.goodComb);
-    fillList(combLists[1], product.badComb);
-  }
-
-  const mythsContent = modal.querySelector('[data-i18n="myth1"]')?.closest('.accordion__content');
-  if (mythsContent) {
-    const mythsList = mythsContent.querySelector('.accordion__list');
-    mythsList.innerHTML = '';
-    product.myths.forEach((item) => {
-      mythsList.innerHTML += `<li>${item.myth}</li><li>${item.truth}</li>`;
-    });
-  }
-
-  const recipesContent = modal.querySelector('[data-i18n="recipes"]')?.closest('.accordion');
-  if (recipesContent) {
-    const recipesCarousel = recipesContent.querySelector('.product-modal__carousel');
-    recipesCarousel.innerHTML = '';
-    product.recipes.forEach((r) => {
-      const div = document.createElement('div');
-      div.className = 'product-modal__recipe';
-      div.textContent = r;
-      recipesCarousel.appendChild(div);
-    });
-  }
-
-  const subsContent = modal
-    .querySelector('[data-i18n="canSubstitute"]')
-    ?.closest('.accordion__content');
-  if (subsContent) {
-    const subsLists = subsContent.querySelectorAll('.accordion__list');
-    fillList(subsLists[0], product.substitutes.can);
-    fillList(subsLists[1], product.substitutes.cannot);
-  }
-
-  const similarContent =
-    modal.querySelector('[data-i18n="similar1"]')?.closest('.accordion__content') ||
-    modal.querySelector('[data-i18n="similarProducts"]')?.closest('.accordion__content');
-
-  if (similarContent) {
-    const similarCarousel = similarContent.querySelector('.product-modal__carousel');
-    similarCarousel.innerHTML = '';
-    product.similar.forEach((s) => {
-      const div = document.createElement('div');
-      div.className = 'product-modal__similar';
-      div.textContent = s;
-      similarCarousel.appendChild(div);
-    });
-  }
-
-  modal.hidden = false;
-}
-
-/* ============================================================
-   4. Допоміжна функція
-   ============================================================ */
-
-function fillList(listElement, items) {
-  if (!listElement || !items) return;
-  listElement.innerHTML = '';
-  items.forEach((item) => {
-    const li = document.createElement('li');
-    li.textContent = item;
-    listElement.appendChild(li);
-  });
-}
-
-/* ============================================================
-   5. Закриття модалки
-   ============================================================ */
-
-document.addEventListener('click', (e) => {
-  if (e.target.matches('[data-modal-close]')) {
-    const modalToClose = e.target.closest('.modal');
-    if (modalToClose) modalToClose.hidden = true;
-  }
-});
-
-/* ============================================================
-   6. Клік по міні-картці
-   ============================================================ */
-
-productCards.forEach((card) => {
-  card.addEventListener('click', () => {
-    const id = Number(card.dataset.productId);
-    if (!id) return;
-
-    const product = products.find((p) => p.id === id);
-    if (product) openProductModal(product);
-  });
-});
-
-/* ============================================================
-   7. Акордеони
-   ============================================================ */
-
-document.addEventListener('click', (e) => {
-  if (!e.target.classList.contains('accordion__toggle')) return;
-
-  const content = e.target.nextElementSibling;
-  if (!content) return;
-
-  content.classList.toggle('open');
-  e.target.classList.toggle('active');
-});
-
-/* ============================================================
-   8. ПІДФІЛЬТРИ ТА СИСТЕМА ЧІПСІВ (ОНОВЛЕНО: БЕЗ НАШАРУВАНЬ)
-   ============================================================ */
-
-(function () {
-  const initFilterSystem = () => {
-    const inputEl = document.querySelector('.product-search__input');
-    const containerEl = document.querySelector('.product-search');
-    const filterBtns = document.querySelectorAll('.product-filters__item');
-    const subGroups = document.querySelectorAll('.subfilter-group');
-
-    if (!inputEl || filterBtns.length === 0) return;
-
-    // 1. Фільтрація продуктів
-    const activeFilterProducts = () => {
-      const text = inputEl.value.trim().toLowerCase();
-      const chips = [...document.querySelectorAll('.search-chip')].map((c) =>
-        c.dataset.value.toLowerCase(),
-      );
-
-      productCards.forEach((card) => {
-        const title = card.querySelector('.product-card-mini__title')?.textContent.toLowerCase() || '';
-        const tags = [...card.querySelectorAll('.tag')].map((t) => t.textContent.toLowerCase());
-
-        let isVisible = true;
-        if (text && !title.includes(text)) isVisible = false;
-
-        chips.forEach((chip) => {
-          const matchTitle = title.includes(chip);
-          const matchTags = tags.some((tag) => tag.includes(chip));
-          if (!matchTitle && !matchTags) isVisible = false;
-        });
-
-        card.style.display = isVisible ? '' : 'none';
-      });
-    };
-
-    // 2. Додавання чіпса
-    const addNewChip = (label) => {
-      if (document.querySelector(`.search-chip[data-value="${label}"]`)) return;
-
-      const chip = document.createElement('span');
-      chip.className = 'search-chip';
-      chip.dataset.value = label;
-      chip.innerHTML = `${label}<button class="chip-remove">✕</button>`;
-
-      chip.querySelector('.chip-remove').onclick = (e) => {
-        e.stopPropagation();
-        chip.remove();
-        activeFilterProducts();
-      };
-
-      containerEl.insertBefore(chip, inputEl);
-      activeFilterProducts();
-    };
-
-    // 3. Клік по фільтрах (ГОРЯЧА ПРАВКА: прибирає нашарування)
-    filterBtns.forEach((btn) => {
-      btn.onclick = (e) => {
-        e.stopPropagation();
-        const target = btn.dataset.filter;
-        const targetGroup = document.querySelector(`.subfilter-group[data-subfilter="${target}"]`);
-        
-        const wasActive = targetGroup?.classList.contains('active');
-
-        // Спочатку ГАРАНТОВАНО закриваємо абсолютно всі підменю
-        subGroups.forEach((g) => g.classList.remove('active'));
-        filterBtns.forEach((b) => b.classList.remove('is-active'));
-
-        // Відкриваємо тільки те, на яке натиснули (якщо воно не було вже відкрите)
-        if (targetGroup && !wasActive) {
-          targetGroup.classList.add('active');
-          btn.classList.add('is-active');
-        }
-      };
-    });
-
-    // 4. Клік по елементу підменю (Закриваємо шторку після вибору)
-    subGroups.forEach((group) => {
-      group.onclick = (e) => {
-        const item = e.target.closest('.subfilter-item');
-        if (!item) return;
-
-        addNewChip(item.textContent.trim());
-        
-        // Вибрали? Ховаємо меню, щоб побачити результат
-        group.classList.remove('active');
-        filterBtns.forEach((b) => b.classList.remove('is-active'));
-      };
-    });
-
-    // 5. Пошук при вводі
-    inputEl.oninput = () => {
-      subGroups.forEach((g) => g.classList.remove('active'));
-      filterBtns.forEach((b) => b.classList.remove('is-active'));
-      activeFilterProducts();
-    };
-
-    // 6. Закриття при кліку повз (ОНОВЛЕНО)
-    document.addEventListener('click', (e) => {
-      // Якщо клікнули не по фільтрах і не по самому меню — ховаємо все
-      if (!e.target.closest('.product-filters') && !e.target.closest('.subfilter-group')) {
-        subGroups.forEach((g) => g.classList.remove('active'));
-        filterBtns.forEach((b) => b.classList.remove('is-active'));
+    idList.forEach((id) => {
+      const found = products.find((p) => Number(p.id) === Number(id));
+      if (found) {
+        const chip = document.createElement('span');
+        chip.className = 'product-chip';
+        chip.textContent = found.name_ua;
+        chip.onclick = () => {
+          modal.scrollTo(0, 0);
+          openProductModal(found);
+        };
+        box.appendChild(chip);
       }
     });
   };
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initFilterSystem);
-  } else {
-    initFilterSystem();
+  updateLinked('.substitutes-container', product.substitute_ids);
+  updateLinked('.similar-products-container', product.similar_products);
+
+  modal.hidden = false;
+}
+
+document.addEventListener('click', (e) => {
+  if (e.target.classList.contains('accordion__toggle')) {
+    e.target.nextElementSibling?.classList.toggle('open');
+    e.target.classList.toggle('active');
   }
-})();
+  if (e.target.matches('[data-modal-close]')) modal.hidden = true;
+  if (!e.target.closest('.product-filters') && !e.target.closest('.subfilter-group')) {
+    subGroups.forEach((g) => g.classList.remove('active'));
+    filterBtns.forEach((b) => b.classList.remove('is-active'));
+  }
+});
+
+document.addEventListener('DOMContentLoaded', loadProducts);

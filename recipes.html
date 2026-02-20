@@ -18,12 +18,10 @@
   </head>
 
   <body class="page">
-    <!-- i18n: HEADER -->
     <header class="header">
       <div class="header__container">
         <a href="index.html" class="header__logo" data-i18n="logo">Minto Food 🍃</a>
 
-        <!-- i18n: NAVIGATION -->
         <nav class="header__nav">
           <ul class="header__nav-list">
             <li>
@@ -43,7 +41,7 @@
               >
             </li>
             <li>
-              <a href="product-guide.html" class="header__nav-link" data-i18n="navShoppingList"
+              <a href="product-guide.html" class="header__nav-link" data-i18n="navProductGuide"
                 >Путівник по продуктам</a
               >
             </li>
@@ -56,14 +54,12 @@
           </ul>
         </nav>
 
-        <!-- i18n: HEADER ACTIONS -->
         <div class="header__actions">
           <button
             class="theme-toggle"
             type="button"
             aria-label="Змінити тему"
             data-i18n-aria="toggleTheme">
-            <!-- Sun -->
             <svg
               class="sun-icon"
               xmlns="http://www.w3.org/2000/svg"
@@ -86,7 +82,6 @@
               <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
             </svg>
 
-            <!-- Moon -->
             <svg
               class="moon-icon"
               xmlns="http://www.w3.org/2000/svg"
@@ -117,7 +112,6 @@
       <div class="app-shell">
         <main class="recipe-page">
           <div class="container">
-            <!-- i18n: PAGE INTRO -->
             <header class="recipe-page__intro">
               <h1 class="recipe-page__title" data-i18n="recipesTitle">Рецепти</h1>
 
@@ -137,27 +131,39 @@
                 </button>
               </div>
             </header>
-            <!-- i18n: SEARCH FIELD -->
-           <div class="recipe-page__search">
-  <div class="search-wrapper" style="position: relative; width: 100%; display: flex; align-items: center;">
-    <input
-      type="text"
-      class="recipe-page__search-input"
-      placeholder="Пошук за назвою або інгредієнтом..."
-      data-i18n-placeholder="searchPlaceholder"
-      id="recipe-search-input"
-      style="padding-right: 80px; width: 100%;" /> <button 
-      id="clear-search-btn" 
-      type="button" 
-      style="display: none; position: absolute; right: 45px; background: none; border: none; cursor: pointer; color: #888; font-size: 20px; line-height: 1; padding: 10px;">
-      &times;
-    </button>
 
-    <button class="search-icon-btn" id="search-mode-btn" type="button"></button>
-  </div>
-</div>
+            <div class="recipe-page__search">
+              <div
+                class="search-wrapper"
+                style="position: relative; width: 100%; display: flex; align-items: center">
+                <input
+                  type="text"
+                  class="recipe-page__search-input"
+                  placeholder="Пошук за назвою або інгредієнтом..."
+                  data-i18n-placeholder="searchPlaceholder"
+                  id="recipe-search-input"
+                  style="padding-right: 80px; width: 100%" />
+                <button
+                  id="clear-search-btn"
+                  type="button"
+                  style="
+                    display: none;
+                    position: absolute;
+                    right: 45px;
+                    background: none;
+                    border: none;
+                    cursor: pointer;
+                    color: #888;
+                    font-size: 20px;
+                    line-height: 1;
+                    padding: 10px;
+                  ">
+                  &times;
+                </button>
+                <button class="search-icon-btn" id="search-mode-btn" type="button"></button>
+              </div>
+            </div>
 
-            <!-- i18n: FILTERS -->
             <nav class="recipe-filters">
               <div class="recipe-filters__group">
                 <div class="recipe-filters__list">
@@ -167,7 +173,6 @@
                     data-i18n="filterAll">
                     Всі
                   </button>
-
                   <button
                     class="recipe-filters__item"
                     data-category="breakfast"
@@ -210,9 +215,14 @@
                     data-i18n="filterBakery">
                     Випічка
                   </button>
-
                   <button class="recipe-filters__item" data-category="fast" data-i18n="filterFast">
                     Швидкі рецепти⚡️
+                  </button>
+                  <button
+                    class="recipe-filters__item"
+                    data-category="no-power"
+                    data-i18n="filterNoPower">
+                    Без світла🔋
                   </button>
                 </div>
               </div>
@@ -224,12 +234,10 @@
       </div>
     </div>
 
-    <!-- i18n: ADD RECIPE MODAL -->
     <div class="modal-overlay" id="add-recipe-modal">
       <div class="modal-card">
         <button class="modal-card__close" id="close-modal">&times;</button>
 
-        <!-- i18n: ADD RECIPE — INITIAL OPTIONS -->
         <div id="initial-options-view">
           <div class="modal-card__header">
             <h2 data-i18n="createMagic">Варіанти створення рецепта ✨</h2>
@@ -237,7 +245,6 @@
           </div>
 
           <div class="modal-card__options">
-            <!-- i18n: AI UPLOAD -->
             <label class="option-card option-card--ai" for="ai-upload">
               <input type="file" id="ai-upload" accept="image/*" hidden />
               <div class="option-card__icon">📸</div>
@@ -247,7 +254,6 @@
               </div>
             </label>
 
-            <!-- i18n: MANUAL ENTRY -->
             <button class="option-card" id="manual-entry-btn" type="button">
               <div class="option-card__icon">✍️</div>
               <div class="option-card__info">
@@ -256,112 +262,127 @@
               </div>
             </button>
           </div>
+
+          <div class="recipe-add__smart-import">
+            <label class="smart-import__label" data-i18n="apiImportLabel">
+              <span>🥗</span> Знайти рецепт у базі
+            </label>
+
+            <div class="smart-import__wrapper">
+              <input
+                type="text"
+                id="api-search"
+                class="smart-import__input"
+                data-i18n-placeholder="apiImportPlaceholder"
+                placeholder="Введіть назву страви..." />
+
+              <button type="button" id="btn-api-search" class="recipe-card__btn smart-import__btn">
+                <span data-i18n="apiImportBtn">Пошук</span>
+              </button>
+            </div>
+
+            <p class="smart-import__hint" data-i18n="apiImportHint">
+              Пошук у відкритій базі рецептів. Оберіть страву та додайте її до своїх рецептів. 🍃
+            </p>
+
+            <div id="api-search-results" class="api-results"></div>
+          </div>
         </div>
-        <div class="recipe-add__smart-import">
-         <label class="smart-import__label" data-i18n="apiImportLabel">
-          <span>🥗</span> Знайти рецепт у базі
-          </label>
 
-          <div class="smart-import__wrapper">
-            <input
-              type="text"
-              id="api-search"
-              class="smart-import__input"
-              data-i18n-placeholder="apiImportPlaceholder"
-              placeholder="Введіть назву страви..." />
-
-            <button type="button" id="btn-api-search" class="recipe-card__btn smart-import__btn">
-              <span data-i18n="apiImportBtn">Пошук</span>
-            </button>
+        <div id="recipe-preview-form" class="modal-form-wrapper" style="display: none">
+          <div class="modal-card__header">
+            <h2 data-i18n="addRecipe">Додати рецепт</h2>
+            <p data-i18n="checkBeforeSave">Перевір дані перед збереженням</p>
           </div>
 
-          <p class="smart-import__hint" data-i18n="apiImportHint">
-            Пошук у відкритій базі рецептів. Оберіть страву та додайте її до своїх рецептів. 🍃
-          </p>
+          <form class="preview-form" id="main-recipe-form">
+            <div class="preview-form__content">
+              <div class="form-group">
+                <label for="prev-name" data-i18n="dishName">Назва страви</label>
+                <input
+                  type="text"
+                  id="prev-name"
+                  required
+                  placeholder="Наприклад: Вівсянка з ягодами"
+                  data-i18n-placeholder="dishNamePlaceholder" />
+              </div>
 
-          <div id="api-search-results" class="api-results"></div>
-        </div>
-      <!--------------------Модалка додавання рецепту---------------->
-<div id="recipe-preview-form" class="modal-form-wrapper" style="display: none;">
-  <div class="modal-card__header">
-    <h2 data-i18n="addRecipe">Додати рецепт</h2>
-    <p data-i18n="checkBeforeSave">Перевір дані перед збереженням</p>
-  </div>
+              <div class="recipe-macros-grid">
+                <div class="form-group">
+                  <label for="prev-calories" data-i18n="calories">Ккал</label>
+                  <input type="number" id="prev-calories" placeholder="0" />
+                </div>
+                <div class="form-group">
+                  <label for="prev-proteins" data-i18n="proteins">Б</label>
+                  <input type="number" id="prev-proteins" placeholder="0" />
+                </div>
+                <div class="form-group">
+                  <label for="prev-fats" data-i18n="fats">Ж</label>
+                  <input type="number" id="prev-fats" placeholder="0" />
+                </div>
+                <div class="form-group">
+                  <label for="prev-carbs" data-i18n="carbs">У</label>
+                  <input type="number" id="prev-carbs" placeholder="0" />
+                </div>
+              </div>
 
-  <form class="preview-form" id="main-recipe-form">
-    <div class="preview-form__content">
-      
-      <div class="form-group">
-        <label for="prev-name" data-i18n="dishName">Назва страви</label>
-        <input type="text" id="prev-name" required placeholder="Наприклад: Вівсянка з ягодами" data-i18n-placeholder="dishNamePlaceholder" />
-      </div>
+              <div class="form-group">
+                <label for="prev-category" data-i18n="category">Категорія</label>
+                <select id="prev-category">
+                  <option value="breakfast" data-i18n="filterBreakfast">Сніданок</option>
+                  <option value="lunch" data-i18n="filterLunch">Обід</option>
+                  <option value="dinner" data-i18n="filterDinner">Вечеря</option>
+                  <option value="snack" data-i18n="filterSnack">Перекус</option>
+                  <option value="dessert" data-i18n="filterDessert">Десерт</option>
+                  <option value="drinks" data-i18n="filterDrinks">Напої</option>
+                  <option value="bakery" data-i18n="filterBakery">Випічка</option>
+                  <option value="fast" data-i18n="filterFast">Швидкі рецепти⏳</option>
+                  <option value="no_power" data-i18n="filterNoPower">Без світла⚡</option>
+                </select>
+              </div>
 
-      <div class="recipe-macros-grid">
-        <div class="form-group">
-          <label for="prev-calories" data-i18n="calories">Ккал</label>
-          <input type="number" id="prev-calories" placeholder="0" />
-        </div>
-        <div class="form-group">
-          <label for="prev-proteins" data-i18n="proteins">Б</label>
-          <input type="number" id="prev-proteins" placeholder="0" />
-        </div>
-        <div class="form-group">
-          <label for="prev-fats" data-i18n="fats">Ж</label>
-          <input type="number" id="prev-fats" placeholder="0" />
-        </div>
-        <div class="form-group">
-          <label for="prev-carbs" data-i18n="carbs">У</label>
-          <input type="number" id="prev-carbs" placeholder="0" />
-        </div>
-      </div>
+              <div class="form-group">
+                <label for="prev-ingredients" data-i18n="ingredientsHint">Інгредієнти</label>
+                <textarea
+                  id="prev-ingredients"
+                  placeholder="Вівсянка, 50г"
+                  data-i18n-placeholder="ingredientsPlaceholder"></textarea>
+              </div>
 
-      <div class="form-group">
-        <label for="prev-category" data-i18n="category">Категорія</label>
-        <select id="prev-category">
-          <option value="breakfast" data-i18n="filterBreakfast">Сніданок</option>
-          <option value="lunch" data-i18n="filterLunch">Обід</option>
-          <option value="dinner" data-i18n="filterDinner">Вечеря</option>
-          <option value="snack" data-i18n="filterSnack">Перекус</option>
-          <option value="dessert" data-i18n="filterDessert">Десерт</option>
-          <option value="drinks" data-i18n="filterDrinks">Напої</option>
-          <option value="bakery" data-i18n="filterBakery">Випічка</option>
-          <option value="fast" data-i18n="filterFast">Швидкі рецепти⚡️</option>
-        </select>
-      </div>
+              <div class="form-media-box">
+                <label data-i18n="dishPhoto">Фото страви</label>
+                <div class="form-media-inner">
+                  <input type="file" id="recipe-image" accept="image/*" hidden />
+                  <button
+                    type="button"
+                    class="btn-upload"
+                    onclick="document.getElementById('recipe-image').click()"
+                    data-i18n="uploadPhoto">
+                    Завантажити фото 📸
+                  </button>
+                  <div class="form-separator">
+                    <span data-i18n="orSeparator">— або —</span>
+                  </div>
+                  <div class="form-group">
+                    <input type="text" id="recipe-image-url" placeholder="Вставте URL фото..." />
+                  </div>
+                </div>
+              </div>
+            </div>
 
-      <div class="form-group">
-        <label for="prev-ingredients" data-i18n="ingredientsHint">Інгредієнти</label>
-        <textarea id="prev-ingredients" placeholder="Вівсянка, 50г" data-i18n-placeholder="ingredientsPlaceholder"></textarea>
-      </div>
-
-      <div class="form-media-box">
-        <label data-i18n="dishPhoto">Фото страви</label>
-        
-        <div class="form-media-inner">
-          <input type="file" id="recipe-image" accept="image/*" hidden />
-          <button type="button" class="btn-upload" onclick="document.getElementById('recipe-image').click()" data-i18n="uploadPhoto">
-            Завантажити фото 📸
-          </button>
-          
-          <div class="form-separator">
-            <span data-i18n="orSeparator">— або —</span>
-          </div>
-
-          <div class="form-group">
-             <input type="text" id="recipe-image-url" placeholder="Вставте URL фото..." />
-          </div>
+            <div class="preview-form__footer">
+              <button type="button" id="cancel-preview" class="btn-secondary" data-i18n="cancelBtn">
+                Скасувати
+              </button>
+              <button type="submit" class="btn-save" data-i18n="saveRecipe">
+                Зберегти рецепт 🥗
+              </button>
+            </div>
+          </form>
         </div>
       </div>
     </div>
 
-    <div class="preview-form__footer">
-      <button type="button" id="cancel-preview" class="btn-secondary" data-i18n="cancelBtn">Скасувати</button>
-      <button type="submit" class="btn-save" data-i18n="saveRecipe">Зберегти рецепт 🥗</button>
-    </div>
-  </form>
-</div> 
-
-    <!-- i18n: CONFIRM DELETE MODAL -->
     <div id="confirm-modal" class="modal-overlay">
       <div class="modal-card confirm-box">
         <h3 data-i18n="deleteRecipeTitle">Видалити рецепт?</h3>
@@ -377,25 +398,21 @@
       </div>
     </div>
 
-    <!-- i18n: VIEW RECIPE MODAL -->
     <div id="view-recipe-modal" class="modal-overlay">
       <div class="modal-card recipe-detail">
         <button class="modal-card__close" id="close-view-modal">&times;</button>
 
-        <!-- i18n: VIEW HEADER -->
         <div class="recipe-detail__header">
           <h2 id="view-title" data-i18n="viewRecipeTitle">Назва рецепта</h2>
           <div class="recipe-detail__tags" id="view-tags"></div>
         </div>
 
-        <!-- i18n: VIEW ACTIONS -->
         <div class="recipe-view__actions">
           <button class="btn-primary" id="edit-recipe-btn" data-i18n="editRecipe">
             Редагувати рецепт ✏️
           </button>
         </div>
 
-        <!-- i18n: RATING -->
         <div class="recipe-rating">
           <span class="star" data-value="1">★</span>
           <span class="star" data-value="2">★</span>
@@ -405,34 +422,27 @@
           <span class="rating-value">3.0</span>
         </div>
 
-        <!-- i18n: NUTRITION SUMMARY -->
         <div class="nutrition-summary">
           <div class="nutrition-item">
             <span class="nutrition-val" id="view-calories">0</span>
             <span class="nutrition-label" data-i18n="nutrCalories">ккал</span>
           </div>
-
           <div class="nutrition-divider"></div>
-
           <div class="nutrition-item">
             <span class="nutrition-val" id="view-proteins">0</span>
             <span class="nutrition-label" data-i18n="nutrProteins">Білки</span>
           </div>
-
           <div class="nutrition-item">
             <span class="nutrition-val" id="view-carbs">0</span>
             <span class="nutrition-label" data-i18n="nutrCarbs">Вугл.</span>
           </div>
-
           <div class="nutrition-item">
             <span class="nutrition-val" id="view-fats">0</span>
             <span class="nutrition-label" data-i18n="nutrFats">Жири</span>
           </div>
         </div>
 
-        <!-- i18n: VIEW BODY -->
         <div class="recipe-detail__body">
-          <!-- i18n: INGREDIENTS SECTION -->
           <section class="recipe-section">
             <h3>
               <span class="icon">🌱</span> <span data-i18n="ingredientsTitle">Інгредієнти</span>
@@ -440,7 +450,6 @@
             <ul id="view-ingredients-list" class="ingredients-list"></ul>
           </section>
 
-          <!-- i18n: STEPS SECTION -->
           <section class="recipe-section">
             <h3>
               <span class="icon">👨‍🍳</span> <span data-i18n="stepsTitle">Спосіб приготування</span>
@@ -448,14 +457,14 @@
             <div id="view-steps" class="steps-content"></div>
           </section>
 
-          <!-- i18n: NOTES SECTION -->
           <section class="recipe-section recipe-section--notes">
             <h3><span class="icon">📝</span> <span data-i18n="notesTitle">Мої нотатки</span></h3>
-            <textarea
-              id="view-notes"
-              placeholder="Додай свої зауваження до рецепта..."
-              data-i18n-placeholder="notesPlaceholder"></textarea>
-
+            <treasure-box>
+              <textarea
+                id="view-notes"
+                placeholder="Додай свої зауваження до рецепта..."
+                data-i18n-placeholder="notesPlaceholder"></textarea>
+            </treasure-box>
             <button id="save-notes-btn" class="btn-save-mini" data-i18n="saveNote">
               Зберегти нотатку
             </button>
