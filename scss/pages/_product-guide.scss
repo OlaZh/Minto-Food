@@ -596,6 +596,7 @@
   background: var(--color-primary);
   color: #fff;
   transform: translateY(-2px);
+   box-shadow: 0 15px 35px rgba(15, 31, 27, 0.15); /* Твоя $shadow-lg */
 }
 
 @keyframes chipPop { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
