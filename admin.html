@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="uk">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Швидка чистка фото 🧹</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+      body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background: #1a1a1a;
+        color: white;
+        padding: 20px;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 15px;
+      }
+      .card {
+        background: #2a2a2a;
+        padding: 10px;
+        border-radius: 12px;
+        text-align: center;
+        transition: 0.2s;
+        position: relative;
+      }
+      .card img {
+        width: 100%;
+        height: 120px;
+        object-fit: cover;
+        border-radius: 8px;
+        cursor: pointer;
+        border: 3px solid transparent;
+      }
+      .card img:hover {
+        border-color: #ff4d4d;
+        transform: scale(1.02);
+      }
+      .card.deleted {
+        opacity: 0.2;
+        filter: grayscale(1);
+        transform: scale(0.9);
+      }
+      .name {
+        font-size: 11px;
+        margin-top: 8px;
+        height: 32px;
+        overflow: hidden;
+        line-height: 1.2;
+      }
+      .counter {
+        margin-bottom: 20px;
+        font-size: 1.2em;
+        color: #00d4ff;
+      }
+      .instruction {
+        color: #aaa;
+        margin-bottom: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Майстер Модерації 📸</h1>
+    <p class="instruction">
+      Просто клікай на "Айранів", "Песиків" та інший треш — вони миттєво стануть NULL у базі.
+    </p>
+    <div id="stat" class="counter">Завантаження бази...</div>
+
+    <div id="grid" class="grid"></div>
+
+    <script>
+      // Встав сюди свої дані з Supabase
+      const SUPABASE_URL = 'https://xpaibteyntflrixmigfx.supabase.co';
+      const SUPABASE_KEY = 'sb_publishable_5aziCmaq0rxAJ24MznPycw_eY5iVZxZ';
+      const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+      async function loadProducts() {
+        const { data, error } = await supabaseClient
+          .from('products')
+          .select('id, name_ua, image')
+          .not('image', 'is', null) // Показуємо тільки ті, де є фото
+          .order('id', { ascending: false });
+
+        if (error) {
+          console.error(error);
+          return;
+        }
+
+        const container = document.getElementById('grid');
+        document.getElementById('stat').innerText = `Знайдено продуктів з фото: ${data.length}`;
+
+        container.innerHTML = '';
+        data.forEach((p) => {
+          const div = document.createElement('div');
+          div.className = 'card';
+          div.innerHTML = `
+                    <img src="${p.image}" onclick="removeImg(${p.id}, this)" title="Клік для видалення">
+                    <div class="name">${p.name_ua}</div>
+                `;
+          container.appendChild(div);
+        });
+      }
+
+      async function removeImg(id, imgElement) {
+        const { error } = await supabaseClient
+          .from('products')
+          .update({ image: null })
+          .eq('id', id);
+
+        if (!error) {
+          imgElement.parentElement.classList.add('deleted');
+          console.log(`Продукт ${id} очищено`);
+        } else {
+          alert('Помилка при видаленні!');
+        }
+      }
+
+      loadProducts();
+    </script>
+  </body>
+</html>
