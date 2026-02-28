@@ -1,104 +1,77 @@
-const axios = require('axios');
 const { createClient } = require('@supabase/supabase-js');
+const axios = require('axios');
 
-const supabase = createClient(
-,
-);
+// 1. КОНСТАНТИ - ПЕРЕВІР, ЩО ТУТ ТВОЇ ДАНІ
+const SUPABASE_URL = '';
+const SUPABASE_KEY = '';
+const UNSPLASH_ACCESS_KEY = '';
 
-// USDA_KEY потрібен тільки для КБЖВ
-const USDA_KEY = '';
+// 2. СТВОРЕННЯ КЛІЄНТА (Важливо: const має бути тут!)
+const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-async function checkUrl(url) {
+async function syncWithUnsplash() {
   try {
-    const res = await axios.head(url);
-    return res.status === 200;
-  } catch (e) {
-    return false;
-  }
-}
+    console.log('🧹 Очищення бази від ШІ-мутантів...');
 
-async function enrichProductData() {
-  console.log('🚀 Запуск: ТІЛЬКИ кулінарні API (TheMealDB + OFF)...');
+    // Очищаємо посилання на ШІ-фото, щоб Unsplash міг їх замінити
+    const { error: clearError } = await supabase
+      .from('products')
+      .update({ image: null, photographer_name: null })
+      .eq('photographer_name', 'AI: Professional Shot');
 
-  const { data: products, error } = await supabase
-    .from('products')
-    .select('*')
-    .or('image.is.null,kcal.is.null');
+    if (clearError) console.error('⚠️ Помилка очищення:', clearError.message);
 
-  if (error) {
-    console.error('❌ Помилка:', error.message);
-    return;
-  }
+    console.log('🚀 Пошук реальних фото на Unsplash...');
 
-  for (const product of products) {
-    try {
-      console.log(`\n🍎 Обробка: ${product.name_ua}`);
-      let nutrients = {};
-      let imageUrl = null;
+    const { data: products, error: fetchError } = await supabase
+      .from('products')
+      .select('id, name_en, name_ua')
+      .or('image.is.null, image.eq.""')
+      .order('id', { ascending: true })
+      .limit(30);
 
-      // 1. КБЖВ (USDA) - якщо калорії порожні
-      if (product.kcal === null) {
-        const usdaRes = await axios.get(`https://api.nal.usda.gov/fdc/v1/foods/search`, {
-          params: { api_key: USDA_KEY, query: product.name_en, pageSize: 1 },
-        });
-        const food = usdaRes.data.foods?.[0];
-        if (food) {
-          const findN = (id) => food.foodNutrients.find((n) => n.nutrientId === id)?.value || 0;
-          nutrients = {
-            kcal: findN(1008),
-            protein: findN(1003),
-            fat: findN(1004),
-            carbs: findN(1005),
-          };
-        }
+    if (fetchError) throw fetchError;
+    if (!products || products.length === 0) return console.log('✅ Всі фото вже заповнені!');
+
+    for (const product of products) {
+      console.log(`🔍 Шукаю: ${product.name_ua}...`);
+
+      const response = await axios.get('https://api.unsplash.com/search/photos', {
+        params: {
+          query: `${product.name_en} white background`,
+          per_page: 1,
+          orientation: 'squarish',
+        },
+        headers: { Authorization: `Client-ID ${UNSPLASH_ACCESS_KEY}` },
+      });
+
+      const photo = response.data.results[0];
+
+      if (photo) {
+        await supabase
+          .from('products')
+          .update({
+            image: photo.urls.regular,
+            photographer_name: `Unsplash: ${photo.user.name}`,
+          })
+          .eq('id', product.id);
+
+        console.log(`✅ Знайдено фото від: ${photo.user.name}`);
+      } else {
+        console.log(`⚠️ Для "${product.name_en}" нічого не знайдено.`);
       }
 
-      // 2. ФОТО - ТІЛЬКИ КУЛІНАРНІ БАЗИ
-      let searchName = product.name_en.toLowerCase();
-
-      // Автокорекція назв для точності
-      if (searchName.includes('munster')) searchName = 'munster cheese';
-      if (searchName.includes('argentina')) searchName = 'argentina fish';
-      if (searchName.includes('pepper')) searchName = 'dr pepper';
-
-      const cleanName = searchName.replace(/\(.*\)/g, '').trim();
-
-      // --- СПРОБА А: TheMealDB (Чисті інгредієнти) ---
-      const formattedName = cleanName
-        .split(' ')
-        .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-        .join('%20');
-      const mealUrl = `https://www.themealdb.com/images/ingredients/${formattedName}.png`;
-
-      if (await checkUrl(mealUrl)) {
-        imageUrl = mealUrl;
-        console.log(`   🌟 TheMealDB: Знайдено`);
-      }
-
-      // --- СПРОБА Б: Open Food Facts (Реальні товари) ---
-      if (!imageUrl) {
-        const offRes = await axios.get(`https://world.openfoodfacts.org/cgi/search.pl`, {
-          params: { search_terms: cleanName, json: 1, page_size: 1 },
-        });
-        if (offRes.data.products?.[0]?.image_url) {
-          imageUrl = offRes.data.products[0].image_url;
-          console.log(`   📦 OFF: Знайдено реальний товар`);
-        }
-      }
-
-      // 3. ЗАПИС У БАЗУ
-      await supabase
-        .from('products')
-        .update({ ...nutrients, image: imageUrl })
-        .eq('id', product.id);
-      console.log(`✅ Готово: ${product.name_ua}`);
-
-      await new Promise((r) => setTimeout(r, 500));
-    } catch (e) {
-      console.error(`❌ Помилка ${product.name_ua}:`, e.message);
+      // Пауза 1.5 сек, щоб не "вилетіти" за ліміти
+      await new Promise((res) => setTimeout(res, 1500));
+    }
+  } catch (err) {
+    if (err.response && err.response.status === 403) {
+      console.log('🛑 Ліміт Unsplash (50/год) вичерпано!');
+    } else {
+      console.error('❌ Помилка:', err.message);
     }
   }
-  console.log('\n🏁 Синхронізацію завершено БЕЗ "фігні"!');
+  console.log('🏁 Завершено.');
 }
 
-enrichProductData();
+syncWithUnsplash();

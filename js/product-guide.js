@@ -72,7 +72,7 @@ async function loadProducts() {
 }
 
 /* ============================================================
-   5. РЕНДЕР КАРТОК
+   5. РЕНДЕР КАРТОК (ОНОВЛЕНО ДЛЯ UNSPLASH)
    ============================================================ */
 function renderProducts(items) {
   if (!productList) return;
@@ -92,11 +92,21 @@ function renderProducts(items) {
         ? product.image
         : 'img/placeholder.jpg';
 
+    // Додаємо блок атрибуції Unsplash, якщо є дані про фотографа
+    const attributionHtml = product.photographer_name
+      ? `<div class="product-card-mini__attribution">
+           Photo by <a href="${product.photographer_url}?utm_source=MintoFood&utm_medium=referral" target="_blank" onclick="event.stopPropagation()">
+             ${product.photographer_name}
+           </a>
+         </div>`
+      : '';
+
     card.innerHTML = `
       <div class="product-card-mini__img-wrapper">
         <img src="${imgSrc}" alt="${product.name_ua || ''}" 
              class="product-card-mini__image" 
              onerror="this.src='img/placeholder.jpg'">
+        ${attributionHtml}
       </div>
       <div class="product-card-mini__content">
         <h3 class="product-card-mini__title">${product.name_ua || 'Без назви'}</h3>
@@ -113,7 +123,6 @@ function renderProducts(items) {
     productList.appendChild(card);
   });
 }
-
 /* ============================================================
    6. ЛОГІКА ФІЛЬТРАЦІЇ
    ============================================================ */

@@ -3941,6 +3941,34 @@ textarea {
   transform: translateY(-2px);
 }
 
+/* Стилі для атрибуції фотографа */
+.product-card-mini__img-wrapper {
+  position: relative; /* Щоб підпис прилип до картинки */
+}
+
+.product-card-mini__attribution {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(0, 0, 0, 0.4); /* Напівпрозорий темний фон */
+  color: #fff;
+  font-size: 8px;
+  padding: 2px 4px;
+  text-align: right;
+  opacity: 0.7;
+  transition: opacity 0.3s;
+}
+
+.product-card-mini__attribution a {
+  color: #fff;
+  text-decoration: underline;
+}
+
+.product-card-mini:hover .product-card-mini__attribution {
+  opacity: 1; /* Проявляється чіткіше при наведенні */
+}
+
 @keyframes chipPop {
   from {
     transform: scale(0.8);
