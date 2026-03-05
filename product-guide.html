@@ -22,7 +22,7 @@
     <header class="header">
       <div class="header__container">
         <a href="index.html" class="header__logo" data-i18n="logo">Minto Food 🍃</a>
-       
+
         <nav class="header__nav">
           <ul class="header__nav-list">
             <li>
@@ -358,55 +358,9 @@
             <!-- Сітка продуктів -->
             <div class="product-grid">
               <!-- Міні-картка продукту -->
-
-              <div class="product-list">
-                <div class="product-card-mini" data-product-id="1">
-                  <img src="img/chicken.jpg" alt="" class="product-card-mini__image" />
-
-                  <div class="product-card-mini__content">
-                    <h3 class="product-card-mini__title" data-i18n="productChicken">Куряче філе</h3>
-
-                    <p class="product-card-mini__desc" data-i18n="productChickenShort">
-                      Нежирне джерело білка.
-                    </p>
-
-                    <div class="product-card-mini__macros">
-                      <span data-i18n="kcalShort">113 ккал</span>
-                      <span data-i18n="proteinShort">23Б</span>
-                      <span data-i18n="fatShort">1.9Ж</span>
-                    </div>
-
-                    <div class="product-card-mini__tags">
-                      <span class="tag" data-i18n="tagProtein">білковий</span>
-                      <span class="tag" data-i18n="tagDiet">дієтичний</span>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Міні-картка продукту -->
-                <div class="product-card-mini" data-product-id="2">
-                  <img src="img/apple.jpg" alt="" class="product-card-mini__image" />
-
-                  <div class="product-card-mini__content">
-                    <h3 class="product-card-mini__title" data-i18n="productApple">Яблуко</h3>
-
-                    <p class="product-card-mini__desc" data-i18n="productAppleShort">
-                      Легкий фрукт з клітковиною.
-                    </p>
-
-                    <div class="product-card-mini__macros">
-                      <span data-i18n="kcalShort">52 ккал</span>
-                      <span data-i18n="carbsShort">14В</span>
-                    </div>
-
-                    <div class="product-card-mini__tags">
-                      <span class="tag" data-i18n="tagFruit">фрукт</span>
-                      <span class="tag" data-i18n="tagLowGI">низький ГІ</span>
-                    </div>
-                  </div>
-                </div>
+              <div class="product-grid">
+                <div class="product-list" id="productList"></div>
               </div>
-
               <!-- Далі будуть інші продукти... -->
             </div>
           </section>
@@ -419,8 +373,9 @@
 
       <div class="modal__content product-modal">
         <!-- HEADER -->
+        <!-- HEADER -->
         <div class="modal__header">
-          <h2 class="modal__title" data-i18n="productName">Куряче філе</h2>
+          <h2 class="modal__title" data-i18n="productName"></h2>
           <button class="modal__close" data-modal-close>&times;</button>
         </div>
 
@@ -428,28 +383,22 @@
         <div class="modal__body product-modal__body">
           <!-- Фото -->
           <div class="product-modal__image-wrapper">
-            <img src="img/product.jpg" alt="" class="product-modal__image" />
+            <img src="img/placeholder.jpg" alt="" class="product-modal__image" />
           </div>
 
           <!-- Опис -->
-          <p class="product-modal__description" data-i18n="productShortDesc">
-            Нежирне джерело білка, легко засвоюється.
-          </p>
+          <p class="product-modal__description" data-i18n="productShortDesc"></p>
 
           <!-- КБЖУ -->
           <div class="product-modal__macros">
-            <span class="macro" data-i18n="kcal">113 ккал</span>
-            <span class="macro" data-i18n="protein">23Б</span>
-            <span class="macro" data-i18n="fat">1.9Ж</span>
-            <span class="macro" data-i18n="carbs">0В</span>
+            <span class="macro" data-i18n="kcal"></span>
+            <span class="macro" data-i18n="protein"></span>
+            <span class="macro" data-i18n="fat"></span>
+            <span class="macro" data-i18n="carbs"></span>
           </div>
 
           <!-- Теги -->
-          <div class="product-modal__tags">
-            <span class="tag" data-i18n="tagProtein">білковий</span>
-            <span class="tag" data-i18n="tagDiet">дієтичний</span>
-            <span class="tag" data-i18n="tagSport">спортсменам</span>
-          </div>
+          <div class="product-modal__tags"></div>
 
           <!-- Акордеони -->
           <div class="product-modal__accordion">
@@ -457,11 +406,7 @@
             <div class="accordion">
               <button class="accordion__toggle" data-i18n="benefits">Користь</button>
               <div class="accordion__content">
-                <ul class="accordion__list">
-                  <li data-i18n="benefit1">Високий вміст білка</li>
-                  <li data-i18n="benefit2">Низький вміст жиру</li>
-                  <li data-i18n="benefit3">Добре для відновлення після тренування</li>
-                </ul>
+                <ul class="accordion__list"></ul>
               </div>
             </div>
 
@@ -469,10 +414,7 @@
             <div class="accordion">
               <button class="accordion__toggle" data-i18n="harm">Шкода / обмеження</button>
               <div class="accordion__content">
-                <ul class="accordion__list">
-                  <li data-i18n="harm1">Може бути сухим при неправильному приготуванні</li>
-                  <li data-i18n="harm2">У великій кількості може перевантажувати травлення</li>
-                </ul>
+                <ul class="accordion__list"></ul>
               </div>
             </div>
 
@@ -480,13 +422,7 @@
             <div class="accordion">
               <button class="accordion__toggle" data-i18n="whenToEat">Коли краще їсти</button>
               <div class="accordion__content">
-                <ul class="accordion__list">
-                  <li data-i18n="eatMorning">Вранці — добре для білкового сніданку</li>
-                  <li data-i18n="eatDay">Вдень — оптимально для обіду</li>
-                  <li data-i18n="eatEvening">Ввечері — можна без важких соусів</li>
-                  <li data-i18n="eatBeforeWorkout">Перед тренуванням — легке джерело білка</li>
-                  <li data-i18n="eatAfterWorkout">Після тренування — ідеально</li>
-                </ul>
+                <ul class="accordion__list"></ul>
               </div>
             </div>
 
@@ -494,10 +430,7 @@
             <div class="accordion">
               <button class="accordion__toggle" data-i18n="whenNotToEat">Коли не варто</button>
               <div class="accordion__content">
-                <ul class="accordion__list">
-                  <li data-i18n="notEatNight">Перед сном у великій кількості</li>
-                  <li data-i18n="notEatStomach">При проблемах зі шлунком</li>
-                </ul>
+                <ul class="accordion__list"></ul>
               </div>
             </div>
 
@@ -506,17 +439,10 @@
               <button class="accordion__toggle" data-i18n="combinations">Поєднання</button>
               <div class="accordion__content">
                 <h4 class="accordion__subtitle" data-i18n="goodComb">Добре поєднується</h4>
-                <ul class="accordion__list">
-                  <li data-i18n="goodComb1">Овочі</li>
-                  <li data-i18n="goodComb2">Крупи</li>
-                  <li data-i18n="goodComb3">Зелень</li>
-                </ul>
+                <ul class="accordion__list"></ul>
 
                 <h4 class="accordion__subtitle" data-i18n="badComb">Погано поєднується</h4>
-                <ul class="accordion__list">
-                  <li data-i18n="badComb1">Жирні соуси</li>
-                  <li data-i18n="badComb2">Смажена картопля</li>
-                </ul>
+                <ul class="accordion__list"></ul>
               </div>
             </div>
 
@@ -526,11 +452,7 @@
                 Що відбувається з тілом
               </button>
               <div class="accordion__content">
-                <ul class="accordion__list">
-                  <li data-i18n="reaction1">Довго тримає ситість</li>
-                  <li data-i18n="reaction2">Стабілізує рівень цукру</li>
-                  <li data-i18n="reaction3">Допомагає відновленню м’язів</li>
-                </ul>
+                <ul class="accordion__list"></ul>
               </div>
             </div>
 
@@ -538,10 +460,7 @@
             <div class="accordion">
               <button class="accordion__toggle" data-i18n="myths">Міфи та правда</button>
               <div class="accordion__content">
-                <ul class="accordion__list">
-                  <li data-i18n="myth1">Міф: курка суха</li>
-                  <li data-i18n="truth1">Правда: при правильному приготуванні соковита</li>
-                </ul>
+                <ul class="accordion__list"></ul>
               </div>
             </div>
 
@@ -549,13 +468,7 @@
             <div class="accordion">
               <button class="accordion__toggle" data-i18n="recipes">Рецепти</button>
               <div class="accordion__content">
-                <div class="product-modal__carousel">
-                  <div class="product-modal__recipe" data-i18n="recipe1">Курка з овочами</div>
-                  <div class="product-modal__recipe" data-i18n="recipe2">
-                    Філе в йогуртовому маринаді
-                  </div>
-                  <div class="product-modal__recipe" data-i18n="recipe3">Салат з куркою</div>
-                </div>
+                <div class="recipes-container"></div>
               </div>
             </div>
 
@@ -563,16 +476,7 @@
             <div class="accordion">
               <button class="accordion__toggle" data-i18n="substitutes">Заміни</button>
               <div class="accordion__content">
-                <h4 class="accordion__subtitle" data-i18n="canSubstitute">Можна замінити</h4>
-                <ul class="accordion__list">
-                  <li data-i18n="sub1">Індичка</li>
-                  <li data-i18n="sub2">Кролик</li>
-                </ul>
-
-                <h4 class="accordion__subtitle" data-i18n="cannotSubstitute">Не можна замінити</h4>
-                <ul class="accordion__list">
-                  <li data-i18n="nosub1">Яйця</li>
-                </ul>
+                <div class="substitutes-container"></div>
               </div>
             </div>
 
@@ -580,16 +484,11 @@
             <div class="accordion">
               <button class="accordion__toggle" data-i18n="similarProducts">Схожі продукти</button>
               <div class="accordion__content">
-                <div class="product-modal__carousel">
-                  <div class="product-modal__similar" data-i18n="similar1">Індичка</div>
-                  <div class="product-modal__similar" data-i18n="similar2">Кролик</div>
-                  <div class="product-modal__similar" data-i18n="similar3">Тунець</div>
-                </div>
+                <div class="similar-products-container"></div>
               </div>
             </div>
           </div>
         </div>
-
         <!-- FOOTER (опційно) -->
         <div class="modal__footer">
           <button class="modal__confirm" data-i18n="close" data-modal-close>Закрити</button>
