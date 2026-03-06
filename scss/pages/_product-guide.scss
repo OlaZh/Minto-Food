@@ -632,6 +632,8 @@
   opacity: 1; /* Проявляється чіткіше при наведенні */
 }
 
+
+
 @keyframes chipPop {
   from {
     transform: scale(0.8);
@@ -642,6 +644,7 @@
     opacity: 1;
   }
 }
+
 @keyframes subfilterSlideDown {
   from {
     transform: translateY(-10px);
