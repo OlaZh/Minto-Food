@@ -436,6 +436,7 @@
 }
 
 /* Елементи підфільтра */
+
 .subfilter-item {
   padding: 10px 16px;
   border-radius: 12px;
@@ -462,6 +463,7 @@
 =============================== */
 
 /* Контейнер пошуку */
+
 .product-search {
   display: flex;
   flex-wrap: wrap;
@@ -553,6 +555,7 @@
 }
 
 /* СУБФІЛЬТРИ (Шторка, що накладається зверху) */
+
 .product-subfilters {
   position: relative; /* Важливо для absolute всередині */
   width: 100%;
