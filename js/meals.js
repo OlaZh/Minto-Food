@@ -1,9 +1,10 @@
 console.log('meals.js запустився');
-console.log(document.querySelectorAll('.meal__add'));
 
 import { updateStats } from './stats.js';
 import { searchFood } from './food-api.js';
 import { i18n } from './i18n.js';
+// Імпортуємо клієнт Supabase
+import { supabase } from './supabaseClient.js';
 
 document.addEventListener('DOMContentLoaded', () => {
   // ================== LANGUAGE ==================
@@ -33,8 +34,10 @@ document.addEventListener('DOMContentLoaded', () => {
     dinner: [],
   };
 
-  const STORAGE_KEY = 'mealsState';
+  // Додаємо змінну для поточної обраної дати (за замовчуванням - сьогодні)
+  let currentSelectedDate = new Date().toISOString().split('T')[0];
 
+  const STORAGE_KEY = 'mealsState';
   let activeMealKey = null;
   let selectedFood = null;
   let editingIndex = null;
@@ -44,34 +47,74 @@ document.addEventListener('DOMContentLoaded', () => {
   // ================== DAILY NORM ==================
   const dailyNorm = Number(localStorage.getItem('dailyCaloriesNorm')) || 0;
 
-  // ================== STORAGE ==================
+  // ================== STORAGE & SUPABASE ==================
+
+  // Функція для завантаження даних із Supabase за конкретну дату
+  async function loadMealsFromSupabase(date) {
+    const { data, error } = await supabase.from('meals').select('*').eq('date', date);
+
+    if (error) {
+      console.error('Помилка завантаження з Supabase:', error);
+      return;
+    }
+
+    // Очищаємо поточний стан перед завантаженням нових даних
+    Object.keys(mealsState).forEach((key) => (mealsState[key] = []));
+
+    // Розподіляємо отримані дані по категоріях
+    data.forEach((item) => {
+      if (mealsState[item.meal_type]) {
+        mealsState[item.meal_type].push({
+          id: item.id, // зберігаємо ID для видалення
+          name: item.name,
+          weight: item.weight,
+          kcal: item.kcal,
+          protein: item.protein,
+          fat: item.fat,
+          carbs: item.carbs,
+        });
+      }
+    });
+
+    renderAllMeals();
+    renderSummary();
+  }
+
   function saveMealsToStorage() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(mealsState));
   }
 
-  function loadMealsFromStorage() {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (!saved) return;
+  // Функція завантаження (тепер пріоритет на Supabase)
+  async function initData() {
+    // Спочатку спробуємо завантажити з бази
+    await loadMealsFromSupabase(currentSelectedDate);
 
-    const parsed = JSON.parse(saved);
-
-    Object.keys(mealsState).forEach((mealKey) => {
-      mealsState[mealKey] = parsed[mealKey] || [];
-      renderMeal(mealKey);
-    });
-
-    renderSummary();
+    // Якщо база порожня, можна підтягнути з localStorage (опціонально)
+    if (Object.values(mealsState).flat().length === 0) {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        Object.keys(mealsState).forEach((mealKey) => {
+          mealsState[mealKey] = parsed[mealKey] || [];
+        });
+        renderAllMeals();
+        renderSummary();
+      }
+    }
   }
 
-  function clearDay() {
-    localStorage.removeItem(STORAGE_KEY);
+  async function clearDay() {
+    // Видаляємо з бази за цей день
+    const { error } = await supabase.from('meals').delete().eq('date', currentSelectedDate);
 
-    Object.keys(mealsState).forEach((mealKey) => {
-      mealsState[mealKey] = [];
-      renderMeal(mealKey);
-    });
-
-    renderSummary();
+    if (!error) {
+      localStorage.removeItem(STORAGE_KEY);
+      Object.keys(mealsState).forEach((mealKey) => {
+        mealsState[mealKey] = [];
+        renderMeal(mealKey);
+      });
+      renderSummary();
+    }
   }
 
   // ================== RENDER ==================
@@ -160,11 +203,23 @@ document.addEventListener('DOMContentLoaded', () => {
     const yes = document.getElementById('confirm-yes');
     const no = document.getElementById('confirm-no');
 
-    yes.onclick = () => {
-      mealsState[mealKey].splice(index, 1);
-      saveMealsToStorage();
-      renderMeal(mealKey);
-      renderSummary();
+    yes.onclick = async () => {
+      const itemToDelete = mealsState[mealKey][index];
+
+      // Видаляємо з бази, якщо є ID, або просто фільтруємо за датою/назвою
+      const { error } = await supabase.from('meals').delete().match({
+        meal_type: mealKey,
+        name: itemToDelete.name,
+        date: currentSelectedDate,
+      });
+
+      if (!error) {
+        mealsState[mealKey].splice(index, 1);
+        saveMealsToStorage();
+        renderMeal(mealKey);
+        renderSummary();
+      }
+
       modal.classList.remove('active');
       modal.hidden = true;
     };
@@ -262,7 +317,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ================== ADD FOOD ==================
-  function addSelectedFood() {
+  async function addSelectedFood() {
     if (!activeMealKey || !selectedFood) return;
 
     const grams = Number(weightInput.value);
@@ -279,16 +334,59 @@ document.addEventListener('DOMContentLoaded', () => {
       carbs: Number((selectedFood.carbs * factor).toFixed(1)),
     };
 
-    if (editingIndex !== null) {
-      mealsState[activeMealKey][editingIndex] = newItem;
-    } else {
-      mealsState[activeMealKey].push(newItem);
-    }
+    // Зберігаємо в Supabase
+    const { error } = await supabase.from('meals').insert([
+      {
+        meal_type: activeMealKey,
+        name: newItem.name,
+        weight: newItem.weight,
+        kcal: newItem.kcal,
+        protein: newItem.protein,
+        fat: newItem.fat,
+        carbs: newItem.carbs,
+        date: currentSelectedDate,
+      },
+    ]);
 
-    renderMeal(activeMealKey);
-    renderSummary();
-    saveMealsToStorage();
-    closeModal();
+    if (!error) {
+      if (editingIndex !== null) {
+        mealsState[activeMealKey][editingIndex] = newItem;
+      } else {
+        mealsState[activeMealKey].push(newItem);
+      }
+
+      renderMeal(activeMealKey);
+      renderSummary();
+      saveMealsToStorage();
+      closeModal();
+    } else {
+      alert('Помилка збереження в базу');
+    }
+  }
+
+  // ================== SIDEBAR DAYS LOGIC ==================
+  // Налаштовуємо кліки по днях тижня
+  function initSidebarDays() {
+    const dayButtons = document.querySelectorAll('.days-list__item'); // перевір цей селектор у себе в HTML
+
+    dayButtons.forEach((btn, index) => {
+      btn.addEventListener('click', () => {
+        // Вираховуємо дату (це спрощений приклад, краще використовувати dayjs)
+        const now = new Date();
+        const currentDay = now.getDay() || 7; // 1-7
+        const diff = index + 1 - currentDay;
+        const targetDate = new Date(now);
+        targetDate.setDate(now.getDate() + diff);
+
+        currentSelectedDate = targetDate.toISOString().split('T')[0];
+
+        // Візуальне перемикання активного класу
+        dayButtons.forEach((b) => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        loadMealsFromSupabase(currentSelectedDate);
+      });
+    });
   }
 
   // ================== EVENTS ==================
@@ -320,5 +418,6 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ================== INIT ==================
-  loadMealsFromStorage();
+  initSidebarDays();
+  initData();
 });
