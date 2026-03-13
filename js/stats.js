@@ -118,20 +118,22 @@ export function updateStats(consumed) {
 
 let currentWaterMl = 0;
 
-function updateWaterUI() {
+// Експортована функція — приймає літри (викликається з meals.js через Supabase)
+// Якщо викликається зсередини без аргументу — бере currentWaterMl
+export function updateWaterUI(currentLiters) {
   const waterNorm = getWaterNorm();
-  const normMl = waterNorm * 1000;
-  const visualPercent = Math.min((currentWaterMl / normMl) * 100, 100);
+
+  const liters = currentLiters !== undefined ? currentLiters : currentWaterMl / 1000;
+
+  const visualPercent = Math.min((liters / waterNorm) * 100, 100);
 
   if (waterFillEl) {
     waterFillEl.style.setProperty('--level', `${visualPercent}%`);
   }
 
   if (waterValueEl) {
-    // ТУТ ФІКС: 2 знаки після коми (0.75)
-    const currentL = (currentWaterMl / 1000).toFixed(2);
-    waterValueEl.textContent = `${currentL} / ${waterNorm.toFixed(1)} L`;
-    waterValueEl.style.opacity = currentWaterMl > 0 ? '1' : '0.5';
+    waterValueEl.textContent = `${liters.toFixed(2)} / ${waterNorm.toFixed(1)} L`;
+    waterValueEl.style.opacity = liters > 0 ? '1' : '0.5';
   }
 }
 

@@ -1,9 +1,8 @@
 console.log('meals.js запустився');
 
-import { updateStats } from './stats.js';
+import { updateStats, updateWaterUI } from './stats.js';
 import { searchFood } from './food-api.js';
 import { i18n } from './i18n.js';
-// Імпортуємо клієнт (переконайся, що цей файл створено)
 import { supabase } from './supabaseClient.js';
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -34,8 +33,16 @@ document.addEventListener('DOMContentLoaded', () => {
     dinner: [],
   };
 
+  // Хелпер для отримання локальної дати (без UTC зсуву)
+  function getLocalDateString(date = new Date()) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
   // Поточна дата для фільтрації (за замовчуванням сьогодні)
-  let currentSelectedDate = new Date().toISOString().split('T')[0];
+  let currentSelectedDate = getLocalDateString();
 
   const STORAGE_KEY = 'mealsState';
   let activeMealKey = null;
@@ -52,7 +59,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Завантаження даних з бази за конкретну дату
   async function loadMealsFromSupabase(date) {
-    const { data, error } = await supabase.from('meals').select('*').eq('date', date);
+    // Отримуємо поточного користувача
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    let query = supabase.from('meals').select('*').eq('date', date);
+
+    // Фільтрація: якщо залогінений — по ID, якщо ні — по null
+    if (user) {
+      query = query.eq('user_id', user.id);
+    } else {
+      query = query.is('user_id', null);
+    }
+
+    const { data, error } = await query;
 
     if (error) {
       console.error('Помилка Supabase:', error);
@@ -81,7 +102,69 @@ document.addEventListener('DOMContentLoaded', () => {
     renderAllMeals();
     renderSummary();
     updateDateDisplay(date);
+    loadWaterFromSupabase(date); // ДОДАНО: завантаження води при зміні дня
   }
+
+  // --- ЛОГІКА ВОДИ (SUPABASE) ---
+
+  async function loadWaterFromSupabase(date) {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    let query = supabase.from('water').select('amount').eq('date', date);
+
+    if (user) {
+      query = query.eq('user_id', user.id);
+    } else {
+      query = query.is('user_id', null);
+    }
+
+    const { data, error } = await query;
+    if (error) {
+      console.error('Помилка води:', error);
+      return;
+    }
+
+    const total = data ? data.reduce((acc, item) => acc + Number(item.amount), 0) : 0;
+    updateWaterUI(total); // Викликаємо функцію зі stats.js для оновлення стакана
+  }
+
+  async function addWaterToSupabase(amount) {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    const { error } = await supabase.from('water').insert([
+      {
+        amount: amount,
+        date: currentSelectedDate,
+        user_id: user ? user.id : null,
+      },
+    ]);
+
+    if (!error) {
+      loadWaterFromSupabase(currentSelectedDate);
+    }
+  }
+
+  async function resetWaterDay() {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    let query = supabase.from('water').delete().eq('date', currentSelectedDate);
+
+    if (user) {
+      query = query.eq('user_id', user.id);
+    } else {
+      query = query.is('user_id', null);
+    }
+
+    const { error } = await query;
+    if (!error) {
+      updateWaterUI(0);
+    }
+  }
+
+  // --- КІНЕЦЬ ЛОГІКИ ВОДИ ---
 
   function updateDateDisplay(dateStr) {
     if (dayDateDisplay) {
@@ -99,7 +182,19 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   async function clearDay() {
-    const { error } = await supabase.from('meals').delete().eq('date', currentSelectedDate);
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    let query = supabase.from('meals').delete().eq('date', currentSelectedDate);
+
+    if (user) {
+      query = query.eq('user_id', user.id);
+    } else {
+      query = query.is('user_id', null);
+    }
+
+    const { error } = await query;
 
     if (!error) {
       Object.keys(mealsState).forEach((mealKey) => {
@@ -164,10 +259,10 @@ document.addEventListener('DOMContentLoaded', () => {
       .flat()
       .reduce(
         (acc, item) => {
-          acc.kcal += item.kcal;
-          acc.protein += item.protein;
-          acc.fat += item.fat;
-          acc.carbs += item.carbs;
+          acc.kcal += Number(item.kcal) || 0;
+          acc.protein += Number(item.protein) || 0;
+          acc.fat += Number(item.fat) || 0;
+          acc.carbs += Number(item.carbs) || 0;
           return acc;
         },
         { kcal: 0, protein: 0, fat: 0, carbs: 0 },
@@ -199,13 +294,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
     yes.onclick = async () => {
       const itemToDelete = mealsState[mealKey][index];
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
 
-      // Видаляємо з Supabase (по ID або по набору параметрів)
-      const { error } = await supabase.from('meals').delete().match({
-        meal_type: mealKey,
-        name: itemToDelete.name,
-        date: currentSelectedDate,
-      });
+      // Видаляємо з Supabase по id, щоб уникнути видалення дублікатів з однаковою назвою
+      let query = supabase.from('meals').delete().eq('id', itemToDelete.id);
+
+      if (user) {
+        query = query.eq('user_id', user.id);
+      } else {
+        query = query.is('user_id', null);
+      }
+
+      const { error } = await query;
 
       if (!error) {
         mealsState[mealKey].splice(index, 1);
@@ -252,10 +354,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function openModal(mealKey, item = null) {
     activeMealKey = mealKey;
-    selectedFood = null;
+    // Відновлення selectedFood для редагування (зберігаємо базу kcal/100g)
+    selectedFood = item ? { ...item, kcal: item.kcal / (item.weight / 100) } : null;
 
     resultsList.innerHTML = '';
-    confirmBtn.disabled = true;
+    confirmBtn.disabled = !item; // Якщо це редагування, кнопка активна одразу
 
     nameInput.value = item ? item.name.replace(/\s\(.*?\)$/, '') : '';
     weightInput.value = item ? item.weight : '';
@@ -319,8 +422,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const factor = grams / 100;
 
+    // Мітка грамів залежно від мови
+    const gramsLabel = lang === 'ua' ? 'гр' : lang === 'pl' ? 'g' : 'g';
+
     const newItem = {
-      name: `${selectedFood.name} (${grams} г)`,
+      name: `${selectedFood.name} (${grams} ${gramsLabel})`,
       weight: grams,
       kcal: Math.round(selectedFood.kcal * factor),
       protein: Number((selectedFood.protein * factor).toFixed(1)),
@@ -328,30 +434,36 @@ document.addEventListener('DOMContentLoaded', () => {
       carbs: Number((selectedFood.carbs * factor).toFixed(1)),
     };
 
-    // Записуємо в Supabase
-    const { data, error } = await supabase.from('meals').insert([
-      {
-        meal_type: activeMealKey,
-        name: newItem.name,
-        weight: newItem.weight,
-        kcal: newItem.kcal,
-        protein: newItem.protein,
-        fat: newItem.fat,
-        carbs: newItem.carbs,
-        date: currentSelectedDate,
-      },
-    ]);
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
 
-    if (!error) {
-      if (editingIndex !== null) {
-        mealsState[activeMealKey][editingIndex] = newItem;
-      } else {
-        mealsState[activeMealKey].push(newItem);
-      }
+    const payload = {
+      meal_type: activeMealKey,
+      name: newItem.name,
+      weight: newItem.weight,
+      kcal: newItem.kcal,
+      protein: newItem.protein,
+      fat: newItem.fat,
+      carbs: newItem.carbs,
+      date: currentSelectedDate,
+      user_id: user ? user.id : null,
+    };
 
-      renderMeal(activeMealKey);
-      renderSummary();
-      saveMealsToStorage();
+    let result;
+    if (editingIndex !== null) {
+      // Оновлюємо існуючий запис по id
+      result = await supabase
+        .from('meals')
+        .update(payload)
+        .eq('id', mealsState[activeMealKey][editingIndex].id);
+    } else {
+      // Створюємо новий запис
+      result = await supabase.from('meals').insert([payload]);
+    }
+
+    if (!result.error) {
+      loadMealsFromSupabase(currentSelectedDate);
       closeModal();
     }
   }
@@ -362,10 +474,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     dayButtons.forEach((btn) => {
       btn.addEventListener('click', () => {
-        // Логіка визначення дати
-        const dayName = btn.dataset.day; // "monday", "tuesday"...
+        const dayName = btn.dataset.day;
         const today = new Date();
-        const currentDayIndex = today.getDay() || 7; // 1 (Пн) - 7 (Нд)
+        const currentDayIndex = today.getDay() || 7;
 
         const targetDayIndex = {
           monday: 1,
@@ -381,13 +492,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const targetDate = new Date(today);
         targetDate.setDate(today.getDate() + diff);
 
-        currentSelectedDate = targetDate.toISOString().split('T')[0];
+        currentSelectedDate = getLocalDateString(targetDate);
 
-        // Візуальний активний стан
         dayButtons.forEach((b) => b.classList.remove('sidebar__day-btn--active'));
         btn.classList.add('sidebar__day-btn--active');
 
-        // Завантажуємо дані для цього дня
         loadMealsFromSupabase(currentSelectedDate);
       });
     });
@@ -398,14 +507,27 @@ document.addEventListener('DOMContentLoaded', () => {
     btn.addEventListener('click', () => {
       const mealBlock = btn.closest('.meal');
       if (!mealBlock) return;
-
       const mealKey = mealBlock.dataset.meal;
       if (!mealKey) return;
-
       editingIndex = null;
       openModal(mealKey);
     });
   });
+
+  // Обробка кнопок води
+  document.querySelectorAll('.water-btn').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const amount = parseFloat(btn.dataset.amount);
+      if (!isNaN(amount)) {
+        addWaterToSupabase(amount);
+      }
+    });
+  });
+
+  const resetWater = document.getElementById('resetWater');
+  if (resetWater) {
+    resetWater.addEventListener('click', resetWaterDay);
+  }
 
   nameInput.addEventListener('input', handleSearch);
   weightInput.addEventListener('input', updateConfirmState);
@@ -416,6 +538,7 @@ document.addEventListener('DOMContentLoaded', () => {
   closeBtn.addEventListener('click', closeModal);
   overlay.addEventListener('click', closeModal);
 
+  const clearBtn = document.getElementById('clearDayBtn');
   if (clearBtn) {
     clearBtn.addEventListener('click', clearDay);
   }
