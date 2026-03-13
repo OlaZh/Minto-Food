@@ -349,6 +349,14 @@
                   data-i18n-placeholder="ingredientsPlaceholder"></textarea>
               </div>
 
+              <div class="form-group">
+                <label for="prev-steps" data-i18n="stepsHint">Спосіб приготування</label>
+                <textarea
+                  id="prev-steps"
+                  placeholder="1. Закип'ятити воду..."
+                  data-i18n-placeholder="stepsPlaceholder"></textarea>
+              </div>
+
               <div class="form-media-box">
                 <label data-i18n="dishPhoto">Фото страви</label>
                 <div class="form-media-inner">
@@ -459,12 +467,10 @@
 
           <section class="recipe-section recipe-section--notes">
             <h3><span class="icon">📝</span> <span data-i18n="notesTitle">Мої нотатки</span></h3>
-            <treasure-box>
-              <textarea
-                id="view-notes"
-                placeholder="Додай свої зауваження до рецепта..."
-                data-i18n-placeholder="notesPlaceholder"></textarea>
-            </treasure-box>
+            <textarea
+              id="view-notes"
+              placeholder="Додай свої зауваження до рецепта..."
+              data-i18n-placeholder="notesPlaceholder"></textarea>
             <button id="save-notes-btn" class="btn-save-mini" data-i18n="saveNote">
               Зберегти нотатку
             </button>
@@ -473,7 +479,8 @@
       </div>
     </div>
 
-    <script src="js/add-recipe.js"></script>
+    <!-- ВАЖЛИВО: type="module" щоб працював імпорт supabase -->
+    <script type="module" src="js/add-recipe.js"></script>
     <script src="js/theme-toggle.js"></script>
   </body>
 </html>

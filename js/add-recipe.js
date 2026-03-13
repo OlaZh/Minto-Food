@@ -1,8 +1,11 @@
+console.log('add-recipe.js запустився');
+
+import { supabase } from './supabaseClient.js';
+
 // =============================================================
 // 1. ОГОЛОШЕННЯ ЕЛЕМЕНТІВ (DOM)
 // =============================================================
 
-// Головна сторінка та додавання
 const addBtn = document.getElementById('open-add-modal');
 const modal = document.getElementById('add-recipe-modal');
 const closeBtn = document.getElementById('close-modal');
@@ -12,16 +15,13 @@ const manualBtn = document.getElementById('manual-entry-btn');
 const optionsView = document.getElementById('initial-options-view');
 const previewForm = document.getElementById('recipe-preview-form');
 
-// ✅ Простий селектор для форми
 const previewFormElement = document.querySelector('.preview-form');
 const cancelPreview = document.getElementById('cancel-preview');
 
-// Елементи модального вікна видалення
 const confirmModal = document.getElementById('confirm-modal');
 const confirmYesBtn = document.getElementById('confirm-yes');
 const confirmNoBtn = document.getElementById('confirm-no');
 
-// Елементи модального вікна перегляду
 const viewModal = document.getElementById('view-recipe-modal');
 const closeViewModalBtn = document.getElementById('close-view-modal');
 const closeViewBtn = document.getElementById('close-view-btn');
@@ -31,23 +31,10 @@ const saveNotesBtn = document.getElementById('save-notes-btn');
 // 2. ДАНІ ТА СТАН
 // =============================================================
 
-let globalShoppingList = JSON.parse(localStorage.getItem('minto_shopping_list')) || [];
-let globalRecipes = JSON.parse(localStorage.getItem('minto_recipes')) || [];
-let recipeIndexToDelete = null;
-let currentViewingIndex = null;
-let editingRecipeIndex = null;
+let recipeIdToDelete = null;
+let currentViewingId = null;
+let editingRecipeId = null;
 
-// Твоя важлива логіка ваг (виправлено синтаксис)
-const unitGrades = {
-  гр: 1,
-  г: 1,
-  кг: 1000,
-  мл: 1,
-  л: 1000,
-  шт: 1,
-  'ч.л': 1,
-  'ст.л': 1,
-};
 // =============================================================
 // 3. ДОПОМІЖНІ ФУНКЦІЇ
 // =============================================================
@@ -69,19 +56,16 @@ function parseAmount(amountStr) {
   if (typeof amountStr === 'number') return amountStr;
   if (!amountStr) return 0;
 
-  // Перетворюємо в рядок на випадок, якщо прийшло щось дивне
   const str = amountStr.toString().trim();
 
   if (str.includes('/')) {
     const [num, den] = str.split('/').map(Number);
-    // Додано перевірку на нуль у знаменнику та валідність чисел
     return den && !isNaN(num) ? num / den : 0;
   }
 
   return parseFloat(str.replace(',', '.')) || 0;
 }
 
-// Функція для візуального оновлення зірок (ФІКС БАГУ №2)
 const updateStarsUI = (rating) => {
   const ratingContainer = document.querySelector('.recipe-rating');
   if (!ratingContainer) return;
@@ -94,10 +78,10 @@ const updateStarsUI = (rating) => {
     const starValue = Number(star.dataset.value);
     if (starValue <= numericRating) {
       star.classList.add('filled');
-      star.textContent = '★'; // Міняємо символ на зафарбований
+      star.textContent = '★';
     } else {
       star.classList.remove('filled');
-      star.textContent = '☆'; // Міняємо символ на порожній
+      star.textContent = '☆';
     }
   });
 
@@ -105,131 +89,192 @@ const updateStarsUI = (rating) => {
     valDisplay.textContent = numericRating > 0 ? numericRating.toFixed(1) : '0.0';
   }
 };
-// =============================================================
-// 4. ЛОГІКА ВІДОБРАЖЕННЯ КАРТОК (З РЕЙТИНГОМ)
-// =============================================================
 
-const displayRecipes = () => {
-  const recipeGrid = document.querySelector('.recipe-grid');
-  if (!recipeGrid) return;
+// Отримуємо назву рецепту залежно від мови
+function getRecipeName(recipe) {
+  const lang = localStorage.getItem('lang') || 'ua';
+  if (lang === 'pl' && recipe.name_pl) return recipe.name_pl;
+  if (lang === 'en' && recipe.name_en) return recipe.name_en;
+  return recipe.name_ua || recipe.name_en || recipe.name_pl || '';
+}
 
-  // Оновлений словник: додано множину та твої обрані емодзі
-  const categoryTranslations = {
-    all: 'Всі',
-    breakfast: 'Сніданки',
-    lunch: 'Обіди',
-    dinner: 'Вечері',
-    dessert: 'Десерти',
-    snack: 'Перекуси',
-    drinks: 'Напої',
-    bakery: 'Випічка',
-    fast: 'Швидкі рецепти ⚡',
-    no_power: 'Без світла 🔋',
-  };
-
-  recipeGrid.innerHTML = '';
-
-  globalRecipes.forEach((recipe, index) => {
-    const rating = recipe.rating || 0;
-    const cardImage =
-      recipe.image || 'https://images.unsplash.com/photo-1495521821757-a1efb6729352?q=80&w=500';
-
-    // Перекладаємо категорію перед виводом
-    const displayCategory = categoryTranslations[recipe.category] || recipe.category;
-
-    const card = document.createElement('div');
-    card.className = 'recipe-card';
-    card.innerHTML = `
-      <div class="recipe-card__image-box">
-        <img src="${cardImage}" alt="${recipe.name}" class="recipe-card__img">
-        <div class="recipe-card__rating-badge" style="position:absolute;top:12px;left:48px;background:rgba(255,255,255,0.95);padding:3px 8px;border-radius:6px;font-weight:800;color:#333;font-size:11px;display:flex;align-items:center;gap:4px;box-shadow:0 2px 5px rgba(0,0,0,0.15);z-index:2;">
-          <span style="color:#f1c40f;">★</span>
-          <span>${rating > 0 ? rating.toFixed(1) : '0'}</span>
-        </div>
-        <div class="recipe-card__stats">${recipe.calories || 0} ккал</div>
-        <button class="btn-delete-recipe" onclick="deleteRecipe(event, ${index})">✕</button>
-      </div>
-      <div class="recipe-card__content">
-        <h3 class="recipe-card__name">${recipe.name}</h3>
-        <p class="recipe-card__macros">Категорія: ${displayCategory}</p>
-        <button class="recipe-card__btn" onclick="openRecipeView(${index})">Переглянути</button>
-      </div>
-    `;
-    recipeGrid.appendChild(card);
+const toBase64 = (file) =>
+  new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = (error) => reject(error);
   });
-};
+
 // =============================================================
-// 5. ЛОГІКА ПЕРЕГЛЯДУ ТА РЕДАГУВАННЯ (РЕАНІМАЦІЯ)
+// 4. ЗАВАНТАЖЕННЯ ТА ВІДОБРАЖЕННЯ РЕЦЕПТІВ З SUPABASE
 // =============================================================
 
-window.openRecipeView = function (index) {
-  const recipe = globalRecipes[index];
-  if (!recipe) {
-    console.error('Рецепт не знайдено за індексом:', index);
+async function loadAndDisplayRecipes() {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  // Завантажуємо рецепти: публічні (без user_id) АБО власні користувача
+  let query = supabase.from('recipes').select('*').eq('status', 'published');
+
+  if (user) {
+    query = supabase.from('recipes').select('*').or(`status.eq.published,user_id.eq.${user.id}`);
+  }
+
+  const { data, error } = await query;
+
+  if (error) {
+    console.error('Помилка завантаження рецептів:', error);
     return;
   }
 
-  currentViewingIndex = index;
+  displayRecipes(data || []);
+}
 
-  // Спрощена функція для заповнення тексту
+const categoryTranslations = {
+  all: 'Всі',
+  breakfast: 'Сніданки',
+  lunch: 'Обіди',
+  dinner: 'Вечері',
+  dessert: 'Десерти',
+  snack: 'Перекуси',
+  drinks: 'Напої',
+  bakery: 'Випічка',
+  fast: 'Швидкі рецепти ⚡',
+  no_power: 'Без світла 🔋',
+};
+
+function displayRecipes(recipes) {
+  const recipeGrid = document.querySelector('.recipe-grid');
+  if (!recipeGrid) return;
+
+  recipeGrid.innerHTML = '';
+
+  if (recipes.length === 0) {
+    recipeGrid.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: #888;"><p>Рецептів не знайдено</p></div>`;
+    return;
+  }
+
+  recipes.forEach((recipe) => {
+    const rating = recipe.rating || 0;
+    const name = getRecipeName(recipe);
+    const cardImage =
+      recipe.image || 'https://images.unsplash.com/photo-1495521821757-a1efb6729352?q=80&w=500';
+    const displayCategory = categoryTranslations[recipe.category] || recipe.category || '';
+
+    const card = document.createElement('div');
+    card.className = 'recipe-card';
+    card.dataset.id = recipe.id;
+
+    card.innerHTML = `
+      <div class="recipe-card__image-box">
+        <img src="${cardImage}" alt="${name}" class="recipe-card__img">
+        <div class="recipe-card__rating-badge" style="position:absolute;top:12px;left:48px;background:rgba(255,255,255,0.95);padding:3px 8px;border-radius:6px;font-weight:800;color:#333;font-size:11px;display:flex;align-items:center;gap:4px;box-shadow:0 2px 5px rgba(0,0,0,0.15);z-index:2;">
+          <span style="color:#f1c40f;">★</span>
+          <span>${rating > 0 ? Number(rating).toFixed(1) : '0'}</span>
+        </div>
+        <div class="recipe-card__stats">${recipe.kcal || 0} ккал</div>
+        <button class="btn-delete-recipe js-delete-recipe">✕</button>
+      </div>
+      <div class="recipe-card__content">
+        <h3 class="recipe-card__name">${name}</h3>
+        <p class="recipe-card__macros">Категорія: ${displayCategory}</p>
+        <button class="recipe-card__btn js-view-recipe">Переглянути</button>
+      </div>
+    `;
+
+    // Переглянути
+    card.querySelector('.js-view-recipe').addEventListener('click', () => {
+      openRecipeView(recipe.id);
+    });
+
+    // Видалити
+    card.querySelector('.js-delete-recipe').addEventListener('click', (e) => {
+      e.stopPropagation();
+      openDeleteConfirm(recipe.id);
+    });
+
+    recipeGrid.appendChild(card);
+  });
+}
+
+// =============================================================
+// 5. ПЕРЕГЛЯД РЕЦЕПТУ
+// =============================================================
+
+async function openRecipeView(recipeId) {
+  const { data: recipe, error } = await supabase
+    .from('recipes')
+    .select('*')
+    .eq('id', recipeId)
+    .single();
+
+  if (error || !recipe) {
+    console.error('Помилка завантаження рецепту:', error);
+    return;
+  }
+
+  currentViewingId = recipeId;
+
+  const name = getRecipeName(recipe);
+
   const setT = (id, val) => {
     const el = document.getElementById(id);
     if (el) el.textContent = val || '0';
   };
 
-  // Тимчасовий словник для виводу гарної категорії (такий самий, як у Блоці 4)
-  const categoryTranslations = {
-    all: 'Всі',
-    breakfast: 'Сніданки',
-    lunch: 'Обіди',
-    dinner: 'Вечері',
-    dessert: 'Десерти',
-    snack: 'Перекуси',
-    drinks: 'Напої',
-    bakery: 'Випічка',
-    fast: 'Швидкі рецепти ⚡',
-    no_power: 'Без світла 🔋',
-  };
-
-  setT('view-title', recipe.name);
-  setT('view-calories', recipe.kcal || recipe.calories);
-
-  // ✅ ФІКС: Виводимо перекладену категорію замість системної назви
-  const translatedCategory = categoryTranslations[recipe.category] || recipe.category;
-  setT('view-category', translatedCategory);
-
-  setT('view-proteins', recipe.proteins);
+  setT('view-title', name);
+  setT('view-calories', recipe.kcal);
+  setT('view-category', categoryTranslations[recipe.category] || recipe.category);
+  setT('view-proteins', recipe.protein);
   setT('view-carbs', recipe.carbs);
-  setT('view-fats', recipe.fats);
+  setT('view-fats', recipe.fat);
 
-  // Оновлення рейтингу
-  if (typeof updateStarsUI === 'function') {
-    updateStarsUI(recipe.rating || 0);
-  }
+  updateStarsUI(recipe.rating || 0);
+
+  // --- НОТАТКИ ---
+  const notesField = document.getElementById('view-notes');
+  if (notesField) notesField.value = recipe.notes || '';
 
   // --- ІНГРЕДІЄНТИ ---
   const list = document.getElementById('view-ingredients-list');
   if (list) {
     list.innerHTML = '';
-    const ingLines = (recipe.ingredients || '').split('\n').filter((l) => l.trim().length > 0);
 
-    ingLines.forEach((line) => {
-      const li = document.createElement('li');
-      li.className = 'ingredient-item-row';
+    // Завантажуємо інгредієнти через product_recipe
+    const { data: productRecipes } = await supabase
+      .from('product_recipe')
+      .select('amount, unit, product_id, products(name_ua, name_en, name_pl)')
+      .eq('recipe_id', recipeId);
 
-      const match = line
-        .trim()
-        .match(/^(.*?)\s+(\d+[\s.,x]*([г|мл|шт|ст\.?\s?л|ч\.?\s?л|кг|гр]+)?)$/i);
-      if (match) {
-        li.innerHTML = `<span>• ${match[1].trim()}</span> <span class="ing-count">${match[2].trim()}</span>`;
-      } else {
+    if (productRecipes && productRecipes.length > 0) {
+      const lang = localStorage.getItem('lang') || 'ua';
+      productRecipes.forEach((pr) => {
+        const li = document.createElement('li');
+        li.className = 'ingredient-item-row';
+        const productName =
+          lang === 'pl'
+            ? pr.products?.name_pl
+            : lang === 'en'
+              ? pr.products?.name_en
+              : pr.products?.name_ua;
+        li.innerHTML = `<span>• ${productName || ''}</span> <span class="ing-count">${pr.amount || ''} ${pr.unit || ''}</span>`;
+        list.appendChild(li);
+      });
+    } else if (recipe.ingredients) {
+      // Фолбек на текстові інгредієнти
+      const ingLines = recipe.ingredients.split('\n').filter((l) => l.trim().length > 0);
+      ingLines.forEach((line) => {
+        const li = document.createElement('li');
+        li.className = 'ingredient-item-row';
         li.innerHTML = `<span>• ${line.trim()}</span>`;
-      }
-      list.appendChild(li);
-    });
+        list.appendChild(li);
+      });
+    }
   }
 
-  // --- СПОСІБ ПРИГОТУВАННЯ ---
+  // --- КРОКИ ПРИГОТУВАННЯ ---
   const stepsContainer = document.getElementById('view-steps');
   if (stepsContainer) {
     stepsContainer.innerHTML = '';
@@ -246,11 +291,10 @@ window.openRecipeView = function (index) {
       stepDiv.style.display = 'flex';
       stepDiv.style.gap = '15px';
       stepDiv.style.marginBottom = '15px';
-
       stepDiv.innerHTML = `
-                <span class="step-num" style="flex-shrink:0;">${i + 1}</span>
-                <p style="margin:0; line-height:1.5;">${cleanText}</p>
-            `;
+        <span class="step-num" style="flex-shrink:0;">${i + 1}</span>
+        <p style="margin:0; line-height:1.5;">${cleanText}</p>
+      `;
       stepsContainer.appendChild(stepDiv);
     });
   }
@@ -259,7 +303,7 @@ window.openRecipeView = function (index) {
   const editBtn = document.getElementById('edit-recipe-btn');
   if (editBtn) {
     editBtn.onclick = function () {
-      editingRecipeIndex = index;
+      editingRecipeId = recipeId;
       if (viewModal) viewModal.classList.remove('is-active');
 
       if (modal) {
@@ -273,15 +317,15 @@ window.openRecipeView = function (index) {
           const el = document.getElementById(id);
           if (el) el.value = val || '';
         };
-        setVal('prev-name', recipe.name);
-        setVal('prev-kcal', recipe.kcal || recipe.calories);
-        setVal('prev-calories', recipe.kcal || recipe.calories);
+
+        setVal('prev-name', name);
+        setVal('prev-calories', recipe.kcal);
         setVal('prev-ingredients', recipe.ingredients);
         setVal('prev-steps', recipe.steps);
         setVal('prev-category', recipe.category);
-        setVal('prev-proteins', recipe.proteins);
+        setVal('prev-proteins', recipe.protein);
         setVal('prev-carbs', recipe.carbs);
-        setVal('prev-fats', recipe.fats);
+        setVal('prev-fats', recipe.fat);
       }
     };
   }
@@ -290,38 +334,37 @@ window.openRecipeView = function (index) {
     viewModal.classList.add('is-active');
     document.body.style.overflow = 'hidden';
   }
-};
+}
+
 // =============================================================
-// 6. ЛОГІКА ВИДАЛЕННЯ
+// 6. ВИДАЛЕННЯ
 // =============================================================
 
-window.deleteRecipe = (event, index) => {
-  event.stopPropagation();
-  recipeIndexToDelete = index;
+function openDeleteConfirm(recipeId) {
+  recipeIdToDelete = recipeId;
   if (confirmModal) confirmModal.classList.add('is-active');
-};
+}
 
 const closeConfirmModal = () => {
   if (confirmModal) confirmModal.classList.remove('is-active');
-  recipeIndexToDelete = null;
+  recipeIdToDelete = null;
 };
 
 if (confirmYesBtn) {
-  confirmYesBtn.addEventListener('click', () => {
-    if (recipeIndexToDelete !== null) {
-      globalRecipes.splice(recipeIndexToDelete, 1);
-      localStorage.setItem('minto_recipes', JSON.stringify(globalRecipes));
+  confirmYesBtn.addEventListener('click', async () => {
+    if (recipeIdToDelete !== null) {
+      const { error } = await supabase.from('recipes').delete().eq('id', recipeIdToDelete);
 
-      // Оновлюємо відображення
-      displayRecipes();
-
-      // Повідомлення (використовуємо твій тост)
-      showToast('Рецепт видалено', 'info');
-
-      // ✅ Додатковий фікс: якщо була відкрита модалка перегляду, закриваємо її
-      if (viewModal) {
-        viewModal.classList.remove('is-active');
-        document.body.style.overflow = '';
+      if (error) {
+        console.error('Помилка видалення:', error);
+        showToast('Помилка видалення', 'error');
+      } else {
+        showToast('Рецепт видалено', 'info');
+        if (viewModal) {
+          viewModal.classList.remove('is-active');
+          document.body.style.overflow = '';
+        }
+        loadAndDisplayRecipes();
       }
     }
     closeConfirmModal();
@@ -331,59 +374,15 @@ if (confirmYesBtn) {
 if (confirmNoBtn) {
   confirmNoBtn.addEventListener('click', closeConfirmModal);
 }
+
 // =============================================================
-// 7. ДОДАВАННЯ ТА ФОРМИ
+// 7. МОДАЛЬНЕ ВІКНО — ВІДКРИТТЯ/ЗАКРИТТЯ
 // =============================================================
-
-// === НОРМАЛІЗАЦІЯ ІНГРЕДІЄНТІВ ===
-function normalizeIngredients(text) {
-  const rawLines = text
-    .split('\n')
-    .map((l) => l.trim())
-    .filter((l) => l.length > 0);
-
-  const lines = rawLines.map((l) =>
-    l.replace(/^•\s*/, '').replace(/[–—-]/g, ' ').replace(/\s+/g, ' ').trim(),
-  );
-
-  const result = [];
-  const isNumber = (s) => /^\d+([.,]\d+)?$/.test(s);
-  const isUnit = (s) => /^(г|гр|мл|л|шт|ст\.?\s?л|ч\.?\s?л|кг)$/i.test(s); // Додав кг
-
-  for (let i = 0; i < lines.length; i++) {
-    const name = lines[i];
-    const next = lines[i + 1] || '';
-    const next2 = lines[i + 2] || '';
-
-    if (isNumber(next) && isUnit(next2)) {
-      result.push(`${name} ${next} ${next2}`);
-      i += 2;
-      continue;
-    }
-
-    if (/^\d+/.test(next)) {
-      result.push(`${name} ${next}`);
-      i += 1;
-      continue;
-    }
-
-    result.push(name);
-  }
-
-  return result.join('\n');
-}
-
-const autoResizer = (el) => {
-  if (!el) return;
-  el.style.height = 'auto';
-  el.style.height = el.scrollHeight + 'px';
-};
 
 const closeModal = () => {
   if (modal) {
     modal.classList.remove('is-active');
-    editingRecipeIndex = null;
-
+    editingRecipeId = null;
     window.tempAiImage = null;
 
     if (previewFormElement) previewFormElement.reset();
@@ -401,6 +400,24 @@ const closeModal = () => {
       }
     }, 300);
   }
+};
+
+const closeViewModal = () => {
+  if (viewModal) {
+    viewModal.classList.remove('is-active');
+    document.body.style.overflow = '';
+    currentViewingId = null;
+  }
+};
+
+// =============================================================
+// 8. ФОРМА ПОПЕРЕДНЬОГО ПЕРЕГЛЯДУ
+// =============================================================
+
+const autoResizer = (el) => {
+  if (!el) return;
+  el.style.height = 'auto';
+  el.style.height = el.scrollHeight + 'px';
 };
 
 const showForm = (data = null) => {
@@ -429,20 +446,16 @@ const showForm = (data = null) => {
 
     setVal('prev-name', data.name);
 
-    // Гнучкий вибір поля для калорій
     const kcalVal = data.kcal || data.calories || '';
-    const kcalInput =
-      document.getElementById('prev-kcal') || document.getElementById('prev-calories');
+    const kcalInput = document.getElementById('prev-calories');
     if (kcalInput) kcalInput.value = kcalVal;
 
     setVal('prev-ingredients', data.ingredients);
     setVal('prev-steps', data.steps);
     setVal('prev-category', data.category || 'breakfast');
-
-    // БЖУ
-    setVal('prev-proteins', data.proteins);
+    setVal('prev-proteins', data.proteins || data.protein);
     setVal('prev-carbs', data.carbs);
-    setVal('prev-fats', data.fats);
+    setVal('prev-fats', data.fats || data.fat);
 
     setTimeout(() => {
       autoResizer(document.getElementById('prev-ingredients'));
@@ -458,33 +471,95 @@ const showForm = (data = null) => {
   }
 };
 
-function addIngredientsToCart(ingredientsString) {
-  const lines = (ingredientsString || '').split('\n');
-  lines.forEach((line) => {
-    // Враховуємо і кому, і пробіл як роздільник для кошика
-    const parts = line
-      .split(/[\s,]+/)
-      .map((p) => p.trim())
-      .filter(Boolean);
-    if (parts.length >= 2) {
-      const name = parts[0];
-      const amount = parseAmount(parts[1]);
-      const unit = parts[2] || 'шт';
-
-      const existingItem = globalShoppingList.find(
-        (i) => i.name.toLowerCase() === name.toLowerCase() && i.unit === unit,
-      );
-      if (existingItem) {
-        existingItem.amount += amount;
-      } else {
-        globalShoppingList.push({ name, amount, unit });
-      }
-    }
-  });
-  localStorage.setItem('minto_shopping_list', JSON.stringify(globalShoppingList));
-}
 // =============================================================
-// 8. ШІ ТА ФОТО (ІМПОРТ)
+// 9. НОРМАЛІЗАЦІЯ ІНГРЕДІЄНТІВ
+// =============================================================
+
+function normalizeIngredients(text) {
+  const rawLines = text
+    .split('\n')
+    .map((l) => l.trim())
+    .filter((l) => l.length > 0);
+
+  const lines = rawLines.map((l) =>
+    l.replace(/^•\s*/, '').replace(/[–—-]/g, ' ').replace(/\s+/g, ' ').trim(),
+  );
+
+  const result = [];
+  const isNumber = (s) => /^\d+([.,]\d+)?$/.test(s);
+  const isUnit = (s) => /^(г|гр|мл|л|шт|ст\.?\s?л|ч\.?\s?л|кг)$/i.test(s);
+
+  for (let i = 0; i < lines.length; i++) {
+    const name = lines[i];
+    const next = lines[i + 1] || '';
+    const next2 = lines[i + 2] || '';
+
+    if (isNumber(next) && isUnit(next2)) {
+      result.push(`${name} ${next} ${next2}`);
+      i += 2;
+      continue;
+    }
+
+    if (/^\d+/.test(next)) {
+      result.push(`${name} ${next}`);
+      i += 1;
+      continue;
+    }
+
+    result.push(name);
+  }
+
+  return result.join('\n');
+}
+
+// =============================================================
+// 10. ЗБЕРЕЖЕННЯ РЕЦЕПТУ В SUPABASE
+// =============================================================
+
+async function saveRecipe(recipeData) {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  const payload = {
+    name_ua: recipeData.name,
+    image: recipeData.image,
+    kcal: recipeData.calories || 0,
+    category: recipeData.category,
+    ingredients: recipeData.ingredients,
+    steps: recipeData.steps,
+    protein: recipeData.proteins || 0,
+    carbs: recipeData.carbs || 0,
+    fat: recipeData.fats || 0,
+    rating: recipeData.rating || 0,
+    notes: recipeData.notes || '',
+    user_id: user ? user.id : null,
+    status: 'draft', // Власні рецепти користувача — чернетка
+  };
+
+  if (editingRecipeId !== null) {
+    const { error } = await supabase.from('recipes').update(payload).eq('id', editingRecipeId);
+    if (error) {
+      console.error('Помилка оновлення:', error);
+      showToast('Помилка збереження', 'error');
+      return false;
+    }
+    showToast('Рецепт оновлено!');
+  } else {
+    const { error } = await supabase.from('recipes').insert([payload]);
+    if (error) {
+      console.error('Помилка додавання:', error);
+      showToast('Помилка збереження', 'error');
+      return false;
+    }
+    showToast('Рецепт збережено!');
+  }
+
+  return true;
+}
+
+// =============================================================
+// 11. ШІ ТА ФОТО (ІМПОРТ)
 // =============================================================
 
 function initAiUpload() {
@@ -498,7 +573,6 @@ function initAiUpload() {
     showToast('Зображення отримано! Аналізуємо...', 'info');
 
     try {
-      // Перетворюємо фото в рядок
       const aiImageBase64 = await toBase64(file);
 
       const optionCard = aiInput.closest('.option-card');
@@ -511,11 +585,9 @@ function initAiUpload() {
 
       if (optionCard) optionCard.innerHTML = `<h3>⏳ Аналізую...</h3>`;
 
-      // Імітація роботи ШІ (твоя логіка)
       setTimeout(() => {
         if (optionCard) {
           optionCard.innerHTML = originalContent;
-          // Після заміни innerHTML потрібно заново ініціалізувати слухач
           initAiUpload();
         }
 
@@ -525,15 +597,15 @@ function initAiUpload() {
         }
 
         showForm({
-          name: 'Вівсянка (AI скан)',
+          name: 'Рецепт (AI скан)',
           image: aiImageBase64,
-          calories: 320,
-          proteins: 12,
-          carbs: 45,
-          fats: 6,
+          calories: 0,
+          proteins: 0,
+          carbs: 0,
+          fats: 0,
           category: 'breakfast',
-          ingredients: 'Вівсянка, 50, г\nМолоко, 100, мл',
-          steps: '1. Залити молоком.',
+          ingredients: '',
+          steps: '',
         });
       }, 1500);
     } catch (err) {
@@ -543,7 +615,10 @@ function initAiUpload() {
   });
 }
 
-// --- ПОШУК РЕЦЕПТІВ ЧЕРЕЗ API ---
+// =============================================================
+// 12. ПОШУК РЕЦЕПТІВ ЧЕРЕЗ API
+// =============================================================
+
 async function searchRecipesFromApi() {
   const queryInput = document.getElementById('api-search');
   const btn = document.getElementById('btn-api-search');
@@ -563,10 +638,7 @@ async function searchRecipesFromApi() {
   btn.disabled = true;
   resultsContainer.innerHTML = '';
 
-  // 🔑 КЛЮЧІ (Залишив твої плейсхолдери)
   const SPOON_KEY = 'YOUR_SPOON_KEY';
-  const EDAMAM_ID = 'YOUR_EDAMAM_ID';
-  const EDAMAM_KEY = 'YOUR_EDAMAM_KEY';
 
   async function fetchSpoon() {
     try {
@@ -592,19 +664,6 @@ async function searchRecipesFromApi() {
     }
   }
 
-  async function fetchEdamam() {
-    try {
-      const resp = await fetch(
-        `https://api.edamam.com/search?q=${encodeURIComponent(query)}&app_id=${EDAMAM_ID}&app_key=${EDAMAM_KEY}&to=10`,
-      );
-      const data = await resp.json();
-      return data.hits || [];
-    } catch {
-      return [];
-    }
-  }
-
-  // Паралельний запуск
   const [spoon, mealdb] = await Promise.all([fetchSpoon(), fetchMealDB()]);
 
   let results = [];
@@ -627,14 +686,6 @@ async function searchRecipesFromApi() {
         .map((k, i) => `${m[k]} ${m[`strMeasure${i + 1}`] || ''}`)
         .join('\n'),
       steps: m.strInstructions || '',
-    }));
-  } else {
-    const edamam = await fetchEdamam();
-    results = edamam.map((e) => ({
-      title: e.recipe.label,
-      image: e.recipe.image,
-      ingredients: e.recipe.ingredientLines.join('\n'),
-      steps: '',
     }));
   }
 
@@ -675,19 +726,9 @@ async function searchRecipesFromApi() {
 }
 
 // =============================================================
-// 9. СЛУХАЧІ ПОДІЙ ТА ІНІЦІАЛІЗАЦІЯ
+// 13. АВТО-РОЗРАХУНОК КАЛОРІЙ
 // =============================================================
 
-// Допоміжна функція для вічного зберігання фото (Base64)
-const toBase64 = (file) =>
-  new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = () => resolve(reader.result);
-    reader.onerror = (error) => reject(error);
-  });
-
-// --- Функція авто-розрахунку калорій ---
 const calculateKcal = () => {
   const p = parseFloat(document.getElementById('prev-proteins')?.value) || 0;
   const c = parseFloat(document.getElementById('prev-carbs')?.value) || 0;
@@ -695,44 +736,155 @@ const calculateKcal = () => {
 
   const totalKcal = Math.round(p * 4 + c * 4 + f * 9);
 
-  const kcalInput =
-    document.getElementById('prev-kcal') || document.getElementById('prev-calories');
+  const kcalInput = document.getElementById('prev-calories');
   if (kcalInput) {
     kcalInput.value = totalKcal > 0 ? totalKcal : '';
   }
 };
 
+// =============================================================
+// 14. ПОШУК ТА ФІЛЬТРАЦІЯ
+// =============================================================
+
+const searchInput = document.getElementById('recipe-search-input');
+const searchModeBtn = document.getElementById('search-mode-btn');
+const clearSearchBtn = document.getElementById('clear-search-btn');
+
+const iconSearch = `<svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>`;
+const iconGlobal = `<svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M2 12h20M12 2a15.3 15.3 0 0 1 0 20 15.3 15.3 0 0 1 0-20"></path></svg>`;
+
+if (searchModeBtn) searchModeBtn.innerHTML = iconSearch;
+
+async function filterRecipes(query) {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  let dbQuery = supabase
+    .from('recipes')
+    .select('*')
+    .or(
+      `name_ua.ilike.%${query}%,name_en.ilike.%${query}%,name_pl.ilike.%${query}%,ingredients.ilike.%${query}%`,
+    );
+
+  if (user) {
+    dbQuery = dbQuery.or(`status.eq.published,user_id.eq.${user.id}`);
+  } else {
+    dbQuery = dbQuery.eq('status', 'published');
+  }
+
+  const { data, error } = await dbQuery;
+
+  if (error) {
+    console.error('Помилка пошуку:', error);
+    return;
+  }
+
+  displayRecipes(data || []);
+}
+
+if (searchInput) {
+  searchInput.addEventListener('input', () => {
+    const query = searchInput.value.trim().toLowerCase();
+    if (clearSearchBtn) clearSearchBtn.style.display = query.length > 0 ? 'flex' : 'none';
+
+    if (query.length > 0) {
+      if (searchModeBtn) {
+        searchModeBtn.innerHTML = iconGlobal;
+        searchModeBtn.classList.add('is-active');
+      }
+      filterRecipes(query);
+    } else {
+      if (searchModeBtn) {
+        searchModeBtn.innerHTML = iconSearch;
+        searchModeBtn.classList.remove('is-active');
+      }
+      loadAndDisplayRecipes();
+    }
+  });
+}
+
+if (clearSearchBtn) {
+  clearSearchBtn.addEventListener('click', () => {
+    searchInput.value = '';
+    clearSearchBtn.style.display = 'none';
+    if (searchModeBtn) {
+      searchModeBtn.innerHTML = iconSearch;
+      searchModeBtn.classList.remove('is-active');
+    }
+    loadAndDisplayRecipes();
+    searchInput.focus();
+  });
+}
+
+// Фільтрація по категорії
+document.querySelectorAll('.recipe-filters__item').forEach((btn) => {
+  btn.addEventListener('click', async () => {
+    document
+      .querySelectorAll('.recipe-filters__item')
+      .forEach((b) => b.classList.remove('recipe-filters__item--active'));
+    btn.classList.add('recipe-filters__item--active');
+
+    const category = btn.dataset.category;
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    let query = supabase.from('recipes').select('*');
+
+    if (category !== 'all') {
+      query = query.eq('category', category);
+    }
+
+    if (user) {
+      query = query.or(`status.eq.published,user_id.eq.${user.id}`);
+    } else {
+      query = query.eq('status', 'published');
+    }
+
+    const { data, error } = await query;
+    if (!error) displayRecipes(data || []);
+  });
+});
+
+// =============================================================
+// 15. СЛУХАЧІ ПОДІЙ ТА ІНІЦІАЛІЗАЦІЯ
+// =============================================================
+
 document.addEventListener('DOMContentLoaded', () => {
-  displayRecipes();
+  loadAndDisplayRecipes();
   initAiUpload();
 
-  // Ініціалізація авто-розрахунку БЖУ
   ['prev-proteins', 'prev-carbs', 'prev-fats'].forEach((id) => {
     const el = document.getElementById(id);
     if (el) el.addEventListener('input', calculateKcal);
   });
 
-  // Логіка кліку по зірках
+  // Рейтинг
   const ratingContainer = document.querySelector('.recipe-rating');
   if (ratingContainer) {
-    ratingContainer.addEventListener('click', (e) => {
+    ratingContainer.addEventListener('click', async (e) => {
       if (e.target.classList.contains('star')) {
         const newRating = Number(e.target.dataset.value);
 
-        if (currentViewingIndex !== null) {
-          globalRecipes[currentViewingIndex].rating = newRating;
-          localStorage.setItem('minto_recipes', JSON.stringify(globalRecipes));
+        if (currentViewingId !== null) {
+          const { error } = await supabase
+            .from('recipes')
+            .update({ rating: newRating })
+            .eq('id', currentViewingId);
 
-          updateStarsUI(newRating);
-          displayRecipes();
-          showToast('Оцінку збережено!');
+          if (!error) {
+            updateStarsUI(newRating);
+            loadAndDisplayRecipes();
+            showToast('Оцінку збережено!');
+          }
         }
       }
     });
   }
 });
 
-// Інші слухачі
 if (addBtn) {
   addBtn.addEventListener('click', () => {
     modal.classList.add('is-active');
@@ -740,25 +892,20 @@ if (addBtn) {
   });
 }
 
-const closeViewModal = () => {
-  if (viewModal) {
-    viewModal.classList.remove('is-active');
-    document.body.style.overflow = '';
-    currentViewingIndex = null;
-  }
-};
-
 if (closeBtn) closeBtn.addEventListener('click', closeModal);
 if (closeViewModalBtn) closeViewModalBtn.addEventListener('click', closeViewModal);
 if (closeViewBtn) closeViewBtn.addEventListener('click', closeViewModal);
 
 if (saveNotesBtn) {
-  saveNotesBtn.addEventListener('click', () => {
+  saveNotesBtn.addEventListener('click', async () => {
     const notesValue = document.getElementById('view-notes')?.value;
-    if (currentViewingIndex !== null) {
-      globalRecipes[currentViewingIndex].notes = notesValue;
-      localStorage.setItem('minto_recipes', JSON.stringify(globalRecipes));
-      showToast('Нотатку збережено!');
+    if (currentViewingId !== null) {
+      const { error } = await supabase
+        .from('recipes')
+        .update({ notes: notesValue })
+        .eq('id', currentViewingId);
+
+      if (!error) showToast('Нотатку збережено!');
     }
   });
 }
@@ -775,8 +922,8 @@ window.addEventListener('click', (e) => {
 
 if (cancelPreview) {
   cancelPreview.addEventListener('click', () => {
-    previewForm.style.display = 'none';
-    optionsView.style.display = 'block';
+    if (previewForm) previewForm.style.display = 'none';
+    if (optionsView) optionsView.style.display = 'block';
   });
 }
 
@@ -790,214 +937,39 @@ if (previewFormElement) {
     const urlInput = document.getElementById('recipe-image-url');
     let finalImageUrl = 'https://images.unsplash.com/photo-1495521821757-a1efb6729352?q=80&w=500';
 
-    // Пріоритет вибору фото
     if (fileInput?.files?.[0]) {
       finalImageUrl = await toBase64(fileInput.files[0]);
     } else if (urlInput?.value.trim()) {
       finalImageUrl = urlInput.value.trim();
     } else if (window.tempAiImage) {
       finalImageUrl = window.tempAiImage;
-    } else if (editingRecipeIndex !== null) {
-      finalImageUrl = globalRecipes[editingRecipeIndex].image || finalImageUrl;
     }
 
     const recipeData = {
       name: document.getElementById('prev-name').value,
       image: finalImageUrl,
-      calories:
-        document.getElementById('prev-kcal')?.value ||
-        document.getElementById('prev-calories')?.value ||
-        0,
+      calories: document.getElementById('prev-calories')?.value || 0,
       category: document.getElementById('prev-category').value,
       ingredients: normalizeIngredients(document.getElementById('prev-ingredients').value),
       steps: document.getElementById('prev-steps').value,
       proteins: document.getElementById('prev-proteins')?.value || 0,
       carbs: document.getElementById('prev-carbs')?.value || 0,
       fats: document.getElementById('prev-fats')?.value || 0,
-      rating: editingRecipeIndex !== null ? globalRecipes[editingRecipeIndex].rating : 0,
-      notes: editingRecipeIndex !== null ? globalRecipes[editingRecipeIndex].notes : '',
     };
 
-    if (editingRecipeIndex !== null) {
-      globalRecipes[editingRecipeIndex] = recipeData;
-      showToast('Рецепт оновлено!');
-    } else {
-      globalRecipes.push(recipeData);
-      showToast('Рецепт збережено!');
-      addIngredientsToCart(recipeData.ingredients);
-    }
+    const success = await saveRecipe(recipeData);
 
-    localStorage.setItem('minto_recipes', JSON.stringify(globalRecipes));
-    editingRecipeIndex = null;
-    window.tempAiImage = null;
-    displayRecipes();
-    closeModal();
+    if (success) {
+      editingRecipeId = null;
+      window.tempAiImage = null;
+      loadAndDisplayRecipes();
+      closeModal();
+    }
   });
 }
 
-// Авто-ресайз для полів вводу
+// Авто-ресайз textarea
 document.querySelectorAll('textarea').forEach((txt) => {
   txt.style.overflow = 'hidden';
   txt.addEventListener('input', () => autoResizer(txt));
 });
-// =============================================================
-// 10. ПОШУК ТА ФІЛЬТРАЦІЯ (SMART SEARCH - IN PLACE)
-// =============================================================
-
-const searchInput = document.getElementById('recipe-search-input');
-const searchModeBtn = document.getElementById('search-mode-btn');
-const clearSearchBtn = document.getElementById('clear-search-btn');
-
-const iconSearch = `<svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>`;
-const iconGlobal = `<svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M2 12h20M12 2a15.3 15.3 0 0 1 0 20 15.3 15.3 0 0 1 0-20"></path></svg>`;
-
-if (searchModeBtn) searchModeBtn.innerHTML = iconSearch;
-
-// 1. ФІЛЬТРАЦІЯ ВЛАСНИХ РЕЦЕПТІВ
-function filterRecipes(query) {
-  const filtered = globalRecipes.filter((recipe) => {
-    const nameMatch = recipe.name.toLowerCase().includes(query);
-    const ingMatch = (recipe.ingredients || '').toLowerCase().includes(query);
-    return nameMatch || ingMatch;
-  });
-  renderFilteredRecipes(filtered, query, false);
-}
-
-// 2. УНІВЕРСАЛЬНИЙ РЕНДЕР (БЕЗ ДУБЛЮВАННЯ СЛОВНИКА)
-function renderFilteredRecipes(recipes, query = '', isGlobal = false) {
-  const recipeGrid = document.querySelector('.recipe-grid');
-  if (!recipeGrid) return;
-
-  recipeGrid.innerHTML = '';
-
-  if (recipes.length === 0 && !isGlobal) {
-    recipeGrid.innerHTML = `
-      <div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: #888;">
-        <p>У власній базі немає "<strong>${query}</strong>". Натисніть на планету 🌐 для пошуку ідей.</p>
-      </div>`;
-    return;
-  }
-
-  // ✅ Хірургічно: використовуємо існуючий словник або спрощений для пошуку
-  const translations =
-    typeof categoryTranslations !== 'undefined'
-      ? categoryTranslations
-      : {
-          breakfast: 'Сніданки',
-          lunch: 'Обіди',
-          dinner: 'Вечері',
-          dessert: 'Десерти',
-          snack: 'Перекуси',
-          fast: 'Швидкі ⚡',
-          no_power: 'Без світла 🔋',
-        };
-
-  recipes.forEach((recipe, index) => {
-    const rating = recipe.rating || 0;
-    const title = isGlobal ? recipe.title || recipe.name : recipe.name;
-    const cardImage =
-      recipe.image || 'https://images.unsplash.com/photo-1495521821757-a1efb6729352?q=80&w=500';
-
-    const card = document.createElement('div');
-    card.className = 'recipe-card';
-    card.innerHTML = `
-      <div class="recipe-card__image-box">
-        <img src="${cardImage}" alt="${title}" class="recipe-card__img">
-        ${
-          !isGlobal
-            ? `
-          <div class="recipe-card__rating-badge" style="position:absolute;top:12px;left:48px;background:rgba(255,255,255,0.95);padding:3px 8px;border-radius:6px;font-weight:800;color:#333;font-size:11px;display:flex;align-items:center;gap:4px;z-index:2;">
-            <span style="color:#f1c40f;">★</span><span>${rating > 0 ? rating.toFixed(1) : '0'}</span>
-          </div>
-          <button class="btn-delete-recipe" onclick="deleteRecipe(event, ${index})">✕</button>
-        `
-            : `<div class="recipe-card__stats" style="background:var(--color-accent); color:#fff;">Світ</div>`
-        }
-      </div>
-      <div class="recipe-card__content">
-        <h3 class="recipe-card__name">${title}</h3>
-        <p class="recipe-card__macros">${isGlobal ? 'Знайдено в мережі' : 'Категорія: ' + (translations[recipe.category] || recipe.category)}</p>
-        <button class="recipe-card__btn">${isGlobal ? 'Додати собі' : 'Переглянути'}</button>
-      </div>
-    `;
-
-    card.querySelector('.recipe-card__btn').addEventListener('click', () => {
-      if (isGlobal) {
-        showForm({
-          name: title,
-          image: recipe.image,
-          ingredients: recipe.ingredients,
-          steps: recipe.steps,
-          category: 'lunch',
-        });
-        modal.classList.add('is-active');
-      } else {
-        openRecipeView(index);
-      }
-    });
-
-    recipeGrid.appendChild(card);
-  });
-}
-
-// 3. СЛУХАЧІ ІНПУТУ
-if (searchInput) {
-  searchInput.addEventListener('input', () => {
-    const query = searchInput.value.trim().toLowerCase();
-    if (clearSearchBtn) clearSearchBtn.style.display = query.length > 0 ? 'flex' : 'none';
-
-    if (query.length > 0) {
-      searchModeBtn.innerHTML = iconGlobal;
-      searchModeBtn.classList.add('is-active');
-      filterRecipes(query);
-    } else {
-      searchModeBtn.innerHTML = iconSearch;
-      searchModeBtn.classList.remove('is-active');
-      displayRecipes();
-    }
-  });
-}
-
-if (clearSearchBtn) {
-  clearSearchBtn.addEventListener('click', () => {
-    searchInput.value = '';
-    clearSearchBtn.style.display = 'none';
-    searchModeBtn.innerHTML = iconSearch;
-    searchModeBtn.classList.remove('is-active');
-    displayRecipes();
-    searchInput.focus();
-  });
-}
-
-// 4. КЛІК НА ПЛАНЕТУ
-if (searchModeBtn) {
-  searchModeBtn.addEventListener('click', async () => {
-    const query = searchInput.value.trim();
-    if (!query) {
-      searchInput.focus();
-      return;
-    }
-
-    const recipeGrid = document.querySelector('.recipe-grid');
-    recipeGrid.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; padding: 50px;"><p>🌎 Шукаємо "<strong>${query}</strong>"...</p></div>`;
-
-    const SPOON_KEY = 'YOUR_SPOON_KEY';
-    try {
-      const resp = await fetch(
-        `https://api.spoonacular.com/recipes/complexSearch?query=${encodeURIComponent(query)}&number=12&addRecipeInformation=true&apiKey=${SPOON_KEY}`,
-      );
-      const data = await resp.json();
-      const results = (data.results || []).map((r) => ({
-        title: r.title,
-        image: r.image,
-        ingredients: (r.extendedIngredients || []).map((i) => i.original).join('\n'),
-        steps: (r.analyzedInstructions?.[0]?.steps || [])
-          .map((s, i) => `${i + 1}. ${s.step}`)
-          .join('\n'),
-      }));
-      renderFilteredRecipes(results, query, true);
-    } catch (err) {
-      recipeGrid.innerHTML = `<p style="grid-column: 1 / -1; text-align: center;">Помилка зв'язку з планетою.</p>`;
-    }
-  });
-}
