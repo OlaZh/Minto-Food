@@ -7,6 +7,16 @@ import { supabase } from './supabaseClient.js';
 import { initAuth, requireAuth } from './auth.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
+  // ================== ДАТА ХЕЛПЕР — має бути першим ==================
+  function getLocalDateString(date = new Date()) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
+  let currentSelectedDate = getLocalDateString();
+
   // ================== AUTH ==================
   await initAuth((event, user) => {
     if (event === 'SIGNED_IN' || event === 'SIGNED_OUT') {
@@ -41,15 +51,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     snack2: [],
     dinner: [],
   };
-
-  function getLocalDateString(date = new Date()) {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-  }
-
-  let currentSelectedDate = getLocalDateString();
 
   const STORAGE_KEY = 'mealsState';
   let activeMealKey = null;

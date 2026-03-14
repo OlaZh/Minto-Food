@@ -3,7 +3,7 @@
 // =====================================
 
 import { supabase } from './supabaseClient.js';
-import { initAuth, requireAuth, getCurrentUser, openAuthModal } from './auth.js';
+import { initAuth, requireAuth, getCurrentUser, openAuthModal, signOut } from './auth.js';
 
 const form = document.getElementById('profileForm');
 
@@ -208,7 +208,7 @@ async function loadProfileFromSupabase() {
     .from('user_profiles')
     .select('*')
     .eq('user_id', user.id)
-    .single();
+    .maybeSingle();
 
   if (error || !data) {
     // Профіль ще не створений — завантажуємо з localStorage
@@ -352,6 +352,11 @@ async function initProfile() {
     if (event === 'SIGNED_OUT') {
       loadFromLocalStorage();
     }
+  });
+
+  document.getElementById('signOutBtn')?.addEventListener('click', async () => {
+    await signOut();
+    window.location.href = 'index.html';
   });
 
   // 🔒 Захист сторінки
