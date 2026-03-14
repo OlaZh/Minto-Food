@@ -1,6 +1,9 @@
 // =====================================
-// PROFILE — FULL FINAL VERSION (CALORIES + CHART FIXED)
+// PROFILE — SUPABASE + AUTH VERSION
 // =====================================
+
+import { supabase } from './supabaseClient.js';
+import { initAuth, requireAuth, getCurrentUser, openAuthModal } from './auth.js';
 
 const form = document.getElementById('profileForm');
 
@@ -23,7 +26,6 @@ const targetWeightInput = document.getElementById('targetWeight');
 const weightNowInput = document.getElementById('currentWeightInput');
 const recordWeightBtn = document.getElementById('saveWeightBtn');
 
-const STORAGE_KEY = 'userProfile';
 const WEIGHT_HISTORY_KEY = 'weightHistory';
 
 let weightChart = null;
@@ -107,8 +109,8 @@ function initWeightChart() {
       datasets: [
         {
           data: weights,
-          borderColor: '#2ecc71',
-          backgroundColor: 'rgba(46,204,113,.15)',
+          borderColor: '#6fcfba',
+          backgroundColor: 'rgba(111, 207, 186, 0.15)',
           borderWidth: 3,
           fill: true,
           tension: 0.4,
@@ -181,40 +183,202 @@ function renderAll(data) {
   normWaterEl.textContent = data.water;
 
   updateBMI(data.weight, data.height);
+
+  // Зберігаємо в localStorage для інших сторінок
+  localStorage.setItem('dailyCaloriesNorm', data.calories);
+  localStorage.setItem('userProtein', data.protein);
+  localStorage.setItem('userFat', data.fat);
+  localStorage.setItem('userCarbs', data.carbs);
+  localStorage.setItem('userWater', data.water);
+}
+
+// =====================================
+// SUPABASE — ЗАВАНТАЖЕННЯ ПРОФІЛЮ
+// =====================================
+
+async function loadProfileFromSupabase() {
+  const user = getCurrentUser();
+  if (!user) {
+    // Якщо не залогінений — завантажуємо з localStorage
+    loadFromLocalStorage();
+    return;
+  }
+
+  const { data, error } = await supabase
+    .from('user_profiles')
+    .select('*')
+    .eq('user_id', user.id)
+    .single();
+
+  if (error || !data) {
+    // Профіль ще не створений — завантажуємо з localStorage
+    loadFromLocalStorage();
+    return;
+  }
+
+  // Заповнюємо форму даними з Supabase
+  fillForm(data);
+  renderAll(data);
+
+  // Оновлюємо ім'я і email в хедері профілю
+  updateProfileHeader(user);
+}
+
+function loadFromLocalStorage() {
+  const saved = JSON.parse(localStorage.getItem('userProfile') || 'null');
+  if (saved) {
+    fillForm(saved);
+    renderAll(saved);
+  }
+}
+
+function fillForm(data) {
+  if (form.age) form.age.value = data.age || '';
+  if (form.height) form.height.value = data.height || '';
+  if (form.weight) form.weight.value = data.weight || '';
+
+  if (data.gender) updateSelectValue('genderSelect', 'genderInput', data.gender);
+  if (data.activity) updateSelectValue('activitySelect', 'activityInput', String(data.activity));
+  if (data.goal) updateSelectValue('goalSelect', 'goalInput', data.goal);
+
+  if (targetWeightInput && data.target_weight) {
+    targetWeightInput.value = data.target_weight;
+  }
+}
+
+// =====================================
+// ОНОВЛЕННЯ ХЕДЕРА ПРОФІЛЮ
+// =====================================
+
+function updateProfileHeader(user) {
+  if (!user) return;
+
+  const name =
+    user.user_metadata?.full_name ||
+    user.user_metadata?.name ||
+    user.email?.split('@')[0] ||
+    'Користувач';
+
+  const email = user.email || '';
+  const avatar = user.user_metadata?.avatar_url || '';
+
+  // Хедер профілю на сторінці
+  const profileNameEl = document.querySelector('.profile-header__name');
+  const profileEmailEl = document.querySelector('.profile-header__email');
+  const profileAvatarEl = document.querySelector('.profile-header__avatar');
+
+  if (profileNameEl) profileNameEl.textContent = name;
+  if (profileEmailEl) profileEmailEl.textContent = email;
+
+  if (profileAvatarEl && avatar) {
+    profileAvatarEl.style.backgroundImage = `url(${avatar})`;
+    profileAvatarEl.style.backgroundSize = 'cover';
+    profileAvatarEl.style.backgroundPosition = 'center';
+  }
+}
+
+// =====================================
+// SUPABASE — ЗБЕРЕЖЕННЯ ПРОФІЛЮ
+// =====================================
+
+async function saveProfileToSupabase(data) {
+  const user = getCurrentUser();
+
+  if (!user) {
+    // Зберігаємо тільки в localStorage якщо не залогінений
+    localStorage.setItem('userProfile', JSON.stringify(data));
+    return;
+  }
+
+  const payload = {
+    user_id: user.id,
+    name: user.user_metadata?.full_name || user.user_metadata?.name || '',
+    email: user.email || '',
+    age: data.age,
+    height: data.height,
+    weight: data.weight,
+    gender: data.gender,
+    activity: data.activity,
+    goal: data.goal,
+    calories: data.calories,
+    protein: data.protein,
+    fat: data.fat,
+    carbs: data.carbs,
+    water: data.water,
+    target_weight: data.target_weight || null,
+    updated_at: new Date().toISOString(),
+  };
+
+  // Upsert — оновлює якщо є, створює якщо немає
+  const { error } = await supabase.from('user_profiles').upsert(payload, { onConflict: 'user_id' });
+
+  if (error) {
+    console.error('Помилка збереження профілю:', error);
+    showToast('Помилка збереження', 'error');
+    return;
+  }
+
+  // Також зберігаємо в localStorage для інших сторінок
+  localStorage.setItem('userProfile', JSON.stringify(data));
+  showToast('Профіль збережено ✓');
+}
+
+// =====================================
+// TOAST
+// =====================================
+
+function showToast(message, type = 'success') {
+  const toast = document.createElement('div');
+  toast.className = `toast-notification toast-${type}`;
+  const icon = type === 'error' ? '❌' : '✅';
+  toast.innerHTML = `<span class="toast-icon">${icon}</span> <span class="toast-text">${message}</span>`;
+  document.body.appendChild(toast);
+  setTimeout(() => {
+    toast.classList.add('fade-out');
+    setTimeout(() => toast.remove(), 500);
+  }, 3000);
 }
 
 // =====================================
 // INIT
 // =====================================
+async function initProfile() {
+  const user = await initAuth(async (event, user) => {
+    if (event === 'SIGNED_IN') {
+      await loadProfileFromSupabase();
+      updateProfileHeader(user);
+    }
 
-function initProfile() {
+    if (event === 'SIGNED_OUT') {
+      loadFromLocalStorage();
+    }
+  });
+
+  // 🔒 Захист сторінки
+  if (!user) {
+    openAuthModal();
+    return;
+  }
+
   setupCustomSelect('genderSelect', 'genderInput');
   setupCustomSelect('activitySelect', 'activityInput');
   setupCustomSelect('goalSelect', 'goalInput');
 
   recordWeightBtn.addEventListener('click', recordNewWeight);
 
-  const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
-  if (saved) {
-    form.age.value = saved.age;
-    form.height.value = saved.height;
-    form.weight.value = saved.weight;
+  document.addEventListener('click', () => {
+    document.querySelectorAll('.custom-select').forEach((s) => s.classList.remove('open'));
+  });
 
-    updateSelectValue('genderSelect', 'genderInput', saved.gender);
-    updateSelectValue('activitySelect', 'activityInput', saved.activity);
-    updateSelectValue('goalSelect', 'goalInput', saved.goal);
-
-    renderAll(saved);
-  }
+  await loadProfileFromSupabase();
 
   initWeightChart();
 }
-
 // =====================================
-// FORM SUBMIT — КБЖВ ПРАЦЮЄ ЗНОВУ
+// FORM SUBMIT
 // =====================================
 
-form.addEventListener('submit', (e) => {
+form.addEventListener('submit', async (e) => {
   e.preventDefault();
 
   const age = +form.age.value;
@@ -244,10 +408,11 @@ form.addEventListener('submit', (e) => {
     fat: Math.round((calories * 0.3) / 9),
     carbs: Math.round((calories * 0.4) / 4),
     water: 2.5,
+    target_weight: targetWeightInput ? +targetWeightInput.value || null : null,
   };
 
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
   renderAll(data);
+  await saveProfileToSupabase(data);
 });
 
 document.addEventListener('DOMContentLoaded', initProfile);

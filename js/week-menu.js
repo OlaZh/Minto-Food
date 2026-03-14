@@ -3,6 +3,7 @@ console.log('week-menu.js запустився');
 import { supabase } from './supabaseClient.js';
 import { i18n } from './i18n.js';
 import { initRecipeModal, openRecipeModal } from './recipe-modal.js';
+import { initAuth, requireAuth } from './auth.js';
 
 document.addEventListener('DOMContentLoaded', () => {
   // ================== МОВА ==================
@@ -487,8 +488,24 @@ document.addEventListener('DOMContentLoaded', () => {
     if (addModal) {
       addModal.hidden = false;
       resetModalState();
-      // Завантажуємо всі рецепти одразу при відкритті
       searchAllRecipes('');
+
+      // Підключаємо кнопку "Створити рецепт" (статична в HTML)
+      const createBtn = addModal.querySelector('#weekCreateRecipeBtn');
+      if (createBtn) {
+        createBtn.onclick = () => {
+          closeAddModal();
+          openRecipeModal((savedRecipe) => {
+            openAddModal(activeDay, activeMealType);
+            const searchEl = addModal?.querySelector('#weekUnifiedSearch');
+            if (searchEl && savedRecipe) {
+              const name = savedRecipe.name_ua || '';
+              searchEl.value = name;
+              searchAllRecipes(name);
+            }
+          });
+        };
+      }
     }
   }
 
@@ -595,9 +612,6 @@ document.addEventListener('DOMContentLoaded', () => {
       });
       resultsEl.appendChild(section);
     }
-
-    // Кнопка "Створити рецепт" завжди внизу
-    renderCreateRecipeBtn(resultsEl, query);
   }
 
   function createRecipeResultItem(recipe) {
@@ -636,35 +650,6 @@ document.addEventListener('DOMContentLoaded', () => {
       msg.textContent = `За запитом "${query}" нічого не знайдено`;
       container.appendChild(msg);
     }
-
-    renderCreateRecipeBtn(container, query);
-  }
-
-  function renderCreateRecipeBtn(container, query) {
-    const btnWrap = document.createElement('div');
-    btnWrap.className = 'week-modal__create-recipe';
-    btnWrap.innerHTML = `
-      <p class="week-modal__create-hint">Не знайшли потрібну страву?</p>
-      <button class="week-modal__create-btn" id="weekCreateRecipeBtn">
-        ✏️ Створити рецепт
-      </button>
-    `;
-
-    btnWrap.querySelector('#weekCreateRecipeBtn').addEventListener('click', () => {
-      closeAddModal();
-      openRecipeModal((savedRecipe) => {
-        // Після збереження рецепту — відкриваємо модалку знову і шукаємо щойно створений
-        openAddModal(activeDay, activeMealType);
-        const searchEl = addModal?.querySelector('#weekUnifiedSearch');
-        if (searchEl && savedRecipe) {
-          const name = savedRecipe.name_ua || '';
-          searchEl.value = name;
-          searchAllRecipes(name);
-        }
-      });
-    });
-
-    container.appendChild(btnWrap);
   }
 
   // ================== КНОПКИ "+" В КЛІТИНКАХ ==================
@@ -681,7 +666,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       openAddModal(day, mealType);
       // Завантажуємо рецепти одразу
-      searchMyRecipes('');
+      searchAllRecipes('');
     });
   });
 

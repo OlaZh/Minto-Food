@@ -4,8 +4,17 @@ import { updateStats, updateWaterUI } from './stats.js';
 import { searchFood } from './food-api.js';
 import { i18n } from './i18n.js';
 import { supabase } from './supabaseClient.js';
+import { initAuth, requireAuth } from './auth.js';
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+  // ================== AUTH ==================
+  await initAuth((event, user) => {
+    if (event === 'SIGNED_IN' || event === 'SIGNED_OUT') {
+      loadMealsFromSupabase(currentSelectedDate);
+      loadWaterFromSupabase(currentSelectedDate);
+    }
+  });
+
   // ================== LANGUAGE ==================
   let lang = localStorage.getItem('lang') || 'ua';
 
@@ -33,7 +42,6 @@ document.addEventListener('DOMContentLoaded', () => {
     dinner: [],
   };
 
-  // Хелпер для отримання локальної дати (без UTC зсуву)
   function getLocalDateString(date = new Date()) {
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -41,7 +49,6 @@ document.addEventListener('DOMContentLoaded', () => {
     return `${year}-${month}-${day}`;
   }
 
-  // Поточна дата для фільтрації (за замовчуванням сьогодні)
   let currentSelectedDate = getLocalDateString();
 
   const STORAGE_KEY = 'mealsState';
@@ -57,16 +64,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // ================== SUPABASE LOGIC ==================
 
-  // Завантаження даних з бази за конкретну дату
   async function loadMealsFromSupabase(date) {
-    // Отримуємо поточного користувача
     const {
       data: { user },
     } = await supabase.auth.getUser();
 
     let query = supabase.from('meals').select('*').eq('date', date);
 
-    // Фільтрація: якщо залогінений — по ID, якщо ні — по null
     if (user) {
       query = query.eq('user_id', user.id);
     } else {
@@ -80,14 +84,13 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    // Очищаємо стан перед рендером нового дня
     Object.keys(mealsState).forEach((key) => (mealsState[key] = []));
 
     if (data) {
       data.forEach((item) => {
         if (mealsState[item.meal_type]) {
           mealsState[item.meal_type].push({
-            id: item.id, // Важливо для видалення
+            id: item.id,
             name: item.name,
             weight: item.weight,
             kcal: item.kcal,
@@ -102,10 +105,10 @@ document.addEventListener('DOMContentLoaded', () => {
     renderAllMeals();
     renderSummary();
     updateDateDisplay(date);
-    loadWaterFromSupabase(date); // ДОДАНО: завантаження води при зміні дня
+    loadWaterFromSupabase(date);
   }
 
-  // --- ЛОГІКА ВОДИ (SUPABASE) ---
+  // --- ЛОГІКА ВОДИ ---
 
   async function loadWaterFromSupabase(date) {
     const {
@@ -126,10 +129,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const total = data ? data.reduce((acc, item) => acc + Number(item.amount), 0) : 0;
-    updateWaterUI(total); // Викликаємо функцію зі stats.js для оновлення стакана
+    updateWaterUI(total);
   }
 
   async function addWaterToSupabase(amount) {
+    if (!requireAuth()) return;
+
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -147,6 +152,8 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   async function resetWaterDay() {
+    if (!requireAuth()) return;
+
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -182,6 +189,8 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   async function clearDay() {
+    if (!requireAuth()) return;
+
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -298,7 +307,6 @@ document.addEventListener('DOMContentLoaded', () => {
         data: { user },
       } = await supabase.auth.getUser();
 
-      // Видаляємо з Supabase по id, щоб уникнути видалення дублікатів з однаковою назвою
       let query = supabase.from('meals').delete().eq('id', itemToDelete.id);
 
       if (user) {
@@ -354,11 +362,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function openModal(mealKey, item = null) {
     activeMealKey = mealKey;
-    // Відновлення selectedFood для редагування (зберігаємо базу kcal/100g)
     selectedFood = item ? { ...item, kcal: item.kcal / (item.weight / 100) } : null;
 
     resultsList.innerHTML = '';
-    confirmBtn.disabled = !item; // Якщо це редагування, кнопка активна одразу
+    confirmBtn.disabled = !item;
 
     nameInput.value = item ? item.name.replace(/\s\(.*?\)$/, '') : '';
     weightInput.value = item ? item.weight : '';
@@ -398,14 +405,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
       li.addEventListener('click', () => {
         selectedFood = food;
-
         nameInput.value = food.name;
-
         [...resultsList.children].forEach((el) => el.classList.remove('modal__item--active'));
         li.classList.add('modal__item--active');
-
         updateConfirmState();
-
         if (weightInput) weightInput.focus();
       });
 
@@ -415,14 +418,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // ================== ADD FOOD ==================
   async function addSelectedFood() {
+    if (!requireAuth()) return;
     if (!activeMealKey || !selectedFood) return;
 
     const grams = Number(weightInput.value);
     if (grams <= 0) return;
 
     const factor = grams / 100;
-
-    // Мітка грамів залежно від мови
     const gramsLabel = lang === 'ua' ? 'гр' : lang === 'pl' ? 'g' : 'g';
 
     const newItem = {
@@ -452,13 +454,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let result;
     if (editingIndex !== null) {
-      // Оновлюємо існуючий запис по id
       result = await supabase
         .from('meals')
         .update(payload)
         .eq('id', mealsState[activeMealKey][editingIndex].id);
     } else {
-      // Створюємо новий запис
       result = await supabase.from('meals').insert([payload]);
     }
 
@@ -505,6 +505,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // ================== EVENTS ==================
   document.querySelectorAll('.meal__add').forEach((btn) => {
     btn.addEventListener('click', () => {
+      if (!requireAuth()) return;
       const mealBlock = btn.closest('.meal');
       if (!mealBlock) return;
       const mealKey = mealBlock.dataset.meal;
@@ -514,7 +515,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // Обробка кнопок води
   document.querySelectorAll('.water-btn').forEach((btn) => {
     btn.addEventListener('click', () => {
       const amount = parseFloat(btn.dataset.amount);

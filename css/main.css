@@ -2308,6 +2308,258 @@ textarea {
   box-shadow: 0 15px 25px rgba(46, 204, 113, 0.1);
 }
 
+/* ===============================
+   AUTH MODAL
+   =============================== */
+.auth-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.auth-modal[hidden] {
+  display: none;
+}
+
+.auth-modal__overlay {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at top, rgba(0, 0, 0, 0.25), rgba(0, 0, 0, 0.5));
+  backdrop-filter: blur(6px);
+}
+
+[data-theme=dark] .auth-modal__overlay {
+  background: radial-gradient(circle at top, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.8));
+}
+
+.auth-modal__window {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 400px;
+  background: linear-gradient(180deg, var(--color-surface) 0%, var(--color-bg-secondary) 100%);
+  border-radius: 24px;
+  border: 1px solid var(--color-border);
+  padding: 32px 28px 28px;
+  box-shadow: 0 12px 30px rgba(15, 31, 27, 0.14), 0 30px 60px rgba(15, 31, 27, 0.18);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  box-sizing: border-box;
+  margin: 16px;
+}
+
+.auth-modal__close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: transparent;
+  border: none;
+  font-size: 22px;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  line-height: 1;
+  transition: color 0.2s ease;
+}
+.auth-modal__close:hover {
+  color: var(--color-accent);
+}
+
+/* ================= ВКЛАДКИ ================= */
+.auth-modal__tabs {
+  display: flex;
+  gap: 4px;
+  background: var(--color-bg-primary);
+  border-radius: 12px;
+  padding: 4px;
+}
+
+.auth-modal__tab {
+  flex: 1;
+  padding: 8px 12px;
+  border-radius: 9px;
+  border: none;
+  background: transparent;
+  color: var(--color-text-secondary);
+  font-family: "Mulish", sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+}
+.auth-modal__tab--active {
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  box-shadow: 0 1px 2px rgba(15, 31, 27, 0.04), 0 2px 6px rgba(15, 31, 27, 0.06);
+}
+.auth-modal__tab:hover:not(.auth-modal__tab--active) {
+  color: var(--color-text-primary);
+  background: var(--color-accent-soft);
+}
+
+/* ================= КОНТЕНТ ================= */
+.auth-modal__content {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.auth-modal__content[hidden] {
+  display: none;
+}
+
+/* ================= GOOGLE КНОПКА ================= */
+.auth-modal__google-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  padding: 12px 16px;
+  border-radius: 12px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  font-family: "Mulish", sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  box-shadow: 0 1px 2px rgba(15, 31, 27, 0.04), 0 2px 6px rgba(15, 31, 27, 0.06);
+}
+.auth-modal__google-btn:hover {
+  background: var(--color-bg-primary);
+  border-color: var(--color-accent);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(15, 31, 27, 0.08), 0 10px 30px rgba(15, 31, 27, 0.12);
+}
+
+/* ================= РОЗДІЛЮВАЧ ================= */
+.auth-modal__divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--color-text-secondary);
+  font-size: 13px;
+}
+.auth-modal__divider::before, .auth-modal__divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--color-border);
+}
+
+/* ================= ФОРМА ================= */
+.auth-modal__form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.auth-modal__form .form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.auth-modal__form .form-group label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+.auth-modal__form .form-group input {
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  font-family: "Mulish", sans-serif;
+  font-size: 14px;
+  box-shadow: inset 0 2px 4px rgba(15, 31, 27, 0.06);
+  transition: border-color 0.2s ease;
+}
+.auth-modal__form .form-group input::placeholder {
+  color: var(--color-text-secondary);
+}
+.auth-modal__form .form-group input:focus {
+  outline: none;
+  border-color: var(--color-accent);
+}
+
+/* ================= ПОМИЛКА / УСПІХ ================= */
+.auth-modal__error {
+  font-size: 13px;
+  color: #c0392b;
+  background: #fcede8;
+  border: 1px solid #e6b5a8;
+  border-radius: 8px;
+  padding: 8px 12px;
+  margin: 0;
+}
+.auth-modal__error[hidden] {
+  display: none;
+}
+
+.auth-modal__success {
+  font-size: 13px;
+  color: #27ae60;
+  background: rgba(111, 207, 186, 0.15);
+  border: 1px solid rgba(111, 207, 186, 0.4);
+  border-radius: 8px;
+  padding: 8px 12px;
+  margin: 0;
+}
+.auth-modal__success[hidden] {
+  display: none;
+}
+
+/* ================= КНОПКА ВІДПРАВКИ ================= */
+.auth-modal__submit {
+  width: 100%;
+  padding: 12px;
+  border-radius: 12px;
+  border: none;
+  background: var(--color-accent);
+  color: var(--color-text-inverse);
+  font-family: "Mulish", sans-serif;
+  font-weight: 700;
+  font-size: 15px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 12px rgba(111, 207, 186, 0.3);
+  margin-top: 4px;
+}
+.auth-modal__submit:hover {
+  background: var(--color-accent-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px rgba(111, 207, 186, 0.4);
+}
+.auth-modal__submit:active {
+  transform: translateY(0);
+}
+
+/* ================= ПЕРЕМИКАЧ ================= */
+.auth-modal__switch {
+  text-align: center;
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  margin: 0;
+}
+
+.auth-modal__switch-btn {
+  background: none;
+  border: none;
+  color: var(--color-accent);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+}
+.auth-modal__switch-btn:hover {
+  color: var(--color-accent-hover);
+}
+
 /* ================= DAY HEADER ================= */
 .day-header {
   margin-bottom: 32px;
@@ -3598,9 +3850,10 @@ textarea {
   z-index: 1;
   width: 100%;
   max-width: 480px;
-  max-height: 80vh;
-  overflow-y: auto;
-  overflow-x: hidden;
+  height: 520px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
   background: linear-gradient(180deg, var(--color-surface) 0%, var(--color-bg-secondary) 100%);
   border-radius: 20px;
   border: 1px solid var(--color-border);
@@ -3746,7 +3999,8 @@ textarea {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  max-height: 280px;
+  height: 320px;
+  min-height: 320px;
   overflow-y: auto;
   border-radius: 10px;
   border: 1px solid var(--color-border);
@@ -3882,6 +4136,245 @@ textarea {
 }
 .week-modal__manual-submit:active {
   transform: translateY(0);
+}
+
+/* ================= КОНСТРУКТОР СТРАВИ ================= */
+.builder__form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.builder__form .form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.builder__form .form-group label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+.builder__form .form-group input {
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  font-size: 13px;
+  box-shadow: inset 0 2px 4px rgba(15, 31, 27, 0.06);
+  transition: border-color 0.2s ease;
+}
+.builder__form .form-group input:focus {
+  outline: none;
+  border-color: var(--color-accent);
+}
+
+.builder__search-row {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+}
+
+.builder__search-wrap {
+  position: relative;
+  flex: 1;
+}
+
+.builder__suggestions {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 10;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(15, 31, 27, 0.08), 0 10px 30px rgba(15, 31, 27, 0.12);
+  max-height: 200px;
+  overflow-y: auto;
+  margin-top: 4px;
+}
+
+.builder__suggestion-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+  border-bottom: 1px solid var(--color-border);
+}
+.builder__suggestion-item:last-child {
+  border-bottom: none;
+}
+.builder__suggestion-item:hover {
+  background: var(--color-accent-soft);
+}
+
+.builder__sug-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-text-primary);
+}
+
+.builder__sug-kcal {
+  font-size: 11px;
+  color: var(--color-text-secondary);
+}
+
+.builder__weight-input {
+  width: 70px;
+  padding: 10px 10px;
+  border-radius: 10px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  font-size: 13px;
+  text-align: center;
+  box-shadow: inset 0 2px 4px rgba(15, 31, 27, 0.06);
+  flex-shrink: 0;
+}
+.builder__weight-input:focus {
+  outline: none;
+  border-color: var(--color-accent);
+}
+
+.builder__add-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  border: 1px solid rgba(111, 207, 186, 0.45);
+  background: var(--color-accent-soft);
+  color: var(--color-text-primary);
+  font-size: 20px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+}
+.builder__add-btn:hover {
+  background: rgba(111, 207, 186, 0.32);
+  border-color: var(--color-accent);
+  transform: scale(1.05);
+}
+
+.builder__ingredients-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 150px;
+  overflow-y: auto;
+}
+
+.builder__ingredient-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+  border-radius: 8px;
+  background: var(--color-bg-primary);
+  border: 1px solid var(--color-border);
+  font-size: 12px;
+}
+
+.builder__ing-name {
+  flex: 1;
+  font-weight: 500;
+  color: var(--color-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.builder__ing-kcal {
+  font-size: 11px;
+  color: var(--color-text-secondary);
+  flex-shrink: 0;
+}
+
+.builder__ing-remove {
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  border: none;
+  background: transparent;
+  color: var(--color-text-secondary);
+  font-size: 11px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+}
+.builder__ing-remove:hover {
+  background: #fcede8;
+  color: #c0392b;
+}
+
+.builder__total {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: var(--color-accent-soft);
+  border: 1px solid rgba(111, 207, 186, 0.35);
+}
+
+.builder__total-kcal {
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--color-text-primary);
+}
+
+.builder__total-macros {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+/* ================= ЄДИНИЙ ПОШУК — СЕКЦІЇ РЕЗУЛЬТАТІВ ================= */
+.week-modal__section {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.week-modal__section-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 8px 12px 4px;
+  margin: 0;
+}
+
+/* ================= КНОПКА СТВОРИТИ РЕЦЕПТ ================= */
+.week-modal__create-btn {
+  width: 100%;
+  padding: 10px 16px;
+  border-radius: 12px;
+  border: 1px dashed var(--color-accent);
+  background: var(--color-accent-soft);
+  color: var(--color-text-primary);
+  font-family: "Mulish", sans-serif;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  text-align: center;
+  flex-shrink: 0;
+}
+.week-modal__create-btn:hover {
+  background: rgba(111, 207, 186, 0.32);
+  border-style: solid;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(15, 31, 27, 0.08), 0 10px 30px rgba(15, 31, 27, 0.12);
 }
 
 /*==================

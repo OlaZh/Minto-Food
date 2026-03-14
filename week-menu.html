@@ -28,20 +28,13 @@
               <a href="index.html" class="header__nav-link" data-i18n="navDayMenu">Меню на день</a>
             </li>
             <li>
-              <a
-                href="week-menu.html"
-                class="header__nav-link header__nav-link--active"
-                data-i18n="navWeekMenu"
-                >Меню на тиждень</a
-              >
+              <a href="week-menu.html" class="header__nav-link header__nav-link--active" data-i18n="navWeekMenu">Меню на тиждень</a>
             </li>
             <li>
               <a href="./recipes.html" class="header__nav-link" data-i18n="navRecipes">Рецепти</a>
             </li>
             <li>
-              <a href="product-guide.html" class="header__nav-link" data-i18n="navProductGuide"
-                >Путівник по продуктам</a
-              >
+              <a href="product-guide.html" class="header__nav-link" data-i18n="navProductGuide">Путівник по продуктам</a>
             </li>
             <li>
               <a href="#" class="header__nav-link" data-i18n="navShoppingList">Список покупок</a>
@@ -53,22 +46,8 @@
         </nav>
 
         <div class="header__actions">
-          <button
-            class="theme-toggle"
-            type="button"
-            aria-label="Змінити тему"
-            data-i18n-aria="toggleTheme">
-            <svg
-              class="sun-icon"
-              xmlns="http://www.w3.org/2000/svg"
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round">
+          <button class="theme-toggle" type="button" aria-label="Змінити тему" data-i18n-aria="toggleTheme">
+            <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <circle cx="12" cy="12" r="5"></circle>
               <line x1="12" y1="1" x2="12" y2="3"></line>
               <line x1="12" y1="21" x2="12" y2="23"></line>
@@ -79,17 +58,7 @@
               <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
               <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
             </svg>
-            <svg
-              class="moon-icon"
-              xmlns="http://www.w3.org/2000/svg"
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round">
+            <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
             </svg>
           </button>
@@ -112,38 +81,23 @@
       <div class="app-shell">
         <main class="main">
           <section class="week-menu">
+
             <!-- ЗАГОЛОВОК + КАРУСЕЛЬ ТИЖНІВ -->
             <div class="week-menu__header">
               <div class="week-menu__nav">
-                <button class="week-nav-btn" id="prevWeek" title="Попередній тиждень">
-                  &#8592;
-                </button>
+                <button class="week-nav-btn" id="prevWeek" title="Попередній тиждень">&#8592;</button>
                 <span class="week-nav__label" id="weekLabel">Завантаження...</span>
-                <button class="week-nav-btn" id="nextWeek" title="Наступний тиждень">
-                  &#8594;
-                </button>
+                <button class="week-nav-btn" id="nextWeek" title="Наступний тиждень">&#8594;</button>
               </div>
 
               <div class="week-menu__actions">
-                <button
-                  class="week-action-btn"
-                  id="copyWeekBtn"
-                  title="Скопіювати тиждень"
-                  data-i18n="copyWeek">
+                <button class="week-action-btn" id="copyWeekBtn" title="Скопіювати тиждень" data-i18n="copyWeek">
                   📋 Копіювати тиждень
                 </button>
-                <button
-                  class="week-action-btn"
-                  id="pasteWeekBtn"
-                  title="Вставити тиждень"
-                  data-i18n="pasteWeek">
+                <button class="week-action-btn" id="pasteWeekBtn" title="Вставити тиждень" data-i18n="pasteWeek">
                   📌 Вставити тиждень
                 </button>
-                <button
-                  class="week-action-btn week-action-btn--primary"
-                  id="weekToShoppingBtn"
-                  title="Перенести в список покупок"
-                  data-i18n="toShoppingList">
+                <button class="week-action-btn week-action-btn--primary" id="weekToShoppingBtn" title="Перенести в список покупок" data-i18n="toShoppingList">
                   🛒 Список покупок
                 </button>
               </div>
@@ -151,6 +105,7 @@
 
             <!-- СІТКА ТИЖНЯ -->
             <div class="week-grid">
+
               <!-- ЗАГОЛОВОК КОЛОНОК -->
               <div class="week-grid__row week-grid__row--header">
                 <div class="week-grid__cell week-grid__cell--empty"></div>
@@ -159,9 +114,7 @@
                 <div class="week-grid__cell" data-i18n="lunch">Обід</div>
                 <div class="week-grid__cell" data-i18n="snack2">Перекус 2</div>
                 <div class="week-grid__cell" data-i18n="dinner">Вечеря</div>
-                <div class="week-grid__cell week-grid__cell--summary" data-i18n="dayTotal">
-                  Разом
-                </div>
+                <div class="week-grid__cell week-grid__cell--summary" data-i18n="dayTotal">Разом</div>
               </div>
 
               <!-- ПОНЕДІЛОК -->
@@ -366,6 +319,7 @@
                 </div>
                 <div class="week-grid__cell week-grid__cell--summary"></div>
               </div>
+
             </div>
           </section>
         </main>
@@ -379,82 +333,22 @@
         <button class="modal__close">&times;</button>
         <h2 class="modal__title" data-i18n="addMealTitle">Додати страву</h2>
 
-        <!-- ВКЛАДКИ -->
-        <div class="week-modal__tabs">
-          <button
-            class="week-modal__tab week-modal__tab--active"
-            data-tab="recipes"
-            data-i18n="tabMyRecipes">
-            📚 Мої рецепти
-          </button>
-          <button class="week-modal__tab" data-tab="api" data-i18n="tabApiSearch">
-            🌐 Пошук в мережі
-          </button>
-          <button class="week-modal__tab" data-tab="manual" data-i18n="tabManual">✍️ Вручну</button>
-        </div>
+        <!-- ЄДИНИЙ ПОШУК -->
+        <input
+          type="text"
+          id="weekUnifiedSearch"
+          class="week-modal__search"
+          data-i18n-placeholder="searchRecipePlaceholder"
+          placeholder="Пошук страви..." />
 
-        <!-- ВКЛАДКА: МОЇ РЕЦЕПТИ -->
-        <div class="week-modal__tab-content" data-tab-content="recipes">
-          <input
-            type="text"
-            id="weekRecipeSearch"
-            class="week-modal__search"
-            data-i18n-placeholder="searchRecipePlaceholder"
-            placeholder="Пошук рецепту..." />
-          <div id="weekRecipeResults" class="week-modal__results"></div>
-        </div>
+        <!-- КНОПКА СТВОРИТИ — завжди під пошуком -->
+        <button class="week-modal__create-btn" id="weekCreateRecipeBtn" data-i18n="createRecipeBtn">
+          ✏️ Створити рецепт
+        </button>
 
-        <!-- ВКЛАДКА: API ПОШУК -->
-        <div class="week-modal__tab-content" data-tab-content="api" hidden>
-          <div class="week-modal__api-row">
-            <input
-              type="text"
-              id="weekApiSearch"
-              class="week-modal__search"
-              data-i18n-placeholder="apiImportPlaceholder"
-              placeholder="Назва страви..." />
-            <button id="weekApiSearchBtn" class="week-modal__api-btn" data-i18n="apiImportBtn">
-              Знайти
-            </button>
-          </div>
-          <div id="weekApiResults" class="week-modal__results"></div>
-        </div>
+        <!-- РЕЗУЛЬТАТИ — скролляться нижче -->
+        <div id="weekUnifiedResults" class="week-modal__results"></div>
 
-        <!-- ВКЛАДКА: ВРУЧНУ -->
-        <div class="week-modal__tab-content" data-tab-content="manual" hidden>
-          <form id="weekManualForm" class="week-modal__manual-form">
-            <div class="form-group">
-              <label data-i18n="dishName">Назва страви</label>
-              <input
-                type="text"
-                id="weekManualName"
-                data-i18n-placeholder="dishNamePlaceholder"
-                placeholder="Наприклад: Борщ"
-                required />
-            </div>
-            <div class="week-modal__manual-macros">
-              <div class="form-group">
-                <label data-i18n="calories">Ккал</label>
-                <input type="number" id="weekManualKcal" placeholder="0" min="0" />
-              </div>
-              <div class="form-group">
-                <label data-i18n="proteins">Білки</label>
-                <input type="number" id="weekManualProtein" placeholder="0" min="0" />
-              </div>
-              <div class="form-group">
-                <label data-i18n="fats">Жири</label>
-                <input type="number" id="weekManualFat" placeholder="0" min="0" />
-              </div>
-              <div class="form-group">
-                <label data-i18n="carbs">Вуглеводи</label>
-                <input type="number" id="weekManualCarbs" placeholder="0" min="0" />
-              </div>
-            </div>
-            <button type="submit" class="week-modal__manual-submit" data-i18n="addMealBtn">
-              Додати страву
-            </button>
-          </form>
-        </div>
       </div>
     </div>
 
@@ -465,12 +359,8 @@
         <h3 data-i18n="deleteMealTitle">Видалити страву?</h3>
         <p data-i18n="deleteMealWarning">Цю дію неможливо скасувати.</p>
         <div class="confirm-btns">
-          <button id="week-confirm-yes" class="btn-confirm btn-danger" data-i18n="confirmDelete">
-            Так, видалити
-          </button>
-          <button id="week-confirm-no" class="btn-confirm btn-secondary" data-i18n="cancel">
-            Скасувати
-          </button>
+          <button id="week-confirm-yes" class="btn-confirm btn-danger" data-i18n="confirmDelete">Так, видалити</button>
+          <button id="week-confirm-no" class="btn-confirm btn-secondary" data-i18n="cancel">Скасувати</button>
         </div>
       </div>
     </div>

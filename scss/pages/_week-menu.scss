@@ -451,9 +451,10 @@
   z-index: 1;
   width: 100%;
   max-width: 480px;
-  max-height: 80vh;
-  overflow-y: auto;
-  overflow-x: hidden;
+  height: 520px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
   background: linear-gradient(180deg, var(--color-surface) 0%, var(--color-bg-secondary) 100%);
   border-radius: 20px;
   border: 1px solid var(--color-border);
@@ -610,7 +611,8 @@
   display: flex;
   flex-direction: column;
   gap: 6px;
-  max-height: 280px;
+  height: 320px;
+  min-height: 320px;
   overflow-y: auto;
   border-radius: 10px;
   border: 1px solid var(--color-border);
@@ -753,5 +755,254 @@
 
   &:active {
     transform: translateY(0);
+  }
+}
+
+/* ================= КОНСТРУКТОР СТРАВИ ================= */
+.builder__form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+
+    label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--color-text-secondary);
+    }
+
+    input {
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid var(--color-border);
+      background: var(--color-surface);
+      color: var(--color-text-primary);
+      font-size: 13px;
+      box-shadow: $shadow-inset;
+      transition: border-color 0.2s ease;
+
+      &:focus {
+        outline: none;
+        border-color: var(--color-accent);
+      }
+    }
+  }
+}
+
+.builder__search-row {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+}
+
+.builder__search-wrap {
+  position: relative;
+  flex: 1;
+}
+
+.builder__suggestions {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 10;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  box-shadow: $shadow-md;
+  max-height: 200px;
+  overflow-y: auto;
+  margin-top: 4px;
+}
+
+.builder__suggestion-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+  border-bottom: 1px solid var(--color-border);
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &:hover {
+    background: var(--color-accent-soft);
+  }
+}
+
+.builder__sug-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-text-primary);
+}
+
+.builder__sug-kcal {
+  font-size: 11px;
+  color: var(--color-text-secondary);
+}
+
+.builder__weight-input {
+  width: 70px;
+  padding: 10px 10px;
+  border-radius: 10px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  font-size: 13px;
+  text-align: center;
+  box-shadow: $shadow-inset;
+  flex-shrink: 0;
+
+  &:focus {
+    outline: none;
+    border-color: var(--color-accent);
+  }
+}
+
+.builder__add-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  border: 1px solid rgba(111, 207, 186, 0.45);
+  background: var(--color-accent-soft);
+  color: var(--color-text-primary);
+  font-size: 20px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: rgba(111, 207, 186, 0.32);
+    border-color: var(--color-accent);
+    transform: scale(1.05);
+  }
+}
+
+.builder__ingredients-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 150px;
+  overflow-y: auto;
+}
+
+.builder__ingredient-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+  border-radius: 8px;
+  background: var(--color-bg-primary);
+  border: 1px solid var(--color-border);
+  font-size: 12px;
+}
+
+.builder__ing-name {
+  flex: 1;
+  font-weight: 500;
+  color: var(--color-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.builder__ing-kcal {
+  font-size: 11px;
+  color: var(--color-text-secondary);
+  flex-shrink: 0;
+}
+
+.builder__ing-remove {
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  border: none;
+  background: transparent;
+  color: var(--color-text-secondary);
+  font-size: 11px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: #fcede8;
+    color: #c0392b;
+  }
+}
+
+.builder__total {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: var(--color-accent-soft);
+  border: 1px solid rgba(111, 207, 186, 0.35);
+}
+
+.builder__total-kcal {
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--color-text-primary);
+}
+
+.builder__total-macros {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+/* ================= ЄДИНИЙ ПОШУК — СЕКЦІЇ РЕЗУЛЬТАТІВ ================= */
+.week-modal__section {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.week-modal__section-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 8px 12px 4px;
+  margin: 0;
+}
+
+/* ================= КНОПКА СТВОРИТИ РЕЦЕПТ ================= */
+.week-modal__create-btn {
+  width: 100%;
+  padding: 10px 16px;
+  border-radius: 12px;
+  border: 1px dashed var(--color-accent);
+  background: var(--color-accent-soft);
+  color: var(--color-text-primary);
+  font-family: $font-ui;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  text-align: center;
+  flex-shrink: 0;
+
+  &:hover {
+    background: rgba(111, 207, 186, 0.32);
+    border-style: solid;
+    transform: translateY(-1px);
+    box-shadow: $shadow-md;
   }
 }
