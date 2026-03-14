@@ -1,9 +1,9 @@
 /* ============================================================
-   1. КОНФІГУРАЦІЯ SUPABASE
+   product-guide.js — FIXED VERSION WITH AUTH
    ============================================================ */
-const SUPABASE_URL = 'https://xpaibteyntflrixmigfx.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_5aziCmaq0rxAJ24MznPycw_eY5iVZxZ';
-const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+import { supabase } from './supabaseClient.js';
+import { initAuth } from './auth.js';
 
 let products = [];
 
@@ -70,7 +70,7 @@ const subGroups = document.querySelectorAll('.subfilter-group');
 
 async function loadProducts() {
   try {
-    const { data, error } = await supabaseClient
+    const { data, error } = await supabase
       .from('products')
       .select('*')
       .order('name_ua', { ascending: true });
@@ -291,13 +291,9 @@ function openProductModal(product) {
       : 'img/placeholder.jpg';
 
   modal.querySelector('[data-i18n="productShortDesc"]').textContent = product.short_desc || '';
-
   modal.querySelector('[data-i18n="kcal"]').textContent = `${product.kcal || 0} ккал`;
-
   modal.querySelector('[data-i18n="protein"]').textContent = `${product.protein || 0}Б`;
-
   modal.querySelector('[data-i18n="fat"]').textContent = `${product.fat || 0}Ж`;
-
   modal.querySelector('[data-i18n="carbs"]').textContent = `${product.carbs || 0}В`;
 
   const updateList = (i18nKey, value) => {
@@ -371,7 +367,7 @@ document.addEventListener('click', (e) => {
   }
 
   if (e.target.matches('[data-modal-close]')) {
-    modal.hidden = true;
+    if (modal) modal.hidden = true;
   }
 
   if (!e.target.closest('.product-filters') && !e.target.closest('.subfilter-group')) {
@@ -384,6 +380,7 @@ document.addEventListener('click', (e) => {
    INIT
    ============================================================ */
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+  await initAuth();
   loadProducts();
 });

@@ -5,7 +5,7 @@ import { i18n } from './i18n.js';
 import { initRecipeModal, openRecipeModal } from './recipe-modal.js';
 import { initAuth, requireAuth } from './auth.js';
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
   // ================== МОВА ==================
   let lang = localStorage.getItem('lang') || 'ua';
 
@@ -848,7 +848,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ================== ІНІЦІАЛІЗАЦІЯ ==================
-
+  await initAuth();
   initRecipeModal();
   initDragAndDrop();
   loadWeekFromSupabase();

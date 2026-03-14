@@ -1,6 +1,7 @@
 console.log('add-recipe.js запустився');
 
 import { supabase } from './supabaseClient.js';
+import { initAuth } from './auth.js';
 
 // =============================================================
 // 1. ОГОЛОШЕННЯ ЕЛЕМЕНТІВ (DOM)
@@ -116,11 +117,12 @@ async function loadAndDisplayRecipes() {
   } = await supabase.auth.getUser();
 
   // Завантажуємо рецепти: публічні (без user_id) АБО власні користувача
-  let query = supabase.from('recipes').select('*').eq('status', 'published');
+  let query = supabase.from('recipes').select('*');
 
   if (user) {
-    query = supabase.from('recipes').select('*').or(`status.eq.published,user_id.eq.${user.id}`);
+    query = query.or(`status.eq.published,user_id.eq.${user.id}`);
   }
+  // Без авторизації — показуємо всі рецепти (published + draft)
 
   const { data, error } = await query;
 
@@ -769,9 +771,8 @@ async function filterRecipes(query) {
 
   if (user) {
     dbQuery = dbQuery.or(`status.eq.published,user_id.eq.${user.id}`);
-  } else {
-    dbQuery = dbQuery.eq('status', 'published');
   }
+  // Без авторизації — показуємо всі
 
   const { data, error } = await dbQuery;
 
@@ -852,7 +853,8 @@ document.querySelectorAll('.recipe-filters__item').forEach((btn) => {
 // 15. СЛУХАЧІ ПОДІЙ ТА ІНІЦІАЛІЗАЦІЯ
 // =============================================================
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+  await initAuth();
   loadAndDisplayRecipes();
   initAiUpload();
 
