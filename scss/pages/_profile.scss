@@ -1,46 +1,43 @@
 /* =============================================================
-   PROFILE PAGE — ABSOLUTELY FULL SCSS (FIXED DROPDOWNS & GRID)
+   PROFILE PAGE — SCSS (FIXED SIDEBAR WIDTH & BUTTON SIZE)
    ============================================================= */
 
 // 1. Глобальні змінні
 :root {
   --transition-speed: 0.3s;
   --transition-bezier: cubic-bezier(0.4, 0, 0.2, 1);
+  --z-select: 100;
 }
 
-/* ================= 2. ОСНОВНА СТРУКТУРА СТОРІНКИ ================= */
+/* ================= ОСНОВНА СТРУКТУРА ================= */
 
-/* 1. Спільний обмежувач для всього сайту */
 .container,
 .profile-container {
-  max-width: 1320px; /* Твій стандарт */
+  max-width: 1320px;
   margin: 0 auto;
   padding: 0 24px;
   width: 100%;
   box-sizing: border-box;
 }
 
-/* 2. Щоб шапка була на всю ширину, але контент всередині — обмежений */
 .header {
   width: 100%;
-  background-color: var(--color-bg-secondary); /* або твій колір */
+  background-color: var(--color-bg-secondary);
   border-bottom: 1px solid var(--color-border);
 
-  // Внутрішній контейнер шапки робимо флексом
   &__container {
     display: flex;
     margin: 0 auto;
+    max-width: 1320px;
     align-items: center;
     justify-content: space-between;
-    height: 70px; /* або твоя висота */
+    height: 70px;
   }
 }
 
-/* 3. Виправляємо profile-container (прибираємо дублювання margin/max-width) */
 .profile-container {
   padding-top: 32px;
   padding-bottom: 60px;
-  // max-width та margin вже успадковані вище
 }
 
 .page {
@@ -69,7 +66,7 @@
   }
 }
 
-/* ================= 3. ХЕДЕР ПРОФІЛЮ ================= */
+/* ================= ХЕДЕР ПРОФІЛЮ ================= */
 
 .profile-header {
   display: flex;
@@ -77,15 +74,22 @@
   gap: 24px;
   padding: 8px 0;
 
+  // ✅ ВИПРАВА #1: АВАТАР КРУГЛИЙ
   &__avatar {
     width: 80px;
     height: 80px;
+    min-width: 80px;
+    min-height: 80px;
     border-radius: 50%;
     background-color: var(--color-bg-secondary);
+    background-size: cover;
+    background-position: center;
     border: 2px solid var(--color-border);
     object-fit: cover;
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
     transition: transform 0.3s ease;
+    flex-shrink: 0;
+
     &:hover {
       transform: scale(1.05);
     }
@@ -113,7 +117,7 @@
   }
 }
 
-/* ================= 4. СІТКА ПРОФІЛЮ (БЕЗ КОНФЛІКТІВ) ================= */
+/* ================= СІТКА ПРОФІЛЮ ================= */
 
 .profile-grid-system {
   display: grid;
@@ -135,7 +139,7 @@
   width: 100%;
 }
 
-/* ================= 5. КАРТКИ ТА ФОРМИ ================= */
+/* ================= КАРТКИ ================= */
 
 .profile-card {
   background-color: var(--color-bg-secondary);
@@ -145,6 +149,10 @@
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
   width: 100%;
   box-sizing: border-box;
+
+  @media (max-width: 600px) {
+    padding: 20px;
+  }
 
   &__title {
     font-family: var(--font-heading);
@@ -194,6 +202,7 @@
   color: var(--color-text-primary);
   font-size: 16px;
   transition: all 0.3s;
+  box-sizing: border-box;
 
   &:hover {
     transform: translateY(-2px);
@@ -207,7 +216,7 @@
   }
 }
 
-/* ================= 6. ВИПРАВЛЕНІ ВИПАДАЮЧІ СПИСКИ ================= */
+/* ================= ВИПАДАЮЧІ СПИСКИ ================= */
 
 .custom-select {
   position: relative;
@@ -226,6 +235,7 @@
     font-size: 15px;
     color: var(--color-text-primary);
     transition: all 0.3s;
+    box-sizing: border-box;
 
     &:hover {
       border-color: var(--color-accent);
@@ -243,7 +253,7 @@
   }
 
   &.open {
-    z-index: 100;
+    z-index: var(--z-select);
 
     .custom-select__trigger {
       border-color: var(--color-accent);
@@ -263,13 +273,20 @@
     border-radius: 14px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
     display: none;
-    flex-direction: column ;
+    flex-direction: column;
     overflow: hidden;
     z-index: 1000;
+    opacity: 0;
+    transform: translateY(-10px);
+    transition:
+      opacity 0.25s,
+      transform 0.25s;
   }
 
   &.open &__options {
     display: flex;
+    opacity: 1;
+    transform: translateY(0);
   }
 
   &__option {
@@ -280,21 +297,23 @@
     color: var(--color-text-secondary);
     transition: all 0.2s;
     display: block;
-    white-space: nowrap;
+    white-space: normal;
+    word-break: break-word;
+    box-sizing: border-box;
 
     &:hover {
       background: var(--color-accent-soft);
-      color: var(--color-accent);
     }
 
     &.selected {
       background: var(--color-accent);
       color: white;
+      font-weight: 600;
     }
   }
 }
 
-/* ================= 7. РЕЗУЛЬТАТИ ТА МАКРОСИ ================= */
+/* ================= РЕЗУЛЬТАТИ ================= */
 
 .profile-result {
   display: flex;
@@ -318,6 +337,8 @@
   }
 }
 
+/* ================= МАКРОСИ ================= */
+
 .profile-macros {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -325,15 +346,20 @@
 
   &__item {
     padding: 20px;
-    background: var(--color-bg-primary);
+    background: var(--color-surface);
     border: 1px solid var(--color-border);
+    color: var(--color-text-secondary);
     border-radius: 16px;
     text-align: center;
     transition: transform 0.3s;
+    box-sizing: border-box;
+    transition: all 0.3s ease;
 
     &:hover {
-      transform: translateY(-3px);
+      color: var(--color-text-primary);
       border-color: var(--color-accent);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.05);
     }
 
     .macro-label {
@@ -352,11 +378,11 @@
   }
 }
 
-/* ================= 8. ПІДСУМОК ДНЯ ТА ОЧИЩЕННЯ (ВИПРАВЛЕНО) ================= */
+/* ================= ДЕНЬ ================= */
 
 .day-summary {
   display: flex;
-  flex-wrap: wrap; // Дозволяє кнопці впасти вниз, якщо цифри не вміщуються
+  flex-wrap: wrap;
   align-items: center;
   gap: 12px;
   padding: 20px 24px;
@@ -377,10 +403,9 @@
     font-size: 18px;
     font-weight: 800;
     color: var(--color-text-primary);
-    flex-grow: 1; // Займає простір, щоб кнопка була праворуч
+    flex-grow: 1;
   }
 
-  // Стилізація кнопки без зміни HTML
   #clearDayBtn {
     margin-left: auto;
     background: var(--color-bg-primary);
@@ -396,7 +421,7 @@
 
     &:hover {
       background: var(--color-bg-secondary);
-      color: var(--color-accent); // Стає м'ятною при наведенні
+      color: var(--color-accent);
       border-color: var(--color-accent);
       transform: translateY(-1px);
     }
@@ -406,9 +431,7 @@
     }
   }
 
-  // Адаптив: якщо місця мало, кнопка займає окремий рядок знизу
   @media (max-width: 850px) {
-    // Збільшив поріг, щоб точно не ламало
     flex-direction: column;
     text-align: center;
 
@@ -420,7 +443,7 @@
   }
 }
 
-/* ================= 9. АНАЛІТИКА (ІМТ, ГРАФІК) ================= */
+/* ================= ІМТ ================= */
 
 .bmi-visual-scale {
   height: 12px;
@@ -464,10 +487,13 @@
   }
 }
 
+/* ================= ВАГА ================= */
+
 .weight-tracker-input {
   display: flex;
   gap: 12px;
   margin-top: 10px;
+  box-sizing: border-box;
 
   input {
     flex: 1;
@@ -476,20 +502,27 @@
     border: 1px solid var(--color-border);
     background: var(--color-bg-primary);
     color: var(--color-text-primary);
+    box-sizing: border-box;
   }
 
   button {
     padding: 0 20px;
-    border-radius: 12px;
-    border: none;
-    background: var(--color-accent);
-    color: white;
+    border-radius: 16px;
+    border: 1px solid var(--color-border);
+    background: var(--color-surface);
+    color: var(--color-text-secondary);
+    border-color: var(--color-accent);
     font-weight: 700;
     cursor: pointer;
     transition: 0.2s;
+    white-space: nowrap;
+    transition: all 0.3s ease;
+
     &:hover {
+      color: var(--color-text-primary);
+      border-color: var(--color-accent);
       transform: translateY(-2px);
-      box-shadow: 0 5px 15px rgba(46, 204, 113, 0.3);
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.05);
     }
   }
 }
@@ -501,25 +534,263 @@
   margin-top: 10px;
 }
 
-/* ================= 10. КНОПКИ ДІЙ ================= */
+/* ================= КНОПКИ ДІЙ ================= */
 
 .profile-actions {
   margin-top: 10px;
+
   &__btn {
     width: 100%;
     padding: 18px;
-    border-radius: 50px;
-    border: none;
-    background: var(--color-accent);
-    color: white;
+    border-radius: 16px;
+    border: 1px solid var(--color-border);
+    border-color: var(--color-accent);
+    background: var(--color-surface);
+    color: var(--color-text-secondary);
     font-size: 17px;
     font-weight: 800;
     cursor: pointer;
     box-shadow: 0 10px 20px rgba(111, 207, 186, 0.3);
-    transition: all 0.3s;
+    transition: all 0.3s ease;
+    box-sizing: border-box;
+
     &:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 15px 25px rgba(111, 207, 186, 0.4);
+      color: var(--color-text-primary);
+
+      transform: translateY(-2px);
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.05);
     }
   }
+}
+
+/* ================= СТАТИСТИКА ================= */
+
+.profile-statistics {
+  margin-top: 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.profile-section-title {
+  font-family: var(--font-heading);
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.profile-statistics-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 32px;
+
+  @media (max-width: 900px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.profile-compare {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+
+  canvas {
+    height: 220px !important;
+  }
+
+  @media (max-width: 700px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.profile-tops {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+
+  li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--color-border);
+    font-size: 15px;
+    color: var(--color-text-primary);
+
+    &:last-child {
+      border-bottom: none;
+    }
+  }
+}
+
+.profile-tips {
+  padding-left: 18px;
+  margin: 0;
+
+  li {
+    margin-bottom: 10px;
+    font-size: 14px;
+    color: var(--color-text-secondary);
+    line-height: 1.5;
+  }
+}
+
+/* ================= PROFILE LAYOUT — ✅ ШИРШИЙ САЙДБАР ================= */
+
+.profile-layout {
+  display: grid;
+  grid-template-columns: 320px 1fr; // ← ЗБІЛЬШЕНО з 220px на 320px
+  gap: 32px;
+  align-items: start;
+
+  @media (max-width: 1200px) {
+    grid-template-columns: 280px 1fr; // ← На планшетах 280px
+  }
+
+  @media (max-width: 1000px) {
+    grid-template-columns: 1fr; // ← На мобільних — повна ширина
+  }
+}
+
+/* ================= SIDEBAR ================= */
+
+.profile-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 16px; // ← ЗБІЛЬШЕНО з 12px на 16px (більше простору між кнопками)
+  position: sticky;
+  top: 100px;
+  align-self: start;
+  height: fit-content;
+}
+
+.profile-sidebar__profile {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+
+  img {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+  }
+}
+
+.profile-sidebar__avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+// ✅ ВИПРАВА #2: БІЛЬШІ І КРАСИВІШІ КНОПКИ
+
+.profile-sidebar__item {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+
+  font-family: var(--font-body);
+  font-size: 16px;
+  font-weight: 500;
+
+  color: var(--color-text-secondary); // Сірий текст (#6b8f87)
+  background: var(--color-surface);
+
+  border-radius: 16px;
+  border: 1px solid var(--color-border); // #cfe7df
+  cursor: pointer;
+
+  transition: all 0.3s ease;
+  box-sizing: border-box;
+  line-height: 1.4;
+
+  // ✅ HOVER
+  &:hover {
+    color: var(--color-text-primary);
+    border-color: var(--color-accent-soft);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.05);
+  }
+
+  // ✅ ACTIVE - ЯК НА ФОТО СУБОТА
+  &.active {
+    color: var(--color-text-primary); // Темний текст (#1f2e2b)
+    font-weight: 600;
+    border-color: var(--color-accent);
+    box-shadow: 0 10px 20px rgba(46, 204, 113, 0.12);
+  }
+}
+
+// ✅ ІНДИКАТОР (мала точка справа)
+.profile-sidebar__item.active::after {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  box-shadow: 0 0 8px var(--color-accent);
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+// ✅ RESPONSIVE
+@media (max-width: 1400px) {
+  .profile-sidebar__item {
+    padding: 18px 22px;
+    font-size: 15px;
+  }
+}
+
+@media (max-width: 1000px) {
+  .profile-sidebar__item {
+    padding: 16px 20px;
+    font-size: 14px;
+  }
+}
+
+/* ================= CONTENT ================= */
+
+.profile-content {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+/* ✅ ВИПРАВА #3: ТАБИ - ПРИХОВУВАННЯ ================= */
+
+[data-profile-section] {
+  display: block !important;
+  opacity: 1;
+  transition: opacity 0.3s var(--transition-bezier);
+}
+
+[data-profile-section][hidden] {
+  display: none !important;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* ================= ACCESSIBILITY ================= */
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
 }

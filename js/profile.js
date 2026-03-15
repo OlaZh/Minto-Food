@@ -30,6 +30,15 @@ const WEIGHT_HISTORY_KEY = 'weightHistory';
 
 let weightChart = null;
 
+// ✅ ВИПРАВА: Об'єкт для зберігання статистичних графіків
+let statisticsCharts = {
+  balancePieChart: null,
+  kbjuLineChart: null,
+  usefulnessBarChart: null,
+  lastWeekChart: null,
+  thisWeekChart: null,
+};
+
 // =====================================
 // CUSTOM SELECTS
 // =====================================
@@ -131,7 +140,7 @@ function initWeightChart() {
 }
 
 function recordNewWeight() {
-  if (!weightNowInput.value) return;
+  if (!weightNowInput || !weightNowInput.value) return;
 
   const weight = parseFloat(weightNowInput.value.replace(',', '.'));
   if (isNaN(weight)) return alert('Введіть коректну вагу');
@@ -144,7 +153,174 @@ function recordNewWeight() {
 
   localStorage.setItem(WEIGHT_HISTORY_KEY, JSON.stringify(history));
   weightNowInput.value = '';
+
   initWeightChart();
+}
+
+// =====================================
+// STATISTICS CHARTS — ✅ ВИПРАВЛЕНО
+// =====================================
+
+function initStatisticsCharts() {
+  console.log('Запускаємо initStatisticsCharts');
+
+  // 1. ЗНИЩУЄМО СТАРІ ГРАФІКИ перед тим, як малювати нові
+  Object.values(statisticsCharts).forEach((chart) => {
+    if (chart) {
+      chart.destroy();
+    }
+  });
+
+  const balanceCanvas = document.getElementById('balancePieChart');
+  const kbjuCanvas = document.getElementById('kbjuLineChart');
+  const usefulnessCanvas = document.getElementById('usefulnessBarChart');
+  const lastWeekCanvas = document.getElementById('lastWeekChart');
+  const thisWeekCanvas = document.getElementById('thisWeekChart');
+
+  // ========================
+  // 1. БАЛАНС СТРАВ (PIE)
+  // ========================
+  if (balanceCanvas) {
+    console.log('Малюємо balancePieChart');
+    statisticsCharts.balancePieChart = new Chart(balanceCanvas, {
+      type: 'pie',
+      data: {
+        labels: ['Білки', 'Жири', 'Вуглеводи'],
+        datasets: [
+          {
+            data: [30, 30, 40],
+            backgroundColor: ['#6fcfba', '#f2994a', '#56ccf2'],
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+      },
+    });
+  } else {
+    console.warn('Не знайдено #balancePieChart');
+  }
+
+  // ========================
+  // 2. ДИНАМІКА КБЖУ (LINE)
+  // ========================
+  if (kbjuCanvas) {
+    console.log('Малюємо kbjuLineChart');
+    statisticsCharts.kbjuLineChart = new Chart(kbjuCanvas, {
+      type: 'line',
+      data: {
+        labels: ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Нд'],
+        datasets: [
+          {
+            label: 'Калорії',
+            data: [1800, 1700, 2000, 1900, 1750, 2100, 1950],
+            borderColor: '#6fcfba',
+            backgroundColor: 'rgba(111, 207, 186, 0.1)',
+            tension: 0.4,
+            fill: true,
+            borderWidth: 2,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: {
+          legend: { display: true },
+        },
+      },
+    });
+  } else {
+    console.warn('Не знайдено #kbjuLineChart');
+  }
+
+  // ========================
+  // 3. КОРИСНІСТЬ (BAR)
+  // ========================
+  if (usefulnessCanvas) {
+    console.log('Малюємо usefulnessBarChart');
+    statisticsCharts.usefulnessBarChart = new Chart(usefulnessCanvas, {
+      type: 'bar',
+      data: {
+        labels: ['Легкі', 'Середні', 'Важкі'],
+        datasets: [
+          {
+            label: 'Кількість',
+            data: [12, 8, 4],
+            backgroundColor: '#6fcfba',
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: {
+          legend: { display: false },
+        },
+      },
+    });
+  } else {
+    console.warn('Не знайдено #usefulnessBarChart');
+  }
+
+  // ========================
+  // 4. МИНУЛИЙ ТИЖДЕНЬ (DOUGHNUT)
+  // ========================
+  if (lastWeekCanvas) {
+    console.log('Малюємо lastWeekChart');
+    statisticsCharts.lastWeekChart = new Chart(lastWeekCanvas, {
+      type: 'doughnut',
+      data: {
+        labels: ['Білки', 'Жири', 'Вуглеводи'],
+        datasets: [
+          {
+            data: [25, 35, 40],
+            backgroundColor: ['#6fcfba', '#f2994a', '#56ccf2'],
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: {
+          legend: { display: true },
+        },
+      },
+    });
+  } else {
+    console.warn('Не знайдено #lastWeekChart');
+  }
+
+  // ========================
+  // 5. ЦЕЙ ТИЖДЕНЬ (DOUGHNUT)
+  // ========================
+  if (thisWeekCanvas) {
+    console.log('Малюємо thisWeekChart');
+    statisticsCharts.thisWeekChart = new Chart(thisWeekCanvas, {
+      type: 'doughnut',
+      data: {
+        labels: ['Білки', 'Жири', 'Вуглеводи'],
+        datasets: [
+          {
+            data: [30, 30, 40],
+            backgroundColor: ['#6fcfba', '#f2994a', '#56ccf2'],
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: {
+          legend: { display: true },
+        },
+      },
+    });
+  } else {
+    console.warn('Не знайдено #thisWeekChart');
+  }
+
+  console.log('initStatisticsCharts завершена успішно');
 }
 
 // =====================================
@@ -152,39 +328,43 @@ function recordNewWeight() {
 // =====================================
 
 function updateBMI(weight, height) {
-  if (!weight || !height) return;
+  if (!weight || !height || !bmiValueEl) return;
 
   const h = height / 100;
   const bmi = (weight / (h * h)).toFixed(1);
 
-  bmiValueEl.textContent = bmi;
+  if (bmiValueEl) bmiValueEl.textContent = bmi;
 
   let percent = ((bmi - 15) / 20) * 100;
   percent = Math.min(95, Math.max(5, percent));
-  bmiPointer.style.left = percent + '%';
 
-  bmiStatusEl.textContent =
-    bmi < 18.5
-      ? 'Недостатня вага'
-      : bmi < 25
-        ? 'Вага в нормі 🍃'
-        : bmi < 30
-          ? 'Надмірна вага'
-          : 'Ожиріння';
+  if (bmiPointer) bmiPointer.style.left = percent + '%';
 
-  bmiAdviceEl.innerHTML = `Для твого зросту ідеальна вага <strong>${Math.round(20 * h * h)}–${Math.round(24 * h * h)} кг</strong>`;
+  if (bmiStatusEl) {
+    bmiStatusEl.textContent =
+      bmi < 18.5
+        ? 'Недостатня вага'
+        : bmi < 25
+          ? 'Вага в нормі 🍃'
+          : bmi < 30
+            ? 'Надмірна вага'
+            : 'Ожиріння';
+  }
+
+  if (bmiAdviceEl) {
+    bmiAdviceEl.innerHTML = `Для твого зросту ідеальна вага <strong>${Math.round(20 * h * h)}–${Math.round(24 * h * h)} кг</strong>`;
+  }
 }
 
 function renderAll(data) {
-  resultEl.textContent = `${data.calories} ккал`;
-  normProteinEl.textContent = data.protein;
-  normFatEl.textContent = data.fat;
-  normCarbsEl.textContent = data.carbs;
-  normWaterEl.textContent = data.water;
+  if (resultEl) resultEl.textContent = `${data.calories} ккал`;
+  if (normProteinEl) normProteinEl.textContent = data.protein;
+  if (normFatEl) normFatEl.textContent = data.fat;
+  if (normCarbsEl) normCarbsEl.textContent = data.carbs;
+  if (normWaterEl) normWaterEl.textContent = data.water;
 
   updateBMI(data.weight, data.height);
 
-  // Зберігаємо в localStorage для інших сторінок
   localStorage.setItem('dailyCaloriesNorm', data.calories);
   localStorage.setItem('userProtein', data.protein);
   localStorage.setItem('userFat', data.fat);
@@ -198,8 +378,8 @@ function renderAll(data) {
 
 async function loadProfileFromSupabase() {
   const user = getCurrentUser();
+
   if (!user) {
-    // Якщо не залогінений — завантажуємо з localStorage
     loadFromLocalStorage();
     return;
   }
@@ -211,21 +391,19 @@ async function loadProfileFromSupabase() {
     .maybeSingle();
 
   if (error || !data) {
-    // Профіль ще не створений — завантажуємо з localStorage
     loadFromLocalStorage();
     return;
   }
 
-  // Заповнюємо форму даними з Supabase
   fillForm(data);
   renderAll(data);
 
-  // Оновлюємо ім'я і email в хедері профілю
   updateProfileHeader(user);
 }
 
 function loadFromLocalStorage() {
   const saved = JSON.parse(localStorage.getItem('userProfile') || 'null');
+
   if (saved) {
     fillForm(saved);
     renderAll(saved);
@@ -233,6 +411,8 @@ function loadFromLocalStorage() {
 }
 
 function fillForm(data) {
+  if (!form) return;
+
   if (form.age) form.age.value = data.age || '';
   if (form.height) form.height.value = data.height || '';
   if (form.weight) form.weight.value = data.weight || '';
@@ -262,7 +442,6 @@ function updateProfileHeader(user) {
   const email = user.email || '';
   const avatar = user.user_metadata?.avatar_url || '';
 
-  // Хедер профілю на сторінці
   const profileNameEl = document.querySelector('.profile-header__name');
   const profileEmailEl = document.querySelector('.profile-header__email');
   const profileAvatarEl = document.querySelector('.profile-header__avatar');
@@ -272,8 +451,24 @@ function updateProfileHeader(user) {
 
   if (profileAvatarEl && avatar) {
     profileAvatarEl.style.backgroundImage = `url(${avatar})`;
-    profileAvatarEl.style.backgroundSize = 'cover';
-    profileAvatarEl.style.backgroundPosition = 'center';
+    profileAvatarEl.style.backgroundSize = 'cover'; // ← ЦЕ ВАЖЛИВО
+    profileAvatarEl.style.backgroundPosition = 'center'; // ← ЦЕ ВАЖЛИВО
+    profileAvatarEl.style.backgroundRepeat = 'no-repeat'; // ← ДОДАЙ ЦЕ
+  } else if (profileAvatarEl && !avatar) {
+    // Якщо немає аватара — показуємо ініціали
+    const initials = name
+      .split(' ')
+      .map((word) => word[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
+
+    profileAvatarEl.textContent = initials;
+    profileAvatarEl.style.display = 'flex';
+    profileAvatarEl.style.alignItems = 'center';
+    profileAvatarEl.style.justifyContent = 'center';
+    profileAvatarEl.style.fontSize = '24px';
+    profileAvatarEl.style.fontWeight = '700';
   }
 }
 
@@ -285,7 +480,6 @@ async function saveProfileToSupabase(data) {
   const user = getCurrentUser();
 
   if (!user) {
-    // Зберігаємо тільки в localStorage якщо не залогінений
     localStorage.setItem('userProfile', JSON.stringify(data));
     return;
   }
@@ -309,7 +503,6 @@ async function saveProfileToSupabase(data) {
     updated_at: new Date().toISOString(),
   };
 
-  // Upsert — оновлює якщо є, створює якщо немає
   const { error } = await supabase.from('user_profiles').upsert(payload, { onConflict: 'user_id' });
 
   if (error) {
@@ -318,7 +511,6 @@ async function saveProfileToSupabase(data) {
     return;
   }
 
-  // Також зберігаємо в localStorage для інших сторінок
   localStorage.setItem('userProfile', JSON.stringify(data));
   showToast('Профіль збережено ✓');
 }
@@ -330,9 +522,14 @@ async function saveProfileToSupabase(data) {
 function showToast(message, type = 'success') {
   const toast = document.createElement('div');
   toast.className = `toast-notification toast-${type}`;
+
   const icon = type === 'error' ? '❌' : '✅';
-  toast.innerHTML = `<span class="toast-icon">${icon}</span> <span class="toast-text">${message}</span>`;
+
+  toast.innerHTML = `<span class="toast-icon">${icon}</span>
+     <span class="toast-text">${message}</span>`;
+
   document.body.appendChild(toast);
+
   setTimeout(() => {
     toast.classList.add('fade-out');
     setTimeout(() => toast.remove(), 500);
@@ -340,13 +537,78 @@ function showToast(message, type = 'success') {
 }
 
 // =====================================
+// PROFILE SIDEBAR TABS — ✅ ВИПРАВЛЕНО
+// =====================================
+function initProfileTabs() {
+  const buttons = document.querySelectorAll('.profile-sidebar__item');
+  const sections = document.querySelectorAll('[data-profile-section]');
+
+  if (!buttons.length || !sections.length) {
+    console.warn('initProfileTabs: не знайдено кнопок або секцій');
+    return;
+  }
+
+  // Показуємо першу секцію за замовчуванням
+  sections.forEach((section, index) => {
+    if (index === 0) {
+      section.removeAttribute('hidden');
+      section.style.display = 'block';
+    } else {
+      section.setAttribute('hidden', '');
+      section.style.display = 'none';
+    }
+  });
+
+  // Перший таб активний за замовчуванням
+  buttons[0]?.classList.add('active');
+  buttons[0]?.setAttribute('aria-selected', 'true');
+
+  // Обробка кліків
+  buttons.forEach((btn, index) => {
+    btn.addEventListener('click', () => {
+      // Деактивуємо всі кнопки
+      buttons.forEach((b) => {
+        b.classList.remove('active');
+        b.setAttribute('aria-selected', 'false');
+      });
+
+      // Активуємо поточну кнопку
+      btn.classList.add('active');
+      btn.setAttribute('aria-selected', 'true');
+
+      const tab = btn.dataset.tab;
+
+      // Ховаємо/показуємо секції
+      sections.forEach((section) => {
+        const isActive = section.dataset.profileSection === tab;
+
+        if (isActive) {
+          section.removeAttribute('hidden');
+          section.style.display = 'block';
+        } else {
+          section.setAttribute('hidden', '');
+          section.style.display = 'none';
+        }
+      });
+
+      // Якщо це таб статистики — малюємо графіки з затримкою
+      if (tab === 'statistics') {
+        setTimeout(initStatisticsCharts, 150);
+      }
+    });
+  });
+}
+
+// =====================================
 // INIT
 // =====================================
+
 async function initProfile() {
   const user = await initAuth(async (event, user) => {
     if (event === 'SIGNED_IN') {
       await loadProfileFromSupabase();
       updateProfileHeader(user);
+      initProfileTabs(); // ← ✅ ДОДАНО
     }
 
     if (event === 'SIGNED_OUT') {
@@ -355,11 +617,17 @@ async function initProfile() {
   });
 
   document.getElementById('signOutBtn')?.addEventListener('click', async () => {
+    // ✅ ВИПРАВА: Знищуємо всі графіки перед вихідом
+    Object.values(statisticsCharts).forEach((chart) => {
+      if (chart) {
+        chart.destroy();
+      }
+    });
+
     await signOut();
     window.location.href = 'index.html';
   });
 
-  // 🔒 Захист сторінки
   if (!user) {
     openAuthModal();
     return;
@@ -369,7 +637,7 @@ async function initProfile() {
   setupCustomSelect('activitySelect', 'activityInput');
   setupCustomSelect('goalSelect', 'goalInput');
 
-  recordWeightBtn.addEventListener('click', recordNewWeight);
+  recordWeightBtn?.addEventListener('click', recordNewWeight);
 
   document.addEventListener('click', () => {
     document.querySelectorAll('.custom-select').forEach((s) => s.classList.remove('open'));
@@ -378,46 +646,53 @@ async function initProfile() {
   await loadProfileFromSupabase();
 
   initWeightChart();
+  initProfileTabs(); // ← ✅ ДОДАНО
+  // initStatisticsCharts(); — ПЕРЕНЕСЕНО В ТАБ, НЕ ВИКЛИКАЄМО ОДРАЗУ
 }
+
 // =====================================
 // FORM SUBMIT
 // =====================================
 
-form.addEventListener('submit', async (e) => {
-  e.preventDefault();
+if (form) {
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
 
-  const age = +form.age.value;
-  const height = +form.height.value;
-  const weight = +form.weight.value;
+    const age = +form.age.value;
+    const height = +form.height.value;
+    const weight = +form.weight.value;
 
-  const base =
-    genderInput.value === 'male'
-      ? 10 * weight + 6.25 * height - 5 * age + 5
-      : 10 * weight + 6.25 * height - 5 * age - 161;
+    const base =
+      genderInput.value === 'male'
+        ? 10 * weight + 6.25 * height - 5 * age + 5
+        : 10 * weight + 6.25 * height - 5 * age - 161;
 
-  let calories = base * +activityInput.value;
-  if (goalInput.value === 'lose') calories *= 0.9;
-  if (goalInput.value === 'gain') calories *= 1.1;
+    let calories = base * parseFloat(activityInput.value); // ← вже було виправлено
 
-  calories = Math.round(calories);
+    if (goalInput.value === 'lose') calories *= 0.9;
+    if (goalInput.value === 'gain') calories *= 1.1;
 
-  const data = {
-    gender: genderInput.value,
-    activity: activityInput.value,
-    goal: goalInput.value,
-    age,
-    height,
-    weight,
-    calories,
-    protein: Math.round((calories * 0.3) / 4),
-    fat: Math.round((calories * 0.3) / 9),
-    carbs: Math.round((calories * 0.4) / 4),
-    water: 2.5,
-    target_weight: targetWeightInput ? +targetWeightInput.value || null : null,
-  };
+    calories = Math.round(calories);
 
-  renderAll(data);
-  await saveProfileToSupabase(data);
-});
+    const data = {
+      gender: genderInput.value,
+      activity: activityInput.value,
+      goal: goalInput.value,
+      age,
+      height,
+      weight,
+      calories,
+      protein: Math.round((calories * 0.3) / 4),
+      fat: Math.round((calories * 0.3) / 9),
+      carbs: Math.round((calories * 0.4) / 4),
+      water: 2.5,
+      target_weight: targetWeightInput ? +targetWeightInput.value || null : null,
+    };
+
+    renderAll(data);
+
+    await saveProfileToSupabase(data);
+  });
+}
 
 document.addEventListener('DOMContentLoaded', initProfile);
