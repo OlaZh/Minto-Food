@@ -136,6 +136,16 @@
             ⚖️ Контроль ваги
           </button>
 
+          <!-- ✅ НОВИЙ ТАБ: Активність -->
+          <button
+            class="profile-sidebar__item"
+            data-tab="activity"
+            role="tab"
+            aria-selected="false"
+            aria-controls="activitySection">
+            🏃 Активність
+          </button>
+
           <button
             class="profile-sidebar__item"
             data-tab="statistics"
@@ -156,12 +166,17 @@
         </nav>
 
         <main class="profile-main">
+          <!-- =============================================
+       TAB 1: МОЇ ДАНІ — все разом
+       ============================================= -->
           <section
             id="profileDataSection"
-            class="profile-grid-system"
+            class="profile-section"
             data-profile-section="profileData"
             role="tabpanel">
-            <div class="profile-column-left">
+            <!-- Верхній ряд: Ваші параметри + (Денна норма + Аналіз) -->
+            <div class="profile-top-row">
+              <!-- ЛІВА КОЛОНКА: Ваші параметри -->
               <section class="profile-card" aria-labelledby="parametersTitle">
                 <h2 id="parametersTitle" class="profile-card__title" data-i18n="yourParameters">
                   Ваші параметри
@@ -303,93 +318,390 @@
                 </form>
               </section>
 
-              <section class="profile-card" aria-labelledby="dailyNormTitle">
-                <h2 id="dailyNormTitle" class="profile-card__title" data-i18n="dailyNorm">
-                  Денна норма
-                </h2>
+              <!-- ПРАВА КОЛОНКА: Денна норма + Аналіз стану тіла -->
+              <div class="profile-right-stack">
+                <!-- Денна норма -->
+                <section
+                  class="profile-card profile-card--compact"
+                  aria-labelledby="dailyNormTitle">
+                  <h2 id="dailyNormTitle" class="profile-card__title" data-i18n="dailyNorm">
+                    Денна норма
+                  </h2>
 
-                <div class="profile-result">
-                  <span class="profile-result__label">Калорії 🍃</span>
-                  <strong class="profile-result__value" id="dailyCalories">—</strong>
-                </div>
+                  <div class="profile-result profile-result--small">
+                    <span class="profile-result__label">Калорії 🍃</span>
+                    <strong class="profile-result__value" id="dailyCalories">—</strong>
+                  </div>
 
-                <div class="profile-macros">
-                  <div class="profile-macros__item">
-                    <span class="macro-label">Білки</span>
-                    <span class="macro-value"><span id="normProtein">—</span> г</span>
+                  <div class="profile-macros">
+                    <div class="profile-macros__item">
+                      <span class="macro-label">Білки</span>
+                      <span class="macro-value"><span id="normProtein">—</span> г</span>
+                    </div>
+                    <div class="profile-macros__item">
+                      <span class="macro-label">Жири</span>
+                      <span class="macro-value"><span id="normFat">—</span> г</span>
+                    </div>
+                    <div class="profile-macros__item">
+                      <span class="macro-label">Вуглеводи</span>
+                      <span class="macro-value"><span id="normCarbs">—</span> г</span>
+                    </div>
+                    <div class="profile-macros__item">
+                      <span class="macro-label">Вода</span>
+                      <span class="macro-value"><span id="normWater">—</span> л</span>
+                    </div>
                   </div>
-                  <div class="profile-macros__item">
-                    <span class="macro-label">Жири</span>
-                    <span class="macro-value"><span id="normFat">—</span> г</span>
+                </section>
+
+                <!-- Аналіз стану тіла -->
+                <section class="profile-card profile-card--compact" aria-labelledby="bmiTitle">
+                  <h2 id="bmiTitle" class="profile-card__title">Аналіз стану тіла</h2>
+
+                  <div class="bmi-analysis">
+                    <div class="bmi-analysis__header">
+                      <span class="profile-form__label">Ваш ІМТ</span>
+                      <span class="bmi-analysis__number" id="bmiValue">—</span>
+                    </div>
+
+                    <div class="bmi-visual-scale">
+                      <div class="bmi-visual-scale__pointer" id="bmiPointer"></div>
+                    </div>
+
+                    <p class="bmi-analysis__status" id="bmiStatus"></p>
                   </div>
-                  <div class="profile-macros__item">
-                    <span class="macro-label">Вуглеводи</span>
-                    <span class="macro-value"><span id="normCarbs">—</span> г</span>
-                  </div>
-                  <div class="profile-macros__item">
-                    <span class="macro-label">Вода</span>
-                    <span class="macro-value"><span id="normWater">—</span> л</span>
-                  </div>
-                </div>
-              </section>
+
+                  <div id="bmiAdvice" class="bmi-advice-text"></div>
+                </section>
+              </div>
             </div>
 
-            <div class="profile-column-right">
-              <section class="profile-card" aria-labelledby="bmiTitle">
-                <h2 id="bmiTitle" class="profile-card__title">Аналіз стану тіла</h2>
-
-                <div class="bmi-analysis">
-                  <div class="bmi-analysis__header">
-                    <span class="profile-form__label">Ваш ІМТ</span>
-                    <span class="bmi-analysis__number" id="bmiValue">—</span>
+            <!-- Нижній ряд: Контроль ваги + Динаміка -->
+            <div class="profile-grid-system">
+              <div class="profile-column-left">
+                <section class="profile-card" aria-labelledby="weightControlTitleMain">
+                  <h2 id="weightControlTitleMain" class="profile-card__title">Контроль ваги</h2>
+                  <div class="profile-form__field">
+                    <label class="profile-form__label" data-i18n="targetWeight"
+                      >Бажана вага (кг)</label
+                    >
+                    <div class="weight-tracker-input">
+                      <input
+                        type="number"
+                        id="targetWeight"
+                        placeholder="Введіть ціль..."
+                        step="0.1"
+                        data-i18n-placeholder="enterGoal" />
+                    </div>
                   </div>
 
-                  <div class="bmi-visual-scale">
-                    <div class="bmi-visual-scale__pointer" id="bmiPointer"></div>
+                  <div class="profile-form__field" style="margin-top: 20px">
+                    <label class="profile-form__label" data-i18n="todayWeight"
+                      >Вага сьогодні (кг)</label
+                    >
+                    <div class="weight-tracker-input">
+                      <input type="number" id="currentWeightInput" placeholder="74.0" step="0.1" />
+                      <button type="button" id="saveWeightBtn" data-i18n="save">Записати</button>
+                    </div>
                   </div>
+                </section>
+              </div>
 
-                  <p class="bmi-analysis__status" id="bmiStatus"></p>
-                </div>
-
-                <div id="bmiAdvice" class="bmi-advice-text"></div>
-              </section>
-
-              <section class="profile-card" aria-labelledby="weightControlTitle">
-                <h2 id="weightControlTitle" class="profile-card__title">Контроль ваги</h2>
-                <div class="profile-form__field">
-                  <label class="profile-form__label" data-i18n="targetWeight"
-                    >Бажана вага (кг)</label
-                  >
-                  <div class="weight-tracker-input">
-                    <input
-                      type="number"
-                      id="targetWeight"
-                      placeholder="Введіть ціль..."
-                      step="0.1"
-                      data-i18n-placeholder="enterGoal" />
+              <div class="profile-column-right">
+                <section class="profile-card" aria-labelledby="weightGraphTitleMain">
+                  <h2 id="weightGraphTitleMain" class="profile-card__title">Динаміка ваги</h2>
+                  <div class="weight-chart-box">
+                    <canvas id="weightChartCanvas"></canvas>
                   </div>
-                </div>
-
-                <div class="profile-form__field" style="margin-top: 20px">
-                  <label class="profile-form__label" data-i18n="todayWeight"
-                    >Вага сьогодні (кг)</label
-                  >
-                  <div class="weight-tracker-input">
-                    <input type="number" id="currentWeightInput" placeholder="74.0" step="0.1" />
-                    <button type="button" id="saveWeightBtn" data-i18n="save">Записати</button>
-                  </div>
-                </div>
-              </section>
-
-              <section class="profile-card" aria-labelledby="weightGraphTitle">
-                <h2 id="weightGraphTitle" class="profile-card__title">Динаміка ваги</h2>
-                <div class="weight-chart-box">
-                  <canvas id="weightChartCanvas"></canvas>
-                </div>
-              </section>
+                </section>
+              </div>
             </div>
           </section>
 
+          <!-- =============================================
+       TAB 2: КОНТРОЛЬ ВАГИ — фокус на вазі + поради
+       ============================================= -->
+          <section
+            id="weightControlSection"
+            class="profile-section"
+            data-profile-section="weightControl"
+            role="tabpanel"
+            hidden>
+            <div class="profile-grid-system">
+              <!-- ЛІВА КОЛОНКА -->
+              <div class="profile-column-left">
+                <!-- Контроль ваги -->
+                <section class="profile-card" aria-labelledby="weightControlTitle2">
+                  <h2 id="weightControlTitle2" class="profile-card__title">Контроль ваги</h2>
+
+                  <div class="profile-form__field">
+                    <label class="profile-form__label">Бажана вага (кг)</label>
+                    <div class="weight-tracker-input">
+                      <input
+                        type="number"
+                        id="targetWeight2"
+                        placeholder="Введіть ціль..."
+                        step="0.1" />
+                    </div>
+                  </div>
+
+                  <div class="profile-form__field" style="margin-top: 20px">
+                    <label class="profile-form__label">Вага сьогодні (кг)</label>
+                    <div class="weight-tracker-input">
+                      <input type="number" id="currentWeightInput2" placeholder="74.0" step="0.1" />
+                      <button type="button" id="saveWeightBtn2">Записати</button>
+                    </div>
+                  </div>
+                </section>
+
+                <!-- Персональні поради -->
+                <section class="profile-card" aria-labelledby="weightAdviceTitle">
+                  <h2 id="weightAdviceTitle" class="profile-card__title">💡 Персональні поради</h2>
+                  <div id="weightAdviceContent" class="weight-advice"></div>
+                </section>
+              </div>
+
+              <!-- ПРАВА КОЛОНКА -->
+              <div class="profile-column-right">
+                <!-- Динаміка ваги -->
+                <section class="profile-card" aria-labelledby="weightGraphTitle2">
+                  <h2 id="weightGraphTitle2" class="profile-card__title">Динаміка ваги</h2>
+                  <div class="weight-chart-box">
+                    <canvas id="weightChartCanvas2"></canvas>
+                  </div>
+                </section>
+
+                <!-- Прогрес до цілі -->
+                <section class="profile-card" aria-labelledby="weightProgressTitle">
+                  <h2 id="weightProgressTitle" class="profile-card__title">🎯 Прогрес до цілі</h2>
+                  <div id="weightProgressContent" class="weight-progress"></div>
+                </section>
+              </div>
+            </div>
+          </section>
+
+          <!-- =============================================
+       TAB 3: АКТИВНІСТЬ — трекер фізичної активності
+       ============================================= -->
+          <section
+            id="activitySection"
+            class="profile-section"
+            data-profile-section="activity"
+            role="tabpanel"
+            hidden>
+            <div class="profile-grid-system">
+              <!-- ЛІВА КОЛОНКА: Додати активність -->
+              <div class="profile-column-left">
+                <section class="profile-card" aria-labelledby="addActivityTitle">
+                  <h2 id="addActivityTitle" class="profile-card__title">🏃‍♀️ Додати активність</h2>
+
+                  <div class="activity-form">
+                    <!-- Вибір активності -->
+                    <div class="profile-form__field">
+                      <label class="profile-form__label">Вид активності</label>
+                      <div class="custom-select" id="activityTypeSelect">
+                        <div class="custom-select__trigger">
+                          <span>Оберіть активність...</span>
+                          <div class="arrow"></div>
+                        </div>
+                        <div class="custom-select__options">
+                          <span class="custom-select__option" data-value="walking" data-calories="4"
+                            >🚶 Ходьба</span
+                          >
+                          <span
+                            class="custom-select__option"
+                            data-value="running"
+                            data-calories="10"
+                            >🏃 Біг</span
+                          >
+                          <span class="custom-select__option" data-value="cycling" data-calories="8"
+                            >🚴 Велосипед</span
+                          >
+                          <span
+                            class="custom-select__option"
+                            data-value="swimming"
+                            data-calories="9"
+                            >🏊 Плавання</span
+                          >
+                          <span class="custom-select__option" data-value="yoga" data-calories="3"
+                            >🧘 Йога</span
+                          >
+                          <span class="custom-select__option" data-value="fitness" data-calories="7"
+                            >💪 Фітнес</span
+                          >
+                          <span class="custom-select__option" data-value="dancing" data-calories="6"
+                            >💃 Танці</span
+                          >
+                          <span class="custom-select__option" data-value="hiking" data-calories="6"
+                            >🥾 Похід</span
+                          >
+                          <span class="custom-select__option" data-value="tennis" data-calories="8"
+                            >🎾 Теніс</span
+                          >
+                          <span
+                            class="custom-select__option"
+                            data-value="basketball"
+                            data-calories="9"
+                            >🏀 Баскетбол</span
+                          >
+                          <span
+                            class="custom-select__option"
+                            data-value="football"
+                            data-calories="9"
+                            >⚽ Футбол</span
+                          >
+                          <span
+                            class="custom-select__option"
+                            data-value="stretching"
+                            data-calories="2"
+                            >🤸 Розтяжка</span
+                          >
+                          <span
+                            class="custom-select__option"
+                            data-value="cleaning"
+                            data-calories="3"
+                            >🧹 Прибирання</span
+                          >
+                          <span
+                            class="custom-select__option"
+                            data-value="gardening"
+                            data-calories="4"
+                            >🌱 Садівництво</span
+                          >
+                        </div>
+                      </div>
+                      <input type="hidden" id="activityTypeInput" value="" />
+                    </div>
+
+                    <!-- Тривалість -->
+                    <div class="profile-form__field">
+                      <label class="profile-form__label">Тривалість (хвилин)</label>
+                      <input
+                        type="number"
+                        id="activityDuration"
+                        class="profile-form__input"
+                        placeholder="30"
+                        min="1"
+                        max="480" />
+                    </div>
+
+                    <!-- Попередній перегляд калорій -->
+                    <div class="activity-preview" id="activityPreview">
+                      <div class="activity-preview__icon">🔥</div>
+                      <div class="activity-preview__info">
+                        <span class="activity-preview__label">Буде спалено</span>
+                        <span class="activity-preview__value" id="previewCalories">— ккал</span>
+                      </div>
+                    </div>
+
+                    <!-- Кнопка додати -->
+                    <div class="profile-actions">
+                      <button type="button" id="addActivityBtn" class="profile-actions__btn">
+                        ✓ Записати активність
+                      </button>
+                    </div>
+                  </div>
+                </section>
+
+                <!-- Підсумок за сьогодні -->
+                <section class="profile-card" aria-labelledby="todayActivityTitle">
+                  <h2 id="todayActivityTitle" class="profile-card__title">📊 Сьогодні</h2>
+
+                  <div class="activity-today-stats">
+                    <div class="activity-stat">
+                      <span class="activity-stat__icon">🔥</span>
+                      <div class="activity-stat__info">
+                        <span class="activity-stat__value" id="todayCaloriesBurned">0</span>
+                        <span class="activity-stat__label">ккал спалено</span>
+                      </div>
+                    </div>
+
+                    <div class="activity-stat">
+                      <span class="activity-stat__icon">⏱️</span>
+                      <div class="activity-stat__info">
+                        <span class="activity-stat__value" id="todayActiveMinutes">0</span>
+                        <span class="activity-stat__label">хвилин активності</span>
+                      </div>
+                    </div>
+
+                    <div class="activity-stat">
+                      <span class="activity-stat__icon">🏆</span>
+                      <div class="activity-stat__info">
+                        <span class="activity-stat__value" id="todayActivitiesCount">0</span>
+                        <span class="activity-stat__label">тренувань</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Вплив на калорії -->
+                  <div class="activity-calorie-impact" id="calorieImpact">
+                    <div class="calorie-impact__header">
+                      <span>💡 Твій баланс калорій на сьогодні:</span>
+                    </div>
+                    <div class="calorie-impact__body">
+                      <div class="calorie-impact__item">
+                        <span class="calorie-impact__label">Денна норма</span>
+                        <span class="calorie-impact__value" id="impactBaseCalories">—</span>
+                      </div>
+                      <div class="calorie-impact__operator">+</div>
+                      <div class="calorie-impact__item">
+                        <span class="calorie-impact__label">Спалено</span>
+                        <span
+                          class="calorie-impact__value calorie-impact__value--green"
+                          id="impactBurnedCalories"
+                          >0</span
+                        >
+                      </div>
+                      <div class="calorie-impact__operator">=</div>
+                      <div class="calorie-impact__item calorie-impact__item--total">
+                        <span class="calorie-impact__label">Можна з'їсти</span>
+                        <span
+                          class="calorie-impact__value calorie-impact__value--accent"
+                          id="impactTotalCalories"
+                          >—</span
+                        >
+                      </div>
+                    </div>
+                  </div>
+                </section>
+              </div>
+
+              <!-- ПРАВА КОЛОНКА: Історія -->
+              <div class="profile-column-right">
+                <section class="profile-card" aria-labelledby="activityHistoryTitle">
+                  <h2 id="activityHistoryTitle" class="profile-card__title">
+                    📅 Історія активностей
+                  </h2>
+
+                  <!-- Фільтр періоду -->
+                  <div class="activity-period-filter">
+                    <button class="period-btn active" data-period="week">Тиждень</button>
+                    <button class="period-btn" data-period="month">Місяць</button>
+                    <button class="period-btn" data-period="all">Все</button>
+                  </div>
+
+                  <!-- Список активностей -->
+                  <div class="activity-history-list" id="activityHistoryList">
+                    <div class="activity-history-empty">
+                      <span class="empty-icon">🏃‍♀️</span>
+                      <p>Поки що немає записів. Додай свою першу активність!</p>
+                    </div>
+                  </div>
+                </section>
+
+                <!-- Графік активності за місяць -->
+                <section class="profile-card" aria-labelledby="activityChartTitle">
+                  <h2 id="activityChartTitle" class="profile-card__title">📈 Динаміка за місяць</h2>
+                  <div class="activity-chart-box">
+                    <canvas id="activityChartCanvas"></canvas>
+                  </div>
+                </section>
+              </div>
+            </div>
+          </section>
+
+          <!-- =============================================
+       TAB 4: СТАТИСТИКА
+       ============================================= -->
           <section
             id="statisticsSection"
             class="profile-statistics"
@@ -454,6 +766,21 @@
                   <li>Ти чудово тримаєш баланс</li>
                 </ul>
               </div>
+            </div>
+          </section>
+
+          <!-- =============================================
+       TAB 5: НАЛАШТУВАННЯ (placeholder)
+       ============================================= -->
+          <section
+            id="settingsSection"
+            class="profile-section"
+            data-profile-section="settings"
+            role="tabpanel"
+            hidden>
+            <div class="profile-card">
+              <h2 class="profile-card__title">⚙️ Налаштування</h2>
+              <p style="color: var(--color-text-secondary)">Розділ в розробці...</p>
             </div>
           </section>
         </main>

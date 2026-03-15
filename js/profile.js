@@ -5,6 +5,10 @@
 import { supabase } from './supabaseClient.js';
 import { initAuth, requireAuth, getCurrentUser, openAuthModal, signOut } from './auth.js';
 
+// =====================================
+// DOM ELEMENTS
+// =====================================
+
 const form = document.getElementById('profileForm');
 
 const resultEl = document.getElementById('dailyCalories');
@@ -26,11 +30,56 @@ const targetWeightInput = document.getElementById('targetWeight');
 const weightNowInput = document.getElementById('currentWeightInput');
 const recordWeightBtn = document.getElementById('saveWeightBtn');
 
+// =====================================
+// CONSTANTS
+// =====================================
+
 const WEIGHT_HISTORY_KEY = 'weightHistory';
+const ACTIVITY_HISTORY_KEY = 'activityHistory';
+
+// Калорії на хвилину для кожної активності
+const ACTIVITY_CALORIES = {
+  walking: 4,
+  running: 10,
+  cycling: 8,
+  swimming: 9,
+  yoga: 3,
+  fitness: 7,
+  dancing: 6,
+  hiking: 6,
+  tennis: 8,
+  basketball: 9,
+  football: 9,
+  stretching: 2,
+  cleaning: 3,
+  gardening: 4,
+};
+
+const ACTIVITY_NAMES = {
+  walking: '🚶 Ходьба',
+  running: '🏃 Біг',
+  cycling: '🚴 Велосипед',
+  swimming: '🏊 Плавання',
+  yoga: '🧘 Йога',
+  fitness: '💪 Фітнес',
+  dancing: '💃 Танці',
+  hiking: '🥾 Похід',
+  tennis: '🎾 Теніс',
+  basketball: '🏀 Баскетбол',
+  football: '⚽ Футбол',
+  stretching: '🤸 Розтяжка',
+  cleaning: '🧹 Прибирання',
+  gardening: '🌱 Садівництво',
+};
+
+// =====================================
+// CHART INSTANCES
+// =====================================
 
 let weightChart = null;
+let weightChart2 = null;
+let activityChart = null;
 
-// ✅ ВИПРАВА: Об'єкт для зберігання статистичних графіків
 let statisticsCharts = {
   balancePieChart: null,
   kbjuLineChart: null,
@@ -139,6 +188,52 @@ function initWeightChart() {
   });
 }
 
+function initWeightChart2() {
+  const canvas = document.getElementById('weightChartCanvas2');
+  if (!canvas) return;
+
+  let history = JSON.parse(localStorage.getItem(WEIGHT_HISTORY_KEY) || '[]');
+
+  history = history
+    .map((i) => ({
+      date: i.date,
+      weight: parseFloat(String(i.weight).replace(',', '.')),
+    }))
+    .filter((i) => !isNaN(i.weight));
+
+  const labels = history.map((i) => i.date);
+  const weights = history.map((i) => i.weight);
+
+  if (weightChart2) weightChart2.destroy();
+
+  weightChart2 = new Chart(canvas, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        {
+          data: weights,
+          borderColor: '#6fcfba',
+          backgroundColor: 'rgba(111, 207, 186, 0.15)',
+          borderWidth: 3,
+          fill: true,
+          tension: 0.4,
+          pointRadius: 5,
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { ticks: { callback: (v) => v + ' кг' } },
+        x: { grid: { display: false } },
+      },
+    },
+  });
+}
+
 function recordNewWeight() {
   if (!weightNowInput || !weightNowInput.value) return;
 
@@ -158,17 +253,14 @@ function recordNewWeight() {
 }
 
 // =====================================
-// STATISTICS CHARTS — ✅ ВИПРАВЛЕНО
+// STATISTICS CHARTS
 // =====================================
 
 function initStatisticsCharts() {
   console.log('Запускаємо initStatisticsCharts');
 
-  // 1. ЗНИЩУЄМО СТАРІ ГРАФІКИ перед тим, як малювати нові
   Object.values(statisticsCharts).forEach((chart) => {
-    if (chart) {
-      chart.destroy();
-    }
+    if (chart) chart.destroy();
   });
 
   const balanceCanvas = document.getElementById('balancePieChart');
@@ -177,36 +269,18 @@ function initStatisticsCharts() {
   const lastWeekCanvas = document.getElementById('lastWeekChart');
   const thisWeekCanvas = document.getElementById('thisWeekChart');
 
-  // ========================
-  // 1. БАЛАНС СТРАВ (PIE)
-  // ========================
   if (balanceCanvas) {
-    console.log('Малюємо balancePieChart');
     statisticsCharts.balancePieChart = new Chart(balanceCanvas, {
       type: 'pie',
       data: {
         labels: ['Білки', 'Жири', 'Вуглеводи'],
-        datasets: [
-          {
-            data: [30, 30, 40],
-            backgroundColor: ['#6fcfba', '#f2994a', '#56ccf2'],
-          },
-        ],
+        datasets: [{ data: [30, 30, 40], backgroundColor: ['#6fcfba', '#f2994a', '#56ccf2'] }],
       },
-      options: {
-        responsive: true,
-        maintainAspectRatio: true,
-      },
+      options: { responsive: true, maintainAspectRatio: true },
     });
-  } else {
-    console.warn('Не знайдено #balancePieChart');
   }
 
-  // ========================
-  // 2. ДИНАМІКА КБЖУ (LINE)
-  // ========================
   if (kbjuCanvas) {
-    console.log('Малюємо kbjuLineChart');
     statisticsCharts.kbjuLineChart = new Chart(kbjuCanvas, {
       type: 'line',
       data: {
@@ -226,105 +300,61 @@ function initStatisticsCharts() {
       options: {
         responsive: true,
         maintainAspectRatio: true,
-        plugins: {
-          legend: { display: true },
-        },
+        plugins: { legend: { display: true } },
       },
     });
-  } else {
-    console.warn('Не знайдено #kbjuLineChart');
   }
 
-  // ========================
-  // 3. КОРИСНІСТЬ (BAR)
-  // ========================
   if (usefulnessCanvas) {
-    console.log('Малюємо usefulnessBarChart');
     statisticsCharts.usefulnessBarChart = new Chart(usefulnessCanvas, {
       type: 'bar',
       data: {
         labels: ['Легкі', 'Середні', 'Важкі'],
-        datasets: [
-          {
-            label: 'Кількість',
-            data: [12, 8, 4],
-            backgroundColor: '#6fcfba',
-          },
-        ],
+        datasets: [{ label: 'Кількість', data: [12, 8, 4], backgroundColor: '#6fcfba' }],
       },
       options: {
         responsive: true,
         maintainAspectRatio: true,
-        plugins: {
-          legend: { display: false },
-        },
+        plugins: { legend: { display: false } },
       },
     });
-  } else {
-    console.warn('Не знайдено #usefulnessBarChart');
   }
 
-  // ========================
-  // 4. МИНУЛИЙ ТИЖДЕНЬ (DOUGHNUT)
-  // ========================
   if (lastWeekCanvas) {
-    console.log('Малюємо lastWeekChart');
     statisticsCharts.lastWeekChart = new Chart(lastWeekCanvas, {
       type: 'doughnut',
       data: {
         labels: ['Білки', 'Жири', 'Вуглеводи'],
-        datasets: [
-          {
-            data: [25, 35, 40],
-            backgroundColor: ['#6fcfba', '#f2994a', '#56ccf2'],
-          },
-        ],
+        datasets: [{ data: [25, 35, 40], backgroundColor: ['#6fcfba', '#f2994a', '#56ccf2'] }],
       },
       options: {
         responsive: true,
         maintainAspectRatio: true,
-        plugins: {
-          legend: { display: true },
-        },
+        plugins: { legend: { display: true } },
       },
     });
-  } else {
-    console.warn('Не знайдено #lastWeekChart');
   }
 
-  // ========================
-  // 5. ЦЕЙ ТИЖДЕНЬ (DOUGHNUT)
-  // ========================
   if (thisWeekCanvas) {
-    console.log('Малюємо thisWeekChart');
     statisticsCharts.thisWeekChart = new Chart(thisWeekCanvas, {
       type: 'doughnut',
       data: {
         labels: ['Білки', 'Жири', 'Вуглеводи'],
-        datasets: [
-          {
-            data: [30, 30, 40],
-            backgroundColor: ['#6fcfba', '#f2994a', '#56ccf2'],
-          },
-        ],
+        datasets: [{ data: [30, 30, 40], backgroundColor: ['#6fcfba', '#f2994a', '#56ccf2'] }],
       },
       options: {
         responsive: true,
         maintainAspectRatio: true,
-        plugins: {
-          legend: { display: true },
-        },
+        plugins: { legend: { display: true } },
       },
     });
-  } else {
-    console.warn('Не знайдено #thisWeekChart');
   }
 
   console.log('initStatisticsCharts завершена успішно');
 }
 
 // =====================================
-// CALCULATIONS
+// BMI CALCULATIONS
 // =====================================
 
 function updateBMI(weight, height) {
@@ -370,10 +400,13 @@ function renderAll(data) {
   localStorage.setItem('userFat', data.fat);
   localStorage.setItem('userCarbs', data.carbs);
   localStorage.setItem('userWater', data.water);
+  localStorage.setItem('userWeight', data.weight);
+  localStorage.setItem('userHeight', data.height);
+  localStorage.setItem('userGoal', data.goal);
 }
 
 // =====================================
-// SUPABASE — ЗАВАНТАЖЕННЯ ПРОФІЛЮ
+// SUPABASE — LOAD PROFILE
 // =====================================
 
 async function loadProfileFromSupabase() {
@@ -397,13 +430,11 @@ async function loadProfileFromSupabase() {
 
   fillForm(data);
   renderAll(data);
-
   updateProfileHeader(user);
 }
 
 function loadFromLocalStorage() {
   const saved = JSON.parse(localStorage.getItem('userProfile') || 'null');
-
   if (saved) {
     fillForm(saved);
     renderAll(saved);
@@ -427,7 +458,7 @@ function fillForm(data) {
 }
 
 // =====================================
-// ОНОВЛЕННЯ ХЕДЕРА ПРОФІЛЮ
+// PROFILE HEADER
 // =====================================
 
 function updateProfileHeader(user) {
@@ -438,7 +469,6 @@ function updateProfileHeader(user) {
     user.user_metadata?.name ||
     user.email?.split('@')[0] ||
     'Користувач';
-
   const email = user.email || '';
   const avatar = user.user_metadata?.avatar_url || '';
 
@@ -451,18 +481,16 @@ function updateProfileHeader(user) {
 
   if (profileAvatarEl && avatar) {
     profileAvatarEl.style.backgroundImage = `url(${avatar})`;
-    profileAvatarEl.style.backgroundSize = 'cover'; // ← ЦЕ ВАЖЛИВО
-    profileAvatarEl.style.backgroundPosition = 'center'; // ← ЦЕ ВАЖЛИВО
-    profileAvatarEl.style.backgroundRepeat = 'no-repeat'; // ← ДОДАЙ ЦЕ
+    profileAvatarEl.style.backgroundSize = 'cover';
+    profileAvatarEl.style.backgroundPosition = 'center';
+    profileAvatarEl.style.backgroundRepeat = 'no-repeat';
   } else if (profileAvatarEl && !avatar) {
-    // Якщо немає аватара — показуємо ініціали
     const initials = name
       .split(' ')
       .map((word) => word[0])
       .join('')
       .toUpperCase()
       .slice(0, 2);
-
     profileAvatarEl.textContent = initials;
     profileAvatarEl.style.display = 'flex';
     profileAvatarEl.style.alignItems = 'center';
@@ -473,7 +501,7 @@ function updateProfileHeader(user) {
 }
 
 // =====================================
-// SUPABASE — ЗБЕРЕЖЕННЯ ПРОФІЛЮ
+// SUPABASE — SAVE PROFILE
 // =====================================
 
 async function saveProfileToSupabase(data) {
@@ -522,12 +550,8 @@ async function saveProfileToSupabase(data) {
 function showToast(message, type = 'success') {
   const toast = document.createElement('div');
   toast.className = `toast-notification toast-${type}`;
-
   const icon = type === 'error' ? '❌' : '✅';
-
-  toast.innerHTML = `<span class="toast-icon">${icon}</span>
-     <span class="toast-text">${message}</span>`;
-
+  toast.innerHTML = `<span class="toast-icon">${icon}</span><span class="toast-text">${message}</span>`;
   document.body.appendChild(toast);
 
   setTimeout(() => {
@@ -537,8 +561,424 @@ function showToast(message, type = 'success') {
 }
 
 // =====================================
-// PROFILE SIDEBAR TABS — ✅ ВИПРАВЛЕНО
+// WEIGHT ADVICE — ПЕРСОНАЛЬНІ ПОРАДИ
 // =====================================
+
+function generateWeightAdvice() {
+  const adviceContainer = document.getElementById('weightAdviceContent');
+  const progressContainer = document.getElementById('weightProgressContent');
+
+  if (!adviceContainer) return;
+
+  const weight = parseFloat(
+    localStorage.getItem('userWeight') || document.getElementById('weight')?.value || 0,
+  );
+  const height = parseFloat(
+    localStorage.getItem('userHeight') || document.getElementById('height')?.value || 0,
+  );
+  const goal =
+    localStorage.getItem('userGoal') || document.getElementById('goalInput')?.value || 'maintain';
+  const targetWeight = parseFloat(
+    document.getElementById('targetWeight')?.value ||
+      document.getElementById('targetWeight2')?.value ||
+      0,
+  );
+
+  const h = height / 100;
+  const bmi = h > 0 ? (weight / (h * h)).toFixed(1) : 0;
+  const idealWeightMin = Math.round(18.5 * h * h);
+  const idealWeightMax = Math.round(24.9 * h * h);
+  const weightDiff = targetWeight > 0 ? (weight - targetWeight).toFixed(1) : 0;
+
+  let adviceHTML = '';
+  let progressHTML = '';
+
+  // ІМТ статус
+  if (bmi < 18.5) {
+    adviceHTML += `<div class="advice-item advice-item--info"><span class="advice-icon">📊</span><div class="advice-text"><strong>Ваш ІМТ: ${bmi}</strong> — недостатня вага. Рекомендована вага: ${idealWeightMin}–${idealWeightMax} кг.</div></div>`;
+  } else if (bmi >= 18.5 && bmi < 25) {
+    adviceHTML += `<div class="advice-item advice-item--success"><span class="advice-icon">✅</span><div class="advice-text"><strong>Ваш ІМТ: ${bmi}</strong> — вага в нормі! Чудово!</div></div>`;
+  } else if (bmi >= 25 && bmi < 30) {
+    adviceHTML += `<div class="advice-item advice-item--warning"><span class="advice-icon">⚠️</span><div class="advice-text"><strong>Ваш ІМТ: ${bmi}</strong> — надмірна вага. Рекомендована: ${idealWeightMin}–${idealWeightMax} кг.</div></div>`;
+  } else if (bmi >= 30) {
+    adviceHTML += `<div class="advice-item advice-item--alert"><span class="advice-icon">🔴</span><div class="advice-text"><strong>Ваш ІМТ: ${bmi}</strong> — ожиріння. Рекомендуємо консультацію лікаря.</div></div>`;
+  }
+
+  // Поради по цілі
+  if (goal === 'lose') {
+    adviceHTML += `<div class="advice-item"><span class="advice-icon">🥗</span><div class="advice-text"><strong>Ціль — схуднути.</strong> Дефіцит 300-500 ккал/день = 0.5-1 кг/тиждень.</div></div>`;
+    adviceHTML += `<div class="advice-item"><span class="advice-icon">🚶‍♀️</span><div class="advice-text">30 хвилин ходьби = 150-200 ккал додатково.</div></div>`;
+  } else if (goal === 'gain') {
+    adviceHTML += `<div class="advice-item"><span class="advice-icon">🍳</span><div class="advice-text"><strong>Ціль — набрати.</strong> +300-500 ккал, акцент на білок.</div></div>`;
+  } else {
+    adviceHTML += `<div class="advice-item"><span class="advice-icon">⚖️</span><div class="advice-text"><strong>Ціль — підтримка.</strong> Дотримуйтесь норми калорій.</div></div>`;
+  }
+
+  // Прогрес
+  if (targetWeight > 0 && weight > 0) {
+    const diff = Math.abs(weightDiff);
+    const direction = weightDiff > 0 ? 'скинути' : 'набрати';
+    const startWeight = parseFloat(localStorage.getItem('startWeight') || weight);
+    const totalToLose = Math.abs(startWeight - targetWeight);
+    const alreadyLost = Math.abs(startWeight - weight);
+    const progressPercent =
+      totalToLose > 0 ? Math.min(100, Math.round((alreadyLost / totalToLose) * 100)) : 0;
+
+    progressHTML = `
+      <div class="progress-status">
+        <div class="progress-header"><span>Поточна: <strong>${weight} кг</strong></span><span>Ціль: <strong>${targetWeight} кг</strong></span></div>
+        <div class="progress-bar-container"><div class="progress-bar" style="width: ${progressPercent}%"></div></div>
+        <div class="progress-footer"><span>Залишилось ${direction}: <strong>${diff} кг</strong></span><span class="progress-percent">${progressPercent}%</span></div>
+      </div>
+      <div class="progress-estimate"><span class="progress-icon">📅</span><div class="progress-text">При 0.5 кг/тиждень — ціль за <strong>${Math.ceil(diff / 0.5)} тижнів</strong>.</div></div>
+    `;
+  } else {
+    progressHTML = `<div class="progress-status progress-status--empty"><span class="progress-icon">🎯</span><div class="progress-text">Встановіть бажану вагу для відстеження прогресу.</div></div>`;
+  }
+
+  adviceContainer.innerHTML = adviceHTML;
+  if (progressContainer) progressContainer.innerHTML = progressHTML;
+}
+
+// =====================================
+// SYNC WEIGHT INPUTS BETWEEN TABS
+// =====================================
+
+function syncWeightInputs() {
+  const targetWeight1 = document.getElementById('targetWeight');
+  const targetWeight2 = document.getElementById('targetWeight2');
+  const currentWeight1 = document.getElementById('currentWeightInput');
+  const currentWeight2 = document.getElementById('currentWeightInput2');
+
+  if (targetWeight1 && targetWeight2) {
+    targetWeight1.addEventListener('input', () => {
+      targetWeight2.value = targetWeight1.value;
+      generateWeightAdvice();
+    });
+    targetWeight2.addEventListener('input', () => {
+      targetWeight1.value = targetWeight2.value;
+      generateWeightAdvice();
+    });
+  }
+
+  if (currentWeight1 && currentWeight2) {
+    currentWeight1.addEventListener('input', () => {
+      currentWeight2.value = currentWeight1.value;
+    });
+    currentWeight2.addEventListener('input', () => {
+      currentWeight1.value = currentWeight2.value;
+    });
+  }
+
+  const saveBtn2 = document.getElementById('saveWeightBtn2');
+  if (saveBtn2) {
+    saveBtn2.addEventListener('click', () => {
+      if (currentWeight2 && currentWeight1) currentWeight1.value = currentWeight2.value;
+      recordNewWeight();
+      initWeightChart2();
+      generateWeightAdvice();
+    });
+  }
+}
+
+// =====================================
+// ACTIVITY TRACKER
+// =====================================
+
+let currentPeriod = 'week';
+
+function initActivityTracker() {
+  setupActivitySelect();
+  setupActivityForm();
+  setupPeriodFilter();
+  updateTodayStats();
+  renderActivityHistory('week');
+  initActivityChart();
+}
+
+function setupActivitySelect() {
+  const select = document.getElementById('activityTypeSelect');
+  const input = document.getElementById('activityTypeInput');
+  const durationInput = document.getElementById('activityDuration');
+
+  if (!select || !input) return;
+
+  const trigger = select.querySelector('.custom-select__trigger');
+  const triggerText = trigger.querySelector('span');
+  const options = select.querySelectorAll('.custom-select__option');
+
+  trigger.addEventListener('click', (e) => {
+    e.stopPropagation();
+    document.querySelectorAll('.custom-select').forEach((s) => {
+      if (s !== select) s.classList.remove('open');
+    });
+    select.classList.toggle('open');
+  });
+
+  options.forEach((option) => {
+    option.addEventListener('click', () => {
+      options.forEach((o) => o.classList.remove('selected'));
+      option.classList.add('selected');
+      triggerText.textContent = option.textContent;
+      input.value = option.dataset.value;
+      select.classList.remove('open');
+      updateCaloriesPreview();
+    });
+  });
+
+  durationInput?.addEventListener('input', updateCaloriesPreview);
+}
+
+function updateCaloriesPreview() {
+  const activityType = document.getElementById('activityTypeInput')?.value;
+  const duration = parseInt(document.getElementById('activityDuration')?.value || 0);
+  const previewEl = document.getElementById('previewCalories');
+
+  if (!previewEl) return;
+
+  if (activityType && duration > 0) {
+    const caloriesPerMin = ACTIVITY_CALORIES[activityType] || 5;
+    const totalCalories = Math.round(caloriesPerMin * duration);
+    previewEl.textContent = `${totalCalories} ккал`;
+    previewEl.classList.add('has-value');
+  } else {
+    previewEl.textContent = '— ккал';
+    previewEl.classList.remove('has-value');
+  }
+}
+
+function setupActivityForm() {
+  const addBtn = document.getElementById('addActivityBtn');
+
+  addBtn?.addEventListener('click', () => {
+    const activityType = document.getElementById('activityTypeInput')?.value;
+    const duration = parseInt(document.getElementById('activityDuration')?.value || 0);
+
+    if (!activityType) return showToast('Оберіть вид активності', 'error');
+    if (!duration || duration < 1) return showToast('Введіть тривалість', 'error');
+
+    const caloriesPerMin = ACTIVITY_CALORIES[activityType] || 5;
+    const caloriesBurned = Math.round(caloriesPerMin * duration);
+
+    const activity = {
+      id: Date.now(),
+      type: activityType,
+      name: ACTIVITY_NAMES[activityType],
+      duration,
+      calories: caloriesBurned,
+      date: new Date().toISOString(),
+      dateFormatted: new Date().toLocaleDateString('uk-UA', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+      }),
+      time: new Date().toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' }),
+    };
+
+    saveActivity(activity);
+
+    // Clear form
+    document.getElementById('activityDuration').value = '';
+    document.getElementById('activityTypeInput').value = '';
+    document.querySelector('#activityTypeSelect .custom-select__trigger span').textContent =
+      'Оберіть активність...';
+    document
+      .querySelectorAll('#activityTypeSelect .custom-select__option')
+      .forEach((o) => o.classList.remove('selected'));
+    updateCaloriesPreview();
+
+    updateTodayStats();
+    renderActivityHistory(currentPeriod);
+    initActivityChart();
+
+    showToast(`${activity.name}: ${caloriesBurned} ккал спалено! 🔥`);
+  });
+}
+
+function saveActivity(activity) {
+  const history = JSON.parse(localStorage.getItem(ACTIVITY_HISTORY_KEY) || '[]');
+  history.unshift(activity);
+  if (history.length > 100) history.pop();
+  localStorage.setItem(ACTIVITY_HISTORY_KEY, JSON.stringify(history));
+}
+
+function getActivityHistory() {
+  return JSON.parse(localStorage.getItem(ACTIVITY_HISTORY_KEY) || '[]');
+}
+
+function deleteActivity(activityId) {
+  let history = getActivityHistory();
+  history = history.filter((a) => a.id !== activityId);
+  localStorage.setItem(ACTIVITY_HISTORY_KEY, JSON.stringify(history));
+
+  updateTodayStats();
+  renderActivityHistory(currentPeriod);
+  initActivityChart();
+}
+
+// Make deleteActivity global for onclick
+window.deleteActivity = deleteActivity;
+
+function updateTodayStats() {
+  const history = getActivityHistory();
+  const today = new Date().toDateString();
+
+  const todayActivities = history.filter((a) => new Date(a.date).toDateString() === today);
+
+  const totalCalories = todayActivities.reduce((sum, a) => sum + a.calories, 0);
+  const totalMinutes = todayActivities.reduce((sum, a) => sum + a.duration, 0);
+  const totalCount = todayActivities.length;
+
+  const caloriesEl = document.getElementById('todayCaloriesBurned');
+  const minutesEl = document.getElementById('todayActiveMinutes');
+  const countEl = document.getElementById('todayActivitiesCount');
+
+  if (caloriesEl) caloriesEl.textContent = totalCalories;
+  if (minutesEl) minutesEl.textContent = totalMinutes;
+  if (countEl) countEl.textContent = totalCount;
+
+  updateCalorieImpact(totalCalories);
+  localStorage.setItem('todayBurnedCalories', totalCalories);
+}
+
+function updateCalorieImpact(burnedCalories) {
+  const baseCalories = parseInt(localStorage.getItem('dailyCaloriesNorm') || 0);
+  const totalCalories = baseCalories + burnedCalories;
+
+  const baseEl = document.getElementById('impactBaseCalories');
+  const burnedEl = document.getElementById('impactBurnedCalories');
+  const totalEl = document.getElementById('impactTotalCalories');
+
+  if (baseEl) baseEl.textContent = baseCalories ? `${baseCalories} ккал` : '—';
+  if (burnedEl) burnedEl.textContent = `${burnedCalories} ккал`;
+  if (totalEl) totalEl.textContent = baseCalories ? `${totalCalories} ккал` : '—';
+}
+
+function setupPeriodFilter() {
+  const buttons = document.querySelectorAll('.period-btn');
+
+  buttons.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      buttons.forEach((b) => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentPeriod = btn.dataset.period;
+      renderActivityHistory(currentPeriod);
+    });
+  });
+}
+
+function renderActivityHistory(period) {
+  const container = document.getElementById('activityHistoryList');
+  if (!container) return;
+
+  let history = getActivityHistory();
+  const now = new Date();
+
+  if (period === 'week') {
+    const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    history = history.filter((a) => new Date(a.date) >= weekAgo);
+  } else if (period === 'month') {
+    const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+    history = history.filter((a) => new Date(a.date) >= monthAgo);
+  }
+
+  if (history.length === 0) {
+    container.innerHTML = `<div class="activity-history-empty"><span class="empty-icon">🏃‍♀️</span><p>Немає записів за цей період.</p></div>`;
+    return;
+  }
+
+  const grouped = {};
+  history.forEach((activity) => {
+    const dateKey = activity.dateFormatted;
+    if (!grouped[dateKey]) grouped[dateKey] = [];
+    grouped[dateKey].push(activity);
+  });
+
+  let html = '';
+  for (const [date, activities] of Object.entries(grouped)) {
+    const dayTotal = activities.reduce((sum, a) => sum + a.calories, 0);
+    const dayMinutes = activities.reduce((sum, a) => sum + a.duration, 0);
+
+    html += `<div class="activity-day-group"><div class="activity-day-header"><span class="activity-day-date">${date}</span><span class="activity-day-total">${dayTotal} ккал • ${dayMinutes} хв</span></div><div class="activity-day-items">`;
+
+    activities.forEach((activity) => {
+      html += `
+        <div class="activity-item" data-id="${activity.id}">
+          <div class="activity-item__icon">${activity.name.split(' ')[0]}</div>
+          <div class="activity-item__info">
+            <span class="activity-item__name">${activity.name.split(' ').slice(1).join(' ')}</span>
+            <span class="activity-item__details">${activity.duration} хв • ${activity.time}</span>
+          </div>
+          <div class="activity-item__calories">
+            <span class="activity-item__calories-value">-${activity.calories}</span>
+            <span class="activity-item__calories-label">ккал</span>
+          </div>
+          <button class="activity-item__delete" onclick="deleteActivity(${activity.id})" title="Видалити">✕</button>
+        </div>
+      `;
+    });
+
+    html += `</div></div>`;
+  }
+
+  container.innerHTML = html;
+}
+
+function initActivityChart() {
+  const canvas = document.getElementById('activityChartCanvas');
+  if (!canvas) return;
+
+  const history = getActivityHistory();
+  const now = new Date();
+
+  const days = [];
+  const caloriesData = [];
+
+  for (let i = 13; i >= 0; i--) {
+    const date = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
+    const dateStr = date.toDateString();
+    const dateLabel = date.toLocaleDateString('uk-UA', { day: '2-digit', month: '2-digit' });
+
+    days.push(dateLabel);
+
+    const dayActivities = history.filter((a) => new Date(a.date).toDateString() === dateStr);
+    const dayCalories = dayActivities.reduce((sum, a) => sum + a.calories, 0);
+    caloriesData.push(dayCalories);
+  }
+
+  if (activityChart) activityChart.destroy();
+
+  activityChart = new Chart(canvas, {
+    type: 'bar',
+    data: {
+      labels: days,
+      datasets: [
+        {
+          label: 'Спалено ккал',
+          data: caloriesData,
+          backgroundColor: 'rgba(111, 207, 186, 0.6)',
+          borderColor: '#6fcfba',
+          borderWidth: 2,
+          borderRadius: 8,
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { beginAtZero: true, ticks: { callback: (v) => v + ' ккал' } },
+        x: { grid: { display: false } },
+      },
+    },
+  });
+}
+
+// =====================================
+// PROFILE TABS — MAIN
+// =====================================
+
 function initProfileTabs() {
   const buttons = document.querySelectorAll('.profile-sidebar__item');
   const sections = document.querySelectorAll('[data-profile-section]');
@@ -548,7 +988,7 @@ function initProfileTabs() {
     return;
   }
 
-  // Показуємо першу секцію за замовчуванням
+  // Показуємо першу секцію
   sections.forEach((section, index) => {
     if (index === 0) {
       section.removeAttribute('hidden');
@@ -559,29 +999,23 @@ function initProfileTabs() {
     }
   });
 
-  // Перший таб активний за замовчуванням
   buttons[0]?.classList.add('active');
   buttons[0]?.setAttribute('aria-selected', 'true');
 
-  // Обробка кліків
-  buttons.forEach((btn, index) => {
+  buttons.forEach((btn) => {
     btn.addEventListener('click', () => {
-      // Деактивуємо всі кнопки
       buttons.forEach((b) => {
         b.classList.remove('active');
         b.setAttribute('aria-selected', 'false');
       });
 
-      // Активуємо поточну кнопку
       btn.classList.add('active');
       btn.setAttribute('aria-selected', 'true');
 
       const tab = btn.dataset.tab;
 
-      // Ховаємо/показуємо секції
       sections.forEach((section) => {
         const isActive = section.dataset.profileSection === tab;
-
         if (isActive) {
           section.removeAttribute('hidden');
           section.style.display = 'block';
@@ -591,12 +1025,25 @@ function initProfileTabs() {
         }
       });
 
-      // Якщо це таб статистики — малюємо графіки з затримкою
+      // Tab-specific logic
+      if (tab === 'weightControl') {
+        setTimeout(() => {
+          initWeightChart2();
+          generateWeightAdvice();
+        }, 150);
+      }
+
+      if (tab === 'activity') {
+        setTimeout(initActivityTracker, 150);
+      }
+
       if (tab === 'statistics') {
         setTimeout(initStatisticsCharts, 150);
       }
     });
   });
+
+  syncWeightInputs();
 }
 
 // =====================================
@@ -608,7 +1055,7 @@ async function initProfile() {
     if (event === 'SIGNED_IN') {
       await loadProfileFromSupabase();
       updateProfileHeader(user);
-      initProfileTabs(); // ← ✅ ДОДАНО
+      initProfileTabs();
     }
 
     if (event === 'SIGNED_OUT') {
@@ -617,12 +1064,12 @@ async function initProfile() {
   });
 
   document.getElementById('signOutBtn')?.addEventListener('click', async () => {
-    // ✅ ВИПРАВА: Знищуємо всі графіки перед вихідом
     Object.values(statisticsCharts).forEach((chart) => {
-      if (chart) {
-        chart.destroy();
-      }
+      if (chart) chart.destroy();
     });
+    if (weightChart) weightChart.destroy();
+    if (weightChart2) weightChart2.destroy();
+    if (activityChart) activityChart.destroy();
 
     await signOut();
     window.location.href = 'index.html';
@@ -646,8 +1093,7 @@ async function initProfile() {
   await loadProfileFromSupabase();
 
   initWeightChart();
-  initProfileTabs(); // ← ✅ ДОДАНО
-  // initStatisticsCharts(); — ПЕРЕНЕСЕНО В ТАБ, НЕ ВИКЛИКАЄМО ОДРАЗУ
+  initProfileTabs();
 }
 
 // =====================================
@@ -667,7 +1113,7 @@ if (form) {
         ? 10 * weight + 6.25 * height - 5 * age + 5
         : 10 * weight + 6.25 * height - 5 * age - 161;
 
-    let calories = base * parseFloat(activityInput.value); // ← вже було виправлено
+    let calories = base * parseFloat(activityInput.value);
 
     if (goalInput.value === 'lose') calories *= 0.9;
     if (goalInput.value === 'gain') calories *= 1.1;
@@ -690,7 +1136,6 @@ if (form) {
     };
 
     renderAll(data);
-
     await saveProfileToSupabase(data);
   });
 }
