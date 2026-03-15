@@ -3287,6 +3287,7 @@ textarea {
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   color: var(--color-text-secondary);
+  box-shadow: 0 10px 20px rgba(111, 207, 186, 0.3);
   border-radius: 16px;
   text-align: center;
   transition: transform 0.3s;
@@ -3436,6 +3437,7 @@ textarea {
   background: var(--color-surface);
   color: var(--color-text-secondary);
   border-color: var(--color-accent);
+  box-shadow: 0 10px 20px rgba(111, 207, 186, 0.3);
   font-weight: 700;
   cursor: pointer;
   transition: 0.2s;
@@ -3615,6 +3617,7 @@ textarea {
   font-weight: 500;
   color: var(--color-text-secondary);
   background: var(--color-surface);
+  box-shadow: 0 10px 20px rgba(111, 207, 186, 0.3);
   border-radius: 16px;
   border: 1px solid var(--color-border);
   cursor: pointer;
