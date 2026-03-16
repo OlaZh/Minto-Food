@@ -480,27 +480,30 @@
           </section>
 
           <!-- =============================================
-       TAB 3: АКТИВНІСТЬ — трекер фізичної активності
-       ============================================= -->
+     TAB 3: АКТИВНІСТЬ — трекер фізичної активності
+     ============================================= -->
           <section
             id="activitySection"
             class="profile-section"
             data-profile-section="activity"
             role="tabpanel"
             hidden>
-            <div class="profile-grid-system">
-              <!-- ЛІВА КОЛОНКА: Додати активність -->
-              <div class="profile-column-left">
-                <section class="profile-card" aria-labelledby="addActivityTitle">
-                  <h2 id="addActivityTitle" class="profile-card__title">🏃‍♀️ Додати активність</h2>
+            <!-- ВЕРХНІЙ РЯД: Додати активність + Сьогодні -->
+            <div class="activity-top-row">
+              <!-- Додати активність (компактний) -->
+              <section
+                class="profile-card activity-card--compact"
+                aria-labelledby="addActivityTitle">
+                <h2 id="addActivityTitle" class="profile-card__title">🏃‍♀️ Додати активність</h2>
 
-                  <div class="activity-form">
+                <div class="activity-form activity-form--compact">
+                  <div class="activity-form__row">
                     <!-- Вибір активності -->
-                    <div class="profile-form__field">
-                      <label class="profile-form__label">Вид активності</label>
+                    <div class="profile-form__field activity-form__field--select">
+                      <label class="profile-form__label">Активність</label>
                       <div class="custom-select" id="activityTypeSelect">
                         <div class="custom-select__trigger">
-                          <span>Оберіть активність...</span>
+                          <span>Оберіть...</span>
                           <div class="arrow"></div>
                         </div>
                         <div class="custom-select__options">
@@ -516,38 +519,26 @@
                           <span class="custom-select__option" data-value="cycling" data-calories="8"
                             >🚴 Велосипед</span
                           >
+                          <span class="custom-select__option" data-value="gym" data-calories="7"
+                            >🏋️ Тренування в залі</span
+                          >
+                          <span
+                            class="custom-select__option"
+                            data-value="bodyweight"
+                            data-calories="5"
+                            >🤸 Вправи з власною вагою</span
+                          >
+                          <span class="custom-select__option" data-value="yoga" data-calories="3"
+                            >🧘 Йога</span
+                          >
+                          <span class="custom-select__option" data-value="dancing" data-calories="6"
+                            >💃 Танці</span
+                          >
                           <span
                             class="custom-select__option"
                             data-value="swimming"
                             data-calories="9"
                             >🏊 Плавання</span
-                          >
-                          <span class="custom-select__option" data-value="yoga" data-calories="3"
-                            >🧘 Йога</span
-                          >
-                          <span class="custom-select__option" data-value="fitness" data-calories="7"
-                            >💪 Фітнес</span
-                          >
-                          <span class="custom-select__option" data-value="dancing" data-calories="6"
-                            >💃 Танці</span
-                          >
-                          <span class="custom-select__option" data-value="hiking" data-calories="6"
-                            >🥾 Похід</span
-                          >
-                          <span class="custom-select__option" data-value="tennis" data-calories="8"
-                            >🎾 Теніс</span
-                          >
-                          <span
-                            class="custom-select__option"
-                            data-value="basketball"
-                            data-calories="9"
-                            >🏀 Баскетбол</span
-                          >
-                          <span
-                            class="custom-select__option"
-                            data-value="football"
-                            data-calories="9"
-                            >⚽ Футбол</span
                           >
                           <span
                             class="custom-select__option"
@@ -555,26 +546,33 @@
                             data-calories="2"
                             >🤸 Розтяжка</span
                           >
-                          <span
-                            class="custom-select__option"
-                            data-value="cleaning"
-                            data-calories="3"
-                            >🧹 Прибирання</span
+                          <span class="custom-select__option" data-value="pilates" data-calories="3"
+                            >🧘 Пілатес</span
                           >
                           <span
                             class="custom-select__option"
-                            data-value="gardening"
-                            data-calories="4"
-                            >🌱 Садівництво</span
+                            data-value="elliptical"
+                            data-calories="7"
+                            >🔄 Орбітрек</span
+                          >
+                          <span class="custom-select__option" data-value="other" data-calories="5"
+                            >➕ Інша активність</span
                           >
                         </div>
                       </div>
-                      <input type="hidden" id="activityTypeInput" value="" />
+                      <!-- custom-select -->
+                      <input type="hidden" id="activityTypeInput" />
+                      <input
+                        type="text"
+                        class="profile-form__input"
+                        id="otherActivityInput"
+                        placeholder="Впишіть свою активність"
+                        style="display: none" />
                     </div>
 
                     <!-- Тривалість -->
-                    <div class="profile-form__field">
-                      <label class="profile-form__label">Тривалість (хвилин)</label>
+                    <div class="profile-form__field activity-form__field--duration">
+                      <label class="profile-form__label">Хвилин</label>
                       <input
                         type="number"
                         id="activityDuration"
@@ -584,119 +582,108 @@
                         max="480" />
                     </div>
 
-                    <!-- Попередній перегляд калорій -->
-                    <div class="activity-preview" id="activityPreview">
-                      <div class="activity-preview__icon">🔥</div>
-                      <div class="activity-preview__info">
-                        <span class="activity-preview__label">Буде спалено</span>
-                        <span class="activity-preview__value" id="previewCalories">— ккал</span>
+                    <!-- Preview + кнопка -->
+                    <div class="activity-form__action">
+                      <div class="activity-preview-mini" id="activityPreview">
+                        <span class="activity-preview-mini__icon">🔥</span>
+                        <span class="activity-preview-mini__value" id="previewCalories"
+                          >— ккал</span
+                        >
                       </div>
-                    </div>
-
-                    <!-- Кнопка додати -->
-                    <div class="profile-actions">
-                      <button type="button" id="addActivityBtn" class="profile-actions__btn">
-                        ✓ Записати активність
+                      <button type="button" id="addActivityBtn" class="activity-btn-add">
+                        ✓ Записати
                       </button>
                     </div>
                   </div>
-                </section>
+                </div>
+              </section>
 
-                <!-- Підсумок за сьогодні -->
-                <section class="profile-card" aria-labelledby="todayActivityTitle">
-                  <h2 id="todayActivityTitle" class="profile-card__title">📊 Сьогодні</h2>
+              <!-- Сьогодні (компактний) -->
+              <section
+                class="profile-card activity-card--today"
+                aria-labelledby="todayActivityTitle">
+                <h2 id="todayActivityTitle" class="profile-card__title">📊 Сьогодні</h2>
 
-                  <div class="activity-today-stats">
-                    <div class="activity-stat">
-                      <span class="activity-stat__icon">🔥</span>
-                      <div class="activity-stat__info">
-                        <span class="activity-stat__value" id="todayCaloriesBurned">0</span>
-                        <span class="activity-stat__label">ккал спалено</span>
-                      </div>
-                    </div>
-
-                    <div class="activity-stat">
-                      <span class="activity-stat__icon">⏱️</span>
-                      <div class="activity-stat__info">
-                        <span class="activity-stat__value" id="todayActiveMinutes">0</span>
-                        <span class="activity-stat__label">хвилин активності</span>
-                      </div>
-                    </div>
-
-                    <div class="activity-stat">
-                      <span class="activity-stat__icon">🏆</span>
-                      <div class="activity-stat__info">
-                        <span class="activity-stat__value" id="todayActivitiesCount">0</span>
-                        <span class="activity-stat__label">тренувань</span>
-                      </div>
-                    </div>
+                <div class="activity-today-compact">
+                  <div class="activity-stat-mini">
+                    <span class="activity-stat-mini__value" id="todayCaloriesBurned">0</span>
+                    <span class="activity-stat-mini__label">🔥 ккал</span>
                   </div>
 
-                  <!-- Вплив на калорії -->
-                  <div class="activity-calorie-impact" id="calorieImpact">
-                    <div class="calorie-impact__header">
-                      <span>💡 Твій баланс калорій на сьогодні:</span>
-                    </div>
-                    <div class="calorie-impact__body">
-                      <div class="calorie-impact__item">
-                        <span class="calorie-impact__label">Денна норма</span>
-                        <span class="calorie-impact__value" id="impactBaseCalories">—</span>
-                      </div>
-                      <div class="calorie-impact__operator">+</div>
-                      <div class="calorie-impact__item">
-                        <span class="calorie-impact__label">Спалено</span>
-                        <span
-                          class="calorie-impact__value calorie-impact__value--green"
-                          id="impactBurnedCalories"
-                          >0</span
-                        >
-                      </div>
-                      <div class="calorie-impact__operator">=</div>
-                      <div class="calorie-impact__item calorie-impact__item--total">
-                        <span class="calorie-impact__label">Можна з'їсти</span>
-                        <span
-                          class="calorie-impact__value calorie-impact__value--accent"
-                          id="impactTotalCalories"
-                          >—</span
-                        >
-                      </div>
-                    </div>
-                  </div>
-                </section>
-              </div>
-
-              <!-- ПРАВА КОЛОНКА: Історія -->
-              <div class="profile-column-right">
-                <section class="profile-card" aria-labelledby="activityHistoryTitle">
-                  <h2 id="activityHistoryTitle" class="profile-card__title">
-                    📅 Історія активностей
-                  </h2>
-
-                  <!-- Фільтр періоду -->
-                  <div class="activity-period-filter">
-                    <button class="period-btn active" data-period="week">Тиждень</button>
-                    <button class="period-btn" data-period="month">Місяць</button>
-                    <button class="period-btn" data-period="all">Все</button>
+                  <div class="activity-stat-mini">
+                    <span class="activity-stat-mini__value" id="todayActiveMinutes">0</span>
+                    <span class="activity-stat-mini__label">⏱️ хв</span>
                   </div>
 
-                  <!-- Список активностей -->
-                  <div class="activity-history-list" id="activityHistoryList">
-                    <div class="activity-history-empty">
-                      <span class="empty-icon">🏃‍♀️</span>
-                      <p>Поки що немає записів. Додай свою першу активність!</p>
-                    </div>
+                  <div class="activity-stat-mini">
+                    <span class="activity-stat-mini__value" id="todayActivitiesCount">0</span>
+                    <span class="activity-stat-mini__label">🏆 тренувань</span>
                   </div>
-                </section>
+                </div>
 
-                <!-- Графік активності за місяць -->
-                <section class="profile-card" aria-labelledby="activityChartTitle">
-                  <h2 id="activityChartTitle" class="profile-card__title">📈 Динаміка за місяць</h2>
-                  <div class="activity-chart-box">
-                    <canvas id="activityChartCanvas"></canvas>
-                  </div>
-                </section>
-              </div>
+                <!-- Баланс калорій -->
+                <div class="activity-balance-mini">
+                  <span class="activity-balance-mini__item">
+                    <span class="activity-balance-mini__label">Норма</span>
+                    <span class="activity-balance-mini__value" id="impactBaseCalories">—</span>
+                  </span>
+                  <span class="activity-balance-mini__plus">+</span>
+                  <span class="activity-balance-mini__item">
+                    <span class="activity-balance-mini__label">Спалено</span>
+                    <span
+                      class="activity-balance-mini__value activity-balance-mini__value--green"
+                      id="impactBurnedCalories"
+                      >0</span
+                    >
+                  </span>
+                  <span class="activity-balance-mini__equals">=</span>
+                  <span class="activity-balance-mini__item activity-balance-mini__item--total">
+                    <span class="activity-balance-mini__label">Можна з'їсти</span>
+                    <span
+                      class="activity-balance-mini__value activity-balance-mini__value--accent"
+                      id="impactTotalCalories"
+                      >—</span
+                    >
+                  </span>
+                </div>
+              </section>
             </div>
+
+            <!-- ІСТОРІЯ АКТИВНОСТЕЙ (на всю ширину) -->
+            <section
+              class="profile-card activity-card--history"
+              aria-labelledby="activityHistoryTitle">
+              <div class="activity-history-header">
+                <h2 id="activityHistoryTitle" class="profile-card__title">
+                  📅 Історія активностей
+                </h2>
+
+                <!-- Фільтр періоду -->
+                <div class="activity-period-filter">
+                  <button class="period-btn active" data-period="week">Тиждень</button>
+                  <button class="period-btn" data-period="month">Місяць</button>
+                  <button class="period-btn" data-period="all">Все</button>
+                </div>
+              </div>
+
+              <!-- Список активностей (горизонтальний) -->
+              <div
+                class="activity-history-list activity-history-list--horizontal"
+                id="activityHistoryList">
+                <div class="activity-history-empty">
+                  <span class="empty-icon">🏃‍♀️</span>
+                  <p>Поки що немає записів. Додай свою першу активність!</p>
+                </div>
+              </div>
+            </section>
+
+            <!-- ДИНАМІКА ЗА МІСЯЦЬ (на всю ширину, 30 днів) -->
+            <section class="profile-card activity-card--chart" aria-labelledby="activityChartTitle">
+              <h2 id="activityChartTitle" class="profile-card__title">📈 Динаміка за місяць</h2>
+              <div class="activity-chart-box activity-chart-box--full">
+                <canvas id="activityChartCanvas"></canvas>
+              </div>
+            </section>
           </section>
 
           <!-- =============================================

@@ -37,39 +37,26 @@ const recordWeightBtn = document.getElementById('saveWeightBtn');
 const WEIGHT_HISTORY_KEY = 'weightHistory';
 const ACTIVITY_HISTORY_KEY = 'activityHistory';
 
-// Калорії на хвилину для кожної активності
-const ACTIVITY_CALORIES = {
-  walking: 4,
-  running: 10,
-  cycling: 8,
-  swimming: 9,
-  yoga: 3,
-  fitness: 7,
-  dancing: 6,
-  hiking: 6,
-  tennis: 8,
-  basketball: 9,
-  football: 9,
-  stretching: 2,
-  cleaning: 3,
-  gardening: 4,
-};
-
-const ACTIVITY_NAMES = {
-  walking: '🚶 Ходьба',
-  running: '🏃 Біг',
-  cycling: '🚴 Велосипед',
-  swimming: '🏊 Плавання',
-  yoga: '🧘 Йога',
-  fitness: '💪 Фітнес',
-  dancing: '💃 Танці',
-  hiking: '🥾 Похід',
-  tennis: '🎾 Теніс',
-  basketball: '🏀 Баскетбол',
-  football: '⚽ Футбол',
-  stretching: '🤸 Розтяжка',
-  cleaning: '🧹 Прибирання',
-  gardening: '🌱 Садівництво',
+// ✅ ВИПРАВЛЕНО: Об'єкт активностей з name та caloriesPerMinute
+const ACTIVITIES = {
+  walking: { name: '🚶 Ходьба', caloriesPerMinute: 4 },
+  running: { name: '🏃 Біг', caloriesPerMinute: 10 },
+  cycling: { name: '🚴 Велосипед', caloriesPerMinute: 8 },
+  swimming: { name: '🏊 Плавання', caloriesPerMinute: 9 },
+  yoga: { name: '🧘 Йога', caloriesPerMinute: 3 },
+  fitness: { name: '💪 Фітнес', caloriesPerMinute: 7 },
+  dancing: { name: '💃 Танці', caloriesPerMinute: 6 },
+  hiking: { name: '🥾 Похід', caloriesPerMinute: 6 },
+  tennis: { name: '🎾 Теніс', caloriesPerMinute: 8 },
+  basketball: { name: '🏀 Баскетбол', caloriesPerMinute: 9 },
+  football: { name: '⚽ Футбол', caloriesPerMinute: 9 },
+  stretching: { name: '🤸 Розтяжка', caloriesPerMinute: 2 },
+  cleaning: { name: '🧹 Прибирання', caloriesPerMinute: 3 },
+  gardening: { name: '🌱 Садівництво', caloriesPerMinute: 4 },
+  gym: { name: '🏋️ Тренування в залі', caloriesPerMinute: 7 },
+  pilates: { name: '🧘 Пілатес', caloriesPerMinute: 3 },
+  elliptical: { name: '🔄 Орбітрек', caloriesPerMinute: 7 },
+  other: { name: '➕ Інша активність', caloriesPerMinute: 5 },
 };
 
 // =====================================
@@ -79,6 +66,7 @@ const ACTIVITY_NAMES = {
 let weightChart = null;
 let weightChart2 = null;
 let activityChart = null;
+let currentPeriod = 'week'; // ✅ ДОДАНО: змінна для періоду
 
 let statisticsCharts = {
   balancePieChart: null,
@@ -685,15 +673,24 @@ function syncWeightInputs() {
 // ACTIVITY TRACKER
 // =====================================
 
-let currentPeriod = 'week';
+let activityTrackerInitialized = false;
 
 function initActivityTracker() {
+  if (activityTrackerInitialized) {
+    updateTodayStats();
+    renderActivityHistory(currentPeriod);
+    initActivityChart();
+    return;
+  }
+
   setupActivitySelect();
   setupActivityForm();
   setupPeriodFilter();
   updateTodayStats();
   renderActivityHistory('week');
   initActivityChart();
+
+  activityTrackerInitialized = true;
 }
 
 function setupActivitySelect() {
@@ -701,32 +698,61 @@ function setupActivitySelect() {
   const input = document.getElementById('activityTypeInput');
   const durationInput = document.getElementById('activityDuration');
 
-  if (!select || !input) return;
+  if (!select || !input) {
+    console.warn('Activity select not found');
+    return;
+  }
 
   const trigger = select.querySelector('.custom-select__trigger');
-  const triggerText = trigger.querySelector('span');
   const options = select.querySelectorAll('.custom-select__option');
 
-  trigger.addEventListener('click', (e) => {
+  // Видаляємо старі listeners
+  const newTrigger = trigger.cloneNode(true);
+  trigger.parentNode.replaceChild(newTrigger, trigger);
+
+  newTrigger.addEventListener('click', (e) => {
+    e.preventDefault();
     e.stopPropagation();
+
     document.querySelectorAll('.custom-select').forEach((s) => {
       if (s !== select) s.classList.remove('open');
     });
+
     select.classList.toggle('open');
   });
 
   options.forEach((option) => {
-    option.addEventListener('click', () => {
-      options.forEach((o) => o.classList.remove('selected'));
-      option.classList.add('selected');
-      triggerText.textContent = option.textContent;
-      input.value = option.dataset.value;
+    const newOption = option.cloneNode(true);
+    option.parentNode.replaceChild(newOption, option);
+
+    newOption.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      select
+        .querySelectorAll('.custom-select__option')
+        .forEach((o) => o.classList.remove('selected'));
+      newOption.classList.add('selected');
+      select.querySelector('.custom-select__trigger span').textContent = newOption.textContent;
+      input.value = newOption.dataset.value;
       select.classList.remove('open');
+      const otherInput = document.getElementById('otherActivityInput');
+
+      if (newOption.dataset.value === 'other') {
+        otherInput.style.display = 'block';
+      } else {
+        otherInput.style.display = 'none';
+      }
+
       updateCaloriesPreview();
     });
   });
 
-  durationInput?.addEventListener('input', updateCaloriesPreview);
+  if (durationInput) {
+    const newDurationInput = durationInput.cloneNode(true);
+    durationInput.parentNode.replaceChild(newDurationInput, durationInput);
+    newDurationInput.addEventListener('input', updateCaloriesPreview);
+  }
 }
 
 function updateCaloriesPreview() {
@@ -737,7 +763,9 @@ function updateCaloriesPreview() {
   if (!previewEl) return;
 
   if (activityType && duration > 0) {
-    const caloriesPerMin = ACTIVITY_CALORIES[activityType] || 5;
+    // ✅ ВИПРАВЛЕНО: Використовуємо ACTIVITIES
+    const activity = ACTIVITIES[activityType];
+    const caloriesPerMin = activity ? activity.caloriesPerMinute : 5;
     const totalCalories = Math.round(caloriesPerMin * duration);
     previewEl.textContent = `${totalCalories} ккал`;
     previewEl.classList.add('has-value');
@@ -750,20 +778,30 @@ function updateCaloriesPreview() {
 function setupActivityForm() {
   const addBtn = document.getElementById('addActivityBtn');
 
-  addBtn?.addEventListener('click', () => {
+  if (!addBtn) return;
+
+  // Видаляємо старі listeners
+  const newBtn = addBtn.cloneNode(true);
+  addBtn.parentNode.replaceChild(newBtn, addBtn);
+
+  newBtn.addEventListener('click', () => {
     const activityType = document.getElementById('activityTypeInput')?.value;
-    const duration = parseInt(document.getElementById('activityDuration')?.value || 0);
+    const durationEl = document.getElementById('activityDuration');
+    const duration = parseInt(durationEl?.value || 0);
 
     if (!activityType) return showToast('Оберіть вид активності', 'error');
     if (!duration || duration < 1) return showToast('Введіть тривалість', 'error');
 
-    const caloriesPerMin = ACTIVITY_CALORIES[activityType] || 5;
+    // ✅ ВИПРАВЛЕНО: Використовуємо ACTIVITIES
+    const activityData = ACTIVITIES[activityType];
+    const caloriesPerMin = activityData ? activityData.caloriesPerMinute : 5;
+    const activityName = activityData ? activityData.name : 'Активність';
     const caloriesBurned = Math.round(caloriesPerMin * duration);
 
     const activity = {
       id: Date.now(),
       type: activityType,
-      name: ACTIVITY_NAMES[activityType],
+      name: activityName,
       duration,
       calories: caloriesBurned,
       date: new Date().toISOString(),
@@ -778,10 +816,10 @@ function setupActivityForm() {
     saveActivity(activity);
 
     // Clear form
-    document.getElementById('activityDuration').value = '';
+    if (durationEl) durationEl.value = '';
     document.getElementById('activityTypeInput').value = '';
-    document.querySelector('#activityTypeSelect .custom-select__trigger span').textContent =
-      'Оберіть активність...';
+    const triggerSpan = document.querySelector('#activityTypeSelect .custom-select__trigger span');
+    if (triggerSpan) triggerSpan.textContent = 'Оберіть активність...';
     document
       .querySelectorAll('#activityTypeSelect .custom-select__option')
       .forEach((o) => o.classList.remove('selected'));
@@ -816,7 +854,6 @@ function deleteActivity(activityId) {
   initActivityChart();
 }
 
-// Make deleteActivity global for onclick
 window.deleteActivity = deleteActivity;
 
 function updateTodayStats() {
@@ -858,10 +895,14 @@ function setupPeriodFilter() {
   const buttons = document.querySelectorAll('.period-btn');
 
   buttons.forEach((btn) => {
-    btn.addEventListener('click', () => {
-      buttons.forEach((b) => b.classList.remove('active'));
-      btn.classList.add('active');
-      currentPeriod = btn.dataset.period;
+    // Видаляємо старі listeners
+    const newBtn = btn.cloneNode(true);
+    btn.parentNode.replaceChild(newBtn, btn);
+
+    newBtn.addEventListener('click', () => {
+      document.querySelectorAll('.period-btn').forEach((b) => b.classList.remove('active'));
+      newBtn.classList.add('active');
+      currentPeriod = newBtn.dataset.period;
       renderActivityHistory(currentPeriod);
     });
   });
@@ -924,6 +965,8 @@ function renderActivityHistory(period) {
   container.innerHTML = html;
 }
 
+// Замінити функцію initActivityChart() в profile.js на цю:
+
 function initActivityChart() {
   const canvas = document.getElementById('activityChartCanvas');
   if (!canvas) return;
@@ -934,7 +977,8 @@ function initActivityChart() {
   const days = [];
   const caloriesData = [];
 
-  for (let i = 13; i >= 0; i--) {
+  // 30 днів замість 14
+  for (let i = 29; i >= 0; i--) {
     const date = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
     const dateStr = date.toDateString();
     const dateLabel = date.toLocaleDateString('uk-UA', { day: '2-digit', month: '2-digit' });
@@ -958,25 +1002,54 @@ function initActivityChart() {
           data: caloriesData,
           backgroundColor: 'rgba(111, 207, 186, 0.6)',
           borderColor: '#6fcfba',
-          borderWidth: 2,
-          borderRadius: 8,
+          borderWidth: 1,
+          borderRadius: 4,
+          barThickness: 'flex',
+          maxBarThickness: 20,
         },
       ],
     },
     options: {
       responsive: true,
       maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            title: function (context) {
+              return context[0].label;
+            },
+            label: function (context) {
+              return context.raw + ' ккал';
+            },
+          },
+        },
+      },
       scales: {
-        y: { beginAtZero: true, ticks: { callback: (v) => v + ' ккал' } },
-        x: { grid: { display: false } },
+        y: {
+          beginAtZero: true,
+          ticks: {
+            callback: (v) => v + ' ккал',
+            maxTicksLimit: 5,
+          },
+          grid: {
+            color: 'rgba(0, 0, 0, 0.05)',
+          },
+        },
+        x: {
+          grid: { display: false },
+          ticks: {
+            maxRotation: 45,
+            minRotation: 45,
+            font: { size: 10 },
+          },
+        },
       },
     },
   });
 }
-
 // =====================================
-// PROFILE TABS — MAIN
+// PROFILE TABS
 // =====================================
 
 function initProfileTabs() {
@@ -988,7 +1061,6 @@ function initProfileTabs() {
     return;
   }
 
-  // Показуємо першу секцію
   sections.forEach((section, index) => {
     if (index === 0) {
       section.removeAttribute('hidden');
@@ -1025,7 +1097,6 @@ function initProfileTabs() {
         }
       });
 
-      // Tab-specific logic
       if (tab === 'weightControl') {
         setTimeout(() => {
           initWeightChart2();
@@ -1086,8 +1157,11 @@ async function initProfile() {
 
   recordWeightBtn?.addEventListener('click', recordNewWeight);
 
-  document.addEventListener('click', () => {
-    document.querySelectorAll('.custom-select').forEach((s) => s.classList.remove('open'));
+  // ✅ ВИПРАВЛЕНО: Закриваємо селекти тільки при кліку поза ними
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.custom-select')) {
+      document.querySelectorAll('.custom-select').forEach((s) => s.classList.remove('open'));
+    }
   });
 
   await loadProfileFromSupabase();

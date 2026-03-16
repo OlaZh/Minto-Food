@@ -3901,332 +3901,518 @@ textarea {
   font-weight: 700;
 }
 
-/* ================= АКТИВНІСТЬ — ФОРМА ================= */
-.activity-form {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.activity-preview {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 20px;
-  background: var(--color-accent-soft);
-  border: 1px dashed var(--color-accent);
-  border-radius: 16px;
-}
-
-.activity-preview__icon {
-  font-size: 32px;
-}
-
-.activity-preview__info {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.activity-preview__label {
-  font-size: 14px;
-  color: var(--color-text-secondary);
-}
-
-.activity-preview__value {
-  font-size: 24px;
-  font-weight: 800;
-  color: var(--color-text-secondary);
-  transition: all 0.3s ease;
-}
-.activity-preview__value.has-value {
-  color: var(--color-accent);
-}
-
-/* ================= СТАТИСТИКА ЗА СЬОГОДНІ ================= */
-.activity-today-stats {
+/* ===============================================================
+   АКТИВНІСТЬ — НОВИЙ LAYOUT
+   =============================================================== */
+/* Верхній ряд: Додати + Сьогодні */
+.activity-top-row {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
-  margin-bottom: 24px;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 20px;
 }
-@media (max-width: 600px) {
-  .activity-today-stats {
+@media (max-width: 900px) {
+  .activity-top-row {
     grid-template-columns: 1fr;
   }
 }
 
-.activity-stat {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 16px;
-  background: var(--color-bg-primary);
-  border-radius: 14px;
-  border: 1px solid var(--color-border);
+/* Компактна картка "Додати активність" */
+.activity-card--compact {
+  padding: 20px;
+}
+.activity-card--compact .profile-card__title {
+  margin-bottom: 16px;
+  font-size: 1.1rem;
 }
 
-.activity-stat__icon {
-  font-size: 28px;
-}
-
-.activity-stat__info {
+/* Форма в один ряд */
+.activity-form--compact {
   display: flex;
   flex-direction: column;
-  gap: 2px;
-}
-
-.activity-stat__value {
-  font-size: 22px;
-  font-weight: 800;
-  color: var(--color-text-primary);
-}
-
-.activity-stat__label {
-  font-size: 12px;
-  color: var(--color-text-secondary);
-}
-
-/* ================= ВПЛИВ НА КАЛОРІЇ ================= */
-.activity-calorie-impact {
-  padding: 20px;
-  background: var(--color-bg-primary);
-  border-radius: 16px;
-  border: 1px solid var(--color-border);
-}
-
-.calorie-impact__header {
-  font-size: 14px;
-  color: var(--color-text-secondary);
-  margin-bottom: 16px;
-}
-
-.calorie-impact__body {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
   gap: 12px;
+}
+
+.activity-form__row {
+  display: flex;
+  gap: 12px;
+  align-items: flex-end;
   flex-wrap: wrap;
 }
-@media (max-width: 500px) {
-  .calorie-impact__body {
-    flex-direction: column;
-  }
-}
 
-.calorie-impact__item {
-  text-align: center;
+.activity-form__field--select {
   flex: 1;
-  min-width: 80px;
+  min-width: 150px;
+  margin-bottom: 0;
 }
 
-.calorie-impact__item--total {
-  padding: 12px 16px;
-  background: var(--color-accent-soft);
+.activity-form__field--duration {
+  width: 80px;
+  margin-bottom: 0;
+}
+.activity-form__field--duration .profile-form__input {
+  text-align: center;
+}
+
+.activity-form__action {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Міні preview калорій */
+.activity-preview-mini {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  background: var(--color-surface);
+  border-radius: 8px;
+  font-size: 0.9rem;
+  border: 1px solid var(--color-border);
+  box-shadow: 0 10px 20px rgba(46, 204, 113, 0.12);
+}
+.activity-preview-mini:hover {
+  color: var(--color-text-primary);
+  border-color: var(--color-accent-soft);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.05);
+}
+.activity-preview-mini.active {
+  color: var(--color-text-primary);
+  font-weight: 600;
+  border-color: var(--color-accent);
+}
+
+.activity-preview-mini__icon {
+  font-size: 1.1rem;
+}
+
+.activity-preview-mini__value {
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+.activity-preview-mini__value.has-value {
+  color: var(--color-accent);
+}
+
+/* Кнопка записати */
+.activity-btn-add {
+  padding: 10px 20px;
+  background: var(--color-accent);
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+  white-space: nowrap;
+  box-shadow: 0 10px 20px rgba(46, 204, 113, 0.12);
+}
+.activity-btn-add:hover {
+  border-color: var(--color-accent-soft);
+  transform: translateY(-1px);
+}
+
+/* Компактна картка "Сьогодні" */
+.activity-card--today {
+  padding: 20px;
+}
+.activity-card--today .profile-card__title {
+  margin-bottom: 16px;
+  font-size: 1.1rem;
+}
+
+.activity-today-compact {
+  display: flex;
+  justify-content: space-around;
+  gap: 16px;
+  margin-bottom: 16px;
+  padding: 12px;
   border-radius: 12px;
 }
 
-.calorie-impact__label {
-  display: block;
-  font-size: 11px;
-  color: var(--color-text-secondary);
-  text-transform: uppercase;
-  font-weight: 600;
-  margin-bottom: 4px;
-}
-
-.calorie-impact__value {
-  font-size: 18px;
-  font-weight: 800;
-  color: var(--color-text-primary);
-}
-.calorie-impact__value--green {
-  color: #2ecc71;
-}
-.calorie-impact__value--accent {
-  color: var(--color-accent);
-  font-size: 22px;
-}
-
-.calorie-impact__operator {
-  font-size: 20px;
-  font-weight: 700;
-  color: var(--color-text-secondary);
-}
-@media (max-width: 500px) {
-  .calorie-impact__operator {
-    display: none;
-  }
-}
-
-/* ================= ФІЛЬТР ПЕРІОДУ ================= */
-.activity-period-filter {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 20px;
-}
-
-.period-btn {
-  flex: 1;
-  padding: 10px 16px;
-  border: 1px solid var(--color-border);
-  border-radius: 10px;
-  background: var(--color-bg-primary);
-  color: var(--color-text-secondary);
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-.period-btn:hover {
-  border-color: var(--color-accent);
-  color: var(--color-text-primary);
-}
-.period-btn.active {
-  background: var(--color-accent);
-  border-color: var(--color-accent);
-  color: white;
-}
-
-/* ================= ІСТОРІЯ АКТИВНОСТЕЙ ================= */
-.activity-history-list {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  max-height: 400px;
-  overflow-y: auto;
-}
-
-.activity-history-empty {
+.activity-stat-mini {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 40px 20px;
+  gap: 4px;
+  padding: 15px 10px;
   text-align: center;
-  color: var(--color-text-secondary);
+  box-shadow: 0 10px 20px rgba(46, 204, 113, 0.12);
+  border-radius: 16px;
+  border: 1px solid var(--color-border);
+  cursor: pointer;
+  flex: 1;
+  min-width: 80px;
 }
-.activity-history-empty .empty-icon {
-  font-size: 48px;
-  margin-bottom: 12px;
+.activity-stat-mini:hover {
+  transform: translateY(-2px);
+  border-color: var(--color-accent);
+  transition: all 0.3s ease;
 }
-.activity-history-empty p {
-  font-size: 14px;
-  margin: 0;
+.activity-stat-mini:focus {
+  outline: none;
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px var(--color-accent-soft);
 }
 
-.activity-day-group {
+.activity-stat-mini__icon {
+  font-size: 1.5rem;
+  margin-bottom: 4px;
+}
+
+.activity-stat-mini__value {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  line-height: 1;
+}
+
+.activity-stat-mini__label {
+  font-size: 0.9rem;
+  color: var(--color-text-secondary);
+  max-width: 60px;
+  line-height: 1.2;
+}
+
+/* Баланс калорій (компактний) */
+.activity-balance-mini {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px;
+  color: var(--color-text-secondary);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+  font-size: 0.85rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.activity-balance-mini:hover {
+  transform: translateY(-2px);
+  border-color: var(--color-accent);
+  transition: all 0.3s ease;
+}
+.activity-balance-mini:focus {
+  outline: none;
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px var(--color-accent-soft);
+}
+
+.activity-balance-mini__item {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  align-items: center;
+  gap: 2px;
+  text-align: center;
+}
+
+.activity-balance-mini__label {
+  font-size: 0.7rem;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  font-weight: 500;
+}
+
+.activity-balance-mini__value {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+.activity-balance-mini__value--green {
+  color: #4f8152;
+}
+.activity-balance-mini__value--accent {
+  color: var(--color-accent);
+  font-size: 1.1rem;
+}
+
+.activity-balance-mini__plus,
+.activity-balance-mini__equals {
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  background: var(--color-surface);
+  font-size: 1rem;
+}
+
+.activity-balance-mini__item--total {
+  padding: 10px 16px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-secondary);
+  border-radius: 16px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+}
+
+/* Responsive */
+@media (max-width: 500px) {
+  .activity-today-compact {
+    flex-wrap: wrap;
+  }
+  .activity-balance-mini__plus,
+  .activity-balance-mini__equals {
+    display: none;
+  }
+  .activity-balance-mini {
+    flex-direction: column;
+    gap: 8px;
+  }
+}
+/* ===============================================================
+   ІСТОРІЯ АКТИВНОСТЕЙ (на всю ширину)
+   =============================================================== */
+.activity-card--history {
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.activity-history-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.activity-history-header .profile-card__title {
+  margin-bottom: 0;
+}
+
+/* Фільтр періоду */
+.activity-period-filter {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 0;
+}
+
+.period-btn {
+  padding: 16px 20px;
+  border: 1px solid var(--color-border);
+  background: transparent;
+  color: var(--color-text-secondary);
+  border-radius: 16px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex: none;
+  box-shadow: 0 10px 20px rgba(46, 204, 113, 0.12);
+}
+.period-btn:hover {
+  color: var(--color-text-primary);
+  border-color: var(--color-accent-soft);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.05);
+}
+.period-btn.active {
+  color: var(--color-text-primary);
+  font-weight: 600;
+  border-color: var(--color-accent);
+}
+
+/* Список активностей — горизонтальний layout */
+.activity-history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: none;
+  overflow: visible;
+}
+
+.activity-history-list--horizontal {
+  max-height: none;
+  overflow: visible;
+}
+
+/* Група за день */
+.activity-day-group {
+  background: var(--color-surface);
+  border-radius: 12px;
+  padding: 12px 16px;
 }
 
 .activity-day-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 8px 0;
+  margin-bottom: 10px;
+  padding-bottom: 8px;
   border-bottom: 1px solid var(--color-border);
 }
 
 .activity-day-date {
-  font-weight: 700;
+  font-weight: 600;
   color: var(--color-text-primary);
-  font-size: 14px;
 }
 
 .activity-day-total {
-  font-size: 13px;
+  font-size: 0.85rem;
   color: var(--color-accent);
-  font-weight: 600;
+  font-weight: 500;
 }
 
+/* Елементи активності — в ряд */
 .activity-day-items {
   display: flex;
-  flex-direction: column;
-  gap: 8px;
+  flex-wrap: wrap;
+  gap: 10px;
 }
 
 .activity-item {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 12px 14px;
-  background: var(--color-bg-primary);
-  border-radius: 12px;
+  gap: 10px;
+  padding: 10px 14px;
+  color: var(--color-text-secondary);
+  background: var(--color-surface);
+  border-radius: 10px;
+  box-shadow: 0 10px 20px rgba(46, 204, 113, 0.12);
   border: 1px solid var(--color-border);
-  transition: all 0.3s ease;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
 }
 .activity-item:hover {
   border-color: var(--color-accent);
-  transform: translateX(4px);
+  transform: translateY(-2px);
 }
 .activity-item:hover .activity-item__delete {
   opacity: 1;
 }
 
 .activity-item__icon {
-  font-size: 24px;
+  font-size: 1.3rem;
 }
 
 .activity-item__info {
-  flex: 1;
   display: flex;
   flex-direction: column;
   gap: 2px;
 }
 
 .activity-item__name {
-  font-size: 14px;
-  font-weight: 600;
+  font-weight: 500;
+  font-size: 0.9rem;
   color: var(--color-text-primary);
 }
 
 .activity-item__details {
-  font-size: 12px;
+  font-size: 0.75rem;
   color: var(--color-text-secondary);
 }
 
 .activity-item__calories {
-  text-align: right;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  margin-left: auto;
 }
 
 .activity-item__calories-value {
-  display: block;
-  font-size: 16px;
-  font-weight: 800;
-  color: #e74c3c;
+  font-weight: 600;
+  color: var(--color-accent);
+  font-size: 0.95rem;
 }
 
 .activity-item__calories-label {
-  font-size: 11px;
+  font-size: 0.7rem;
   color: var(--color-text-secondary);
 }
 
 .activity-item__delete {
-  opacity: 0;
-  width: 28px;
-  height: 28px;
+  padding: 4px 8px;
+  background: transparent;
   border: none;
-  border-radius: 8px;
-  background: rgba(231, 76, 60, 0.1);
-  color: #e74c3c;
-  font-size: 14px;
+  color: var(--color-text-secondary);
   cursor: pointer;
-  transition: all 0.2s ease;
+  font-size: 0.9rem;
+  opacity: 0;
+  transition: opacity 0.2s, color 0.2s;
 }
 .activity-item__delete:hover {
-  background: #e74c3c;
-  color: white;
+  color: #e74c3c;
 }
 
-/* ================= ГРАФІК ================= */
+/* Пусто */
+.activity-history-empty {
+  text-align: center;
+  padding: 30px;
+  color: var(--color-text-secondary);
+}
+.activity-history-empty .empty-icon {
+  font-size: 2.5rem;
+  display: block;
+  margin-bottom: 10px;
+}
+.activity-history-empty p {
+  margin: 0;
+}
+
+/* ===============================================================
+   ГРАФІК ЗА МІСЯЦЬ (на всю ширину)
+   =============================================================== */
+.activity-card--chart {
+  padding: 20px;
+}
+.activity-card--chart .profile-card__title {
+  margin-bottom: 16px;
+}
+
 .activity-chart-box {
   width: 100%;
-  height: 260px;
+  height: 200px;
   position: relative;
 }
 
+.activity-chart-box--full {
+  width: 100%;
+  height: 200px;
+  position: relative;
+}
+.activity-chart-box--full canvas {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* ===============================================================
+   RESPONSIVE для активності
+   =============================================================== */
+@media (max-width: 768px) {
+  .activity-form__row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .activity-form__field--select,
+  .activity-form__field--duration {
+    width: 100%;
+  }
+  .activity-form__action {
+    flex-direction: column;
+    width: 100%;
+  }
+  .activity-btn-add {
+    width: 100%;
+  }
+  .activity-today-compact {
+    justify-content: space-around;
+  }
+  .activity-balance-mini {
+    flex-direction: column;
+    gap: 6px;
+  }
+  .activity-balance-mini__plus,
+  .activity-balance-mini__equals {
+    display: none;
+  }
+  .activity-day-items {
+    flex-direction: column;
+  }
+  .activity-item {
+    width: 100%;
+  }
+}
 /* ================= WEEK MENU ================= */
 .week-menu {
   width: 100%;
