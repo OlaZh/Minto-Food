@@ -432,6 +432,91 @@
       </div>
     </div>
 
+    <!-- МОДАЛКА СТВОРЕННЯ ПРОДУКТУ — додай в HTML після addFoodModal -->
+
+    <div id="createProductModal" class="modal modal--create-product" hidden>
+      <div class="modal__overlay"></div>
+      <div class="modal__content">
+        <header class="modal__header">
+          <h3 class="modal__title" data-i18n="createProduct">Створити продукт</h3>
+          <button class="modal__close" type="button">&times;</button>
+        </header>
+
+        <div class="modal__body">
+          <div class="modal__form">
+            <!-- Назва -->
+            <div class="modal__field">
+              <label class="modal__label" for="cpName" data-i18n="productName"
+                >Назва продукту</label
+              >
+              <input
+                type="text"
+                id="cpName"
+                class="modal__input"
+                data-i18n-placeholder="productNamePlaceholder"
+                placeholder="Наприклад: Мамин борщ" />
+            </div>
+
+            <!-- КБЖУ в ряд -->
+            <div class="modal__label" data-i18n="nutritionPer100">Поживна цінність (на 100 г)</div>
+            <div class="modal__macros-grid">
+              <div class="modal__field">
+                <input
+                  type="number"
+                  id="cpKcal"
+                  class="modal__input modal__input--small"
+                  data-i18n-placeholder="kcal"
+                  placeholder="Ккал"
+                  min="0"
+                  step="1" />
+                <span class="modal__unit" data-i18n="kcalShort">ккал</span>
+              </div>
+
+              <div class="modal__field">
+                <input
+                  type="number"
+                  id="cpProtein"
+                  class="modal__input modal__input--small"
+                  data-i18n-placeholder="proteinShort"
+                  placeholder="Білки"
+                  min="0"
+                  step="0.1" />
+                <span class="modal__unit" data-i18n="proteinLetter">Б</span>
+              </div>
+
+              <div class="modal__field">
+                <input
+                  type="number"
+                  id="cpFat"
+                  class="modal__input modal__input--small"
+                  data-i18n-placeholder="fatShort"
+                  placeholder="Жири"
+                  min="0"
+                  step="0.1" />
+                <span class="modal__unit" data-i18n="fatLetter">Ж</span>
+              </div>
+
+              <div class="modal__field">
+                <input
+                  type="number"
+                  id="cpCarbs"
+                  class="modal__input modal__input--small"
+                  data-i18n-placeholder="carbsShort"
+                  placeholder="Вугл"
+                  min="0"
+                  step="0.1" />
+                <span class="modal__unit" data-i18n="carbsLetter">В</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <footer class="modal__footer">
+          <button class="modal__confirm" type="button" data-i18n="save">Зберегти</button>
+        </footer>
+      </div>
+    </div>
+
     <div id="confirm-modal" class="confirm-modal">
       <div class="confirm-modal__overlay"></div>
       <div class="confirm-modal__content">
@@ -442,7 +527,6 @@
         </div>
       </div>
     </div>
-
 
     <script type="module" src="js/meals.js"></script>
     <script type="module" src="js/stats.js"></script>

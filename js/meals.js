@@ -334,14 +334,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
   }
 
-  // ================== MODAL ELEMENTS ==================
+  // ================== MODAL ELEMENTS (ADD FOOD) ==================
   const modal = document.getElementById('addFoodModal');
   const overlay = modal.querySelector('.modal__overlay');
   const closeBtn = modal.querySelector('.modal__close');
   const confirmBtn = modal.querySelector('.modal__confirm');
   const resultsList = modal.querySelector('#foodResults');
 
-  // беремо input з HTML
   const nameInput = document.getElementById('foodSearch');
 
   const weightInput = modal.querySelector('.modal__weight');
@@ -380,18 +379,15 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   // ================== SEARCH ==================
-  // Категорії які НЕ показуємо з products (сировина, потребує готування)
   const EXCLUDED_CATEGORY_IDS = [
     3, 4, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 27, 28, 29, 31, 34, 41, 47,
   ];
 
-  // Debounce для пошуку
   let searchTimeout = null;
 
   async function handleSearch() {
     const query = nameInput.value.trim().toLowerCase();
 
-    // Очищуємо попередній таймер
     if (searchTimeout) {
       clearTimeout(searchTimeout);
     }
@@ -402,29 +398,49 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     if (!query || query.length < 2) return;
 
-    // Debounce 300ms
     searchTimeout = setTimeout(async () => {
       await performSearch(query);
     }, 300);
   }
 
   async function performSearch(query) {
-    // ========== 1. ПОШУК В PRODUCTS (тільки їстівні категорії) ==========
-    // Спочатку шукаємо ті, що ПОЧИНАЮТЬСЯ з query
-    const { data: productsStartsWith } = await supabase
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    // ========== 1. ПОШУК В PRODUCTS ==========
+    // Спочатку ті, що ПОЧИНАЮТЬСЯ з query
+    let productsStartsQuery = supabase
       .from('products')
       .select('*')
       .or(`name_ua.ilike.${query}%,name_en.ilike.${query}%,name_pl.ilike.${query}%`)
       .not('category_id', 'in', `(${EXCLUDED_CATEGORY_IDS.join(',')})`)
       .limit(10);
 
-    // Потім шукаємо ті, що МІСТЯТЬ query (для доповнення)
-    const { data: productsContains } = await supabase
+    // Фільтр: загальні (user_id IS NULL) АБО власні (user_id = current)
+    if (user) {
+      productsStartsQuery = productsStartsQuery.or(`user_id.is.null,user_id.eq.${user.id}`);
+    } else {
+      productsStartsQuery = productsStartsQuery.is('user_id', null);
+    }
+
+    const { data: productsStartsWith } = await productsStartsQuery;
+
+    // Потім ті, що МІСТЯТЬ query
+    let productsContainsQuery = supabase
       .from('products')
       .select('*')
       .or(`name_ua.ilike.%${query}%,name_en.ilike.%${query}%,name_pl.ilike.%${query}%`)
       .not('category_id', 'in', `(${EXCLUDED_CATEGORY_IDS.join(',')})`)
       .limit(20);
+
+    if (user) {
+      productsContainsQuery = productsContainsQuery.or(`user_id.is.null,user_id.eq.${user.id}`);
+    } else {
+      productsContainsQuery = productsContainsQuery.is('user_id', null);
+    }
+
+    const { data: productsContains } = await productsContainsQuery;
 
     // ========== 2. ПОШУК В RECIPES ==========
     const { data: recipesStartsWith } = await supabase
@@ -443,7 +459,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     const seenProductIds = new Set();
     const allProducts = [];
 
-    // Спочатку додаємо ті що починаються з query
     (productsStartsWith || []).forEach((p) => {
       if (!seenProductIds.has(p.id)) {
         seenProductIds.add(p.id);
@@ -451,7 +466,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
     });
 
-    // Потім додаємо решту
     (productsContains || []).forEach((p) => {
       if (!seenProductIds.has(p.id)) {
         seenProductIds.add(p.id);
@@ -481,6 +495,12 @@ document.addEventListener('DOMContentLoaded', async () => {
       const aName = (a.name_ua || '').toLowerCase();
       const bName = (b.name_ua || '').toLowerCase();
 
+      // Власні продукти користувача — трохи вище
+      const aIsOwn = a.user_id && user && a.user_id === user.id;
+      const bIsOwn = b.user_id && user && b.user_id === user.id;
+      if (aIsOwn && !bIsOwn) return -1;
+      if (!aIsOwn && bIsOwn) return 1;
+
       // Exact match — найвище
       if (aName === query && bName !== query) return -1;
       if (aName !== query && bName === query) return 1;
@@ -491,7 +511,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (aStarts && !bStarts) return -1;
       if (!aStarts && bStarts) return 1;
 
-      // Коротша назва — вище (чистіший продукт)
+      // Коротша назва — вище
       return aName.length - bName.length;
     });
 
@@ -500,28 +520,24 @@ document.addEventListener('DOMContentLoaded', async () => {
       const aName = (a.name_ua || '').toLowerCase();
       const bName = (b.name_ua || '').toLowerCase();
 
-      // Exact match — найвище
       if (aName === query && bName !== query) return -1;
       if (aName !== query && bName === query) return 1;
 
-      // Починається з query — вище
       const aStarts = aName.startsWith(query);
       const bStarts = bName.startsWith(query);
       if (aStarts && !bStarts) return -1;
       if (!aStarts && bStarts) return 1;
 
-      // Містить query як окреме слово — вище
       const queryWordRegex = new RegExp(`(^|\\s)${query}`, 'i');
       const aHasWord = queryWordRegex.test(aName);
       const bHasWord = queryWordRegex.test(bName);
       if (aHasWord && !bHasWord) return -1;
       if (!aHasWord && bHasWord) return 1;
 
-      // Коротша назва — вище
       return aName.length - bName.length;
     });
 
-    // ========== 6. РЕНДЕР — ПРОДУКТИ (топ 5) ==========
+    // ========== 6. РЕНДЕР ==========
     const topProducts = sortedProducts.slice(0, 5);
     const topRecipes = sortedRecipes.slice(0, 5);
 
@@ -539,7 +555,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       });
     }
 
-    // ========== 7. РЕНДЕР — СТРАВИ (топ 5) ==========
     if (topRecipes.length > 0) {
       const headerRecipes = document.createElement('li');
       headerRecipes.className = 'modal__group-header';
@@ -552,13 +567,26 @@ document.addEventListener('DOMContentLoaded', async () => {
       });
     }
 
-    // ========== 8. НІЧОГО НЕ ЗНАЙДЕНО ==========
+    // ========== 7. НІЧОГО НЕ ЗНАЙДЕНО + КНОПКА СТВОРИТИ ==========
     if (topProducts.length === 0 && topRecipes.length === 0) {
       const emptyLi = document.createElement('li');
       emptyLi.className = 'modal__item modal__item--empty';
-      emptyLi.textContent = lang === 'ua' ? 'Нічого не знайдено' : 'Nothing found';
+      emptyLi.innerHTML = `
+        <div>${lang === 'ua' ? 'Нічого не знайдено' : 'Nothing found'}</div>
+      `;
       resultsList.appendChild(emptyLi);
     }
+
+    // Завжди показуємо кнопку "Створити продукт"
+    const createBtn = document.createElement('li');
+    createBtn.className = 'modal__item modal__item--create';
+    createBtn.innerHTML = `
+      <span>➕ ${lang === 'ua' ? 'Створити свій продукт' : 'Create custom product'}</span>
+    `;
+    createBtn.addEventListener('click', () => {
+      openCreateProductModal(nameInput.value.trim());
+    });
+    resultsList.appendChild(createBtn);
   }
 
   // ========== HELPER: Створення елемента списку ==========
@@ -568,10 +596,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const name = food.name_ua || food.name || '';
     const kcal = food.kcal || 0;
+    const isOwn = food.user_id ? true : false;
 
     li.innerHTML = `
       <div>
-        <strong>${name}</strong>
+        <strong>${name}</strong>${isOwn ? ' <span class="modal__badge">Мій</span>' : ''}
         <div style="font-size:12px; opacity:0.7;">
           ${kcal} ${t('kcal')} / ${t('per100')}
         </div>
@@ -595,6 +624,142 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     return li;
+  }
+
+  // ================== CREATE PRODUCT MODAL ==================
+  const createProductModal = document.getElementById('createProductModal');
+  const createProductForm = createProductModal?.querySelector('.modal__form');
+  const createProductClose = createProductModal?.querySelector('.modal__close');
+  const createProductOverlay = createProductModal?.querySelector('.modal__overlay');
+  const createProductConfirm = createProductModal?.querySelector('.modal__confirm');
+
+  const cpNameInput = document.getElementById('cpName');
+  const cpKcalInput = document.getElementById('cpKcal');
+  const cpProteinInput = document.getElementById('cpProtein');
+  const cpFatInput = document.getElementById('cpFat');
+  const cpCarbsInput = document.getElementById('cpCarbs');
+
+  // Флаг: чи користувач вручну редагував ккал
+  let kcalManuallyEdited = false;
+
+  // Авторахунок ккал: Б×4 + Ж×9 + В×4
+  function autoCalculateKcal() {
+    if (kcalManuallyEdited) return;
+
+    const protein = Number(cpProteinInput?.value) || 0;
+    const fat = Number(cpFatInput?.value) || 0;
+    const carbs = Number(cpCarbsInput?.value) || 0;
+
+    const kcal = Math.round(protein * 4 + fat * 9 + carbs * 4);
+
+    if (cpKcalInput) {
+      cpKcalInput.value = kcal > 0 ? kcal : '';
+    }
+  }
+
+  // Слухачі для БЖВ — перераховують ккал
+  if (cpProteinInput) {
+    cpProteinInput.addEventListener('input', autoCalculateKcal);
+  }
+  if (cpFatInput) {
+    cpFatInput.addEventListener('input', autoCalculateKcal);
+  }
+  if (cpCarbsInput) {
+    cpCarbsInput.addEventListener('input', autoCalculateKcal);
+  }
+
+  // Якщо користувач клікнув на поле ккал і почав вводити — вимикаємо авторахунок
+  if (cpKcalInput) {
+    cpKcalInput.addEventListener('input', () => {
+      kcalManuallyEdited = true;
+    });
+  }
+
+  function openCreateProductModal(prefillName = '') {
+    if (!createProductModal) return;
+
+    // Скидаємо флаг при відкритті
+    kcalManuallyEdited = false;
+
+    cpNameInput.value = prefillName;
+    cpKcalInput.value = '';
+    cpProteinInput.value = '';
+    cpFatInput.value = '';
+    cpCarbsInput.value = '';
+
+    createProductModal.hidden = false;
+    cpNameInput.focus();
+  }
+
+  function closeCreateProductModal() {
+    if (!createProductModal) return;
+    createProductModal.hidden = true;
+  }
+
+  async function saveCustomProduct() {
+    if (!requireAuth()) return;
+
+    const name = cpNameInput.value.trim();
+    const kcal = Number(cpKcalInput.value) || 0;
+    const protein = Number(cpProteinInput.value) || 0;
+    const fat = Number(cpFatInput.value) || 0;
+    const carbs = Number(cpCarbsInput.value) || 0;
+
+    if (!name) {
+      alert(lang === 'ua' ? 'Введіть назву продукту' : 'Enter product name');
+      return;
+    }
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    const { data, error } = await supabase
+      .from('products')
+      .insert([
+        {
+          name_ua: name,
+          kcal,
+          protein,
+          fat,
+          carbs,
+          user_id: user.id,
+          is_verified: false,
+        },
+      ])
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Помилка збереження:', error);
+      alert(lang === 'ua' ? 'Помилка збереження' : 'Save error');
+      return;
+    }
+
+    // Автоматично вибираємо створений продукт
+    selectedFood = {
+      ...data,
+      name: data.name_ua,
+      source: 'product',
+    };
+
+    nameInput.value = data.name_ua;
+    resultsList.innerHTML = '';
+
+    closeCreateProductModal();
+    updateConfirmState();
+    weightInput.focus();
+  }
+
+  // Events для модалки створення
+  if (createProductClose) {
+    createProductClose.addEventListener('click', closeCreateProductModal);
+  }
+  if (createProductOverlay) {
+    createProductOverlay.addEventListener('click', closeCreateProductModal);
+  }
+  if (createProductConfirm) {
+    createProductConfirm.addEventListener('click', saveCustomProduct);
   }
 
   // ================== ADD FOOD ==================
@@ -653,7 +818,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   async function handleBarcode(barcode) {
     console.log('Скануємо:', barcode);
 
-    // 1. шукаємо в твоїй БД
     const { data: localProduct } = await supabase
       .from('products')
       .select('*')
@@ -665,9 +829,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       return;
     }
 
-    // 2. OpenFoodFacts
     const response = await fetch(`https://world.openfoodfacts.org/api/v0/product/${barcode}.json`);
-
     const data = await response.json();
 
     if (data.status === 1) {
@@ -691,7 +853,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     alert('Продукт не знайдено 😔');
   }
 
-  // helper
   function selectFood(food) {
     selectedFood = food;
     nameInput.value = food.name;
@@ -775,15 +936,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     clearBtn.addEventListener('click', clearDay);
   }
 
-  // 📷 BARCODE BUTTON
   const barcodeBtn = document.getElementById('barcodeBtn');
-
   if (barcodeBtn) {
     barcodeBtn.addEventListener('click', async () => {
       const barcode = prompt('Введи штрих-код');
-
       if (!barcode) return;
-
       await handleBarcode(barcode);
     });
   }
