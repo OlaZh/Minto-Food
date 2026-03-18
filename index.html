@@ -390,7 +390,28 @@
           <h3 class="modal__title" data-i18n="addProduct">Додати продукт</h3>
           <button class="modal__close" type="button">×</button>
         </header>
+
         <div class="modal__body">
+          <!-- 🔍 ПОШУК + 📷 СКАНЕР -->
+          <div class="modal__search-wrapper">
+            <input
+              type="text"
+              id="foodSearch"
+              class="modal__search"
+              placeholder="Додати продукт"
+              data-i18n-placeholder="addProduct" />
+
+            <button
+              type="button"
+              id="barcodeBtn"
+              class="modal__barcode-btn"
+              title="Сканувати"
+              data-i18n-title="scanBarcode">
+              📷
+            </button>
+          </div>
+
+          <!-- ⚖️ ВАГА -->
           <input
             type="number"
             class="modal__weight"
@@ -399,8 +420,11 @@
             data-i18n-placeholder="weight"
             min="1"
             step="1" />
+
+          <!-- 📋 РЕЗУЛЬТАТИ -->
           <ul class="modal__results modal__list" id="foodResults"></ul>
         </div>
+
         <footer class="modal__footer">
           <button class="modal__delete" type="button" hidden data-i18n="delete">Видалити</button>
           <button class="modal__confirm" type="button" disabled data-i18n="add">Додати</button>
@@ -419,8 +443,7 @@
       </div>
     </div>
 
-    <script type="module" src="js/day-data.js"></script>
-    <script type="module" src="js/food-api.js"></script>
+
     <script type="module" src="js/meals.js"></script>
     <script type="module" src="js/stats.js"></script>
     <script type="module" src="js/sidebar-days.js"></script>

@@ -1,7 +1,6 @@
 console.log('meals.js запустився');
 
 import { updateStats, updateWaterUI } from './stats.js';
-import { searchFood } from './food-api.js';
 import { i18n } from './i18n.js';
 import { supabase } from './supabaseClient.js';
 import { initAuth, requireAuth } from './auth.js';
@@ -341,18 +340,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   const closeBtn = modal.querySelector('.modal__close');
   const confirmBtn = modal.querySelector('.modal__confirm');
   const resultsList = modal.querySelector('#foodResults');
-  const body = modal.querySelector('.modal__body');
 
-  let nameInput = body.querySelector('.modal__input');
-  if (!nameInput) {
-    nameInput = document.createElement('input');
-    nameInput.type = 'text';
-    nameInput.placeholder = t('addProduct');
-    nameInput.className = 'modal__input';
-    body.prepend(nameInput);
-  }
+  // беремо input з HTML
+  const nameInput = document.getElementById('foodSearch');
 
-  const weightInput = body.querySelector('.modal__weight');
+  const weightInput = modal.querySelector('.modal__weight');
   weightInput.placeholder = t('weight');
 
   // ================== MODAL LOGIC ==================
@@ -363,6 +355,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   function openModal(mealKey, item = null) {
     activeMealKey = mealKey;
+
     selectedFood = item ? { ...item, kcal: item.kcal / (item.weight / 100) } : null;
 
     resultsList.innerHTML = '';
@@ -387,34 +380,221 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   // ================== SEARCH ==================
+  // Категорії які НЕ показуємо з products (сировина, потребує готування)
+  const EXCLUDED_CATEGORY_IDS = [
+    3, 4, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 27, 28, 29, 31, 34, 41, 47,
+  ];
+
+  // Debounce для пошуку
+  let searchTimeout = null;
+
   async function handleSearch() {
-    const query = nameInput.value.trim();
+    const query = nameInput.value.trim().toLowerCase();
+
+    // Очищуємо попередній таймер
+    if (searchTimeout) {
+      clearTimeout(searchTimeout);
+    }
+
     resultsList.innerHTML = '';
     selectedFood = null;
     confirmBtn.disabled = true;
 
-    if (!query) return;
+    if (!query || query.length < 2) return;
 
-    const results = await searchFood(query);
-    if (!results.length) return;
+    // Debounce 300ms
+    searchTimeout = setTimeout(async () => {
+      await performSearch(query);
+    }, 300);
+  }
 
-    results.forEach((food) => {
-      const li = document.createElement('li');
-      li.className = 'modal__item';
+  async function performSearch(query) {
+    // ========== 1. ПОШУК В PRODUCTS (тільки їстівні категорії) ==========
+    // Спочатку шукаємо ті, що ПОЧИНАЮТЬСЯ з query
+    const { data: productsStartsWith } = await supabase
+      .from('products')
+      .select('*')
+      .or(`name_ua.ilike.${query}%,name_en.ilike.${query}%,name_pl.ilike.${query}%`)
+      .not('category_id', 'in', `(${EXCLUDED_CATEGORY_IDS.join(',')})`)
+      .limit(10);
 
-      li.textContent = `${food.name} — ${food.kcal} ${t('kcal')} / ${t('per100')}`;
+    // Потім шукаємо ті, що МІСТЯТЬ query (для доповнення)
+    const { data: productsContains } = await supabase
+      .from('products')
+      .select('*')
+      .or(`name_ua.ilike.%${query}%,name_en.ilike.%${query}%,name_pl.ilike.%${query}%`)
+      .not('category_id', 'in', `(${EXCLUDED_CATEGORY_IDS.join(',')})`)
+      .limit(20);
 
-      li.addEventListener('click', () => {
-        selectedFood = food;
-        nameInput.value = food.name;
-        [...resultsList.children].forEach((el) => el.classList.remove('modal__item--active'));
-        li.classList.add('modal__item--active');
-        updateConfirmState();
-        if (weightInput) weightInput.focus();
-      });
+    // ========== 2. ПОШУК В RECIPES ==========
+    const { data: recipesStartsWith } = await supabase
+      .from('recipes')
+      .select('*')
+      .or(`name_ua.ilike.${query}%,name_en.ilike.${query}%,name_pl.ilike.${query}%`)
+      .limit(10);
 
-      resultsList.appendChild(li);
+    const { data: recipesContains } = await supabase
+      .from('recipes')
+      .select('*')
+      .or(`name_ua.ilike.%${query}%,name_en.ilike.%${query}%,name_pl.ilike.%${query}%`)
+      .limit(20);
+
+    // ========== 3. ОБ'ЄДНАННЯ І ДЕДУПЛІКАЦІЯ ==========
+    const seenProductIds = new Set();
+    const allProducts = [];
+
+    // Спочатку додаємо ті що починаються з query
+    (productsStartsWith || []).forEach((p) => {
+      if (!seenProductIds.has(p.id)) {
+        seenProductIds.add(p.id);
+        allProducts.push(p);
+      }
     });
+
+    // Потім додаємо решту
+    (productsContains || []).forEach((p) => {
+      if (!seenProductIds.has(p.id)) {
+        seenProductIds.add(p.id);
+        allProducts.push(p);
+      }
+    });
+
+    const seenRecipeIds = new Set();
+    const allRecipes = [];
+
+    (recipesStartsWith || []).forEach((r) => {
+      if (!seenRecipeIds.has(r.id)) {
+        seenRecipeIds.add(r.id);
+        allRecipes.push(r);
+      }
+    });
+
+    (recipesContains || []).forEach((r) => {
+      if (!seenRecipeIds.has(r.id)) {
+        seenRecipeIds.add(r.id);
+        allRecipes.push(r);
+      }
+    });
+
+    // ========== 4. СОРТУВАННЯ PRODUCTS ==========
+    const sortedProducts = allProducts.sort((a, b) => {
+      const aName = (a.name_ua || '').toLowerCase();
+      const bName = (b.name_ua || '').toLowerCase();
+
+      // Exact match — найвище
+      if (aName === query && bName !== query) return -1;
+      if (aName !== query && bName === query) return 1;
+
+      // Починається з query — вище
+      const aStarts = aName.startsWith(query);
+      const bStarts = bName.startsWith(query);
+      if (aStarts && !bStarts) return -1;
+      if (!aStarts && bStarts) return 1;
+
+      // Коротша назва — вище (чистіший продукт)
+      return aName.length - bName.length;
+    });
+
+    // ========== 5. СОРТУВАННЯ RECIPES ==========
+    const sortedRecipes = allRecipes.sort((a, b) => {
+      const aName = (a.name_ua || '').toLowerCase();
+      const bName = (b.name_ua || '').toLowerCase();
+
+      // Exact match — найвище
+      if (aName === query && bName !== query) return -1;
+      if (aName !== query && bName === query) return 1;
+
+      // Починається з query — вище
+      const aStarts = aName.startsWith(query);
+      const bStarts = bName.startsWith(query);
+      if (aStarts && !bStarts) return -1;
+      if (!aStarts && bStarts) return 1;
+
+      // Містить query як окреме слово — вище
+      const queryWordRegex = new RegExp(`(^|\\s)${query}`, 'i');
+      const aHasWord = queryWordRegex.test(aName);
+      const bHasWord = queryWordRegex.test(bName);
+      if (aHasWord && !bHasWord) return -1;
+      if (!aHasWord && bHasWord) return 1;
+
+      // Коротша назва — вище
+      return aName.length - bName.length;
+    });
+
+    // ========== 6. РЕНДЕР — ПРОДУКТИ (топ 5) ==========
+    const topProducts = sortedProducts.slice(0, 5);
+    const topRecipes = sortedRecipes.slice(0, 5);
+
+    resultsList.innerHTML = '';
+
+    if (topProducts.length > 0) {
+      const headerProducts = document.createElement('li');
+      headerProducts.className = 'modal__group-header';
+      headerProducts.textContent = lang === 'ua' ? '🥬 Продукти' : '🥬 Products';
+      resultsList.appendChild(headerProducts);
+
+      topProducts.forEach((food) => {
+        const li = createFoodItem(food, 'product');
+        resultsList.appendChild(li);
+      });
+    }
+
+    // ========== 7. РЕНДЕР — СТРАВИ (топ 5) ==========
+    if (topRecipes.length > 0) {
+      const headerRecipes = document.createElement('li');
+      headerRecipes.className = 'modal__group-header';
+      headerRecipes.textContent = lang === 'ua' ? '🍽️ Страви' : '🍽️ Dishes';
+      resultsList.appendChild(headerRecipes);
+
+      topRecipes.forEach((recipe) => {
+        const li = createFoodItem(recipe, 'recipe');
+        resultsList.appendChild(li);
+      });
+    }
+
+    // ========== 8. НІЧОГО НЕ ЗНАЙДЕНО ==========
+    if (topProducts.length === 0 && topRecipes.length === 0) {
+      const emptyLi = document.createElement('li');
+      emptyLi.className = 'modal__item modal__item--empty';
+      emptyLi.textContent = lang === 'ua' ? 'Нічого не знайдено' : 'Nothing found';
+      resultsList.appendChild(emptyLi);
+    }
+  }
+
+  // ========== HELPER: Створення елемента списку ==========
+  function createFoodItem(food, type) {
+    const li = document.createElement('li');
+    li.className = 'modal__item';
+
+    const name = food.name_ua || food.name || '';
+    const kcal = food.kcal || 0;
+
+    li.innerHTML = `
+      <div>
+        <strong>${name}</strong>
+        <div style="font-size:12px; opacity:0.7;">
+          ${kcal} ${t('kcal')} / ${t('per100')}
+        </div>
+      </div>
+    `;
+
+    li.addEventListener('click', () => {
+      selectedFood = {
+        ...food,
+        name: name,
+        source: type,
+      };
+      nameInput.value = name;
+
+      Array.from(resultsList.children).forEach((el) => el.classList.remove('modal__item--active'));
+
+      li.classList.add('modal__item--active');
+
+      updateConfirmState();
+      weightInput.focus();
+    });
+
+    return li;
   }
 
   // ================== ADD FOOD ==================
@@ -467,6 +647,57 @@ document.addEventListener('DOMContentLoaded', async () => {
       loadMealsFromSupabase(currentSelectedDate);
       closeModal();
     }
+  }
+
+  // ================== BARCODE ==================
+  async function handleBarcode(barcode) {
+    console.log('Скануємо:', barcode);
+
+    // 1. шукаємо в твоїй БД
+    const { data: localProduct } = await supabase
+      .from('products')
+      .select('*')
+      .eq('barcode', barcode)
+      .maybeSingle();
+
+    if (localProduct) {
+      selectFood(localProduct);
+      return;
+    }
+
+    // 2. OpenFoodFacts
+    const response = await fetch(`https://world.openfoodfacts.org/api/v0/product/${barcode}.json`);
+
+    const data = await response.json();
+
+    if (data.status === 1) {
+      const p = data.product;
+
+      const product = {
+        barcode,
+        name: p.product_name || 'Без назви',
+        kcal: p.nutriments?.['energy-kcal_100g'] || 0,
+        protein: p.nutriments?.proteins_100g || 0,
+        fat: p.nutriments?.fat_100g || 0,
+        carbs: p.nutriments?.carbohydrates_100g || 0,
+      };
+
+      await supabase.from('products').insert([product]);
+
+      selectFood(product);
+      return;
+    }
+
+    alert('Продукт не знайдено 😔');
+  }
+
+  // helper
+  function selectFood(food) {
+    selectedFood = food;
+    nameInput.value = food.name;
+    resultsList.innerHTML = '';
+    updateConfirmState();
+    weightInput.focus();
   }
 
   // ================== SIDEBAR DAYS ==================
@@ -542,6 +773,19 @@ document.addEventListener('DOMContentLoaded', async () => {
   const clearBtn = document.getElementById('clearDayBtn');
   if (clearBtn) {
     clearBtn.addEventListener('click', clearDay);
+  }
+
+  // 📷 BARCODE BUTTON
+  const barcodeBtn = document.getElementById('barcodeBtn');
+
+  if (barcodeBtn) {
+    barcodeBtn.addEventListener('click', async () => {
+      const barcode = prompt('Введи штрих-код');
+
+      if (!barcode) return;
+
+      await handleBarcode(barcode);
+    });
   }
 
   // ================== INIT ==================
