@@ -763,6 +763,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   // ================== ADD FOOD ==================
+  
   async function addSelectedFood() {
     if (!requireAuth()) return;
     if (!activeMealKey || !selectedFood) return;
@@ -815,6 +816,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   // ================== BARCODE ==================
+
   async function handleBarcode(barcode) {
     console.log('Скануємо:', barcode);
 
@@ -862,6 +864,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   // ================== SIDEBAR DAYS ==================
+
   function initDaysNavigation() {
     const dayButtons = document.querySelectorAll('.sidebar__day-btn');
 
@@ -896,6 +899,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   // ================== EVENTS ==================
+
   document.querySelectorAll('.meal__add').forEach((btn) => {
     btn.addEventListener('click', () => {
       if (!requireAuth()) return;
@@ -946,6 +950,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   // ================== INIT ==================
+
+
   initDaysNavigation();
   loadMealsFromSupabase(currentSelectedDate);
 });
