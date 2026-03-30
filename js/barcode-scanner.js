@@ -138,14 +138,33 @@ async function startCamera() {
       ],
     };
 
-    await html5QrCode.start(
-      { facingMode: 'environment' }, // Задня камера
-      config,
-      onScanSuccess,
-      onScanFailure,
-    );
+    // Спочатку пробуємо задню камеру (для телефонів)
+    try {
+      await html5QrCode.start({ facingMode: 'environment' }, config, onScanSuccess, onScanFailure);
+      isScanning = true;
+      console.log('Запущено задню камеру');
+    } catch (backCameraError) {
+      console.log('Задня камера недоступна, пробуємо передню...', backCameraError);
 
-    isScanning = true;
+      // Якщо задня камера недоступна — пробуємо передню (для ноутбуків)
+      try {
+        await html5QrCode.start({ facingMode: 'user' }, config, onScanSuccess, onScanFailure);
+        isScanning = true;
+        console.log('Запущено передню камеру');
+      } catch (frontCameraError) {
+        console.log('Передня камера також недоступна, пробуємо будь-яку...', frontCameraError);
+
+        // Останній варіант — будь-яка доступна камера
+        const devices = await Html5Qrcode.getCameras();
+        if (devices && devices.length > 0) {
+          await html5QrCode.start(devices[0].id, config, onScanSuccess, onScanFailure);
+          isScanning = true;
+          console.log('Запущено камеру:', devices[0].label);
+        } else {
+          throw new Error('Камери не знайдено');
+        }
+      }
+    }
 
     if (statusEl) {
       statusEl.textContent = 'Наведіть камеру на штрих-код';
@@ -155,7 +174,7 @@ async function startCamera() {
     console.error('Помилка запуску камери:', err);
 
     if (statusEl) {
-      statusEl.textContent = 'Не вдалося запустити камеру. Введіть код вручну.';
+      statusEl.textContent = 'Камера недоступна. Введіть код вручну.';
       statusEl.className = 'scanner-modal__status scanner-modal__status--error';
     }
   }

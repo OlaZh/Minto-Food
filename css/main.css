@@ -1714,19 +1714,19 @@ textarea {
 }
 .scanned-card__header {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 8px;
   margin-bottom: 4px;
 }
 .scanned-card__name {
   flex: 1;
+  min-width: 0;
   font-weight: 600;
   font-size: 15px;
   color: var(--color-text-primary);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 .scanned-card__clear {
   flex-shrink: 0;
@@ -1780,6 +1780,7 @@ textarea {
   font-weight: 600;
   color: var(--color-text-primary);
   /* Прибираємо стрілки */
+  appearance: none;
   -moz-appearance: textfield;
 }
 .scanned-card__field input::-webkit-outer-spin-button, .scanned-card__field input::-webkit-inner-spin-button {
