@@ -367,3 +367,316 @@
     }
   }
 }
+// ========== SCANNER MODAL ==========
+
+.scanner-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1001; // трохи вище, щоб перекривав addFoodModal
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+
+  &[hidden] {
+    display: none;
+  }
+
+  &__overlay {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at top, rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0.75));
+    backdrop-filter: blur(6px);
+  }
+
+  &__content {
+    position: relative;
+    width: 100%;
+    max-width: 400px;
+    background: linear-gradient(180deg, var(--color-surface) 0%, var(--color-bg-secondary) 100%);
+    border-radius: 20px;
+    border: 1px solid var(--color-border);
+    overflow: hidden;
+    box-shadow: 0 32px 64px rgba(0, 0, 0, 0.28);
+  }
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px;
+    background: linear-gradient(180deg, var(--color-accent-soft), transparent);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  &__title {
+    margin: 0;
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--color-text-primary);
+  }
+
+  &__close {
+    background: transparent;
+    border: none;
+    font-size: 22px;
+    color: var(--color-text-secondary);
+    cursor: pointer;
+
+    &:hover {
+      color: var(--color-text-primary);
+    }
+  }
+
+  &__body {
+    padding: 20px;
+  }
+
+  &__reader {
+    width: 100%;
+    min-height: 200px;
+    background: #000;
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 1rem;
+    border: 1px solid var(--color-border);
+  }
+
+  &__status {
+    text-align: center;
+    padding: 12px 14px;
+    margin: 0 0 1rem;
+    font-size: 14px;
+    color: var(--color-text-secondary);
+    background: var(--color-surface);
+    border-radius: 12px;
+    border: 1px solid var(--color-border);
+    min-height: 60px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    &--loading {
+      color: #f59e0b;
+    }
+
+    &--success {
+      color: #10b981;
+      background: rgba(16, 185, 129, 0.1);
+      border-color: rgba(16, 185, 129, 0.3);
+    }
+
+    &--error {
+      color: #ef4444;
+      background: rgba(239, 68, 68, 0.1);
+      border-color: rgba(239, 68, 68, 0.3);
+    }
+  }
+
+  &__success {
+    font-weight: 600;
+    font-size: 15px;
+  }
+
+  &__manual {
+    border-top: 1px solid var(--color-border);
+    padding-top: 1rem;
+  }
+
+  &__manual-label {
+    margin: 0 0 0.5rem;
+    font-size: 13px;
+    color: var(--color-text-secondary);
+    text-align: center;
+  }
+
+  &__manual-row {
+    display: flex;
+    gap: 8px;
+  }
+
+  // Використовуємо твої існуючі стилі інпутів
+  &__input {
+    flex: 1;
+    padding: 12px 14px;
+    border-radius: 12px;
+    border: 1px solid var(--color-border);
+    background: var(--color-surface);
+    color: var(--color-text-primary);
+    font-size: 15px;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.08);
+
+    &::placeholder {
+      color: var(--color-text-secondary);
+    }
+
+    &:focus {
+      outline: 2px solid var(--color-accent);
+      outline-offset: 2px;
+    }
+  }
+
+  &__submit {
+    padding: 12px 18px;
+    background: var(--color-accent);
+    border: none;
+    border-radius: 12px;
+    color: var(--color-text-inverse);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+    transition: transform 0.15s ease;
+
+    &:hover {
+      transform: translateY(-1px);
+    }
+
+    &:active {
+      transform: translateY(0);
+    }
+  }
+}
+
+// ========== SCANNED PRODUCT CARD ==========
+
+.scanned-card {
+  padding: 14px;
+  margin-top: -4px;
+  
+  background: linear-gradient(135deg, var(--color-accent-soft), transparent);
+  border: 1px solid var(--color-accent);
+  border-radius: 12px;
+  
+  &[hidden] {
+    display: none;
+  }
+  
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 4px;
+  }
+  
+  &__name {
+    flex: 1;
+    font-weight: 600;
+    font-size: 15px;
+    color: var(--color-text-primary);
+    
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  &__clear {
+    flex-shrink: 0;
+    width: 24px;
+    height: 24px;
+    
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    
+    background: transparent;
+    border: none;
+    border-radius: 6px;
+    
+    color: var(--color-text-secondary);
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    
+    &:hover {
+      background: rgba(239, 68, 68, 0.15);
+      color: #ef4444;
+    }
+  }
+  
+  &__brand {
+    font-size: 12px;
+    color: var(--color-text-secondary);
+    margin-bottom: 10px;
+    
+    &:empty {
+      display: none;
+    }
+  }
+  
+  &__macros {
+    display: flex;
+    gap: 8px;
+  }
+  
+  &__field {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    
+    padding: 8px 10px;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    
+    input {
+      width: 100%;
+      min-width: 0;
+      padding: 0;
+      
+      background: transparent;
+      border: none;
+      outline: none;
+      
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--color-text-primary);
+      
+      /* Прибираємо стрілки */
+      -moz-appearance: textfield;
+      &::-webkit-outer-spin-button,
+      &::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+      }
+    }
+    
+    span {
+      flex-shrink: 0;
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--color-text-secondary);
+      text-transform: uppercase;
+    }
+  }
+  
+  &__hint {
+    margin-top: 8px;
+    font-size: 11px;
+    color: var(--color-text-secondary);
+    text-align: center;
+    opacity: 0.7;
+  }
+}
+
+// ========== АДАПТИВ ==========
+@media (max-width: 480px) {
+  .scanner-modal {
+    padding: 0;
+    align-items: flex-end;
+
+    &__content {
+      max-width: 100%;
+      border-radius: 20px 20px 0 0;
+      max-height: 90vh;
+    }
+
+    &__reader {
+      min-height: 250px;
+    }
+  }
+}

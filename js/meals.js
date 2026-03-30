@@ -4,6 +4,7 @@ import { updateStats, updateWaterUI } from './stats.js';
 import { i18n } from './i18n.js';
 import { supabase } from './supabaseClient.js';
 import { initAuth, requireAuth } from './auth.js';
+import { initBarcodeScanner, closeScanner } from './barcode-scanner.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
   // ================== ДАТА ХЕЛПЕР — має бути першим ==================
@@ -346,6 +347,67 @@ document.addEventListener('DOMContentLoaded', async () => {
   const weightInput = modal.querySelector('.modal__weight');
   weightInput.placeholder = t('weight');
 
+  // ================== SCANNED PRODUCT CARD ==================
+  const scannedCard = document.getElementById('scannedProductCard');
+  const scKcalInput = document.getElementById('scKcal');
+  const scProteinInput = document.getElementById('scProtein');
+  const scFatInput = document.getElementById('scFat');
+  const scCarbsInput = document.getElementById('scCarbs');
+
+  function showScannedProductCard(product) {
+    if (!scannedCard) return;
+
+    const nameEl = scannedCard.querySelector('.scanned-card__name');
+    const brandEl = scannedCard.querySelector('.scanned-card__brand');
+    const clearBtn = scannedCard.querySelector('.scanned-card__clear');
+
+    const displayName = product.name_ua || product.name_en || product.name || 'Без назви';
+
+    nameEl.textContent = displayName;
+    brandEl.textContent = product.brand || '';
+
+    // Заповнюємо інпути
+    scKcalInput.value = product.kcal || 0;
+    scProteinInput.value = product.protein || 0;
+    scFatInput.value = product.fat || 0;
+    scCarbsInput.value = product.carbs || 0;
+
+    scannedCard.hidden = false;
+
+    // Слухачі для оновлення selectedFood при редагуванні
+    const updateSelectedFood = () => {
+      if (selectedFood) {
+        selectedFood.kcal = Number(scKcalInput.value) || 0;
+        selectedFood.protein = Number(scProteinInput.value) || 0;
+        selectedFood.fat = Number(scFatInput.value) || 0;
+        selectedFood.carbs = Number(scCarbsInput.value) || 0;
+      }
+    };
+
+    scKcalInput.oninput = updateSelectedFood;
+    scProteinInput.oninput = updateSelectedFood;
+    scFatInput.oninput = updateSelectedFood;
+    scCarbsInput.oninput = updateSelectedFood;
+
+    // Очищення картки
+    clearBtn.onclick = () => {
+      hideScannedProductCard();
+      selectedFood = null;
+      nameInput.value = '';
+      updateConfirmState();
+    };
+  }
+
+  function hideScannedProductCard() {
+    if (scannedCard) {
+      scannedCard.hidden = true;
+      scKcalInput.value = '';
+      scProteinInput.value = '';
+      scFatInput.value = '';
+      scCarbsInput.value = '';
+    }
+  }
+
   // ================== MODAL LOGIC ==================
   function updateConfirmState() {
     const weight = Number(weightInput.value);
@@ -363,6 +425,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     nameInput.value = item ? item.name.replace(/\s\(.*?\)$/, '') : '';
     weightInput.value = item ? item.weight : '';
 
+    // Ховаємо картку сканованого продукту при відкритті
+    hideScannedProductCard();
+
     modal.hidden = false;
     nameInput.focus();
   }
@@ -376,6 +441,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     nameInput.value = '';
     weightInput.value = '';
     resultsList.innerHTML = '';
+
+    // Ховаємо картку сканованого продукту
+    hideScannedProductCard();
   }
 
   // ================== SEARCH ==================
@@ -395,6 +463,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     resultsList.innerHTML = '';
     selectedFood = null;
     confirmBtn.disabled = true;
+
+    // Ховаємо картку при новому пошуку
+    hideScannedProductCard();
 
     if (!query || query.length < 2) return;
 
@@ -615,6 +686,9 @@ document.addEventListener('DOMContentLoaded', async () => {
       };
       nameInput.value = name;
 
+      // Ховаємо картку сканованого продукту при виборі зі списку
+      hideScannedProductCard();
+
       Array.from(resultsList.children).forEach((el) => el.classList.remove('modal__item--active'));
 
       li.classList.add('modal__item--active');
@@ -763,7 +837,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   // ================== ADD FOOD ==================
-  
+
   async function addSelectedFood() {
     if (!requireAuth()) return;
     if (!activeMealKey || !selectedFood) return;
@@ -813,54 +887,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       loadMealsFromSupabase(currentSelectedDate);
       closeModal();
     }
-  }
-
-  // ================== BARCODE ==================
-
-  async function handleBarcode(barcode) {
-    console.log('Скануємо:', barcode);
-
-    const { data: localProduct } = await supabase
-      .from('products')
-      .select('*')
-      .eq('barcode', barcode)
-      .maybeSingle();
-
-    if (localProduct) {
-      selectFood(localProduct);
-      return;
-    }
-
-    const response = await fetch(`https://world.openfoodfacts.org/api/v0/product/${barcode}.json`);
-    const data = await response.json();
-
-    if (data.status === 1) {
-      const p = data.product;
-
-      const product = {
-        barcode,
-        name: p.product_name || 'Без назви',
-        kcal: p.nutriments?.['energy-kcal_100g'] || 0,
-        protein: p.nutriments?.proteins_100g || 0,
-        fat: p.nutriments?.fat_100g || 0,
-        carbs: p.nutriments?.carbohydrates_100g || 0,
-      };
-
-      await supabase.from('products').insert([product]);
-
-      selectFood(product);
-      return;
-    }
-
-    alert('Продукт не знайдено 😔');
-  }
-
-  function selectFood(food) {
-    selectedFood = food;
-    nameInput.value = food.name;
-    resultsList.innerHTML = '';
-    updateConfirmState();
-    weightInput.focus();
   }
 
   // ================== SIDEBAR DAYS ==================
@@ -940,17 +966,25 @@ document.addEventListener('DOMContentLoaded', async () => {
     clearBtn.addEventListener('click', clearDay);
   }
 
-  const barcodeBtn = document.getElementById('barcodeBtn');
-  if (barcodeBtn) {
-    barcodeBtn.addEventListener('click', async () => {
-      const barcode = prompt('Введи штрих-код');
-      if (!barcode) return;
-      await handleBarcode(barcode);
-    });
-  }
-
   // ================== INIT ==================
 
+  // Ініціалізація сканера штрих-кодів
+  initBarcodeScanner((product) => {
+    selectedFood = {
+      ...product,
+      name: product.name_ua || product.name_en || product.name,
+      source: 'barcode',
+    };
+
+    nameInput.value = selectedFood.name;
+    resultsList.innerHTML = '';
+
+    // Показуємо картку сканованого продукту з КБЖУ
+    showScannedProductCard(product);
+
+    updateConfirmState();
+    weightInput.focus();
+  });
 
   initDaysNavigation();
   loadMealsFromSupabase(currentSelectedDate);
