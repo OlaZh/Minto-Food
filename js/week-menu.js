@@ -4,6 +4,7 @@ import { supabase } from './supabaseClient.js';
 import { i18n } from './i18n.js';
 import { initRecipeModal, openRecipeModal } from './recipe-modal.js';
 import { initAuth, requireAuth } from './auth.js';
+import { showToast, getLocalDateString } from './utils.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
   // ================== МОВА ==================
@@ -63,13 +64,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   let currentWeekStart = getMonday(new Date());
 
   // ================== ДАТА ХЕЛПЕРИ ==================
-
-  function getLocalDateString(date = new Date()) {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-  }
 
   function getMonday(date) {
     const d = new Date(date);
@@ -225,10 +219,10 @@ document.addEventListener('DOMContentLoaded', async () => {
       li.dataset.meal = mealType;
 
       // Прибираємо слово "Рецепт" з початку назви
-      const cleanName = item.name.replace(/^Рецепт\s+/i, '');
+      const cleanItemName = item.name.replace(/^Рецепт\s+/i, '');
 
       li.innerHTML = `
-      <span class="meal-cell__item-name" title="${cleanName}">${cleanName}</span>
+      <span class="meal-cell__item-name" title="${cleanItemName}">${cleanItemName}</span>
         <button class="meal-cell__item-delete" title="Видалити">✕</button>
     `;
 
@@ -837,21 +831,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       showToast('Тиждень вставлено! ✓');
       loadWeekFromSupabase();
     });
-  }
-
-  // ================== TOAST ==================
-
-  function showToast(message, type = 'success') {
-    const toast = document.createElement('div');
-    toast.className = `toast-notification toast-${type}`;
-    const icon = type === 'info' ? 'ℹ️' : type === 'error' ? '❌' : '✅';
-    toast.innerHTML = `<span class="toast-icon">${icon}</span> <span class="toast-text">${message}</span>`;
-    document.body.appendChild(toast);
-
-    setTimeout(() => {
-      toast.classList.add('fade-out');
-      setTimeout(() => toast.remove(), 500);
-    }, 3000);
   }
 
   // ================== ІНІЦІАЛІЗАЦІЯ ==================

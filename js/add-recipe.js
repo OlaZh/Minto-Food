@@ -2,6 +2,7 @@ console.log('add-recipe.js запустився');
 
 import { supabase } from './supabaseClient.js';
 import { initAuth } from './auth.js';
+import { showToast, toBase64, parseNumber } from './utils.js';
 
 // =============================================================
 // 1. ОГОЛОШЕННЯ ЕЛЕМЕНТІВ (DOM)
@@ -40,32 +41,7 @@ let editingRecipeId = null;
 // 3. ДОПОМІЖНІ ФУНКЦІЇ
 // =============================================================
 
-const showToast = (message, type = 'success') => {
-  const toast = document.createElement('div');
-  toast.className = `toast-notification toast-${type}`;
-  const icon = type === 'info' ? '⏳' : '✅';
-  toast.innerHTML = `<span class="toast-icon">${icon}</span> <span class="toast-text">${message}</span>`;
-  document.body.appendChild(toast);
 
-  setTimeout(() => {
-    toast.classList.add('fade-out');
-    setTimeout(() => toast.remove(), 500);
-  }, 3000);
-};
-
-function parseAmount(amountStr) {
-  if (typeof amountStr === 'number') return amountStr;
-  if (!amountStr) return 0;
-
-  const str = amountStr.toString().trim();
-
-  if (str.includes('/')) {
-    const [num, den] = str.split('/').map(Number);
-    return den && !isNaN(num) ? num / den : 0;
-  }
-
-  return parseFloat(str.replace(',', '.')) || 0;
-}
 
 const updateStarsUI = (rating) => {
   const ratingContainer = document.querySelector('.recipe-rating');
@@ -99,13 +75,7 @@ function getRecipeName(recipe) {
   return recipe.name_ua || recipe.name_en || recipe.name_pl || '';
 }
 
-const toBase64 = (file) =>
-  new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = () => resolve(reader.result);
-    reader.onerror = (error) => reject(error);
-  });
+
 
 // =============================================================
 // 4. ЗАВАНТАЖЕННЯ ТА ВІДОБРАЖЕННЯ РЕЦЕПТІВ З SUPABASE

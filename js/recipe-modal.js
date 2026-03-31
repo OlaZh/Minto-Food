@@ -11,6 +11,7 @@ import {
   clearIngredients,
   setLanguage,
 } from './recipe-ingredients.js';
+import { showToast, toBase64 } from './utils.js';
 
 // =============================================================
 // СТВОРЕННЯ HTML МОДАЛКИ ДИНАМІЧНО
@@ -454,28 +455,4 @@ async function searchRecipesApi() {
     resultsEl.innerHTML =
       '<p style="padding:12px;text-align:center;color:#c0392b;">Помилка зв\'язку</p>';
   }
-}
-
-// =============================================================
-// ХЕЛПЕРИ
-// =============================================================
-
-const toBase64 = (file) =>
-  new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = () => resolve(reader.result);
-    reader.onerror = reject;
-  });
-
-function showToast(message, type = 'success') {
-  const toast = document.createElement('div');
-  toast.className = `toast-notification toast-${type}`;
-  const icon = type === 'error' ? '❌' : '✅';
-  toast.innerHTML = `<span class="toast-icon">${icon}</span> <span class="toast-text">${message}</span>`;
-  document.body.appendChild(toast);
-  setTimeout(() => {
-    toast.classList.add('fade-out');
-    setTimeout(() => toast.remove(), 500);
-  }, 3000);
 }

@@ -4,6 +4,7 @@
 // =============================================================
 
 import { supabase } from './supabaseClient.js';
+import { showToast } from './utils.js';
 
 // =============================================================
 // СТАН
@@ -45,7 +46,7 @@ export async function initAuth(onAuthChange = null) {
     // Закриваємо модалку після успішного логіну
     if (event === 'SIGNED_IN') {
       closeAuthModal();
-      showToast(`Ласкаво просимо! 👋`);
+      showToast('Ласкаво просимо! 👋');
     }
 
     if (event === 'SIGNED_OUT') {
@@ -419,16 +420,4 @@ function getErrorMessage(message) {
     'Password should be at least 6 characters': 'Пароль має бути не менше 6 символів',
   };
   return errors[message] || 'Сталася помилка. Спробуйте ще раз.';
-}
-
-function showToast(message, type = 'success') {
-  const toast = document.createElement('div');
-  toast.className = `toast-notification toast-${type}`;
-  const icon = type === 'error' ? '❌' : '✅';
-  toast.innerHTML = `<span class="toast-icon">${icon}</span> <span class="toast-text">${message}</span>`;
-  document.body.appendChild(toast);
-  setTimeout(() => {
-    toast.classList.add('fade-out');
-    setTimeout(() => toast.remove(), 500);
-  }, 3000);
 }

@@ -4,6 +4,14 @@
 
 import { supabase } from './supabaseClient.js';
 import { initAuth, requireAuth, getCurrentUser, openAuthModal, signOut } from './auth.js';
+import { showToast } from './utils.js';
+import {
+  getWeightHistory,
+  addWeightRecord,
+  getActivityHistory,
+  saveActivity,
+  deleteActivity as deleteActivityFromStorage,
+} from './storage.js';
 
 // =====================================
 // DOM ELEMENTS
@@ -132,7 +140,7 @@ function initWeightChart() {
   const canvas = document.getElementById('weightChartCanvas');
   if (!canvas) return;
 
-  let history = JSON.parse(localStorage.getItem(WEIGHT_HISTORY_KEY) || '[]');
+  let history = getWeightHistory();
 
   history = history
     .map((i) => ({
@@ -180,7 +188,7 @@ function initWeightChart2() {
   const canvas = document.getElementById('weightChartCanvas2');
   if (!canvas) return;
 
-  let history = JSON.parse(localStorage.getItem(WEIGHT_HISTORY_KEY) || '[]');
+  let history = getWeightHistory();
 
   history = history
     .map((i) => ({
@@ -228,13 +236,7 @@ function recordNewWeight() {
   const weight = parseFloat(weightNowInput.value.replace(',', '.'));
   if (isNaN(weight)) return alert('Введіть коректну вагу');
 
-  const history = JSON.parse(localStorage.getItem(WEIGHT_HISTORY_KEY) || '[]');
-  const today = new Date().toLocaleDateString('uk-UA', { day: '2-digit', month: '2-digit' });
-
-  history.push({ date: today, weight });
-  if (history.length > 10) history.shift();
-
-  localStorage.setItem(WEIGHT_HISTORY_KEY, JSON.stringify(history));
+  addWeightRecord(weight);
   weightNowInput.value = '';
 
   initWeightChart();
@@ -532,23 +534,6 @@ async function saveProfileToSupabase(data) {
 }
 
 // =====================================
-// TOAST
-// =====================================
-
-function showToast(message, type = 'success') {
-  const toast = document.createElement('div');
-  toast.className = `toast-notification toast-${type}`;
-  const icon = type === 'error' ? '❌' : '✅';
-  toast.innerHTML = `<span class="toast-icon">${icon}</span><span class="toast-text">${message}</span>`;
-  document.body.appendChild(toast);
-
-  setTimeout(() => {
-    toast.classList.add('fade-out');
-    setTimeout(() => toast.remove(), 500);
-  }, 3000);
-}
-
-// =====================================
 // WEIGHT ADVICE — ПЕРСОНАЛЬНІ ПОРАДИ
 // =====================================
 
@@ -833,21 +818,8 @@ function setupActivityForm() {
   });
 }
 
-function saveActivity(activity) {
-  const history = JSON.parse(localStorage.getItem(ACTIVITY_HISTORY_KEY) || '[]');
-  history.unshift(activity);
-  if (history.length > 100) history.pop();
-  localStorage.setItem(ACTIVITY_HISTORY_KEY, JSON.stringify(history));
-}
-
-function getActivityHistory() {
-  return JSON.parse(localStorage.getItem(ACTIVITY_HISTORY_KEY) || '[]');
-}
-
 function deleteActivity(activityId) {
-  let history = getActivityHistory();
-  history = history.filter((a) => a.id !== activityId);
-  localStorage.setItem(ACTIVITY_HISTORY_KEY, JSON.stringify(history));
+  deleteActivityFromStorage(activityId);
 
   updateTodayStats();
   renderActivityHistory(currentPeriod);

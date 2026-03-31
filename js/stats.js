@@ -2,6 +2,14 @@
 // STATS — DAILY PROGRESS (CALORIES, MACROS & WATER)
 // ===============================
 
+import {
+  getWaterNorm,
+  getDailyCaloriesNorm,
+  getProteinNorm,
+  getFatNorm,
+  getCarbsNorm,
+} from './storage.js';
+
 // Calories & Macros UI Elements
 const kcalCurrentEl = document.getElementById('kcalCurrent');
 const kcalCircleEl = document.getElementById('kcalCircle');
@@ -17,36 +25,6 @@ const cCurrentEl = document.getElementById('cCurrent');
 // Water UI Elements
 const waterValueEl = document.getElementById('currentWaterText');
 const waterFillEl = document.getElementById('waterFill');
-
-// ===============================
-// HELPERS — NORMS FROM PROFILE
-// ===============================
-
-function getWaterNorm() {
-  const saved = localStorage.getItem('userWater');
-  if (!saved) return 2.5;
-  return Number(String(saved).replace(',', '.'));
-}
-
-function getDailyCaloriesNorm() {
-  const saved = localStorage.getItem('dailyCaloriesNorm');
-  return saved ? Number(saved) : 2000;
-}
-
-function getProteinNorm() {
-  const saved = localStorage.getItem('userProtein');
-  return saved ? Number(saved) : 100;
-}
-
-function getFatNorm() {
-  const saved = localStorage.getItem('userFat');
-  return saved ? Number(saved) : 70;
-}
-
-function getCarbsNorm() {
-  const saved = localStorage.getItem('userCarbs');
-  return saved ? Number(saved) : 250;
-}
 
 // ===============================
 // CIRCULAR HELPERS (Твій робочий код)

@@ -5,16 +5,9 @@ import { i18n } from './i18n.js';
 import { supabase } from './supabaseClient.js';
 import { initAuth, requireAuth } from './auth.js';
 import { initBarcodeScanner, closeScanner } from './barcode-scanner.js';
+import { getLocalDateString } from './utils.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
-  // ================== ДАТА ХЕЛПЕР — має бути першим ==================
-  function getLocalDateString(date = new Date()) {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-  }
-
   let currentSelectedDate = getLocalDateString();
 
   // ================== AUTH ==================
@@ -172,7 +165,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   // --- КІНЕЦЬ ЛОГІКИ ВОДИ ---
-
 
   function saveMealsToStorage() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(mealsState));
