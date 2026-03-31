@@ -105,7 +105,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     renderAllMeals();
     renderSummary();
-    updateDateDisplay(date);
     loadWaterFromSupabase(date);
   }
 
@@ -174,16 +173,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // --- КІНЕЦЬ ЛОГІКИ ВОДИ ---
 
-  function updateDateDisplay(dateStr) {
-    if (dayDateDisplay) {
-      const options = { weekday: 'long', day: 'numeric', month: 'long' };
-      const dateObj = new Date(dateStr);
-      dayDateDisplay.textContent = dateObj.toLocaleDateString(
-        lang === 'ua' ? 'uk-UA' : lang,
-        options,
-      );
-    }
-  }
 
   function saveMealsToStorage() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(mealsState));
@@ -889,41 +878,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
-  // ================== SIDEBAR DAYS ==================
-
-  function initDaysNavigation() {
-    const dayButtons = document.querySelectorAll('.sidebar__day-btn');
-
-    dayButtons.forEach((btn) => {
-      btn.addEventListener('click', () => {
-        const dayName = btn.dataset.day;
-        const today = new Date();
-        const currentDayIndex = today.getDay() || 7;
-
-        const targetDayIndex = {
-          monday: 1,
-          tuesday: 2,
-          wednesday: 3,
-          thursday: 4,
-          friday: 5,
-          saturday: 6,
-          sunday: 7,
-        }[dayName];
-
-        const diff = targetDayIndex - currentDayIndex;
-        const targetDate = new Date(today);
-        targetDate.setDate(today.getDate() + diff);
-
-        currentSelectedDate = getLocalDateString(targetDate);
-
-        dayButtons.forEach((b) => b.classList.remove('sidebar__day-btn--active'));
-        btn.classList.add('sidebar__day-btn--active');
-
-        loadMealsFromSupabase(currentSelectedDate);
-      });
-    });
-  }
-
   // ================== EVENTS ==================
 
   document.querySelectorAll('.meal__add').forEach((btn) => {
@@ -985,7 +939,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     updateConfirmState();
     weightInput.focus();
   });
+  // Експорт для sidebar-days.js
+  window.mealsAPI = {
+    loadMealsForDate: (dateString) => {
+      currentSelectedDate = dateString;
+      loadMealsFromSupabase(dateString);
+    },
+  };
 
-  initDaysNavigation();
+  // Початкове завантаження
   loadMealsFromSupabase(currentSelectedDate);
 });

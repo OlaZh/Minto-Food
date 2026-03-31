@@ -121,8 +121,17 @@
           <div class="layout">
             <aside class="sidebar">
               <div class="column-header">
-                <h2 class="column-header__title" data-i18n="weekDays">Дні тижня</h2>
+                <div class="week-nav week-nav--sidebar">
+                  <button class="week-nav-btn" id="prevWeekBtn" aria-label="Попередній тиждень">
+                    ←
+                  </button>
+                  <span class="week-nav__label" id="weekLabel">30 березня – 5 квітня</span>
+                  <button class="week-nav-btn" id="nextWeekBtn" aria-label="Наступний тиждень">
+                    →
+                  </button>
+                </div>
               </div>
+
               <ul class="sidebar__days">
                 <li>
                   <button class="sidebar__day-btn" data-day="monday" data-i18n="monday">

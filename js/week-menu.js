@@ -24,10 +24,26 @@ document.addEventListener('DOMContentLoaded', async () => {
     return i18n[lang]?.[key] || key;
   }
 
+  function cleanName(name) {
+    if (!name) return '';
+    return name
+      .replace(/рецепт:?/gi, '')
+      .replace(/recipe:?/gi, '')
+      .trim()
+      .replace(/^\w/, (c) => c.toUpperCase());
+  }
+
   function getRecipeName(recipe) {
-    if (lang === 'pl' && recipe.name_pl) return recipe.name_pl;
-    if (lang === 'en' && recipe.name_en) return recipe.name_en;
-    return recipe.name_ua || recipe.name_en || recipe.name_pl || recipe.name || '';
+    let name =
+      (lang === 'pl' && recipe.name_pl) ||
+      (lang === 'en' && recipe.name_en) ||
+      recipe.name_ua ||
+      recipe.name_en ||
+      recipe.name_pl ||
+      recipe.name ||
+      '';
+
+    return cleanName(name);
   }
 
   // ================== СТАН ==================
@@ -208,11 +224,21 @@ document.addEventListener('DOMContentLoaded', async () => {
       li.dataset.day = day;
       li.dataset.meal = mealType;
 
+      // Прибираємо слово "Рецепт" з початку назви
+      const cleanName = item.name.replace(/^Рецепт\s+/i, '');
+
       li.innerHTML = `
-        <span class="meal-cell__item-name">${item.name}</span>
-        <span class="meal-cell__item-kcal">${item.kcal} ккал</span>
+      <span class="meal-cell__item-name" title="${cleanName}">${cleanName}</span>
         <button class="meal-cell__item-delete" title="Видалити">✕</button>
-      `;
+    `;
+
+      // Клік на назву — відкрити картку рецепта
+      li.querySelector('.meal-cell__item-name').addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (item.recipe_id) {
+          openRecipeCard(item.recipe_id);
+        }
+      });
 
       // Видалення
       li.querySelector('.meal-cell__item-delete').addEventListener('click', (e) => {
@@ -220,7 +246,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         openDeleteConfirm(item.id, day, mealType);
       });
 
-      // Drag & Drop — початок перетягування
+      // Drag & Drop
       li.addEventListener('dragstart', (e) => {
         e.dataTransfer.setData('text/plain', JSON.stringify({ id: item.id, day, mealType, item }));
         li.classList.add('dragging');
@@ -232,25 +258,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       list.appendChild(li);
     });
-
-    // Показуємо кнопку кошика тільки якщо є страви
-    let clearBtn = cell.querySelector('.meal-cell__clear');
-    if (items.length > 0) {
-      if (!clearBtn) {
-        clearBtn = document.createElement('button');
-        clearBtn.className = 'meal-cell__clear';
-        clearBtn.title = 'Очистити прийом їжі';
-        clearBtn.innerHTML = '🗑';
-        clearBtn.addEventListener('click', () => {
-          openClearCellConfirm(day, mealType);
-        });
-        // Вставляємо перед кнопкою +
-        const addBtn = cell.querySelector('.meal-cell__add');
-        cell.insertBefore(clearBtn, addBtn);
-      }
-    } else {
-      if (clearBtn) clearBtn.remove();
-    }
   }
 
   // Підтвердження очищення цілого прийому їжі

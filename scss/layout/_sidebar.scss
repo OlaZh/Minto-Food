@@ -430,3 +430,17 @@ background: linear-gradient(180deg,
     opacity: 1;
   }
 }
+/* ================= WEEK NAV (SIDEBAR VARIANT) ================= */
+.week-nav--sidebar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  margin-bottom: 8px;
+
+  .week-nav__label {
+    min-width: 140px;
+    font-size: 13px;
+  }
+}

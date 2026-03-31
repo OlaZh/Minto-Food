@@ -4,6 +4,13 @@
 // =============================================================
 
 import { supabase } from './supabaseClient.js';
+import {
+  initIngredientBuilder,
+  getIngredients,
+  getTotals,
+  clearIngredients,
+  setLanguage,
+} from './recipe-ingredients.js';
 
 // =============================================================
 // СТВОРЕННЯ HTML МОДАЛКИ ДИНАМІЧНО
@@ -69,25 +76,25 @@ function createRecipeModalHTML() {
             <div class="preview-form__content">
               <div class="form-group">
                 <label>Назва страви</label>
-                <input type="text" id="rm-name" required placeholder="Наприклад: Вареники з сиром" />
+                <input type="text" id="rm-name" required placeholder="Назва страви, напр. «Млинці з медом»" />
               </div>
 
               <div class="recipe-macros-grid">
                 <div class="form-group">
                   <label>Ккал</label>
-                  <input type="number" id="rm-calories" placeholder="0" />
+                  <input type="number" id="rm-calories" placeholder="0" readonly />
                 </div>
                 <div class="form-group">
                   <label>Б</label>
-                  <input type="number" id="rm-proteins" placeholder="0" />
+                  <input type="number" id="rm-proteins" placeholder="0" readonly />
                 </div>
                 <div class="form-group">
                   <label>Ж</label>
-                  <input type="number" id="rm-fats" placeholder="0" />
+                  <input type="number" id="rm-fats" placeholder="0" readonly />
                 </div>
                 <div class="form-group">
                   <label>В</label>
-                  <input type="number" id="rm-carbs" placeholder="0" />
+                  <input type="number" id="rm-carbs" placeholder="0" readonly />
                 </div>
               </div>
 
@@ -108,7 +115,7 @@ function createRecipeModalHTML() {
 
               <div class="form-group">
                 <label>Інгредієнти</label>
-                <textarea id="rm-ingredients" placeholder="Вівсянка 50г&#10;Молоко 100мл"></textarea>
+                <div id="rm-ingredients-builder"></div>
               </div>
 
               <div class="form-group">
@@ -190,18 +197,6 @@ export function initRecipeModal() {
     if (e.key === 'Enter') searchRecipesApi();
   });
 
-  // Авто-розрахунок ккал
-  ['rm-proteins', 'rm-fats', 'rm-carbs'].forEach((id) => {
-    document.getElementById(id)?.addEventListener('input', () => {
-      const p = parseFloat(document.getElementById('rm-proteins')?.value) || 0;
-      const f = parseFloat(document.getElementById('rm-fats')?.value) || 0;
-      const c = parseFloat(document.getElementById('rm-carbs')?.value) || 0;
-      const kcal = Math.round(p * 4 + f * 9 + c * 4);
-      const kcalEl = document.getElementById('rm-calories');
-      if (kcalEl) kcalEl.value = kcal > 0 ? kcal : '';
-    });
-  });
-
   // Авто-ресайз textarea
   recipeModalInstance?.querySelectorAll('textarea').forEach((txt) => {
     txt.style.overflow = 'hidden';
@@ -216,6 +211,25 @@ export function initRecipeModal() {
     e.preventDefault();
     await saveRecipe();
   });
+
+  // Ініціалізація конструктора інгредієнтів
+  const lang = localStorage.getItem('lang') || 'ua';
+  initIngredientBuilder(
+    '#rm-ingredients-builder',
+    (ingredients, totals) => {
+      // Автозаповнення КБЖУ при зміні інгредієнтів
+      const kcalEl = document.getElementById('rm-calories');
+      const proteinEl = document.getElementById('rm-proteins');
+      const fatEl = document.getElementById('rm-fats');
+      const carbsEl = document.getElementById('rm-carbs');
+
+      if (kcalEl) kcalEl.value = totals.kcal || '';
+      if (proteinEl) proteinEl.value = totals.protein.toFixed(1) || '';
+      if (fatEl) fatEl.value = totals.fat.toFixed(1) || '';
+      if (carbsEl) carbsEl.value = totals.carbs.toFixed(1) || '';
+    },
+    lang,
+  );
 }
 
 // =============================================================
@@ -257,6 +271,9 @@ function resetRecipeForm() {
 
   const apiSearch = document.getElementById('recipe-modal-api-search');
   if (apiSearch) apiSearch.value = '';
+
+  // Очищаємо конструктор інгредієнтів
+  clearIngredients();
 }
 
 // =============================================================
@@ -270,6 +287,24 @@ function showRecipeForm(data = null) {
   if (optionsView) optionsView.style.display = 'none';
   if (previewForm) previewForm.style.display = 'block';
 
+  // Реініціалізуємо конструктор інгредієнтів при показі форми
+  const lang = localStorage.getItem('lang') || 'ua';
+  initIngredientBuilder(
+    '#rm-ingredients-builder',
+    (ingredients, totals) => {
+      const kcalEl = document.getElementById('rm-calories');
+      const proteinEl = document.getElementById('rm-proteins');
+      const fatEl = document.getElementById('rm-fats');
+      const carbsEl = document.getElementById('rm-carbs');
+
+      if (kcalEl) kcalEl.value = totals.kcal || '';
+      if (proteinEl) proteinEl.value = totals.protein.toFixed(1) || '';
+      if (fatEl) fatEl.value = totals.fat.toFixed(1) || '';
+      if (carbsEl) carbsEl.value = totals.carbs.toFixed(1) || '';
+    },
+    lang,
+  );
+
   if (data) {
     const setVal = (id, val) => {
       const el = document.getElementById(id);
@@ -280,7 +315,6 @@ function showRecipeForm(data = null) {
     setVal('rm-proteins', data.proteins || data.protein);
     setVal('rm-fats', data.fats || data.fat);
     setVal('rm-carbs', data.carbs);
-    setVal('rm-ingredients', data.ingredients);
     setVal('rm-steps', data.steps);
     setVal('rm-category', data.category || 'lunch');
     setVal('rm-image-url', data.image);
@@ -306,14 +340,16 @@ async function saveRecipe() {
     finalImage = urlInput.value.trim();
   }
 
+  // Отримуємо КБЖУ з конструктора інгредієнтів
+  const totals = getTotals();
+
   const payload = {
     name_ua: document.getElementById('rm-name')?.value.trim(),
-    kcal: Number(document.getElementById('rm-calories')?.value) || 0,
-    protein: Number(document.getElementById('rm-proteins')?.value) || 0,
-    fat: Number(document.getElementById('rm-fats')?.value) || 0,
-    carbs: Number(document.getElementById('rm-carbs')?.value) || 0,
+    kcal: totals.kcal || 0,
+    protein: parseFloat(totals.protein.toFixed(1)) || 0,
+    fat: parseFloat(totals.fat.toFixed(1)) || 0,
+    carbs: parseFloat(totals.carbs.toFixed(1)) || 0,
     category: document.getElementById('rm-category')?.value,
-    ingredients: document.getElementById('rm-ingredients')?.value || '',
     steps: document.getElementById('rm-steps')?.value || '',
     image: finalImage,
     user_id: user ? user.id : null,
@@ -326,6 +362,27 @@ async function saveRecipe() {
     console.error('Помилка збереження рецепту:', error);
     showToast('Помилка збереження', 'error');
     return;
+  }
+
+  // Зберігаємо інгредієнти в product_recipe
+  const ingredients = getIngredients();
+  if (ingredients.length > 0 && data?.id) {
+    const ingredientRows = ingredients
+      .filter((ing) => ing.id) // тільки ті, що є в базі products
+      .map((ing) => ({
+        recipe_id: data.id,
+        ingredient_id: ing.id,
+        amount: ing.weight,
+        unit: ing.unit || 'g',
+      }));
+
+    if (ingredientRows.length > 0) {
+      const { error: ingError } = await supabase.from('product_recipe').insert(ingredientRows);
+
+      if (ingError) {
+        console.error('Помилка збереження інгредієнтів:', ingError);
+      }
+    }
   }
 
   showToast('Рецепт збережено! ✓');
@@ -370,11 +427,6 @@ async function searchRecipesApi() {
     resultsEl.innerHTML = '';
 
     meals.slice(0, 8).forEach((m) => {
-      const ingredients = Object.keys(m)
-        .filter((k) => k.startsWith('strIngredient') && m[k])
-        .map((k, i) => `${m[k]} ${m[`strMeasure${i + 1}`] || ''}`)
-        .join('\n');
-
       const card = document.createElement('div');
       card.className = 'api-result-card';
       card.innerHTML = `
@@ -391,7 +443,6 @@ async function searchRecipesApi() {
         showRecipeForm({
           name: m.strMeal,
           image: m.strMealThumb,
-          ingredients,
           steps: m.strInstructions || '',
           category: 'lunch',
         });
