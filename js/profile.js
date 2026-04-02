@@ -12,6 +12,7 @@ import {
   saveActivity,
   deleteActivity as deleteActivityFromStorage,
 } from './storage.js';
+import { initCustomSelect, setSelectValue, initSelectsGlobalListener } from './ui-components.js';
 
 // =====================================
 // DOM ELEMENTS
@@ -83,54 +84,6 @@ let statisticsCharts = {
   lastWeekChart: null,
   thisWeekChart: null,
 };
-
-// =====================================
-// CUSTOM SELECTS
-// =====================================
-
-function setupCustomSelect(selectId, inputId) {
-  const select = document.getElementById(selectId);
-  const input = document.getElementById(inputId);
-  if (!select || !input) return;
-
-  const trigger = select.querySelector('.custom-select__trigger');
-  const triggerText = trigger.querySelector('span');
-  const options = select.querySelectorAll('.custom-select__option');
-
-  trigger.addEventListener('click', (e) => {
-    e.stopPropagation();
-    document.querySelectorAll('.custom-select').forEach((s) => {
-      if (s !== select) s.classList.remove('open');
-    });
-    select.classList.toggle('open');
-  });
-
-  options.forEach((option) => {
-    option.addEventListener('click', () => {
-      options.forEach((o) => o.classList.remove('selected'));
-      option.classList.add('selected');
-      triggerText.textContent = option.textContent;
-      input.value = option.dataset.value;
-      select.classList.remove('open');
-    });
-  });
-}
-
-function updateSelectValue(selectId, inputId, value) {
-  const select = document.getElementById(selectId);
-  const input = document.getElementById(inputId);
-  if (!select || !input) return;
-
-  input.value = value;
-  const option = select.querySelector(`[data-value="${value}"]`);
-  if (option) {
-    select
-      .querySelectorAll('.custom-select__option')
-      .forEach((o) => o.classList.remove('selected'));
-    option.classList.add('selected');
-    select.querySelector('.custom-select__trigger span').textContent = option.textContent;
-  }
-}
 
 // =====================================
 // WEIGHT CHART
@@ -438,9 +391,9 @@ function fillForm(data) {
   if (form.height) form.height.value = data.height || '';
   if (form.weight) form.weight.value = data.weight || '';
 
-  if (data.gender) updateSelectValue('genderSelect', 'genderInput', data.gender);
-  if (data.activity) updateSelectValue('activitySelect', 'activityInput', String(data.activity));
-  if (data.goal) updateSelectValue('goalSelect', 'goalInput', data.goal);
+  if (data.gender) setSelectValue('genderSelect', 'genderInput', data.gender);
+  if (data.activity) setSelectValue('activitySelect', 'activityInput', String(data.activity));
+  if (data.goal) setSelectValue('goalSelect', 'goalInput', data.goal);
 
   if (targetWeightInput && data.target_weight) {
     targetWeightInput.value = data.target_weight;
@@ -1123,19 +1076,13 @@ async function initProfile() {
     return;
   }
 
-  setupCustomSelect('genderSelect', 'genderInput');
-  setupCustomSelect('activitySelect', 'activityInput');
-  setupCustomSelect('goalSelect', 'goalInput');
+  initCustomSelect('genderSelect', 'genderInput');
+  initCustomSelect('activitySelect', 'activityInput');
+  initCustomSelect('goalSelect', 'goalInput');
 
   recordWeightBtn?.addEventListener('click', recordNewWeight);
 
-  // ✅ ВИПРАВЛЕНО: Закриваємо селекти тільки при кліку поза ними
-  document.addEventListener('click', (e) => {
-    if (!e.target.closest('.custom-select')) {
-      document.querySelectorAll('.custom-select').forEach((s) => s.classList.remove('open'));
-    }
-  });
-
+  initSelectsGlobalListener();
   await loadProfileFromSupabase();
 
   initWeightChart();

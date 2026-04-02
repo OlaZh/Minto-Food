@@ -41,8 +41,6 @@ let editingRecipeId = null;
 // 3. ДОПОМІЖНІ ФУНКЦІЇ
 // =============================================================
 
-
-
 const updateStarsUI = (rating) => {
   const ratingContainer = document.querySelector('.recipe-rating');
   if (!ratingContainer) return;
@@ -74,8 +72,6 @@ function getRecipeName(recipe) {
   if (lang === 'en' && recipe.name_en) return recipe.name_en;
   return recipe.name_ua || recipe.name_en || recipe.name_pl || '';
 }
-
-
 
 // =============================================================
 // 4. ЗАВАНТАЖЕННЯ ТА ВІДОБРАЖЕННЯ РЕЦЕПТІВ З SUPABASE
@@ -175,7 +171,7 @@ function displayRecipes(recipes) {
 // 5. ПЕРЕГЛЯД РЕЦЕПТУ
 // =============================================================
 
-async function openRecipeView(recipeId) {
+export async function openRecipeView(recipeId) {
   const { data: recipe, error } = await supabase
     .from('recipes')
     .select('*')
@@ -217,7 +213,7 @@ async function openRecipeView(recipeId) {
     // Завантажуємо інгредієнти через product_recipe
     const { data: productRecipes } = await supabase
       .from('product_recipe')
-      .select('amount, unit, product_id, products(name_ua, name_en, name_pl)')
+      .select('amount, unit, ingredient_id, products(name_ua, name_en, name_pl)')
       .eq('recipe_id', recipeId);
 
     if (productRecipes && productRecipes.length > 0) {

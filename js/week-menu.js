@@ -3,6 +3,7 @@ console.log('week-menu.js запустився');
 import { supabase } from './supabaseClient.js';
 import { i18n } from './i18n.js';
 import { initRecipeModal, openRecipeModal } from './recipe-modal.js';
+import { openRecipeView } from './add-recipe.js';
 import { initAuth, requireAuth } from './auth.js';
 import { showToast, getLocalDateString } from './utils.js';
 
@@ -230,7 +231,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       li.querySelector('.meal-cell__item-name').addEventListener('click', (e) => {
         e.stopPropagation();
         if (item.recipe_id) {
-          openRecipeCard(item.recipe_id);
+          openRecipeView(item.recipe_id);
         }
       });
 
@@ -703,7 +704,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Завантажуємо інгредієнти через product_recipe
     const { data: productRecipes, error } = await supabase
       .from('product_recipe')
-      .select('amount, unit, product_id, products(id, name_ua, name_en, name_pl), recipe_id')
+      .select('amount, unit, ingredient_id, products(id, name_ua, name_en, name_pl), recipe_id')
       .in('recipe_id', recipeIds);
 
     if (error) {
