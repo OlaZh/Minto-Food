@@ -1,0 +1,391 @@
+<!doctype html>
+<html lang="uk">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Книга рецептів</title>
+
+    <script>
+      (function () {
+        const theme = localStorage.getItem('theme');
+        if (theme === 'dark') {
+          document.documentElement.setAttribute('data-theme', 'dark');
+        }
+      })();
+    </script>
+
+    <link rel="stylesheet" href="./css/main.css" />
+  </head>
+
+  <body class="page">
+    <header class="header">
+      <div class="header__container">
+        <a href="index.html" class="header__logo" data-i18n="logo">Minto Food 🍃</a>
+
+        <nav class="header__nav">
+          <ul class="header__nav-list">
+            <li>
+              <a href="index.html" class="header__nav-link" data-i18n="navDayMenu">Меню на день</a>
+            </li>
+            <li>
+              <a href="week-menu.html" class="header__nav-link" data-i18n="navWeekMenu"
+                >Меню на тиждень</a
+              >
+            </li>
+            <li>
+              <a href="./recipes.html" class="header__nav-link" data-i18n="navRecipes">Рецепти</a>
+            </li>
+            <li>
+              <a href="product-guide.html" class="header__nav-link" data-i18n="navProductGuide"
+                >Путівник по продуктам</a
+              >
+            </li>
+            <li>
+              <a href="#" class="header__nav-link" data-i18n="navShoppingList">Список покупок</a>
+            </li>
+            <li>
+              <a
+                href="cookbook.html"
+                class="header__nav-link header__nav-link--active"
+                data-i18n="navCookbook"
+                >Книга рецептів</a
+              >
+            </li>
+          </ul>
+        </nav>
+
+        <div class="header__actions">
+          <button
+            class="theme-toggle"
+            type="button"
+            aria-label="Змінити тему"
+            data-i18n-aria="toggleTheme">
+            <svg
+              class="sun-icon"
+              xmlns="http://www.w3.org/2000/svg"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round">
+              <circle cx="12" cy="12" r="5"></circle>
+              <line x1="12" y1="1" x2="12" y2="3"></line>
+              <line x1="12" y1="21" x2="12" y2="23"></line>
+              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+              <line x1="1" y1="12" x2="3" y2="12"></line>
+              <line x1="21" y1="12" x2="23" y2="12"></line>
+              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+            </svg>
+            <svg
+              class="moon-icon"
+              xmlns="http://www.w3.org/2000/svg"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round">
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+            </svg>
+          </button>
+
+          <a href="profile.html" class="header__profile" aria-label="Профіль">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="28"
+              height="28"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+              stroke-linecap="round"
+              stroke-linejoin="round">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+          </a>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <div class="container">
+        <div class="cookbook-page">
+          <!-- Заголовок сторінки -->
+          <section class="cookbook-page__intro">
+            <h1 class="cookbook-page__title" data-i18n="cookbookTitle">Книга рецептів</h1>
+            <p class="cookbook-page__subtitle" data-i18n="cookbookSubtitle">
+              Зберігай улюблені рецепти та організовуй їх у власні книги
+            </p>
+          </section>
+
+          <!-- Список книг -->
+          <section class="cookbook-books">
+            <div class="cookbook-books__header">
+              <h2 class="cookbook-books__title" data-i18n="myBooks">Мої книги</h2>
+              <button class="cookbook-books__add-btn" id="addBookBtn" data-i18n="addBook">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round">
+                  <line x1="12" y1="5" x2="12" y2="19"></line>
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                Нова книга
+              </button>
+            </div>
+
+            <div class="cookbook-books__grid" id="booksGrid">
+              <!-- Основна книга (завжди є) -->
+
+              <!-- Сюди JS додаватиме інші книги -->
+            </div>
+          </section>
+        </div>
+      </div>
+    </main>
+
+    <!-- Модалка: Відкрита книга -->
+    <div class="modal-overlay" id="bookModal">
+      <div class="modal cookbook-modal">
+        <button class="modal__close" id="closeBookModal" aria-label="Закрити">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+
+        <div class="cookbook-modal__header">
+          <h2 class="cookbook-modal__title" id="bookModalTitle">Назва книги</h2>
+          <div class="cookbook-modal__tabs">
+            <button class="cookbook-modal__tab cookbook-modal__tab--active" data-tab="recipes">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round">
+                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+              </svg>
+              Рецепти
+            </button>
+            <button class="cookbook-modal__tab" data-tab="notebook">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <line x1="16" y1="13" x2="8" y2="13"></line>
+                <line x1="16" y1="17" x2="8" y2="17"></line>
+                <polyline points="10 9 9 9 8 9"></polyline>
+              </svg>
+              Блокнот
+            </button>
+          </div>
+        </div>
+
+        <!-- Вкладка: Рецепти -->
+        <div class="cookbook-modal__content cookbook-modal__content--active" data-content="recipes">
+          <div class="cookbook-recipes" id="bookRecipes">
+            <!-- Рецепти завантажуються JS -->
+            <p class="cookbook-recipes__empty">
+              Тут поки немає рецептів. Додай їх зі сторінки "Рецепти"!
+            </p>
+          </div>
+        </div>
+
+        <!-- Вкладка: Блокнот -->
+        <div class="cookbook-modal__content" data-content="notebook">
+          <div class="cookbook-notebook" id="bookNotebook">
+            <!-- Якщо блокнот не створений -->
+            <div class="cookbook-notebook__empty" id="notebookEmpty">
+              <p>Блокнот ще не створено</p>
+              <button class="cookbook-notebook__create-btn" id="createNotebookBtn">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round">
+                  <line x1="12" y1="5" x2="12" y2="19"></line>
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                Створити блокнот
+              </button>
+            </div>
+
+            <!-- Якщо блокнот є -->
+            <div class="cookbook-notebook__content" id="notebookContent" style="display: none">
+              <div class="cookbook-notebook__header">
+                <h3 class="cookbook-notebook__title">📝 Мої нотатки</h3>
+                <button class="cookbook-notebook__add-note-btn" id="addNoteBtn">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                  </svg>
+                  Нова нотатка
+                </button>
+              </div>
+
+              <div class="cookbook-notebook__notes" id="notesList">
+                <!-- Нотатки завантажуються JS -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Модалка: Створити нову книгу -->
+    <div class="modal-overlay" id="newBookModal">
+      <div class="modal cookbook-modal cookbook-modal--small">
+        <button class="modal__close" id="closeNewBookModal" aria-label="Закрити">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+
+        <h2 class="cookbook-modal__title">Нова книга</h2>
+
+        <form class="cookbook-form" id="newBookForm">
+          <div class="cookbook-form__field">
+            <label for="newBookName">Назва книги</label>
+            <input
+              type="text"
+              id="newBookName"
+              placeholder="Наприклад: Обіди на роботу"
+              required
+              maxlength="50" />
+          </div>
+
+          <div class="cookbook-form__field">
+            <label for="newBookIcon">Іконка</label>
+            <div class="cookbook-form__icons" id="iconPicker">
+              <button
+                type="button"
+                class="cookbook-form__icon cookbook-form__icon--active"
+                data-icon="📖">
+                📖
+              </button>
+              <button type="button" class="cookbook-form__icon" data-icon="🍳">🍳</button>
+              <button type="button" class="cookbook-form__icon" data-icon="🥗">🥗</button>
+              <button type="button" class="cookbook-form__icon" data-icon="🎂">🎂</button>
+              <button type="button" class="cookbook-form__icon" data-icon="🍕">🍕</button>
+              <button type="button" class="cookbook-form__icon" data-icon="🥘">🥘</button>
+              <button type="button" class="cookbook-form__icon" data-icon="🍜">🍜</button>
+              <button type="button" class="cookbook-form__icon" data-icon="❤️">❤️</button>
+              <button type="button" class="cookbook-form__icon" data-icon="⭐">⭐</button>
+              <button type="button" class="cookbook-form__icon" data-icon="🎄">🎄</button>
+              <button type="button" class="cookbook-form__icon" data-icon="🚗">🚗</button>
+              <button type="button" class="cookbook-form__icon" data-icon="👶">👶</button>
+            </div>
+          </div>
+
+          <button type="submit" class="cookbook-form__submit">Створити книгу</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Модалка: Нова нотатка -->
+    <div class="modal-overlay" id="newNoteModal">
+      <div class="modal cookbook-modal cookbook-modal--small">
+        <button class="modal__close" id="closeNewNoteModal" aria-label="Закрити">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+
+        <h2 class="cookbook-modal__title">Нова нотатка</h2>
+
+        <form class="cookbook-form" id="newNoteForm">
+          <div class="cookbook-form__field">
+            <label for="noteTitle">Назва нотатки</label>
+            <input
+              type="text"
+              id="noteTitle"
+              placeholder="Наприклад: Що брала на роботу"
+              required
+              maxlength="100" />
+          </div>
+
+          <div class="cookbook-form__field">
+            <label for="noteContent">Текст</label>
+            <textarea id="noteContent" rows="6" placeholder="Пиши тут..."></textarea>
+          </div>
+
+          <button type="submit" class="cookbook-form__submit">Зберегти</button>
+        </form>
+      </div>
+    </div>
+
+    <script type="module" src="./js/theme-toggle.js"></script>
+    <script type="module" src="./js/cookbook.js"></script>
+  </body>
+</html>
