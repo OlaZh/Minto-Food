@@ -2,6 +2,7 @@
 // Логіка сторінки "Книга рецептів"
 
 import { supabase } from './supabaseClient.js';
+import { showToast } from './utils.js';
 
 // =====================================
 // СТАН
@@ -69,6 +70,9 @@ async function init() {
   }
 
   currentUser = user;
+
+  // Створюємо модалку редагування якщо її немає
+  createEditBookModal();
 
   await loadBooks();
   setupEventListeners();
@@ -161,6 +165,7 @@ async function loadBooks() {
       .from('cookbooks')
       .select('*')
       .eq('user_id', currentUser.id)
+      .order('is_default', { ascending: false })
       .order('created_at', { ascending: true });
 
     if (error) throw error;
@@ -191,12 +196,14 @@ async function createBookElement(book) {
     .eq('cookbook_id', book.id);
 
   const recipeCount = count || 0;
+  const isDefault = book.is_default;
 
   const article = document.createElement('article');
   article.className = 'cookbook-book';
   article.dataset.bookId = book.id;
 
   article.innerHTML = `
+    ${isDefault ? '<span class="cookbook-book__default-badge">Головна</span>' : ''}
     <div class="cookbook-book__cover">
       <span class="cookbook-book__icon">${book.icon || '📖'}</span>
     </div>
@@ -205,19 +212,37 @@ async function createBookElement(book) {
       <p class="cookbook-book__count">${recipeCount} рецептів</p>
     </div>
     <div class="cookbook-book__actions">
+      <button class="cookbook-book__edit-btn" aria-label="Редагувати книгу">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+        </svg>
+      </button>
       <button class="cookbook-book__open-btn" aria-label="Відкрити книгу">
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <polyline points="9 18 15 12 9 6"></polyline>
         </svg>
       </button>
-      <button class="cookbook-book__delete-btn" aria-label="Видалити книгу">
-        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="3 6 5 6 21 6"></polyline>
-          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-        </svg>
-      </button>
+      ${
+        !isDefault
+          ? `
+        <button class="cookbook-book__delete-btn" aria-label="Видалити книгу">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="3 6 5 6 21 6"></polyline>
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+          </svg>
+        </button>
+      `
+          : ''
+      }
     </div>
   `;
+
+  // Редагувати книгу
+  article.querySelector('.cookbook-book__edit-btn').addEventListener('click', (e) => {
+    e.stopPropagation();
+    openEditBookModal(book);
+  });
 
   // Відкрити книгу
   article.querySelector('.cookbook-book__open-btn').addEventListener('click', (e) => {
@@ -225,11 +250,14 @@ async function createBookElement(book) {
     openBook(book);
   });
 
-  // Видалити книгу
-  article.querySelector('.cookbook-book__delete-btn').addEventListener('click', (e) => {
-    e.stopPropagation();
-    deleteBook(book.id);
-  });
+  // Видалити книгу (тільки для не-головних)
+  const deleteBtn = article.querySelector('.cookbook-book__delete-btn');
+  if (deleteBtn) {
+    deleteBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      deleteBook(book.id);
+    });
+  }
 
   // Клік по всій картці теж відкриває
   article.addEventListener('click', () => openBook(book));
@@ -251,6 +279,7 @@ async function handleCreateBook(e) {
           name,
           icon: selectedIcon,
           user_id: currentUser.id,
+          is_default: false,
         },
       ])
       .select()
@@ -269,13 +298,27 @@ async function handleCreateBook(e) {
     document.querySelectorAll('.cookbook-form__icon').forEach((btn, i) => {
       btn.classList.toggle('cookbook-form__icon--active', i === 0);
     });
+
+    showToast('Книгу створено!');
   } catch (err) {
     console.error('Error creating book:', err);
-    alert('Помилка створення книги');
+    showToast('Помилка створення книги', 'error');
   }
 }
 
 async function deleteBook(bookId) {
+  // Перевіряємо чи це не головна книга
+  const { data: book } = await supabase
+    .from('cookbooks')
+    .select('is_default')
+    .eq('id', bookId)
+    .single();
+
+  if (book?.is_default) {
+    showToast('Головну книгу не можна видалити', 'error');
+    return;
+  }
+
   if (!confirm('Видалити цю книгу? Рецепти залишаться в загальному списку.')) return;
 
   try {
@@ -286,10 +329,160 @@ async function deleteBook(bookId) {
     // Видаляємо з DOM
     const bookEl = booksGrid.querySelector(`[data-book-id="${bookId}"]`);
     bookEl?.remove();
+
+    showToast('Книгу видалено');
   } catch (err) {
     console.error('Error deleting book:', err);
-    alert('Помилка видалення книги');
+    showToast('Помилка видалення книги', 'error');
   }
+}
+
+// =====================================
+// РЕДАГУВАННЯ КНИГИ
+// =====================================
+
+function createEditBookModal() {
+  if (document.getElementById('editBookModal')) return;
+
+  const modal = document.createElement('div');
+  modal.id = 'editBookModal';
+  modal.className = 'modal-overlay';
+  modal.innerHTML = `
+    <div class="modal-card edit-book-modal">
+      <button class="modal-card__close" id="closeEditBookModal">&times;</button>
+      
+      <div class="edit-book-modal__header">
+        <h3>Редагувати книгу</h3>
+      </div>
+      
+      <form id="editBookForm">
+        <div class="form-group">
+          <label>Назва книги</label>
+          <input type="text" id="editBookName" required maxlength="50" />
+        </div>
+        
+        <div class="form-group">
+          <label>Іконка</label>
+          <div class="cookbook-form__icons" id="editIconPicker">
+            <button type="button" class="cookbook-form__icon" data-icon="📖">📖</button>
+            <button type="button" class="cookbook-form__icon" data-icon="🍳">🍳</button>
+            <button type="button" class="cookbook-form__icon" data-icon="🥗">🥗</button>
+            <button type="button" class="cookbook-form__icon" data-icon="🍰">🍰</button>
+            <button type="button" class="cookbook-form__icon" data-icon="🍕">🍕</button>
+            <button type="button" class="cookbook-form__icon" data-icon="🥘">🥘</button>
+            <button type="button" class="cookbook-form__icon" data-icon="🍜">🍜</button>
+            <button type="button" class="cookbook-form__icon" data-icon="❤️">❤️</button>
+            <button type="button" class="cookbook-form__icon" data-icon="⭐">⭐</button>
+            <button type="button" class="cookbook-form__icon" data-icon="🎂">🎂</button>
+          </div>
+        </div>
+        
+        <div class="form-group" id="setDefaultGroup" style="display: none;">
+          <label class="checkbox-label">
+            <input type="checkbox" id="editBookDefault" />
+            <span>Зробити головною книгою</span>
+          </label>
+        </div>
+        
+        <div class="edit-book-modal__actions">
+          <button type="button" class="btn-secondary" id="cancelEditBook">Скасувати</button>
+          <button type="submit" class="btn-save">Зберегти</button>
+        </div>
+      </form>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+
+  // Закриття
+  document.getElementById('closeEditBookModal').addEventListener('click', () => closeModal(modal));
+  document.getElementById('cancelEditBook').addEventListener('click', () => closeModal(modal));
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) closeModal(modal);
+  });
+
+  // Вибір іконки
+  let editSelectedIcon = '📖';
+  document.getElementById('editIconPicker').addEventListener('click', (e) => {
+    const iconBtn = e.target.closest('.cookbook-form__icon');
+    if (!iconBtn) return;
+
+    document.querySelectorAll('#editIconPicker .cookbook-form__icon').forEach((btn) => {
+      btn.classList.remove('cookbook-form__icon--active');
+    });
+    iconBtn.classList.add('cookbook-form__icon--active');
+    editSelectedIcon = iconBtn.dataset.icon;
+  });
+
+  // Збереження
+  document.getElementById('editBookForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const bookId = modal.dataset.bookId;
+    const name = document.getElementById('editBookName').value.trim();
+    const makeDefault = document.getElementById('editBookDefault').checked;
+
+    if (!name) return;
+
+    try {
+      // Якщо робимо головною — скидаємо is_default у інших
+      if (makeDefault) {
+        await supabase
+          .from('cookbooks')
+          .update({ is_default: false })
+          .eq('user_id', currentUser.id);
+      }
+
+      const updateData = {
+        name,
+        icon: editSelectedIcon,
+      };
+
+      if (makeDefault) {
+        updateData.is_default = true;
+      }
+
+      const { error } = await supabase.from('cookbooks').update(updateData).eq('id', bookId);
+
+      if (error) throw error;
+
+      closeModal(modal);
+      await loadBooks(); // Перезавантажуємо список
+      showToast('Книгу оновлено!');
+    } catch (err) {
+      console.error('Error updating book:', err);
+      showToast('Помилка оновлення', 'error');
+    }
+  });
+}
+
+function openEditBookModal(book) {
+  const modal = document.getElementById('editBookModal');
+  if (!modal) return;
+
+  modal.dataset.bookId = book.id;
+
+  // Заповнюємо поля
+  document.getElementById('editBookName').value = book.name;
+
+  // Вибираємо іконку
+  const icons = document.querySelectorAll('#editIconPicker .cookbook-form__icon');
+  icons.forEach((btn) => {
+    btn.classList.toggle('cookbook-form__icon--active', btn.dataset.icon === book.icon);
+  });
+
+  // Показуємо чекбокс "Зробити головною" тільки якщо це не головна книга
+  const defaultGroup = document.getElementById('setDefaultGroup');
+  const defaultCheckbox = document.getElementById('editBookDefault');
+  if (book.is_default) {
+    defaultGroup.style.display = 'none';
+    defaultCheckbox.checked = false;
+  } else {
+    defaultGroup.style.display = 'block';
+    defaultCheckbox.checked = false;
+  }
+
+  openModal(modal);
 }
 
 // =====================================
@@ -394,6 +587,7 @@ async function removeRecipeFromBook(recipeId) {
 
     // Оновлюємо список
     await loadBookRecipes();
+    showToast('Рецепт видалено з книги');
   } catch (err) {
     console.error('Error removing recipe:', err);
   }
@@ -444,7 +638,7 @@ async function handleCreateNotebook() {
     notesList.innerHTML = '<p class="cookbook-notebook__empty-notes">Поки немає нотаток</p>';
   } catch (err) {
     console.error('Error creating notebook:', err);
-    alert('Помилка створення блокнота');
+    showToast('Помилка створення блокнота', 'error');
   }
 }
 
@@ -540,9 +734,10 @@ async function handleCreateNote(e) {
     closeModal(newNoteModal);
     newNoteForm.reset();
     await loadNotes();
+    showToast('Нотатку створено!');
   } catch (err) {
     console.error('Error creating note:', err);
-    alert('Помилка створення нотатки');
+    showToast('Помилка створення нотатки', 'error');
   }
 }
 
@@ -552,7 +747,7 @@ function editNote(note) {
 
   // Змінюємо форму на редагування
   const submitBtn = newNoteForm.querySelector('.cookbook-form__submit');
-  submitBtn.textContent = 'Зберегти зміни';
+  if (submitBtn) submitBtn.textContent = 'Зберегти зміни';
 
   // Зберігаємо ID для оновлення
   newNoteForm.dataset.editId = note.id;
@@ -586,13 +781,14 @@ async function updateNote(noteId) {
 
     // Повертаємо обробник на створення
     const submitBtn = newNoteForm.querySelector('.cookbook-form__submit');
-    submitBtn.textContent = 'Зберегти';
+    if (submitBtn) submitBtn.textContent = 'Зберегти';
     newNoteForm.onsubmit = handleCreateNote;
 
     await loadNotes();
+    showToast('Нотатку оновлено!');
   } catch (err) {
     console.error('Error updating note:', err);
-    alert('Помилка оновлення нотатки');
+    showToast('Помилка оновлення нотатки', 'error');
   }
 }
 
@@ -605,9 +801,10 @@ async function deleteNote(noteId) {
     if (error) throw error;
 
     await loadNotes();
+    showToast('Нотатку видалено');
   } catch (err) {
     console.error('Error deleting note:', err);
-    alert('Помилка видалення нотатки');
+    showToast('Помилка видалення нотатки', 'error');
   }
 }
 

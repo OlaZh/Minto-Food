@@ -1,8 +1,17 @@
-console.log('add-recipe.js запустився');
-
 import { supabase } from './supabaseClient.js';
 import { initAuth } from './auth.js';
 import { showToast, toBase64, parseNumber } from './utils.js';
+import {
+  initBookSelector,
+  quickSaveToDefault,
+  openBookSelector,
+  isRecipeSaved,
+  openReportModal,
+  removeRecipeFromBook,
+  getRecipeBooks,
+} from './book-selector.js';
+
+console.log('add-recipe.js запустився');
 
 // =============================================================
 // 1. ОГОЛОШЕННЯ ЕЛЕМЕНТІВ (DOM)
@@ -36,6 +45,7 @@ const saveNotesBtn = document.getElementById('save-notes-btn');
 let recipeIdToDelete = null;
 let currentViewingId = null;
 let editingRecipeId = null;
+let currentUser = null;
 
 // =============================================================
 // 3. ДОПОМІЖНІ ФУНКЦІЇ
@@ -73,6 +83,12 @@ function getRecipeName(recipe) {
   return recipe.name_ua || recipe.name_en || recipe.name_pl || '';
 }
 
+// Перевірка чи рецепт належить поточному користувачу
+function isOwnRecipe(recipe) {
+  if (!currentUser || !recipe) return false;
+  return recipe.user_id === currentUser.id;
+}
+
 // =============================================================
 // 4. ЗАВАНТАЖЕННЯ ТА ВІДОБРАЖЕННЯ РЕЦЕПТІВ З SUPABASE
 // =============================================================
@@ -81,6 +97,8 @@ async function loadAndDisplayRecipes() {
   const {
     data: { user },
   } = await supabase.auth.getUser();
+
+  currentUser = user;
 
   // Завантажуємо рецепти: публічні (без user_id) АБО власні користувача
   let query = supabase.from('recipes').select('*');
@@ -113,7 +131,7 @@ const categoryTranslations = {
   no_power: 'Без світла 🔋',
 };
 
-function displayRecipes(recipes) {
+async function displayRecipes(recipes) {
   const recipeGrid = document.querySelector('.recipe-grid');
   if (!recipeGrid) return;
 
@@ -124,12 +142,27 @@ function displayRecipes(recipes) {
     return;
   }
 
+  // Отримуємо список збережених рецептів для поточного користувача
+  let savedRecipeIds = [];
+  if (currentUser) {
+    const { data: savedData } = await supabase
+      .from('cookbook_recipes')
+      .select('recipe_id, cookbooks!inner(user_id)')
+      .eq('cookbooks.user_id', currentUser.id);
+
+    if (savedData) {
+      savedRecipeIds = savedData.map((d) => d.recipe_id);
+    }
+  }
+
   recipes.forEach((recipe) => {
     const rating = recipe.rating || 0;
     const name = getRecipeName(recipe);
     const cardImage =
       recipe.image || 'https://images.unsplash.com/photo-1495521821757-a1efb6729352?q=80&w=500';
     const displayCategory = categoryTranslations[recipe.category] || recipe.category || '';
+    const isSaved = savedRecipeIds.includes(recipe.id);
+    const isOwn = isOwnRecipe(recipe);
 
     const card = document.createElement('div');
     card.className = 'recipe-card';
@@ -138,12 +171,24 @@ function displayRecipes(recipes) {
     card.innerHTML = `
       <div class="recipe-card__image-box">
         <img src="${cardImage}" alt="${name}" class="recipe-card__img">
-        <div class="recipe-card__rating-badge" style="position:absolute;top:12px;left:48px;background:rgba(255,255,255,0.95);padding:3px 8px;border-radius:6px;font-weight:800;color:#333;font-size:11px;display:flex;align-items:center;gap:4px;box-shadow:0 2px 5px rgba(0,0,0,0.15);z-index:2;">
+        
+        <!-- Сердечко для збереження -->
+        <button class="recipe-card__favorite ${isSaved ? 'recipe-card__favorite--saved' : ''}" 
+                data-recipe-id="${recipe.id}" 
+                aria-label="Зберегти в книгу"
+                title="${isSaved ? 'Збережено' : 'Зберегти в книгу'}">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+          </svg>
+        </button>
+        
+        <div class="recipe-card__rating-badge">
           <span style="color:#f1c40f;">★</span>
           <span>${rating > 0 ? Number(rating).toFixed(1) : '0'}</span>
         </div>
         <div class="recipe-card__stats">${recipe.kcal || 0} ккал</div>
-        <button class="btn-delete-recipe js-delete-recipe">✕</button>
+        
+        ${isOwn ? '<button class="btn-delete-recipe js-delete-recipe">✕</button>' : ''}
       </div>
       <div class="recipe-card__content">
         <h3 class="recipe-card__name">${name}</h3>
@@ -152,19 +197,60 @@ function displayRecipes(recipes) {
       </div>
     `;
 
+    // Сердечко — швидке збереження
+    card.querySelector('.recipe-card__favorite').addEventListener('click', async (e) => {
+      e.stopPropagation();
+      await handleFavoriteClick(e.currentTarget, recipe.id);
+    });
+
     // Переглянути
     card.querySelector('.js-view-recipe').addEventListener('click', () => {
       openRecipeView(recipe.id);
     });
 
-    // Видалити
-    card.querySelector('.js-delete-recipe').addEventListener('click', (e) => {
-      e.stopPropagation();
-      openDeleteConfirm(recipe.id);
-    });
+    // Видалити (тільки для власних)
+    const deleteBtn = card.querySelector('.js-delete-recipe');
+    if (deleteBtn) {
+      deleteBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        openDeleteConfirm(recipe.id);
+      });
+    }
 
     recipeGrid.appendChild(card);
   });
+}
+
+// =============================================================
+// 4.1 ОБРОБКА КЛІКУ НА СЕРДЕЧКО
+// =============================================================
+
+async function handleFavoriteClick(btn, recipeId) {
+  if (!currentUser) {
+    showToast('Увійдіть, щоб зберігати рецепти', 'error');
+    return;
+  }
+
+  btn.classList.add('is-saving');
+
+  const isSaved = btn.classList.contains('recipe-card__favorite--saved');
+
+  if (isSaved) {
+    // Якщо вже збережено — відкриваємо модалку вибору книг для видалення
+    openBookSelector(recipeId, async () => {
+      // Оновлюємо стан після закриття
+      const stillSaved = await isRecipeSaved(recipeId);
+      btn.classList.toggle('recipe-card__favorite--saved', stillSaved);
+    });
+  } else {
+    // Швидке збереження в головну книгу
+    const success = await quickSaveToDefault(recipeId);
+    if (success) {
+      btn.classList.add('recipe-card__favorite--saved');
+    }
+  }
+
+  btn.classList.remove('is-saving');
 }
 
 // =============================================================
@@ -186,6 +272,7 @@ export async function openRecipeView(recipeId) {
   currentViewingId = recipeId;
 
   const name = getRecipeName(recipe);
+  const isOwn = isOwnRecipe(recipe);
 
   const setT = (id, val) => {
     const el = document.getElementById(id);
@@ -267,40 +354,159 @@ export async function openRecipeView(recipeId) {
     });
   }
 
-  // --- КНОПКА РЕДАГУВАННЯ ---
-  const editBtn = document.getElementById('edit-recipe-btn');
-  if (editBtn) {
-    editBtn.onclick = function () {
-      editingRecipeId = recipeId;
-      if (viewModal) viewModal.classList.remove('is-active');
-
-      if (modal) {
-        modal.classList.add('is-active');
-        const options = document.getElementById('initial-options-view');
-        const form = document.getElementById('recipe-preview-form');
-        if (options) options.style.display = 'none';
-        if (form) form.style.display = 'block';
-
-        const setVal = (id, val) => {
-          const el = document.getElementById(id);
-          if (el) el.value = val || '';
-        };
-
-        setVal('prev-name', name);
-        setVal('prev-calories', recipe.kcal);
-        setVal('prev-ingredients', recipe.ingredients);
-        setVal('prev-steps', recipe.steps);
-        setVal('prev-category', recipe.category);
-        setVal('prev-proteins', recipe.protein);
-        setVal('prev-carbs', recipe.carbs);
-        setVal('prev-fats', recipe.fat);
-      }
-    };
-  }
+  // --- ОНОВЛЮЄМО ПАНЕЛЬ ДІЙ ---
+  updateRecipeViewActions(recipe, isOwn);
 
   if (viewModal) {
     viewModal.classList.add('is-active');
     document.body.style.overflow = 'hidden';
+  }
+}
+
+// =============================================================
+// 5.1 ПАНЕЛЬ ДІЙ В ПЕРЕГЛЯДІ РЕЦЕПТУ (меню 3 крапки)
+// =============================================================
+
+function updateRecipeViewActions(recipe, isOwn) {
+  const actionsContainer = document.querySelector('.recipe-view__actions');
+  if (!actionsContainer) return;
+
+  const name = getRecipeName(recipe);
+
+  actionsContainer.innerHTML = `
+    <div class="recipe-actions-menu">
+      <button class="recipe-actions-menu__trigger" aria-label="Дії з рецептом">
+        <svg viewBox="0 0 24 24" fill="currentColor">
+          <circle cx="12" cy="5" r="2"></circle>
+          <circle cx="12" cy="12" r="2"></circle>
+          <circle cx="12" cy="19" r="2"></circle>
+        </svg>
+      </button>
+      
+      <div class="recipe-actions-menu__dropdown" id="recipe-actions-dropdown">
+        ${
+          isOwn
+            ? `
+          <button class="recipe-actions-menu__item" id="action-edit">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+            </svg>
+            <span>Редагувати</span>
+          </button>
+        `
+            : ''
+        }
+        
+        <button class="recipe-actions-menu__item" id="action-save-to-book">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+          </svg>
+          <span>Зберегти в книгу</span>
+        </button>
+        
+        ${
+          isOwn
+            ? `
+          <div class="recipe-actions-menu__divider"></div>
+          <button class="recipe-actions-menu__item recipe-actions-menu__item--danger" id="action-delete">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="3 6 5 6 21 6"></polyline>
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+            </svg>
+            <span>Видалити</span>
+          </button>
+        `
+            : `
+          <div class="recipe-actions-menu__divider"></div>
+          <button class="recipe-actions-menu__item recipe-actions-menu__item--warning" id="action-report">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path>
+              <line x1="4" y1="22" x2="4" y2="15"></line>
+            </svg>
+            <span>Поскаржитись</span>
+          </button>
+        `
+        }
+      </div>
+    </div>
+  `;
+
+  // Обробники
+  const trigger = actionsContainer.querySelector('.recipe-actions-menu__trigger');
+  const dropdown = actionsContainer.querySelector('#recipe-actions-dropdown');
+
+  trigger?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    dropdown.classList.toggle('is-open');
+  });
+
+  // Закриття по кліку поза меню
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.recipe-actions-menu')) {
+      dropdown?.classList.remove('is-open');
+    }
+  });
+
+  // Редагувати
+  actionsContainer.querySelector('#action-edit')?.addEventListener('click', () => {
+    dropdown.classList.remove('is-open');
+    editRecipe(recipe);
+  });
+
+  // Зберегти в книгу
+  actionsContainer.querySelector('#action-save-to-book')?.addEventListener('click', () => {
+    dropdown.classList.remove('is-open');
+    if (!currentUser) {
+      showToast('Увійдіть, щоб зберігати рецепти', 'error');
+      return;
+    }
+    openBookSelector(recipe.id);
+  });
+
+  // Видалити
+  actionsContainer.querySelector('#action-delete')?.addEventListener('click', () => {
+    dropdown.classList.remove('is-open');
+    openDeleteConfirm(recipe.id);
+  });
+
+  // Поскаржитись
+  actionsContainer.querySelector('#action-report')?.addEventListener('click', () => {
+    dropdown.classList.remove('is-open');
+    openReportModal(recipe.id, name);
+  });
+}
+
+// =============================================================
+// 5.2 РЕДАГУВАННЯ РЕЦЕПТУ
+// =============================================================
+
+function editRecipe(recipe) {
+  const name = getRecipeName(recipe);
+
+  editingRecipeId = recipe.id;
+  if (viewModal) viewModal.classList.remove('is-active');
+
+  if (modal) {
+    modal.classList.add('is-active');
+    const options = document.getElementById('initial-options-view');
+    const form = document.getElementById('recipe-preview-form');
+    if (options) options.style.display = 'none';
+    if (form) form.style.display = 'block';
+
+    const setVal = (id, val) => {
+      const el = document.getElementById(id);
+      if (el) el.value = val || '';
+    };
+
+    setVal('prev-name', name);
+    setVal('prev-calories', recipe.kcal);
+    setVal('prev-ingredients', recipe.ingredients);
+    setVal('prev-steps', recipe.steps);
+    setVal('prev-category', recipe.category);
+    setVal('prev-proteins', recipe.protein);
+    setVal('prev-carbs', recipe.carbs);
+    setVal('prev-fats', recipe.fat);
   }
 }
 
@@ -821,6 +1027,7 @@ document.querySelectorAll('.recipe-filters__item').forEach((btn) => {
 
 document.addEventListener('DOMContentLoaded', async () => {
   await initAuth();
+  await initBookSelector();
   loadAndDisplayRecipes();
   initAiUpload();
 
