@@ -109,7 +109,7 @@ export async function signInWithGoogle() {
   const { error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
     options: {
-      redirectTo: window.location.href,
+      redirectTo: 'https://minto-food.vercel.app/',
     },
   });
 
@@ -118,7 +118,6 @@ export async function signInWithGoogle() {
     showToast('Помилка входу через Google', 'error');
   }
 }
-
 // =============================================================
 // ЛОГІН ЧЕРЕЗ EMAIL + ПАРОЛЬ
 // =============================================================
