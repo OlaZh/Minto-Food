@@ -162,32 +162,36 @@ async function displayRecipes(recipes) {
     card.dataset.id = recipe.id;
 
     card.innerHTML = `
-      <div class="recipe-card__image-box">
-        <img src="${cardImage}" alt="${name}" class="recipe-card__img">
-        
-        <button class="recipe-card__favorite ${isSaved ? 'recipe-card__favorite--saved' : ''}" 
-                data-recipe-id="${recipe.id}" 
-                aria-label="Зберегти в книгу"
-                title="${isSaved ? 'Збережено' : 'Зберегти в книгу'}">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-          </svg>
-        </button>
-        
-        <div class="recipe-card__rating-badge">
-          <span style="color:#f1c40f;">★</span>
-          <span>${rating > 0 ? Number(rating).toFixed(1) : '0'}</span>
-        </div>
-        <div class="recipe-card__stats">${recipe.kcal || 0} ккал</div>
-        
-        ${isOwn ? '<button class="btn-delete-recipe js-delete-recipe">✕</button>' : ''}
-      </div>
-      <div class="recipe-card__content">
-        <h3 class="recipe-card__name">${name}</h3>
-        <p class="recipe-card__macros">Категорія: ${displayCategory}</p>
-        <button class="recipe-card__btn js-view-recipe">Переглянути</button>
-      </div>
-    `;
+  <div class="recipe-card__image-box">
+    <img src="${cardImage}" alt="${name}" class="recipe-card__img">
+    
+    <!-- Лівий верхній кут: рейтинг -->
+    <div class="recipe-card__rating-badge">
+      <span style="color:#f1c40f;">★</span>
+      <span>${rating > 0 ? Number(rating).toFixed(1) : '0'}</span>
+    </div>
+
+    <!-- Правий верхній кут: видалити (тільки для власних) -->
+    ${isOwn ? '<button class="btn-delete-recipe js-delete-recipe">✕</button>' : ''}
+
+    <!-- Правий нижній кут: серденько -->
+    <button class="recipe-card__favorite ${isSaved ? 'recipe-card__favorite--saved' : ''}" 
+            data-recipe-id="${recipe.id}" 
+            aria-label="Зберегти в книгу">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+      </svg>
+    </button>
+  </div>
+
+  <div class="recipe-card__content">
+    <h3 class="recipe-card__name">${name}</h3>
+    <div class="recipe-card__footer">
+      <span class="recipe-card__kcal">${recipe.kcal || 0} ккал</span>
+      <button class="recipe-card__btn js-view-recipe">Переглянути</button>
+    </div>
+  </div>
+`;
 
     card.querySelector('.recipe-card__favorite').addEventListener('click', async (e) => {
       e.stopPropagation();

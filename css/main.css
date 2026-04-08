@@ -1225,6 +1225,7 @@ textarea {
   position: absolute;
   top: 15px;
   right: 15px;
+  display: none;
   padding: 6px 14px;
   background: var(--color-surface);
   backdrop-filter: blur(10px);
@@ -1243,7 +1244,8 @@ textarea {
   margin-bottom: 8px;
   color: var(--color-text-primary);
   display: -webkit-box;
-  -webkit-line-clamp: 2; /* кількість рядків */
+  -webkit-line-clamp: 2;
+  line-clamp: 2; /* кількість рядків */
   -webkit-box-orient: vertical;
   overflow: hidden;
   min-height: 48px; /* висота під 2 рядки Rubik 20px */
@@ -1253,6 +1255,18 @@ textarea {
   color: var(--color-text-secondary);
   margin-bottom: 20px;
   letter-spacing: 0.3px;
+}
+.recipe-card__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 8px;
+}
+.recipe-card__kcal {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
 }
 .recipe-card__btn {
   width: 100%;
@@ -2073,7 +2087,7 @@ textarea {
 .btn-delete-recipe {
   position: absolute;
   top: 10px;
-  left: 10px;
+  right: 10px;
   background: var(--color-bg);
   backdrop-filter: blur(4px);
   border: none;
@@ -3127,7 +3141,7 @@ textarea {
 }
 
 .book-selector-modal {
-  z-index: 1100;
+  z-index: 3000;
 }
 
 .book-selector {
@@ -3284,8 +3298,10 @@ textarea {
 
 .recipe-card__favorite {
   position: absolute;
-  top: 12px;
-  left: 12px;
+  bottom: 12px;
+  right: 12px;
+  top: auto;
+  left: auto;
   width: 36px;
   height: 36px;
   background: rgba(255, 255, 255, 0.95);

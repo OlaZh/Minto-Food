@@ -7,7 +7,7 @@
 // =============================================================
 
 .book-selector-modal {
-  z-index: 1100;
+  z-index: 3000;
 }
 
 .book-selector {
@@ -202,8 +202,10 @@
 
 .recipe-card__favorite {
   position: absolute;
-  top: 12px;
-  left: 12px;
+  bottom: 12px;
+  right: 12px;
+  top: auto;
+  left: auto;
   width: 36px;
   height: 36px;
   background: rgba(255, 255, 255, 0.95);
