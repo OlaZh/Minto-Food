@@ -37,7 +37,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 24px;
+    margin-bottom: 28px;
   }
 
   &__title {
@@ -73,52 +73,91 @@
 
   &__grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 20px;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 16px;
   }
 }
 
 /* ================= BOOK CARD ================= */
 
 .cookbook-book {
+  position: relative;
   display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 20px;
+  flex-direction: column;
+  gap: 0;
+  padding: 0;
   background: var(--color-surface);
   border: 1px solid var(--color-border);
-  border-radius: 16px;
+  border-radius: 20px;
   cursor: pointer;
+  overflow: hidden;
   transition: all 0.3s ease;
+
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.04),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
 
   &:hover {
     border-color: var(--color-accent);
     transform: translateY(-4px);
-    box-shadow: 0 12px 24px rgba(111, 207, 186, 0.15);
-  }
+    box-shadow:
+      0 16px 40px rgba(111, 207, 186, 0.18),
+      inset 0 1px 0 rgba(255, 255, 255, 0.5);
 
-  &--main {
-    background: var(--color-accent-soft);
-    border-color: rgba(111, 207, 186, 0.4);
+    .cookbook-book__actions {
+      opacity: 1;
+    }
 
-    .cookbook-book__cover {
-      background: var(--color-accent);
+    .cookbook-book__arrow {
+      transform: translateX(3px);
     }
   }
 
+  &--main {
+    border-color: rgba(111, 207, 186, 0.5);
+    background: linear-gradient(135deg, var(--color-accent-soft) 0%, var(--color-surface) 100%);
+  }
+
+  /* Верхня кольорова смужка */
+  &__header-strip {
+    height: 6px;
+    background: linear-gradient(90deg, var(--color-accent), rgba(111, 207, 186, 0.4));
+    border-radius: 20px 20px 0 0;
+  }
+
+  &--main &__header-strip {
+    background: linear-gradient(90deg, var(--color-accent), #6fcfba);
+  }
+
+  /* Основний контент */
+  &__body {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 20px 20px 16px;
+  }
+
   &__cover {
-    width: 56px;
-    height: 56px;
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    background: var(--color-accent-soft);
+    border: 1px solid rgba(111, 207, 186, 0.3);
     display: flex;
     align-items: center;
     justify-content: center;
-    background: var(--color-bg-secondary);
-    border-radius: 12px;
     flex-shrink: 0;
+    font-size: 26px;
+    transition: transform 0.2s ease;
   }
 
-  &__icon {
-    font-size: 28px;
+  &:hover &__cover {
+    transform: scale(1.08);
+  }
+
+  &--main &__cover {
+    background: rgba(111, 207, 186, 0.2);
+    border-color: rgba(111, 207, 186, 0.5);
   }
 
   &__info {
@@ -127,92 +166,142 @@
   }
 
   &__name {
-    font-size: 16px;
-    font-weight: 600;
+    font-size: 15px;
+    font-weight: 700;
     color: var(--color-text-primary);
     margin-bottom: 4px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    line-height: 1.3;
   }
 
   &__count {
-    font-size: 13px;
+    font-size: 12px;
     color: var(--color-text-secondary);
+    font-weight: 500;
   }
 
-  &__actions {
-    display: flex;
-    gap: 8px;
-  }
-
-  &__open-btn,
-  &__delete-btn {
-    width: 36px;
-    height: 36px;
+  &__arrow {
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
+    background: var(--color-accent-soft);
     display: flex;
     align-items: center;
     justify-content: center;
-    background: var(--color-bg-secondary);
-    border: 1px solid var(--color-border);
-    border-radius: 10px;
-    cursor: pointer;
-    transition: all 0.2s ease;
+    flex-shrink: 0;
+    transition: transform 0.2s ease;
+    color: var(--color-accent);
 
     svg {
-      stroke: var(--color-text-secondary);
-      transition: stroke 0.2s ease;
-    }
-
-    &:hover {
-      border-color: var(--color-accent);
-      
-      svg {
-        stroke: var(--color-accent);
-      }
+      stroke: currentColor;
     }
   }
 
-  &__delete-btn:hover {
-    border-color: #e74c3c;
-    
+  /* Футер з кнопками */
+  &__footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 4px;
+    padding: 10px 16px;
+    border-top: 1px solid var(--color-border);
+    background: var(--color-bg-primary);
+    opacity: 0;
+    transition: opacity 0.2s ease;
+  }
+
+  &:hover &__footer {
+    opacity: 1;
+  }
+
+  &__action-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: transparent;
+    border: 1px solid var(--color-border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: var(--color-text-secondary);
+
     svg {
-      stroke: #e74c3c;
+      stroke: currentColor;
+      width: 15px;
+      height: 15px;
     }
+
+    &:hover {
+      background: var(--color-accent-soft);
+      border-color: var(--color-accent);
+      color: var(--color-accent);
+    }
+
+    &--danger:hover {
+      background: rgba(231, 76, 60, 0.1);
+      border-color: #e74c3c;
+      color: #e74c3c;
+    }
+  }
+
+  /* Бейдж "Головна" */
+  &__default-badge {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    background: var(--color-accent);
+    color: white;
+    border-radius: 6px;
+    line-height: 1.4;
   }
 }
 
 /* ================= BOOK MODAL ================= */
 
 .cookbook-modal {
-  width: 90%;
-  max-width: 700px;
-  max-height: 85vh;
-  background: var(--color-bg-primary);
+  width: 92%;
+  max-width: 760px;
+  max-height: 88vh;
+  background: var(--color-surface);
   border-radius: 24px;
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  box-shadow:
+    0 32px 80px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
 
   &--small {
-    max-width: 450px;
+    max-width: 460px;
   }
 
   &__header {
-    padding: 24px 24px 0;
+    padding: 28px 28px 0;
+    background: linear-gradient(180deg, var(--color-accent-soft) 0%, transparent 100%);
     border-bottom: 1px solid var(--color-border);
+    flex-shrink: 0;
   }
 
   &__title {
-    font-size: 24px;
-    font-weight: 700;
+    font-size: 22px;
+    font-weight: 800;
     color: var(--color-text-primary);
     margin-bottom: 20px;
+    padding-right: 48px;
   }
 
   &__tabs {
     display: flex;
-    gap: 8px;
+    gap: 4px;
   }
 
   &__tab {
@@ -245,7 +334,7 @@
 
   &__content {
     display: none;
-    padding: 24px;
+    padding: 24px 28px;
     overflow-y: auto;
     flex: 1;
 
@@ -258,42 +347,72 @@
 /* ================= RECIPES IN BOOK ================= */
 
 .cookbook-recipes {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 12px;
 
   &__empty {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 60px 20px;
     text-align: center;
-    color: var(--color-text-secondary);
-    padding: 40px 20px;
-    font-size: 15px;
+
+    p {
+      color: var(--color-text-secondary);
+      font-size: 15px;
+      line-height: 1.5;
+    }
+
+    &::before {
+      content: '🍽️';
+      font-size: 40px;
+    }
   }
 }
 
 .cookbook-recipe {
   display: flex;
   align-items: center;
-  gap: 16px;
-  padding: 12px;
-  background: var(--color-surface);
+  gap: 14px;
+  padding: 14px;
+  background: var(--color-bg-primary);
   border: 1px solid var(--color-border);
-  border-radius: 14px;
-  transition: all 0.2s ease;
+  border-radius: 16px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  position: relative;
 
   &:hover {
     border-color: var(--color-accent);
+    background: var(--color-accent-soft);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(111, 207, 186, 0.15);
+
+    .cookbook-recipe__remove {
+      opacity: 1;
+    }
+
+    .cookbook-recipe__arrow {
+      opacity: 1;
+      transform: translateX(3px);
+    }
   }
 
   &__image {
-    width: 60px;
-    height: 60px;
-    border-radius: 10px;
+    width: 64px;
+    height: 64px;
+    border-radius: 12px;
     overflow: hidden;
     flex-shrink: 0;
     background: var(--color-bg-secondary);
     display: flex;
     align-items: center;
     justify-content: center;
+    border: 1px solid var(--color-border);
 
     img {
       width: 100%;
@@ -303,7 +422,7 @@
   }
 
   &__placeholder {
-    font-size: 24px;
+    font-size: 28px;
   }
 
   &__info {
@@ -312,34 +431,58 @@
   }
 
   &__title {
-    font-size: 15px;
-    font-weight: 600;
+    font-size: 14px;
+    font-weight: 700;
     color: var(--color-text-primary);
     margin-bottom: 4px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    line-height: 1.3;
   }
 
   &__kcal {
-    font-size: 13px;
+    font-size: 12px;
     color: var(--color-text-secondary);
+    font-weight: 500;
+
+    span {
+      color: var(--color-accent);
+      font-weight: 700;
+    }
+  }
+
+  &__arrow {
+    color: var(--color-accent);
+    opacity: 0;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+
+    svg {
+      stroke: currentColor;
+    }
   }
 
   &__remove {
-    width: 32px;
-    height: 32px;
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 28px;
+    height: 28px;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: transparent;
+    background: var(--color-surface);
     border: 1px solid var(--color-border);
     border-radius: 8px;
     cursor: pointer;
+    opacity: 0;
     transition: all 0.2s ease;
 
     svg {
       stroke: var(--color-text-secondary);
+      width: 14px;
+      height: 14px;
     }
 
     &:hover {
@@ -352,6 +495,7 @@
     }
   }
 }
+
 
 /* ================= NOTEBOOK ================= */
 
@@ -617,63 +761,6 @@
       background: var(--color-accent-hover);
       transform: translateY(-2px);
       box-shadow: 0 8px 20px rgba(111, 207, 186, 0.3);
-    }
-  }
-}
-
-/* ================= MODAL OVERLAY ================= */
-
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(4px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  opacity: 0;
-  visibility: hidden;
-  transition: all 0.3s ease;
-
-  &.is-open {
-    opacity: 1;
-    visibility: visible;
-  }
-}
-
-.modal {
-  position: relative;
-
-  &__close {
-    position: absolute;
-    top: 16px;
-    right: 16px;
-    width: 40px;
-    height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: var(--color-surface);
-    border: 1px solid var(--color-border);
-    border-radius: 10px;
-    cursor: pointer;
-    z-index: 10;
-    transition: all 0.2s ease;
-
-    svg {
-      stroke: var(--color-text-secondary);
-    }
-
-    &:hover {
-      border-color: var(--color-accent);
-
-      svg {
-        stroke: var(--color-accent);
-      }
     }
   }
 }

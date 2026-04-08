@@ -11,8 +11,6 @@ import {
   getRecipeBooks,
 } from './book-selector.js';
 
-console.log('add-recipe.js запустився');
-
 // =============================================================
 // 1. ОГОЛОШЕННЯ ЕЛЕМЕНТІВ (DOM)
 // =============================================================
@@ -75,7 +73,6 @@ const updateStarsUI = (rating) => {
   }
 };
 
-// Отримуємо назву рецепту залежно від мови
 function getRecipeName(recipe) {
   const lang = localStorage.getItem('lang') || 'ua';
   if (lang === 'pl' && recipe.name_pl) return recipe.name_pl;
@@ -83,7 +80,6 @@ function getRecipeName(recipe) {
   return recipe.name_ua || recipe.name_en || recipe.name_pl || '';
 }
 
-// Перевірка чи рецепт належить поточному користувачу
 function isOwnRecipe(recipe) {
   if (!currentUser || !recipe) return false;
   return recipe.user_id === currentUser.id;
@@ -94,19 +90,18 @@ function isOwnRecipe(recipe) {
 // =============================================================
 
 async function loadAndDisplayRecipes() {
+  if (!document.querySelector('.recipe-grid')) return;
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
   currentUser = user;
 
-  // Завантажуємо рецепти: публічні (без user_id) АБО власні користувача
   let query = supabase.from('recipes').select('*');
 
   if (user) {
     query = query.or(`status.eq.published,user_id.eq.${user.id}`);
   }
-  // Без авторизації — показуємо всі рецепти (published + draft)
 
   const { data, error } = await query;
 
@@ -133,7 +128,6 @@ const categoryTranslations = {
 
 async function displayRecipes(recipes) {
   const recipeGrid = document.querySelector('.recipe-grid');
-  if (!recipeGrid) return;
 
   recipeGrid.innerHTML = '';
 
@@ -142,7 +136,6 @@ async function displayRecipes(recipes) {
     return;
   }
 
-  // Отримуємо список збережених рецептів для поточного користувача
   let savedRecipeIds = [];
   if (currentUser) {
     const { data: savedData } = await supabase
@@ -172,7 +165,6 @@ async function displayRecipes(recipes) {
       <div class="recipe-card__image-box">
         <img src="${cardImage}" alt="${name}" class="recipe-card__img">
         
-        <!-- Сердечко для збереження -->
         <button class="recipe-card__favorite ${isSaved ? 'recipe-card__favorite--saved' : ''}" 
                 data-recipe-id="${recipe.id}" 
                 aria-label="Зберегти в книгу"
@@ -197,18 +189,15 @@ async function displayRecipes(recipes) {
       </div>
     `;
 
-    // Сердечко — швидке збереження
     card.querySelector('.recipe-card__favorite').addEventListener('click', async (e) => {
       e.stopPropagation();
       await handleFavoriteClick(e.currentTarget, recipe.id);
     });
 
-    // Переглянути
     card.querySelector('.js-view-recipe').addEventListener('click', () => {
       openRecipeView(recipe.id);
     });
 
-    // Видалити (тільки для власних)
     const deleteBtn = card.querySelector('.js-delete-recipe');
     if (deleteBtn) {
       deleteBtn.addEventListener('click', (e) => {
@@ -236,14 +225,11 @@ async function handleFavoriteClick(btn, recipeId) {
   const isSaved = btn.classList.contains('recipe-card__favorite--saved');
 
   if (isSaved) {
-    // Якщо вже збережено — відкриваємо модалку вибору книг для видалення
     openBookSelector(recipeId, async () => {
-      // Оновлюємо стан після закриття
       const stillSaved = await isRecipeSaved(recipeId);
       btn.classList.toggle('recipe-card__favorite--saved', stillSaved);
     });
   } else {
-    // Швидке збереження в головну книгу
     const success = await quickSaveToDefault(recipeId);
     if (success) {
       btn.classList.add('recipe-card__favorite--saved');
@@ -288,7 +274,6 @@ export async function openRecipeView(recipeId) {
 
   updateStarsUI(recipe.rating || 0);
 
-  // --- НОТАТКИ ---
   const notesField = document.getElementById('view-notes');
   if (notesField) notesField.value = recipe.notes || '';
 
@@ -297,7 +282,6 @@ export async function openRecipeView(recipeId) {
   if (list) {
     list.innerHTML = '';
 
-    // Завантажуємо інгредієнти через product_recipe
     const { data: productRecipes } = await supabase
       .from('product_recipe')
       .select('amount, unit, ingredient_id, products(name_ua, name_en, name_pl)')
@@ -318,7 +302,6 @@ export async function openRecipeView(recipeId) {
         list.appendChild(li);
       });
     } else if (recipe.ingredients) {
-      // Фолбек на текстові інгредієнти
       const ingLines = recipe.ingredients.split('\n').filter((l) => l.trim().length > 0);
       ingLines.forEach((line) => {
         const li = document.createElement('li');
@@ -354,7 +337,6 @@ export async function openRecipeView(recipeId) {
     });
   }
 
-  // --- ОНОВЛЮЄМО ПАНЕЛЬ ДІЙ ---
   updateRecipeViewActions(recipe, isOwn);
 
   if (viewModal) {
@@ -432,7 +414,6 @@ function updateRecipeViewActions(recipe, isOwn) {
     </div>
   `;
 
-  // Обробники
   const trigger = actionsContainer.querySelector('.recipe-actions-menu__trigger');
   const dropdown = actionsContainer.querySelector('#recipe-actions-dropdown');
 
@@ -441,20 +422,17 @@ function updateRecipeViewActions(recipe, isOwn) {
     dropdown.classList.toggle('is-open');
   });
 
-  // Закриття по кліку поза меню
   document.addEventListener('click', (e) => {
     if (!e.target.closest('.recipe-actions-menu')) {
       dropdown?.classList.remove('is-open');
     }
   });
 
-  // Редагувати
   actionsContainer.querySelector('#action-edit')?.addEventListener('click', () => {
     dropdown.classList.remove('is-open');
     editRecipe(recipe);
   });
 
-  // Зберегти в книгу
   actionsContainer.querySelector('#action-save-to-book')?.addEventListener('click', () => {
     dropdown.classList.remove('is-open');
     if (!currentUser) {
@@ -464,13 +442,11 @@ function updateRecipeViewActions(recipe, isOwn) {
     openBookSelector(recipe.id);
   });
 
-  // Видалити
   actionsContainer.querySelector('#action-delete')?.addEventListener('click', () => {
     dropdown.classList.remove('is-open');
     openDeleteConfirm(recipe.id);
   });
 
-  // Поскаржитись
   actionsContainer.querySelector('#action-report')?.addEventListener('click', () => {
     dropdown.classList.remove('is-open');
     openReportModal(recipe.id, name);
@@ -708,7 +684,7 @@ async function saveRecipe(recipeData) {
     rating: recipeData.rating || 0,
     notes: recipeData.notes || '',
     user_id: user ? user.id : null,
-    status: 'draft', // Власні рецепти користувача — чернетка
+    status: 'draft',
   };
 
   if (editingRecipeId !== null) {
@@ -944,7 +920,6 @@ async function filterRecipes(query) {
   if (user) {
     dbQuery = dbQuery.or(`status.eq.published,user_id.eq.${user.id}`);
   }
-  // Без авторизації — показуємо всі
 
   const { data, error } = await dbQuery;
 
@@ -990,7 +965,6 @@ if (clearSearchBtn) {
   });
 }
 
-// Фільтрація по категорії
 document.querySelectorAll('.recipe-filters__item').forEach((btn) => {
   btn.addEventListener('click', async () => {
     document
@@ -1036,7 +1010,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (el) el.addEventListener('input', calculateKcal);
   });
 
-  // Рейтинг
   const ratingContainer = document.querySelector('.recipe-rating');
   if (ratingContainer) {
     ratingContainer.addEventListener('click', async (e) => {
@@ -1137,13 +1110,12 @@ if (previewFormElement) {
     if (success) {
       editingRecipeId = null;
       window.tempAiImage = null;
-      loadAndDisplayRecipes();
+      await loadAndDisplayRecipes();
       closeModal();
     }
   });
 }
 
-// Авто-ресайз textarea
 document.querySelectorAll('textarea').forEach((txt) => {
   txt.style.overflow = 'hidden';
   txt.addEventListener('input', () => autoResizer(txt));

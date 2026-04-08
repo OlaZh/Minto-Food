@@ -87,7 +87,7 @@ export async function quickSaveToDefault(recipeId) {
         },
       ])
       .select()
-      .single();
+      .maybeSingle();
 
     if (error) {
       showToast('Помилка створення книги', 'error');
@@ -112,7 +112,7 @@ export async function saveRecipeToBook(recipeId, bookId, bookName = null) {
     .select('id')
     .eq('recipe_id', recipeId)
     .eq('cookbook_id', bookId)
-    .single();
+    .maybeSingle();
 
   if (existing) {
     showToast(`Вже є в "${bookName || 'книзі'}"`, 'info');

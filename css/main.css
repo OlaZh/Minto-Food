@@ -7008,7 +7008,7 @@ textarea {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 24px;
+  margin-bottom: 28px;
 }
 .cookbook-books__title {
   font-size: 20px;
@@ -7039,124 +7039,208 @@ textarea {
 }
 .cookbook-books__grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px;
 }
 
 /* ================= BOOK CARD ================= */
 .cookbook-book {
+  position: relative;
   display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 20px;
+  flex-direction: column;
+  gap: 0;
+  padding: 0;
   background: var(--color-surface);
   border: 1px solid var(--color-border);
-  border-radius: 16px;
+  border-radius: 20px;
   cursor: pointer;
+  overflow: hidden;
   transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.5);
 }
 .cookbook-book:hover {
   border-color: var(--color-accent);
   transform: translateY(-4px);
-  box-shadow: 0 12px 24px rgba(111, 207, 186, 0.15);
+  box-shadow: 0 16px 40px rgba(111, 207, 186, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+.cookbook-book:hover .cookbook-book__actions {
+  opacity: 1;
+}
+.cookbook-book:hover .cookbook-book__arrow {
+  transform: translateX(3px);
 }
 .cookbook-book--main {
-  background: var(--color-accent-soft);
-  border-color: rgba(111, 207, 186, 0.4);
+  border-color: rgba(111, 207, 186, 0.5);
+  background: linear-gradient(135deg, var(--color-accent-soft) 0%, var(--color-surface) 100%);
 }
-.cookbook-book--main .cookbook-book__cover {
-  background: var(--color-accent);
+.cookbook-book {
+  /* Верхня кольорова смужка */
+}
+.cookbook-book__header-strip {
+  height: 6px;
+  background: linear-gradient(90deg, var(--color-accent), rgba(111, 207, 186, 0.4));
+  border-radius: 20px 20px 0 0;
+}
+.cookbook-book--main .cookbook-book__header-strip {
+  background: linear-gradient(90deg, var(--color-accent), #6fcfba);
+}
+.cookbook-book {
+  /* Основний контент */
+}
+.cookbook-book__body {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px 20px 16px;
 }
 .cookbook-book__cover {
-  width: 56px;
-  height: 56px;
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  background: var(--color-accent-soft);
+  border: 1px solid rgba(111, 207, 186, 0.3);
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--color-bg-secondary);
-  border-radius: 12px;
   flex-shrink: 0;
+  font-size: 26px;
+  transition: transform 0.2s ease;
 }
-.cookbook-book__icon {
-  font-size: 28px;
+.cookbook-book:hover .cookbook-book__cover {
+  transform: scale(1.08);
+}
+.cookbook-book--main .cookbook-book__cover {
+  background: rgba(111, 207, 186, 0.2);
+  border-color: rgba(111, 207, 186, 0.5);
 }
 .cookbook-book__info {
   flex: 1;
   min-width: 0;
 }
 .cookbook-book__name {
-  font-size: 16px;
-  font-weight: 600;
+  font-size: 15px;
+  font-weight: 700;
   color: var(--color-text-primary);
   margin-bottom: 4px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  line-height: 1.3;
 }
 .cookbook-book__count {
-  font-size: 13px;
+  font-size: 12px;
   color: var(--color-text-secondary);
+  font-weight: 500;
 }
-.cookbook-book__actions {
-  display: flex;
-  gap: 8px;
-}
-.cookbook-book__open-btn, .cookbook-book__delete-btn {
-  width: 36px;
-  height: 36px;
+.cookbook-book__arrow {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  background: var(--color-accent-soft);
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--color-bg-secondary);
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+  color: var(--color-accent);
+}
+.cookbook-book__arrow svg {
+  stroke: currentColor;
+}
+.cookbook-book {
+  /* Футер з кнопками */
+}
+.cookbook-book__footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  padding: 10px 16px;
+  border-top: 1px solid var(--color-border);
+  background: var(--color-bg-primary);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+.cookbook-book:hover .cookbook-book__footer {
+  opacity: 1;
+}
+.cookbook-book__action-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: transparent;
   border: 1px solid var(--color-border);
-  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
   transition: all 0.2s ease;
+  color: var(--color-text-secondary);
 }
-.cookbook-book__open-btn svg, .cookbook-book__delete-btn svg {
-  stroke: var(--color-text-secondary);
-  transition: stroke 0.2s ease;
+.cookbook-book__action-btn svg {
+  stroke: currentColor;
+  width: 15px;
+  height: 15px;
 }
-.cookbook-book__open-btn:hover, .cookbook-book__delete-btn:hover {
+.cookbook-book__action-btn:hover {
+  background: var(--color-accent-soft);
   border-color: var(--color-accent);
+  color: var(--color-accent);
 }
-.cookbook-book__open-btn:hover svg, .cookbook-book__delete-btn:hover svg {
-  stroke: var(--color-accent);
-}
-.cookbook-book__delete-btn:hover {
+.cookbook-book__action-btn--danger:hover {
+  background: rgba(231, 76, 60, 0.1);
   border-color: #e74c3c;
+  color: #e74c3c;
 }
-.cookbook-book__delete-btn:hover svg {
-  stroke: #e74c3c;
+.cookbook-book {
+  /* Бейдж "Головна" */
+}
+.cookbook-book__default-badge {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  background: var(--color-accent);
+  color: white;
+  border-radius: 6px;
+  line-height: 1.4;
 }
 
 /* ================= BOOK MODAL ================= */
 .cookbook-modal {
-  width: 90%;
-  max-width: 700px;
-  max-height: 85vh;
-  background: var(--color-bg-primary);
+  width: 92%;
+  max-width: 760px;
+  max-height: 88vh;
+  background: var(--color-surface);
   border-radius: 24px;
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  box-shadow: 0 32px 80px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.4);
 }
 .cookbook-modal--small {
-  max-width: 450px;
+  max-width: 460px;
 }
 .cookbook-modal__header {
-  padding: 24px 24px 0;
+  padding: 28px 28px 0;
+  background: linear-gradient(180deg, var(--color-accent-soft) 0%, transparent 100%);
   border-bottom: 1px solid var(--color-border);
+  flex-shrink: 0;
 }
 .cookbook-modal__title {
-  font-size: 24px;
-  font-weight: 700;
+  font-size: 22px;
+  font-weight: 800;
   color: var(--color-text-primary);
   margin-bottom: 20px;
+  padding-right: 48px;
 }
 .cookbook-modal__tabs {
   display: flex;
-  gap: 8px;
+  gap: 4px;
 }
 .cookbook-modal__tab {
   display: flex;
@@ -7184,7 +7268,7 @@ textarea {
 }
 .cookbook-modal__content {
   display: none;
-  padding: 24px;
+  padding: 24px 28px;
   overflow-y: auto;
   flex: 1;
 }
@@ -7194,40 +7278,66 @@ textarea {
 
 /* ================= RECIPES IN BOOK ================= */
 .cookbook-recipes {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 12px;
 }
 .cookbook-recipes__empty {
+  grid-column: 1/-1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 60px 20px;
   text-align: center;
+}
+.cookbook-recipes__empty p {
   color: var(--color-text-secondary);
-  padding: 40px 20px;
   font-size: 15px;
+  line-height: 1.5;
+}
+.cookbook-recipes__empty::before {
+  content: "🍽️";
+  font-size: 40px;
 }
 
 .cookbook-recipe {
   display: flex;
   align-items: center;
-  gap: 16px;
-  padding: 12px;
-  background: var(--color-surface);
+  gap: 14px;
+  padding: 14px;
+  background: var(--color-bg-primary);
   border: 1px solid var(--color-border);
-  border-radius: 14px;
-  transition: all 0.2s ease;
+  border-radius: 16px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  position: relative;
 }
 .cookbook-recipe:hover {
   border-color: var(--color-accent);
+  background: var(--color-accent-soft);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(111, 207, 186, 0.15);
+}
+.cookbook-recipe:hover .cookbook-recipe__remove {
+  opacity: 1;
+}
+.cookbook-recipe:hover .cookbook-recipe__arrow {
+  opacity: 1;
+  transform: translateX(3px);
 }
 .cookbook-recipe__image {
-  width: 60px;
-  height: 60px;
-  border-radius: 10px;
+  width: 64px;
+  height: 64px;
+  border-radius: 12px;
   overflow: hidden;
   flex-shrink: 0;
   background: var(--color-bg-secondary);
   display: flex;
   align-items: center;
   justify-content: center;
+  border: 1px solid var(--color-border);
 }
 .cookbook-recipe__image img {
   width: 100%;
@@ -7235,39 +7345,60 @@ textarea {
   object-fit: cover;
 }
 .cookbook-recipe__placeholder {
-  font-size: 24px;
+  font-size: 28px;
 }
 .cookbook-recipe__info {
   flex: 1;
   min-width: 0;
 }
 .cookbook-recipe__title {
-  font-size: 15px;
-  font-weight: 600;
+  font-size: 14px;
+  font-weight: 700;
   color: var(--color-text-primary);
   margin-bottom: 4px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  line-height: 1.3;
 }
 .cookbook-recipe__kcal {
-  font-size: 13px;
+  font-size: 12px;
   color: var(--color-text-secondary);
+  font-weight: 500;
+}
+.cookbook-recipe__kcal span {
+  color: var(--color-accent);
+  font-weight: 700;
+}
+.cookbook-recipe__arrow {
+  color: var(--color-accent);
+  opacity: 0;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+.cookbook-recipe__arrow svg {
+  stroke: currentColor;
 }
 .cookbook-recipe__remove {
-  width: 32px;
-  height: 32px;
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 28px;
+  height: 28px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: transparent;
+  background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: 8px;
   cursor: pointer;
+  opacity: 0;
   transition: all 0.2s ease;
 }
 .cookbook-recipe__remove svg {
   stroke: var(--color-text-secondary);
+  width: 14px;
+  height: 14px;
 }
 .cookbook-recipe__remove:hover {
   border-color: #e74c3c;
@@ -7504,57 +7635,6 @@ textarea {
   background: var(--color-accent-hover);
   transform: translateY(-2px);
   box-shadow: 0 8px 20px rgba(111, 207, 186, 0.3);
-}
-
-/* ================= MODAL OVERLAY ================= */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(4px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  opacity: 0;
-  visibility: hidden;
-  transition: all 0.3s ease;
-}
-.modal-overlay.is-open {
-  opacity: 1;
-  visibility: visible;
-}
-
-.modal {
-  position: relative;
-}
-.modal__close {
-  position: absolute;
-  top: 16px;
-  right: 16px;
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: 10px;
-  cursor: pointer;
-  z-index: 10;
-  transition: all 0.2s ease;
-}
-.modal__close svg {
-  stroke: var(--color-text-secondary);
-}
-.modal__close:hover {
-  border-color: var(--color-accent);
-}
-.modal__close:hover svg {
-  stroke: var(--color-accent);
 }
 
 /* ================= RESPONSIVE ================= */
