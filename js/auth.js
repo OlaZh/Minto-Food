@@ -246,8 +246,7 @@ function createAuthModalHTML() {
           <div class="auth-modal__divider">
             <span>або</span>
           </div>
-
-          <form class="auth-modal__form" id="loginForm">
+<form class="auth-modal__form" id="loginForm" onsubmit="event.preventDefault(); return false;">
             <div class="form-group">
               <label>Email</label>
               <input type="email" id="loginEmail" placeholder="your@email.com" required />
@@ -282,7 +281,7 @@ function createAuthModalHTML() {
             <span>або</span>
           </div>
 
-          <form class="auth-modal__form" id="registerForm">
+          <form class="auth-modal__form" id="registerForm" onsubmit="event.preventDefault(); return false;">
             <div class="form-group">
               <label>Ім'я</label>
               <input type="text" id="registerName" placeholder="Ваше ім'я" />
@@ -334,6 +333,7 @@ function initAuthModal() {
   // Форма логіну
   document.getElementById('loginForm')?.addEventListener('submit', async (e) => {
     e.preventDefault();
+    e.stopPropagation();
     const email = document.getElementById('loginEmail').value;
     const password = document.getElementById('loginPassword').value;
     const errorEl = document.getElementById('loginError');
@@ -357,6 +357,7 @@ function initAuthModal() {
   // Форма реєстрації
   document.getElementById('registerForm')?.addEventListener('submit', async (e) => {
     e.preventDefault();
+    e.stopPropagation();
     const name = document.getElementById('registerName').value;
     const email = document.getElementById('registerEmail').value;
     const password = document.getElementById('registerPassword').value;
