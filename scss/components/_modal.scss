@@ -680,3 +680,28 @@
     }
   }
 }
+
+/* ==============================================
+   RESPONSIVE — MODALS
+   ============================================== */
+
+@media (max-width: 480px) {
+  .modal__content {
+    max-width: 100%;
+    min-height: unset;
+    max-height: 92dvh;
+    border-radius: 20px 20px 0 0;
+    margin: auto 0 0;
+  }
+
+  .modal {
+    align-items: flex-end;
+  }
+
+  .modal-card {
+    max-width: 100%;
+    padding: 24px 16px;
+    margin: 16px auto;
+    border-radius: 20px;
+  }
+}

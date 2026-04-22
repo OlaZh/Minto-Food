@@ -1,0 +1,148 @@
+/* ==============================================
+   GLOBAL RESPONSIVE — cross-component
+   768px  → tablet portrait
+   480px  → mobile phones
+   ============================================== */
+
+/* ---- RECIPES GRID ---- */
+@media (max-width: 768px) {
+  .recipe-page {
+    padding: 24px 0;
+
+    &__title {
+      font-size: 24px;
+    }
+  }
+
+  .recipes-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 12px;
+  }
+
+  .recipe-card__content {
+    padding: 16px;
+  }
+
+  .recipe-card__name {
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .recipes-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .recipe-page {
+    padding: 16px 0;
+
+    &__title {
+      font-size: 20px;
+    }
+  }
+}
+
+/* ---- FILTERS / CHIPS (product-guide, recipes) ---- */
+@media (max-width: 768px) {
+  .product-filters {
+    gap: 6px;
+  }
+
+  .product-filters__item {
+    padding: 8px 14px;
+    font-size: 13px;
+  }
+
+  .subfilter-item {
+    padding: 8px 16px;
+    min-width: 120px;
+    font-size: 13px;
+  }
+}
+
+/* ---- CARDS ---- */
+@media (max-width: 768px) {
+  .card {
+    padding: 12px 16px;
+  }
+}
+
+/* ---- BUTTONS ---- */
+@media (max-width: 768px) {
+  .btn-primary,
+  .btn-secondary {
+    padding: 12px 20px;
+    font-size: 15px;
+  }
+
+  /* Мінімальна зона дотику 48px */
+  button,
+  .button,
+  .btn-primary,
+  .btn-secondary,
+  .btn-confirm,
+  .modal__confirm {
+    min-height: 44px;
+  }
+}
+
+/* ---- INPUTS ---- */
+@media (max-width: 768px) {
+  input,
+  select,
+  textarea {
+    font-size: 16px; /* запобігає auto-zoom на iOS */
+  }
+}
+
+/* ---- DAY MENU (index.html) ---- */
+@media (max-width: 768px) {
+  .meal {
+    padding: 12px 16px;
+    border-radius: 16px;
+  }
+
+  .meal__header {
+    font-size: 14px;
+  }
+}
+
+/* ---- COOKBOOK ---- */
+@media (max-width: 768px) {
+  .cookbook-grid,
+  .books-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .cookbook-grid,
+  .books-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* ---- PROFILE PAGE ---- */
+@media (max-width: 768px) {
+  .profile-page {
+    gap: 20px;
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .stats-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* ---- GENERAL TYPOGRAPHY ---- */
+@media (max-width: 480px) {
+  h1 { font-size: clamp(20px, 5vw, 28px); }
+  h2 { font-size: clamp(17px, 4vw, 22px); }
+}

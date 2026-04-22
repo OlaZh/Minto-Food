@@ -20,6 +20,10 @@
 
   /* Border */
   --color-border: #{$color-border};
+
+  /* Water card */
+  --water-bg: rgba(56, 189, 248, 0.08);
+  --water-text: #2c4e47;
 }
 
 [data-theme='dark'] {
@@ -39,4 +43,8 @@
   --color-text-inverse: #{$color-text-inverse-dark};
 
   --color-border: #{$color-border-dark};
+
+  /* Water card */
+  --water-bg: rgba(56, 189, 248, 0.12);
+  --water-text: #b3ded7;
 }

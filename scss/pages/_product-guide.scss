@@ -1,113 +1,3 @@
-/*==================
-  Оновлене поле пошуку (Контейнер)
-==================*/
-.product-search {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px;
-  margin: 24px 0;
-  padding: 8px 14px; /* Менший падінг, бо чіпси мають свій */
-  border-radius: 16px;
-  border: 1px solid var(--color-border);
-  background: var(--color-bg);
-  box-shadow: inset 0 2px 4px rgba(46, 204, 113, 0.08);
-  transition: all 0.25s ease;
-  cursor: text; /* Робимо вигляд, що це все — поле вводу */
-}
-
-/* Коли фокус всередині будь-якого елемента пошуку */
-.product-search:focus-within {
-  border-color: var(--color-accent);
-  background: var(--color-bg-secondary);
-  box-shadow: 0 0 0 4px rgba(46, 204, 113, 0.12);
-  transform: translateY(-1px);
-}
-
-.product-search__input {
-  flex: 1;
-  min-width: 120px;
-  border: none !important; /* Прибираємо внутрішню рамку */
-  background: transparent !important; /* Прибираємо фон */
-  padding: 6px 0;
-  font-size: 15px;
-  color: var(--color-text-primary);
-  outline: none;
-  box-shadow: none !important;
-  transform: none !important;
-}
-
-/* Стиль чіпсів під твій дизайн */
-.search-chip {
-  display: inline-flex;
-  align-items: center;
-  background: var(--color-accent);
-  color: var(--color-text-inverse);
-  padding: 6px 12px;
-  border-radius: 10px;
-  font-size: 13px;
-  font-weight: 600;
-  box-shadow: 0 4px 10px rgba(46, 204, 113, 0.2);
-  animation: modalFadeIn 0.2s ease; /* Використовуємо твою анімацію */
-}
-
-.chip-remove {
-  margin-left: 8px;
-  cursor: pointer;
-  border: none;
-  background: rgba(255, 255, 255, 0.2);
-  color: white;
-  border-radius: 50%;
-  width: 16px;
-  height: 16px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 9px;
-  transition: 0.2s;
-}
-
-.chip-remove:hover {
-  background: #c0392b; /* Твій колір небезпеки */
-}
-
-/*=======================
-   Панель фільтрів
-=======================*/
-
-.product-filters {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-  margin-bottom: 24px;
-}
-
-.product-filters__item {
-  padding: 10px 16px;
-  border-radius: 14px;
-  border: 1px solid var(--color-border);
-  background: var(--color-bg-secondary);
-  color: var(--color-text-primary);
-  font-size: 14px;
-  cursor: pointer;
-  transition: all 0.25s ease;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
-}
-
-.product-filters__item:hover {
-  background: var(--color-surface);
-  border-color: rgba(111, 207, 186, 0.55);
-  transform: translateY(-2px);
-  box-shadow: 0 8px 15px rgba(46, 204, 113, 0.12);
-}
-
-.product-filters__item.is-active {
-  background: var(--color-accent);
-  color: var(--color-text-inverse);
-  border-color: var(--color-accent);
-  box-shadow: 0 8px 20px rgba(46, 204, 113, 0.25);
-}
-
 /*================================
    Міні‑картка продукту
 =================================*/
@@ -403,66 +293,8 @@
 }
 
 /* ===============================
-   SUBFILTERS (FIXED & STYLED)
+   SEARCH — поле пошуку з чіпсами
 =============================== */
-
-.product-subfilters {
-  margin-bottom: 24px; /* Збільшив відступ до карток */
-  min-height: 0;
-  position: relative;
-}
-
-/* Випадаючий блок */
-.subfilter-group {
-  display: none;
-  /* Прибираємо position: absolute! */
-  position: relative;
-  width: 100%;
-  margin-top: 10px; /* Відступ від кнопок */
-
-  background: var(--color-bg-secondary);
-  border: 1px solid var(--color-border);
-  border-radius: 18px;
-  padding: 16px;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
-
-  flex-wrap: wrap;
-  gap: 10px;
-  z-index: 5;
-}
-
-.subfilter-group.active {
-  display: flex;
-}
-
-/* Елементи підфільтра */
-
-.subfilter-item {
-  padding: 10px 16px;
-  border-radius: 12px;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  font-size: 14px;
-  font-weight: 600; /* Трішки жирніший текст */
-  color: var(--color-text-primary);
-  cursor: pointer;
-  transition: all 0.25s ease;
-  white-space: nowrap;
-}
-
-.subfilter-item:hover {
-  background: var(--color-bg-secondary);
-  border-color: var(--color-accent);
-  color: var(--color-accent); /* Текст стає акцентним */
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(46, 204, 113, 0.15);
-}
-
-/* ===============================
-   SEARCH CHIPS (NEW COMPONENT)
-=============================== */
-
-/* Контейнер пошуку */
 
 .product-search {
   display: flex;
@@ -473,13 +305,13 @@
   padding: 8px 14px;
   border-radius: 16px;
   border: 1px solid var(--color-border);
-  background: var(--color-bg-surface); /* Твій колір surface */
+  background: var(--color-bg-secondary);
   box-shadow: inset 0 2px 4px rgba(45, 90, 76, 0.05);
   transition: all 0.25s ease;
 }
 
 .product-search:focus-within {
-  border-color: var(--color-primary);
+  border-color: var(--color-accent);
   box-shadow: 0 0 0 4px rgba(111, 207, 186, 0.15);
 }
 
@@ -491,7 +323,7 @@
   padding: 8px 0;
   font-family: var(--font-ui);
   font-size: 15px;
-  color: var(--color-text-main);
+  color: var(--color-text-primary);
   outline: none;
 }
 
@@ -500,8 +332,8 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: var(--color-primary);
-  color: #fff;
+  background: var(--color-accent);
+  color: var(--color-text-inverse);
   padding: 6px 12px;
   border-radius: 10px;
   font-size: 13px;
@@ -528,7 +360,10 @@
   background: #c0392b;
 }
 
-/* Кнопки категорій */
+/* ===============================
+   КАТЕГОРІЇ (кнопки-фільтри)
+=============================== */
+
 .product-filters {
   display: flex;
   gap: 10px;
@@ -540,36 +375,44 @@
   padding: 10px 20px;
   border-radius: 14px;
   border: 1px solid var(--color-border);
-  background: var(--color-bg-surface);
-  color: var(--color-text-main);
+  background: var(--color-bg-secondary);
+  color: var(--color-text-primary);
   font-weight: 500;
   cursor: pointer;
   transition: 0.25s;
 }
 
+.product-filters__item:hover {
+  background: var(--color-surface);
+  border-color: rgba(111, 207, 186, 0.55);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 15px rgba(46, 204, 113, 0.12);
+}
+
 .product-filters__item.is-active {
-  background: var(--color-primary);
-  color: #fff;
-  border-color: var(--color-primary);
+  background: var(--color-accent);
+  color: var(--color-text-inverse);
+  border-color: var(--color-accent);
   box-shadow: 0 4px 12px rgba(111, 207, 186, 0.3);
 }
 
-/* СУБФІЛЬТРИ (Шторка, що накладається зверху) */
+/* ===============================
+   СУБФІЛЬТРИ (шторка-dropdown)
+=============================== */
 
 .product-subfilters {
-  position: relative; /* Важливо для absolute всередині */
+  position: relative;
   width: 100%;
   z-index: 100;
 }
 
 .subfilter-group {
   display: none;
-  position: absolute; /* Накладається зверху на картки */
+  position: absolute;
   top: 0;
   left: 0;
   width: 100%;
 
-  /* Скляний ефект */
   background: var(--color-bg-secondary);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
@@ -577,7 +420,7 @@
   border: 1px solid var(--color-border);
   border-radius: 20px;
   padding: 24px;
-  box-shadow: 0 15px 35px rgba(15, 31, 27, 0.15); /* Твоя $shadow-lg */
+  box-shadow: 0 15px 35px rgba(15, 31, 27, 0.15);
 
   flex-wrap: wrap;
   gap: 12px;
@@ -592,24 +435,27 @@
   padding: 12px 24px;
   min-width: 150px;
   text-align: center;
-  background: var(--color-bg-main);
+  background: var(--color-bg-primary);
   border: 1px solid var(--color-border);
   border-radius: 12px;
-  color: var(--color-text-main);
+  color: var(--color-text-primary);
   font-weight: 500;
   cursor: pointer;
   transition: 0.2s;
 }
 
 .subfilter-item:hover {
-  background: var(--color-primary);
-  color: #fff;
+  background: var(--color-accent);
+  color: var(--color-text-inverse);
   transform: translateY(-2px);
 }
 
-/* Стилі для атрибуції фотографа */
+/* ===============================
+   Атрибуція фотографа
+=============================== */
+
 .product-card-mini__img-wrapper {
-  position: relative; /* Щоб підпис прилип до картинки */
+  position: relative;
 }
 
 .product-card-mini__attribution {
@@ -617,7 +463,7 @@
   bottom: 0;
   left: 0;
   right: 0;
-  background: rgba(0, 0, 0, 0.4); /* Напівпрозорий темний фон */
+  background: rgba(0, 0, 0, 0.4);
   color: #fff;
   font-size: 8px;
   padding: 2px 4px;
@@ -632,10 +478,12 @@
 }
 
 .product-card-mini:hover .product-card-mini__attribution {
-  opacity: 1; /* Проявляється чіткіше при наведенні */
+  opacity: 1;
 }
 
-
+/* ===============================
+   Keyframes
+=============================== */
 
 @keyframes chipPop {
   from {

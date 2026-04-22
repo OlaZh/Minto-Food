@@ -162,7 +162,7 @@
 }
 
 /* =============================================================
-   RESPONSIVE — TABLET
+   RESPONSIVE — WIDE TABLET (1200px)
    ============================================================= */
 
 @media (max-width: 1200px) {
@@ -173,24 +173,67 @@
 }
 
 /* =============================================================
-   RESPONSIVE — MOBILE
+   RESPONSIVE — TABLET LANDSCAPE (1024px)
    ============================================================= */
 
 @media (max-width: 1024px) {
   .layout {
     grid-template-columns: 1fr;
-    padding: 0 16px;
-
-     }
+  }
 
   .sidebar,
   .right-sidebar,
   .water-sidebar {
-    display: none; /* Сайдбари ховаються на телефонах */
+    display: none;
   }
 
   .profile-layout {
     grid-template-columns: 1fr;
-    gap: 40px;
+    gap: 32px;
+  }
+}
+
+/* =============================================================
+   RESPONSIVE — TABLET PORTRAIT (768px)
+   ============================================================= */
+
+@media (max-width: 768px) {
+  .container {
+    padding: 0 16px;
+  }
+
+  .layout {
+    gap: 16px;
+  }
+
+  .column-header {
+    height: auto;
+    padding-top: 12px;
+    margin-bottom: 16px;
+  }
+
+  .profile-layout {
+    gap: 24px;
+  }
+}
+
+/* =============================================================
+   RESPONSIVE — MOBILE (480px)
+   ============================================================= */
+
+@media (max-width: 480px) {
+  .container {
+    padding: 0 12px;
+  }
+
+  .column-header {
+    padding-top: 8px;
+    margin-bottom: 12px;
+  }
+
+  .column-header h1,
+  .column-header h2,
+  .column-header h3 {
+    font-size: 17px;
   }
 }

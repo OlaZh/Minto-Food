@@ -168,3 +168,137 @@
     }
   }
 }
+
+/* ---------- BURGER BUTTON ---------- */
+
+.header__burger {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+
+  width: 40px;
+  height: 40px;
+  padding: 0;
+
+  background: none;
+  border: none;
+  cursor: pointer;
+  border-radius: 10px;
+  color: var(--color-text-primary);
+  transition: background 0.2s ease;
+
+  span {
+    display: block;
+    width: 22px;
+    height: 2px;
+    background: currentColor;
+    border-radius: 2px;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+    transform-origin: center;
+  }
+
+  &:hover {
+    background: var(--color-accent-soft);
+  }
+
+  &.is-active span:nth-child(1) {
+    transform: translateY(7px) rotate(45deg);
+  }
+  &.is-active span:nth-child(2) {
+    opacity: 0;
+  }
+  &.is-active span:nth-child(3) {
+    transform: translateY(-7px) rotate(-45deg);
+  }
+}
+
+/* ---------- MOBILE NAV OVERLAY ---------- */
+
+.header__nav-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 998;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(2px);
+
+  &.is-open {
+    display: block;
+  }
+}
+
+/* ==============================================
+   RESPONSIVE HEADER
+   ============================================== */
+
+@media (max-width: 768px) {
+  .header__container {
+    padding: 12px 16px;
+  }
+
+  .header__burger {
+    display: flex;
+  }
+
+  .header__nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 999;
+
+    width: 280px;
+    height: 100dvh;
+
+    padding: 72px 20px 32px;
+    overflow-y: auto;
+
+    background: var(--color-bg-primary);
+    border-right: 1px solid var(--color-border);
+    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.12);
+
+    transform: translateX(-100%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+    &.is-open {
+      transform: translateX(0);
+    }
+  }
+
+  .header__nav-list {
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .header__nav-link {
+    display: block;
+    padding: 12px 16px;
+    border-radius: 12px;
+    font-size: 15px;
+
+    &:hover,
+    &.header__nav-link--active {
+      background: var(--color-accent-soft);
+    }
+
+    &::after {
+      display: none;
+    }
+
+    &.header__nav-link--active::before {
+      content: '';
+      display: inline-block;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--color-accent);
+      margin-right: 8px;
+      vertical-align: middle;
+    }
+  }
+
+  .header__right {
+    display: none;
+  }
+}
