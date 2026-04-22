@@ -1608,6 +1608,7 @@ textarea {
 
 .modal__close {
   position: absolute;
+  top: 20px;
   right: 20px;
   background: transparent;
   border: none;
@@ -7450,6 +7451,7 @@ textarea {
 
 /* ================= BOOK MODAL ================= */
 .cookbook-modal {
+  position: relative;
   width: 92%;
   max-width: 760px;
   max-height: 88vh;
@@ -7462,6 +7464,9 @@ textarea {
 }
 .cookbook-modal--small {
   max-width: 460px;
+}
+.cookbook-modal--small > .cookbook-modal__title {
+  padding: 28px 60px 0 28px;
 }
 .cookbook-modal__header {
   padding: 28px 28px 0;

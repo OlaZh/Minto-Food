@@ -337,6 +337,7 @@
 /* ================= BOOK MODAL ================= */
 
 .cookbook-modal {
+  position: relative;
   width: 92%;
   max-width: 760px;
   max-height: 88vh;
@@ -351,6 +352,10 @@
 
   &--small {
     max-width: 460px;
+
+    > .cookbook-modal__title {
+      padding: 28px 60px 0 28px;
+    }
   }
 
   &__header {
