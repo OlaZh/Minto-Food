@@ -5,13 +5,42 @@ import { supabase } from './supabaseClient.js';
 import { showToast } from './utils.js';
 
 // =====================================
+// ІКОНКИ КНИГ (SVG)
+// =====================================
+
+const BOOK_ICONS = {
+  book:     `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>`,
+  utensils: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3zm0 0v7"/></svg>`,
+  leaf:     `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></svg>`,
+  flame:    `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>`,
+  heart:    `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>`,
+  star:     `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`,
+  coffee:   `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 8h1a4 4 0 1 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V8z"/><line x1="6" y1="2" x2="6" y2="4"/><line x1="10" y1="2" x2="10" y2="4"/><line x1="14" y1="2" x2="14" y2="4"/></svg>`,
+  cake:     `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-8a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8"/><path d="M4 16s.5-1 2-1 2.5 2 4 2 2.5-2 4-2 2 1 2 1"/><path d="M2 21h20"/><path d="M7 8v2"/><path d="M12 8v2"/><path d="M17 8v2"/><path d="M7 4h.01"/><path d="M12 4h.01"/><path d="M17 4h.01"/></svg>`,
+  pizza:    `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 11h.01"/><path d="M11 15h.01"/><path d="M16 16h.01"/><path d="m2 16 20 6-6-20A20 20 0 0 0 2 16"/><path d="M5.71 17.11a17.04 17.04 0 0 1 11.4-11.4"/></svg>`,
+  soup:     `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21a9 9 0 0 0 9-9H3a9 9 0 0 0 9 9z"/><path d="M7 21h10"/><path d="M19.5 12 22 6"/><path d="M16.25 3c.27.1.8.53.75 1.36-.06.83-.93 1.2-1 2.02-.05.78.34 1.24.73 1.62"/><path d="M11.25 3c.27.1.8.53.74 1.36-.05.83-.93 1.2-.98 2.02-.06.78.33 1.24.72 1.62"/><path d="M6.25 3c.27.1.8.53.75 1.36-.06.83-.93 1.2-1 2.02-.05.78.34 1.24.73 1.62"/></svg>`,
+  apple:    `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20.94c1.5 0 2.75 1.06 4 1.06 3 0 6-8 6-12.22A4 4 0 0 0 18 6h-2a2 2 0 0 0-2-2 2 2 0 0 0-2 2H8A4 4 0 0 0 6 9.78C6 14 9 22 12 22z"/><path d="M10 2c0 1.5.5 2 2 2"/></svg>`,
+  home:     `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>`,
+};
+
+function getBookIcon(key) {
+  return BOOK_ICONS[key] ?? `<span style="font-size:2em;line-height:1">${key}</span>`;
+}
+
+function renderIconPickerHTML(activeIcon = 'book') {
+  return Object.entries(BOOK_ICONS)
+    .map(([key, svg]) => `<button type="button" class="cookbook-form__icon${key === activeIcon ? ' cookbook-form__icon--active' : ''}" data-icon="${key}" aria-label="${key}">${svg}</button>`)
+    .join('');
+}
+
+// =====================================
 // СТАН
 // =====================================
 
 let currentUser = null;
 let currentBookId = null;
 let currentNotebook = null;
-let selectedIcon = '📖';
+let selectedIcon = 'book';
 
 // =====================================
 // DOM ЕЛЕМЕНТИ
@@ -86,6 +115,12 @@ async function init() {
 
   await loadBooks();
   setupEventListeners();
+  initIconPicker();
+}
+
+function initIconPicker() {
+  const picker = document.getElementById('iconPicker');
+  if (picker) picker.innerHTML = renderIconPickerHTML('book');
 }
 
 function setupEventListeners() {
@@ -221,7 +256,7 @@ async function createBookElement(book) {
 
   article.innerHTML = `
     <div class="cookbook-book__cover-area">
-      <span class="cookbook-book__cover-icon">${book.icon || '📖'}</span>
+      <div class="cookbook-book__cover-icon">${getBookIcon(book.icon || 'book')}</div>
 
       <div class="cookbook-book__cover-controls">
         <button class="cookbook-book__action-btn cookbook-book__edit-btn" aria-label="Редагувати книгу" title="Редагувати">
@@ -310,7 +345,7 @@ async function handleCreateBook(e) {
     // Закриваємо і очищаємо
     closeModal(newBookModal);
     newBookForm.reset();
-    selectedIcon = '📖';
+    selectedIcon = 'book';
     document.querySelectorAll('.cookbook-form__icon').forEach((btn, i) => {
       btn.classList.toggle('cookbook-form__icon--active', i === 0);
     });
@@ -380,16 +415,7 @@ function createEditBookModal() {
         <div class="form-group">
           <label>Іконка</label>
           <div class="cookbook-form__icons" id="editIconPicker">
-            <button type="button" class="cookbook-form__icon" data-icon="📖">📖</button>
-            <button type="button" class="cookbook-form__icon" data-icon="🍳">🍳</button>
-            <button type="button" class="cookbook-form__icon" data-icon="🥗">🥗</button>
-            <button type="button" class="cookbook-form__icon" data-icon="🍰">🍰</button>
-            <button type="button" class="cookbook-form__icon" data-icon="🍕">🍕</button>
-            <button type="button" class="cookbook-form__icon" data-icon="🥘">🥘</button>
-            <button type="button" class="cookbook-form__icon" data-icon="🍜">🍜</button>
-            <button type="button" class="cookbook-form__icon" data-icon="❤️">❤️</button>
-            <button type="button" class="cookbook-form__icon" data-icon="⭐">⭐</button>
-            <button type="button" class="cookbook-form__icon" data-icon="🎂">🎂</button>
+            ${renderIconPickerHTML('book')}
           </div>
         </div>
         
@@ -418,7 +444,7 @@ function createEditBookModal() {
   });
 
   // Вибір іконки
-  let editSelectedIcon = '📖';
+  let editSelectedIcon = 'book';
   document.getElementById('editIconPicker').addEventListener('click', (e) => {
     const iconBtn = e.target.closest('.cookbook-form__icon');
     if (!iconBtn) return;
@@ -483,9 +509,13 @@ function openEditBookModal(book) {
 
   // Вибираємо іконку
   const icons = document.querySelectorAll('#editIconPicker .cookbook-form__icon');
+  let anyMatch = false;
   icons.forEach((btn) => {
-    btn.classList.toggle('cookbook-form__icon--active', btn.dataset.icon === book.icon);
+    const isActive = btn.dataset.icon === book.icon;
+    btn.classList.toggle('cookbook-form__icon--active', isActive);
+    if (isActive) anyMatch = true;
   });
+  if (!anyMatch) icons[0]?.classList.add('cookbook-form__icon--active');
 
   // Показуємо чекбокс "Зробити головною" тільки якщо це не головна книга
   const defaultGroup = document.getElementById('setDefaultGroup');
