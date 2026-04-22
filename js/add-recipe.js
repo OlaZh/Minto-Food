@@ -561,6 +561,11 @@ const closeViewModal = () => {
     viewModal.classList.remove('is-active');
     document.body.style.overflow = '';
     currentViewingId = null;
+
+    const from = new URLSearchParams(window.location.search).get('from');
+    if (from) {
+      history.back();
+    }
   }
 };
 

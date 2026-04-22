@@ -590,7 +590,7 @@ function renderBookRecipes(recipes) {
     card.addEventListener('click', (e) => {
       if (e.target.closest('.cookbook-recipe-card__remove')) return;
       const id = card.dataset.recipeId;
-      window.location.href = `recipes.html?recipe=${id}`;
+      window.location.href = `recipes.html?recipe=${id}&from=cookbook`;
     });
   });
 
