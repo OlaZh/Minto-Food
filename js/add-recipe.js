@@ -1009,6 +1009,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   loadAndDisplayRecipes();
   initAiUpload();
 
+  const recipeParam = new URLSearchParams(window.location.search).get('recipe');
+  if (recipeParam) {
+    await openRecipeView(recipeParam);
+  }
+
   ['prev-proteins', 'prev-carbs', 'prev-fats'].forEach((id) => {
     const el = document.getElementById(id);
     if (el) el.addEventListener('input', calculateKcal);

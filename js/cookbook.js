@@ -1,6 +1,5 @@
 // js/cookbook.js
 // Логіка сторінки "Книга рецептів"
-import { openRecipeView } from './add-recipe.js';
 import { openAuthModal } from './auth.js';
 import { supabase } from './supabaseClient.js';
 import { showToast } from './utils.js';
@@ -591,7 +590,7 @@ function renderBookRecipes(recipes) {
     card.addEventListener('click', (e) => {
       if (e.target.closest('.cookbook-recipe-card__remove')) return;
       const id = card.dataset.recipeId;
-      openRecipeView(id);
+      window.location.href = `recipes.html?recipe=${id}`;
     });
   });
 
