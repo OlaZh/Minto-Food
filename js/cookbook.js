@@ -547,9 +547,9 @@ async function loadBookRecipes() {
 function renderBookRecipes(recipes) {
   if (!recipes.length) {
     bookRecipes.innerHTML = `
-      <p class="cookbook-recipes__empty">
-        Тут поки немає рецептів. Додай їх зі сторінки "Рецепти"!
-      </p>
+      <div class="cookbook-recipes__empty">
+        <p>Тут поки немає рецептів.<br>Додай їх зі сторінки "Рецепти"!</p>
+      </div>
     `;
     return;
   }
@@ -559,47 +559,53 @@ function renderBookRecipes(recipes) {
       const recipe = item.recipes;
       if (!recipe) return '';
 
+      const kcalBadge = recipe.kcal
+        ? `<span class="cookbook-recipe-card__kcal">${Math.round(recipe.kcal)} ккал</span>`
+        : '';
+
+      const imageHtml = recipe.image
+        ? `<img src="${recipe.image}" alt="${escapeHtml(recipe.name_ua)}" loading="lazy">`
+        : `<div class="cookbook-recipe-card__placeholder">🍽️</div>`;
+
       return `
-      <article class="cookbook-recipe" data-recipe-id="${recipe.id}">
-        <div class="cookbook-recipe__image">
-          ${
-            recipe.image
-              ? `<img src="${recipe.image}" alt="${escapeHtml(recipe.name_ua)}" />`
-              : '<span class="cookbook-recipe__placeholder">🍽️</span>'
-          }
-        </div>
-        <div class="cookbook-recipe__info">
-          <h4 class="cookbook-recipe__title">${escapeHtml(recipe.name_ua)}</h4>
-          <p class="cookbook-recipe__kcal">${recipe.kcal || '—'} ккал</p>
-        </div>
-        <button class="cookbook-recipe__remove" aria-label="Видалити з книги">
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="18" y1="6" x2="6" y2="18"></line>
-            <line x1="6" y1="6" x2="18" y2="18"></line>
-          </svg>
-        </button>
-      </article>
-    `;
+        <article class="cookbook-recipe-card" data-recipe-id="${recipe.id}">
+          <div class="cookbook-recipe-card__image">
+            ${imageHtml}
+            ${kcalBadge}
+            <button class="cookbook-recipe-card__remove" data-recipe-id="${recipe.id}" aria-label="Видалити з книги" title="Видалити з книги">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
+          </div>
+          <div class="cookbook-recipe-card__body">
+            <h3 class="cookbook-recipe-card__title">${escapeHtml(recipe.name_ua)}</h3>
+          </div>
+        </article>
+      `;
     })
     .join('');
 
-  // Видалення рецепту з книги
-  bookRecipes.querySelectorAll('.cookbook-recipe__remove').forEach((btn) => {
-    btn.addEventListener('click', async (e) => {
-      const recipeId = e.target.closest('.cookbook-recipe').dataset.recipeId;
-      await removeRecipeFromBook(recipeId);
+  bookRecipes.querySelectorAll('.cookbook-recipe-card').forEach((card) => {
+    card.addEventListener('click', (e) => {
+      if (e.target.closest('.cookbook-recipe-card__remove')) return;
+      const id = card.dataset.recipeId;
+      openRecipeView(id);
     });
   });
 
-  bookRecipes.querySelectorAll('.cookbook-recipe').forEach((article) => {
-    article.addEventListener('click', (e) => {
-      if (e.target.closest('.cookbook-recipe__remove')) return;
-      openRecipeView(parseInt(article.dataset.recipeId));
+  bookRecipes.querySelectorAll('.cookbook-recipe-card__remove').forEach((btn) => {
+    btn.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      const recipeId = btn.dataset.recipeId;
+      await removeRecipeFromBook(recipeId);
     });
   });
 }
 
 async function removeRecipeFromBook(recipeId) {
+  if (!currentBookId) return;
   try {
     const { error } = await supabase
       .from('cookbook_recipes')
@@ -609,11 +615,11 @@ async function removeRecipeFromBook(recipeId) {
 
     if (error) throw error;
 
-    // Оновлюємо список
+    showToast('Рецепт видалено з книги', 'success');
     await loadBookRecipes();
-    showToast('Рецепт видалено з книги');
   } catch (err) {
     console.error('Error removing recipe:', err);
+    showToast('Помилка видалення', 'error');
   }
 }
 
