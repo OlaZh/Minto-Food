@@ -21,20 +21,20 @@ $line-height-body: 1.6;
 $line-height-heading: 1.3;
 
 // ==============================
-// Light theme colors
+// Light theme colors — JUICY MINT 🌿
 // ==============================
-$color-bg-main: #e5f1ed;
-$color-bg-surface: #e8f5f0;
-$color-bg-sidebar: #dff1eb;
+$color-bg-main: #a6d6b8;     // основний фон сторінки
+$color-bg-surface: #b8e0c5;  // картки, поверхні
+$color-bg-sidebar: #9fd1b1;  // сайдбар (трохи насиченіший за фон)
 
-$color-primary: #6fcfba;
-$color-primary-hover: #5cbda8;
+$color-primary: #4ab584;        // акцент — глибший зелений під новий фон
+$color-primary-hover: #3d9d70;  // hover акценту
 
-$color-text-main: #1f2e2b;
-$color-text-muted: #6b8f87;
+$color-text-main: #0f2818;    // основний текст — темний хвойний
+$color-text-muted: #3f7558;   // другорядний текст
 $color-text-inverse: #ffffff;
 
-$color-border: #cfe7df;
+$color-border: #82bf99;       // бордюри
 
 // ==============================
 // Dark theme colors

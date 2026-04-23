@@ -311,22 +311,22 @@ textarea {
 
 :root {
   /* Backgrounds */
-  --color-bg-primary: #e5f1ed;
-  --color-bg-secondary: #e8f5f0;
-  --color-bg-sidebar: #dff1eb;
-  --color-bg-hover: rgba(111, 207, 186, 0.12);
+  --color-bg-primary: #a6d6b8;
+  --color-bg-secondary: #b8e0c5;
+  --color-bg-sidebar: #9fd1b1;
+  --color-bg-hover: rgba(74, 181, 132, 0.15);
   /* Surface */
-  --color-surface: #e8f5f0;
+  --color-surface: #b8e0c5;
   /* Accent (МʼЯТНИЙ, НЕ СИНІЙ) */
-  --color-accent: #6fcfba;
-  --color-accent-hover: #5cbda8;
-  --color-accent-soft: rgba(111, 207, 186, 0.18);
+  --color-accent: #4ab584;
+  --color-accent-hover: #3d9d70;
+  --color-accent-soft: rgba(74, 181, 132, 0.22);
   /* Text */
-  --color-text-primary: #1f2e2b;
-  --color-text-secondary: #6b8f87;
+  --color-text-primary: #0f2818;
+  --color-text-secondary: #3f7558;
   --color-text-inverse: #ffffff;
   /* Border */
-  --color-border: #cfe7df;
+  --color-border: #82bf99;
   /* Water card */
   --water-bg: rgba(56, 189, 248, 0.08);
   --water-text: #2c4e47;
