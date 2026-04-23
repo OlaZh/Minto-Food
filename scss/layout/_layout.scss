@@ -24,7 +24,7 @@
 
 .page {
   min-height: 100vh;
-  background-color: var(--color-bg-primary);
+  background: var(--color-bg-gradient);
   display: flex;
   flex-direction: column;
 }
