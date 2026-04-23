@@ -213,7 +213,7 @@ html {
   box-sizing: border-box;
   font-size: 16px;
   /* theme smoothness (НЕ transition!) */
-  background: var(--color-bg-gradient);
+  background-color: var(--color-bg-primary);
   color: var(--color-text-primary);
 }
 
@@ -229,7 +229,7 @@ body {
   font-family: var(--font-body);
   font-weight: 400;
   line-height: 1.6;
-  background: var(--color-bg-gradient);
+  background-color: var(--color-bg-primary);
   color: var(--color-text-primary);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -237,7 +237,7 @@ body {
 
 .app-bg {
   min-height: 100vh;
-  background: var(--color-bg-gradient);
+  background-color: var(--color-bg-primary);
 }
 
 .app-shell {
@@ -311,13 +311,12 @@ textarea {
 
 :root {
   /* Backgrounds */
-  --color-bg-primary: #afbf92;
-  --color-bg-gradient: linear-gradient(170deg, rgb(102, 128, 91) 0%, rgb(108, 128, 99) 50%, rgb(146, 163, 124) 79%, rgb(38, 56, 43) 100%);
-  --color-bg-secondary: #b8c89a;
-  --color-bg-sidebar: #a8ba88;
+  --color-bg-primary: #e5f1ed;
+  --color-bg-secondary: #e8f5f0;
+  --color-bg-sidebar: #dff1eb;
   --color-bg-hover: rgba(111, 207, 186, 0.12);
   /* Surface */
-  --color-surface: #b8c89a;
+  --color-surface: #e8f5f0;
   /* Accent (МʼЯТНИЙ, НЕ СИНІЙ) */
   --color-accent: #6fcfba;
   --color-accent-hover: #5cbda8;
@@ -373,7 +372,7 @@ textarea {
    ============================================================= */
 .page {
   min-height: 100vh;
-  background: var(--color-bg-gradient);
+  background-color: var(--color-bg-primary);
   display: flex;
   flex-direction: column;
 }
@@ -8057,4 +8056,4 @@ textarea {
   .cookbook-form {
     padding: 20px;
   }
-}
+}/*# sourceMappingURL=main.css.map */
