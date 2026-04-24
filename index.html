@@ -183,7 +183,6 @@
                 <polyline points="9 18 15 12 9 6" />
               </svg>
             </button>
-            <span class="day-week-nav__month" id="weekLabel"></span>
           </nav>
 
           <!-- ===== 4-COLUMN LAYOUT ===== -->
@@ -233,10 +232,7 @@
 
             <!-- CENTER: Meals -->
             <main class="main">
-              <section class="day-header column-header">
-                <h1 class="column-header__title" data-i18n="dayMenuTitle">Прийоми їжі</h1>
-              </section>
-
+              <h1 class="meal-section__title" data-i18n="dayMenuTitle">Прийоми їжі</h1>
               <section class="day-menu">
                 <article class="meal" data-meal="breakfast">
                   <div class="meal__header">
@@ -301,138 +297,88 @@
             </main>
 
             <!-- WATER: unchanged -->
-            <aside class="water-sidebar">
-              <div class="column-header">
-                <h2 class="column-header__title" data-i18n="water">Вода</h2>
-              </div>
-              <div class="water-meter">
-                <div class="water-meter__glass">
-                  <span class="water-meter__value" id="currentWaterText">0.00 / 2.5 L</span>
-                  <div class="water-meter__fill" id="waterFill" style="--level: 0%"></div>
-                </div>
-                <div class="water-actions">
-                  <button class="water-btn" data-amount="0.25">
-                    <svg
-                      width="20"
-                      height="20"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="1.5"
-                      stroke-linecap="round"
-                      stroke-linejoin="round">
-                      <path d="M12 22a7 7 0 0 0 7-7c0-5-7-13-7-13S5 10 5 15a7 7 0 0 0 7 7z" />
-                    </svg>
-                    <span class="water-btn__text">+0.25 л</span>
-                  </button>
-                  <button class="water-btn" data-amount="0.5">
-                    <svg
-                      width="20"
-                      height="20"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="1.5"
-                      stroke-linecap="round"
-                      stroke-linejoin="round">
-                      <path d="M12 22a7 7 0 0 0 7-7c0-5-7-13-7-13S5 10 5 15a7 7 0 0 0 7 7z" />
-                    </svg>
-                    <span class="water-btn__text">+0.5 л</span>
-                  </button>
-                  <button class="water-btn" data-amount="0.75">
-                    <svg
-                      width="20"
-                      height="20"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="1.5"
-                      stroke-linecap="round"
-                      stroke-linejoin="round">
-                      <path d="M12 22a7 7 0 0 0 7-7c0-5-7-13-7-13S5 10 5 15a7 7 0 0 0 7 7z" />
-                    </svg>
-                    <span class="water-btn__text">+0.75 л</span>
-                  </button>
-                </div>
-                <button id="resetWater" class="water-reset-btn">✕ Скинути</button>
-              </div>
-            </aside>
-
             <!-- RIGHT: Macro bars + Quick actions -->
             <aside class="right-sidebar">
               <div class="right-sidebar__inner">
-                <h2 class="right-sidebar__section-title" data-i18n="macros">Макронутрієнти</h2>
+                <!-- ============== КАРТКА: МАКРОНУТРІЄНТИ ============== -->
+                <section class="macros-card">
+                  <h3 class="macros-card__title" data-i18n="macros">Макронутрієнти</h3>
 
-                <!-- Hidden circles (оновлюються stats.js) -->
-                <div hidden aria-hidden="true">
-                  <svg viewBox="0 0 36 36">
-                    <path
-                      class="circle-progress"
-                      id="pCircle"
-                      stroke-dasharray="0,100"
-                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                  </svg>
-                  <svg viewBox="0 0 36 36">
-                    <path
-                      class="circle-progress"
-                      id="fCircle"
-                      stroke-dasharray="0,100"
-                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                  </svg>
-                  <svg viewBox="0 0 36 36">
-                    <path
-                      class="circle-progress"
-                      id="cCircle"
-                      stroke-dasharray="0,100"
-                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                  </svg>
-                </div>
+                  <!-- Hidden circles (оновлюються stats.js) -->
+                  <div hidden aria-hidden="true">
+                    <svg viewBox="0 0 36 36">
+                      <path
+                        class="circle-progress"
+                        id="pCircle"
+                        stroke-dasharray="0,100"
+                        d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                    </svg>
+                    <svg viewBox="0 0 36 36">
+                      <path
+                        class="circle-progress"
+                        id="fCircle"
+                        stroke-dasharray="0,100"
+                        d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                    </svg>
+                    <svg viewBox="0 0 36 36">
+                      <path
+                        class="circle-progress"
+                        id="cCircle"
+                        stroke-dasharray="0,100"
+                        d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                    </svg>
+                  </div>
 
-                <!-- Progress bars -->
-                <div class="macro-bars">
-                  <div class="macro-bar-item">
-                    <div class="macro-bar-item__row">
-                      <span class="macro-bar-item__label" data-i18n="protein">Білки</span>
-                      <span class="macro-bar-item__value"><span id="pCurrent">0</span>г</span>
+                  <!-- Progress bars -->
+                  <div class="macro-bars">
+                    <div class="macro-bar-item">
+                      <div class="macro-bar-item__row">
+                        <span class="macro-bar-item__label" data-i18n="protein">Білки</span>
+                        <span class="macro-bar-item__value"><span id="pCurrent">0</span>г</span>
+                      </div>
+                      <div class="macro-bar-item__track">
+                        <div class="macro-bar-item__fill" id="pBar"></div>
+                      </div>
                     </div>
-                    <div class="macro-bar-item__track">
-                      <div class="macro-bar-item__fill" id="pBar"></div>
+                    <div class="macro-bar-item">
+                      <div class="macro-bar-item__row">
+                        <span class="macro-bar-item__label" data-i18n="fat">Жири</span>
+                        <span class="macro-bar-item__value"><span id="fCurrent">0</span>г</span>
+                      </div>
+                      <div class="macro-bar-item__track">
+                        <div class="macro-bar-item__fill macro-bar-item__fill--fat" id="fBar"></div>
+                      </div>
+                    </div>
+                    <div class="macro-bar-item">
+                      <div class="macro-bar-item__row">
+                        <span class="macro-bar-item__label" data-i18n="carbs">Вуглеводи</span>
+                        <span class="macro-bar-item__value"><span id="cCurrent">0</span>г</span>
+                      </div>
+                      <div class="macro-bar-item__track">
+                        <div
+                          class="macro-bar-item__fill macro-bar-item__fill--carbs"
+                          id="cBar"></div>
+                      </div>
                     </div>
                   </div>
-                  <div class="macro-bar-item">
-                    <div class="macro-bar-item__row">
-                      <span class="macro-bar-item__label" data-i18n="fat">Жири</span>
-                      <span class="macro-bar-item__value"><span id="fCurrent">0</span>г</span>
-                    </div>
-                    <div class="macro-bar-item__track">
-                      <div class="macro-bar-item__fill macro-bar-item__fill--fat" id="fBar"></div>
-                    </div>
-                  </div>
-                  <div class="macro-bar-item">
-                    <div class="macro-bar-item__row">
-                      <span class="macro-bar-item__label" data-i18n="carbs">Вуглеводи</span>
-                      <span class="macro-bar-item__value"><span id="cCurrent">0</span>г</span>
-                    </div>
-                    <div class="macro-bar-item__track">
-                      <div class="macro-bar-item__fill macro-bar-item__fill--carbs" id="cBar"></div>
-                    </div>
-                  </div>
-                </div>
+                </section>
 
-                <!-- КБЖУ баланс -->
-                <div class="kbju-balance" id="kbjuBalance"></div>
+                <!-- ============== КАРТКА: ШВИДКІ ДІЇ ============== -->
+                <section class="quick-actions-card">
+                  <h3 class="quick-actions-card__title" data-i18n="quickActions">Швидкі дії</h3>
 
-                <!-- Швидкі дії -->
-                <div class="day-quick-actions">
-                  <h3 class="day-quick-actions__title">Швидкі дії</h3>
-                  <button class="day-quick-btn" id="copyDayBtn">Скопіювати день</button>
-                  <button
-                    class="day-quick-btn day-quick-btn--danger"
-                    id="clearDayBtn"
-                    data-i18n="clearDay">
-                    Очистити день
-                  </button>
-                </div>
+                  <div class="day-quick-actions">
+                    <button class="day-quick-btn" id="copyDayBtn" data-i18n="copyDay">
+                      Скопіювати день
+                    </button>
+                    <button
+                      class="day-quick-btn day-quick-btn--danger"
+                      id="clearDayBtn"
+                      data-i18n="clearDay">
+                      Очистити день
+                    </button>
+                  </div>
+                </section>
               </div>
             </aside>
           </div>
