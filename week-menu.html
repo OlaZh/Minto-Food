@@ -406,16 +406,15 @@
     </div>
 
     <!-- МОДАЛЬНЕ ВІКНО ПІДТВЕРДЖЕННЯ ВИДАЛЕННЯ -->
-    <div id="week-confirm-modal" class="modal" hidden>
-      <div class="modal__overlay"></div>
-      <div class="modal__window modal__window--confirm">
-        <h3 data-i18n="deleteMealTitle">Видалити страву?</h3>
-        <p data-i18n="deleteMealWarning">Цю дію неможливо скасувати.</p>
+    <div id="week-confirm-modal" class="modal-overlay">
+      <div class="modal-card confirm-box">
+        <h3 class="confirm-title" data-i18n="deleteMealTitle">Видалити страву?</h3>
+        <p class="confirm-message" data-i18n="deleteMealWarning">Цю дію неможливо скасувати.</p>
         <div class="confirm-btns">
           <button id="week-confirm-yes" class="btn-confirm btn-danger" data-i18n="confirmDelete">
             Так, видалити
           </button>
-          <button id="week-confirm-no" class="btn-confirm btn-secondary" data-i18n="cancel">
+          <button id="week-confirm-no" class="btn-secondary" data-i18n="cancel">
             Скасувати
           </button>
         </div>

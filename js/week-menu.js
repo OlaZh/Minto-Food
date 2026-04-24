@@ -259,7 +259,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   function openClearCellConfirm(day, mealType) {
     deleteTarget = { day, mealType, clearAll: true };
     if (confirmModal) {
-      confirmModal.classList.add('active');
+      confirmModal.classList.add('is-active');
       confirmModal.hidden = false;
     }
   }
@@ -420,7 +420,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   function openDeleteConfirm(id, day, mealType) {
     deleteTarget = { id, day, mealType };
     if (confirmModal) {
-      confirmModal.classList.add('active');
+      confirmModal.classList.add('is-active');
       confirmModal.hidden = false;
     }
   }
@@ -458,7 +458,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       deleteTarget = null;
       if (confirmModal) {
-        confirmModal.classList.remove('active');
+        confirmModal.classList.remove('is-active');
         confirmModal.hidden = true;
       }
     });
@@ -468,7 +468,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     confirmNo.addEventListener('click', () => {
       deleteTarget = null;
       if (confirmModal) {
-        confirmModal.classList.remove('active');
+        confirmModal.classList.remove('is-active');
         confirmModal.hidden = true;
       }
     });

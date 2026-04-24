@@ -277,7 +277,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const modal = document.getElementById('confirm-modal');
     if (!modal) return;
 
-    modal.classList.add('active');
+    modal.classList.add('is-active');
     modal.hidden = false;
 
     const yes = document.getElementById('confirm-yes');
@@ -306,12 +306,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         renderSummary();
       }
 
-      modal.classList.remove('active');
+      modal.classList.remove('is-active');
       modal.hidden = true;
     };
 
     no.onclick = () => {
-      modal.classList.remove('active');
+      modal.classList.remove('is-active');
       modal.hidden = true;
     };
   }

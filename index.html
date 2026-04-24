@@ -601,13 +601,12 @@
       </div>
     </div>
 
-    <div id="confirm-modal" class="confirm-modal">
-      <div class="confirm-modal__overlay"></div>
-      <div class="confirm-modal__content">
-        <p class="confirm-modal__text" data-i18n="confirmDelete">Точно видалити?</p>
-        <div class="confirm-modal__buttons">
-          <button id="confirm-yes" class="confirm-modal__yes" data-i18n="yes">Так</button>
-          <button id="confirm-no" class="confirm-modal__no" data-i18n="cancel">Скасувати</button>
+    <div id="confirm-modal" class="modal-overlay">
+      <div class="modal-card confirm-box">
+        <h3 class="confirm-title" data-i18n="confirmDelete">Точно видалити?</h3>
+        <div class="confirm-btns">
+          <button id="confirm-yes" class="btn-confirm btn-danger" data-i18n="yes">Так</button>
+          <button id="confirm-no" class="btn-secondary" data-i18n="cancel">Скасувати</button>
         </div>
       </div>
     </div>

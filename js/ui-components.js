@@ -142,11 +142,11 @@ export function showConfirmModal({
   yesBtn.textContent = confirmText;
   noBtn.textContent = cancelText;
 
-  modal.classList.add('active');
+  modal.classList.add('is-active');
   modal.hidden = false;
 
   const close = () => {
-    modal.classList.remove('active');
+    modal.classList.remove('is-active');
     modal.hidden = true;
   };
 
