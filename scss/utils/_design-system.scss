@@ -1,0 +1,410 @@
+// ============================================================
+//  DESIGN SYSTEM — SINGLE SOURCE OF TRUTH
+// ============================================================
+//
+//  Архітектура:
+//  1. CSS custom properties — токени, що реагують на зміну теми
+//  2. Placeholders (%...) — повторювані компоненти для @extend
+//
+//  Правила:
+//  - Ніколи не пиши захардкожене значення (16px, #fff) у компонентах —
+//    використовуй токени з цього файлу
+//  - Додаєш новий компонент → шукай існуючий placeholder перед створенням
+//  - Не створюй placeholder "на майбутнє" — тільки якщо є реальне
+//    повторення як мінімум у 2 місцях
+//
+// ============================================================
+
+// ============================================================
+//  1. DESIGN TOKENS (CSS custom properties)
+// ============================================================
+
+:root {
+  // ---------- SPACING SCALE ----------
+  // Фіксована шкала — не можна використовувати проміжні значення
+  --space-xxs: 4px;
+  --space-xs: 8px;
+  --space-sm: 12px;
+  --space-md: 16px;
+  --space-lg: 20px;
+  --space-xl: 24px;
+  --space-2xl: 32px;
+  --space-3xl: 40px;
+  --space-4xl: 56px;
+
+  // ---------- BORDER RADII ----------
+  --radius-xs: 6px; // чіпи, маленькі елементи
+  --radius-sm: 10px; // кнопки
+  --radius-md: 12px; // інпути, вторинні картки
+  --radius-lg: 16px; // основні картки
+  --radius-xl: 20px; // hero-картки
+  --radius-2xl: 24px; // модалки
+  --radius-pill: 999px; // pill-форма (капсули)
+
+  // ---------- ELEVATION (SHADOWS) ----------
+  // Level 1 — статичні картки
+  --shadow-1:
+    0 1px 2px rgba(15, 31, 27, 0.04), 0 2px 6px rgba(15, 31, 27, 0.06);
+
+  // Level 2 — hover state
+  --shadow-2:
+    0 6px 20px rgba(15, 31, 27, 0.08), 0 14px 32px rgba(15, 31, 27, 0.1);
+
+  // Level 3 — модалки, dropdowns
+  --shadow-3:
+    0 12px 30px rgba(15, 31, 27, 0.14), 0 30px 60px rgba(15, 31, 27, 0.18);
+
+  // Inset — для input'ів
+  --shadow-inset: inset 0 2px 4px rgba(15, 31, 27, 0.06);
+
+  // ---------- FOCUS RING ----------
+  --focus-ring: 0 0 0 3px rgba(74, 181, 132, 0.25);
+
+  // ---------- MOTION ----------
+  --duration-fast: 150ms;
+  --duration-base: 250ms;
+  --duration-slow: 350ms;
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+// ---------- DARK THEME OVERRIDES ----------
+// Тіні мають бути глибшими в темній темі, бо на тлі темного фону
+// стандартна rgba(0,0,0,.08) не читається
+[data-theme='dark'] {
+  --shadow-1:
+    0 2px 4px rgba(0, 0, 0, 0.3), 0 4px 12px rgba(0, 0, 0, 0.35);
+
+  --shadow-2:
+    0 8px 24px rgba(0, 0, 0, 0.4), 0 16px 40px rgba(0, 0, 0, 0.45);
+
+  --shadow-3:
+    0 16px 40px rgba(0, 0, 0, 0.5), 0 40px 80px rgba(0, 0, 0, 0.55);
+
+  --focus-ring: 0 0 0 3px rgba(111, 207, 186, 0.35);
+}
+
+// ============================================================
+//  2. BUTTONS
+// ============================================================
+
+// Базова кнопка — структурні властивості без кольору
+// Всі buttons успадковуються від цього
+%button-base {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-xs);
+
+  padding: var(--space-sm) var(--space-lg);
+  min-height: 40px;
+
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1;
+
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+
+  cursor: pointer;
+  user-select: none;
+  text-align: center;
+  text-decoration: none;
+
+  transition:
+    background-color var(--duration-base) var(--ease-out),
+    border-color var(--duration-base) var(--ease-out),
+    transform var(--duration-fast) var(--ease-out),
+    box-shadow var(--duration-base) var(--ease-out);
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: var(--focus-ring);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+}
+
+// Основна кнопка — суцільний зелений акцент
+// Приклад: "Зберегти", "Додати рецепт", "Увійти"
+%button-primary {
+  @extend %button-base;
+
+  background: var(--color-accent);
+  color: var(--color-text-inverse);
+  box-shadow: var(--shadow-1);
+
+  &:hover:not(:disabled) {
+    background: var(--color-accent-hover);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-2);
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(0);
+    box-shadow: var(--shadow-1);
+  }
+}
+
+// Вторинна кнопка — контур без заповнення
+// Приклад: "Скасувати", "Назад"
+%button-secondary {
+  @extend %button-base;
+
+  background: transparent;
+  color: var(--color-text-primary);
+  border-color: var(--color-border);
+
+  &:hover:not(:disabled) {
+    background: var(--color-bg-hover);
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(1px);
+  }
+}
+
+// Прозора кнопка — для утилітарних дій
+// Приклад: кнопка "×" для закриття, "Очистити день"
+%button-ghost {
+  @extend %button-base;
+
+  background: transparent;
+  color: var(--color-text-secondary);
+  min-height: 36px;
+  padding: var(--space-xs) var(--space-md);
+
+  &:hover:not(:disabled) {
+    background: var(--color-bg-hover);
+    color: var(--color-text-primary);
+  }
+}
+
+// ============================================================
+//  3. CHIPS (pill-shaped filter buttons)
+// ============================================================
+
+// Базова чіп — загальна структура
+%chip-base {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+
+  padding: var(--space-xs) var(--space-md);
+  min-height: 32px;
+
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+
+  cursor: pointer;
+  user-select: none;
+
+  transition:
+    background-color var(--duration-base) var(--ease-out),
+    border-color var(--duration-base) var(--ease-out),
+    color var(--duration-base) var(--ease-out);
+}
+
+// Чіп-фільтр — неактивний і активний стани
+// Приклад: категорії на сторінці "Рецепти" (Всі / Сніданок / Обід)
+%chip-filter {
+  @extend %chip-base;
+
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+
+  &:hover {
+    border-color: var(--color-accent);
+    color: var(--color-text-primary);
+  }
+
+  &.is-active,
+  &--active {
+    background: var(--color-accent);
+    color: var(--color-text-inverse);
+    border-color: var(--color-accent);
+  }
+}
+
+// Чіп дня тижня — окремий варіант, більший і з датою
+// Приклад: горизонтальний тижневий селектор на "Меню на день"
+%chip-day {
+  @extend %chip-base;
+
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--space-xs) var(--space-md);
+  min-height: 52px;
+  min-width: 64px;
+
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+
+  font-size: 12px;
+  line-height: 1.2;
+
+  &__label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  &__date {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--color-text-primary);
+  }
+
+  &:hover {
+    border-color: var(--color-accent);
+  }
+
+  &.is-active,
+  &--active {
+    background: var(--color-accent);
+    border-color: var(--color-accent);
+
+    .chip-day__label,
+    .chip-day__date {
+      color: var(--color-text-inverse);
+    }
+  }
+}
+
+// ============================================================
+//  4. PILL BADGES (status indicators)
+// ============================================================
+
+// Pill-бейдж — компактний статусний індикатор
+// Приклад: "🔥 3 дні поспіль", "новий", "преміум"
+%pill-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+
+  padding: var(--space-xxs) var(--space-sm);
+
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.4;
+  white-space: nowrap;
+
+  background: var(--color-accent-soft);
+  color: var(--color-accent);
+
+  border-radius: var(--radius-pill);
+  border: 1px solid transparent;
+}
+
+// Неактивний стан бейджа (наприклад, streak = 0)
+%pill-badge-muted {
+  @extend %pill-badge;
+  background: var(--color-bg-hover);
+  color: var(--color-text-secondary);
+}
+
+// ============================================================
+//  5. PROGRESS BARS
+// ============================================================
+
+// Горизонтальний прогрес-бар (pill-форма)
+// Приклад: макро на "Меню на день" (білки, жири, вуглеводи)
+%progress-bar {
+  position: relative;
+  width: 100%;
+  height: 8px;
+
+  background: var(--color-border);
+  border-radius: var(--radius-pill);
+  overflow: hidden;
+
+  &__fill {
+    height: 100%;
+    background: var(--color-accent);
+    border-radius: inherit;
+    transition: width var(--duration-slow) var(--ease-smooth);
+  }
+}
+
+// Варіант товстішого бара для акценту
+%progress-bar-thick {
+  @extend %progress-bar;
+  height: 12px;
+}
+
+// ============================================================
+//  6. RING (hero circular progress)
+// ============================================================
+
+// Контейнер для великого кільця калорій — один на сторінку
+// Сам SVG малюється в HTML, це тільки wrapper-стилі
+%ring-hero {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  svg {
+    width: 100%;
+    height: 100%;
+    transform: rotate(-90deg);
+  }
+
+  &__track {
+    fill: none;
+    stroke: var(--color-border);
+    stroke-width: 8;
+  }
+
+  &__progress {
+    fill: none;
+    stroke: var(--color-accent);
+    stroke-width: 8;
+    stroke-linecap: round;
+    transition:
+      stroke-dashoffset var(--duration-slow) var(--ease-smooth),
+      stroke var(--duration-base) var(--ease-out);
+  }
+
+  &__center {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+}
+
+// ============================================================
+//  7. UTILITY: visually-hidden (для доступності)
+// ============================================================
+
+// Приховує елемент візуально, але залишає доступним для screen readers
+// Використовуй для лейблів, які читабельні контекстом
+%visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}

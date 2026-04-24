@@ -123,10 +123,10 @@ export function showConfirmModal({
       <div class="modal-card confirm-box">
         <h3 class="confirm-title"></h3>
         <p class="confirm-message"></p>
-        <div class="confirm-btns">
-          <button class="confirm-yes btn-primary"></button>
+       <div class="confirm-btns">
+          <button class="confirm-yes btn-confirm btn-danger"></button>
           <button class="confirm-no btn-secondary"></button>
-        </div>
+       </div>
       </div>
     `;
     document.body.appendChild(modal);

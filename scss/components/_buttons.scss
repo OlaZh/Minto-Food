@@ -1,203 +1,179 @@
+// ============================================================
+//  COMPONENT: BUTTONS
+// ============================================================
+//  Всі кнопки проекту успадковуються від трьох placeholders
+//  з _design-system.scss:
+//    %button-primary    — основна кнопка (суцільний accent)
+//    %button-secondary  — контурна кнопка
+//    %button-ghost      — прозора утилітарна кнопка
+//
+//  При додаванні нової кнопки — ЗАВЖДИ через @extend.
+//  НЕ копіюй стилі з однієї кнопки в іншу.
+// ============================================================
+
 /* ============================================================
-   COMPONENT: BASE BUTTONS (GLOBAL)
+   BASE BUTTONS (GLOBAL)
    ============================================================ */
 
 .button {
-  display: inline-block;
-  font-family: $font-ui;
-  font-weight: $font-weight-ui-medium;
-  font-size: 14px;
-  border-radius: 10px;
-  padding: 10px 16px;
-  cursor: pointer;
-  text-align: center;
-  user-select: none;
-  transition: background-color 0.2s ease;
-
+  // Базові структурні властивості; варіанти роблять @extend нижче
   &--primary {
-    background-color: var(--color-accent);
-    color: var(--color-text-inverse);
-    border: none;
-
-    &:hover,
-    &:focus {
-      background-color: var(--color-accent-hover);
-      outline: none;
-    }
+    @extend %button-primary;
   }
 
   &--secondary {
-    background-color: transparent;
-    color: var(--color-text-primary);
-    border: 1px solid var(--color-border);
+    @extend %button-secondary;
+  }
+}
 
-    &:hover,
-    &:focus {
-      background-color: var(--color-bg-secondary);
-      outline: none;
+/* ============================================================
+   FORM BUTTONS (РЕЦЕПТИ, МОДАЛКИ)
+   ============================================================ */
+
+/* Головна кнопка форм (Зберегти, Додати) */
+.btn-primary {
+  @extend %button-primary;
+
+  // Переопреділення для форм: більший padding та font-size
+  padding: var(--space-sm) var(--space-xl);
+  font-size: 16px;
+  font-weight: 700;
+  border-radius: var(--radius-md);
+  flex: 2;
+}
+
+/* Друга кнопка (Скасувати, Назад) */
+.btn-secondary {
+  @extend %button-secondary;
+
+  padding: var(--space-sm) var(--space-lg);
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: var(--radius-md);
+  flex: 1;
+}
+
+/* ============================================================
+   CONFIRM BUTTONS (ДІАЛОГИ ПІДТВЕРДЖЕННЯ)
+   ============================================================ */
+
+.btn-confirm {
+  @extend %button-primary;
+
+  flex: 1;
+  padding: var(--space-sm) var(--space-lg);
+  border-radius: var(--radius-md);
+  font-weight: 600;
+}
+
+/* Небезпечна дія (видалення) — окремий семантичний варіант */
+.btn-danger {
+  @extend %button-base;
+
+  background: #fcede8;
+  color: #c0392b;
+  border: 1px solid #e6b5a8;
+  font-weight: 600;
+  padding: var(--space-sm) var(--space-lg);
+  border-radius: var(--radius-md);
+
+  &:hover:not(:disabled) {
+    background: #f8d7cf;
+    color: #a83224;
+    border-color: #d99f90;
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-2);
+  }
+
+  [data-theme='dark'] & {
+    background: rgba(192, 57, 43, 0.15);
+    color: #ff8b78;
+    border-color: rgba(192, 57, 43, 0.4);
+
+    &:hover:not(:disabled) {
+      background: rgba(192, 57, 43, 0.25);
+      color: #ffb3a6;
     }
   }
 }
 
 /* ============================================================
-   COMPONENT: BUTTONS (RECIPES PAGE)
+   SPECIALIZED BUTTONS
    ============================================================ */
 
-/* Головна кнопка (Зберегти/Додати у формах) */
-.btn-primary {
-  background: var(--color-accent-soft);
-  color: var(--color-text-primary);
-  backdrop-filter: blur(10px);
-  border: none;
-  padding: 14px 28px;
-  border-radius: 14px;
-  flex: 2;
-  font-weight: 700;
+/* "Додати рецепт" — з SVG-іконкою, що обертається на hover */
+.btn-add-recipe {
+  @extend %button-primary;
+
+  padding: var(--space-sm) var(--space-xl);
   font-size: 16px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 12px rgba(46, 204, 113, 0.15);
-
-  &:hover {
-    background: rgba(111, 207, 186, 0.32);
-    border-color: rgba(111, 207, 186, 0.45);
-    transform: translateY(-3px);
-    box-shadow: 0 15px 25px rgba(46, 204, 113, 0.25);
-  }
-
-  &:active {
-    transform: translateY(0);
-  }
-}
-
-/* Друга кнопка (Скасувати) */
-.btn-secondary {
-  border: 1px solid var(--color-accent-soft);
-  background: var(--color-accent-soft);
-  backdrop-filter: blur(10px);
-  color: var(--color-text-primary);
-  padding: 14px 20px;
-  border-radius: 14px;
-  flex: 1;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 12px rgba(46, 204, 113, 0.15);
-
-  &:hover {
-    background: rgba(111, 207, 186, 0.32);
-    border-color: rgba(111, 207, 186, 0.45);
-    transform: translateY(-3px);
-    box-shadow: 0 15px 25px rgba(46, 204, 113, 0.25);
-  }
-}
-
-/* Кнопка загрузки фото */
-.btn-upload {
-  padding: 12px 20px;
-  background: var(--color-accent-soft);
-  border: 1px solid rgba(111, 207, 186, 0.45);
-  border-radius: 14px;
   font-weight: 700;
-  font-size: 14px;
-  cursor: pointer;
-  color: var(--color-text-primary);
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 12px rgba(46, 204, 113, 0.12);
+  border-radius: var(--radius-lg);
+  gap: var(--space-xs);
 
-  &:hover {
-    background: rgba(111, 207, 186, 0.18);
-    border-color: rgba(111, 207, 186, 0.55);
-    transform: translateY(-3px);
-    box-shadow: 0 15px 25px rgba(46, 204, 113, 0.22);
+  svg {
+    stroke: currentColor;
+    transition: transform var(--duration-base) var(--ease-out);
   }
+
+  &:hover:not(:disabled) svg {
+    transform: rotate(90deg);
+  }
+}
+
+/* Кнопка завантаження фото */
+.btn-upload {
+  @extend %button-secondary;
+
+  padding: var(--space-sm) var(--space-lg);
+  font-size: 14px;
+  font-weight: 700;
+  border-radius: var(--radius-md);
 }
 
 /* Міні-кнопка збереження */
 .btn-save-mini {
-  margin-top: 12px;
-  padding: 12px 24px;
-  background: var(--color-accent-soft);
-  color: var(--color-text-primary);
-  border: 1px solid rgba(111, 207, 186, 0.45);
-  border-radius: 14px;
+  @extend %button-secondary;
+
+  margin-top: var(--space-sm);
+  padding: var(--space-sm) var(--space-xl);
+  font-size: 14px;
+  font-weight: 700;
+  border-radius: var(--radius-md);
+  align-self: center;
+}
+
+/* ============================================================
+   SMART-IMPORT BUTTON (РЕЦЕПТИ: ВСТАВКА URL)
+   ============================================================ */
+
+.smart-import__btn {
+  @extend %button-secondary;
+
+  flex: 1;
+  max-width: 140px;
+  height: 48px;
+  font-weight: 700;
+  border-radius: var(--radius-md);
+}
+
+/* ============================================================
+   CANCEL PREVIEW (ID-SELECTOR — LEGACY, треба переробити в клас)
+   ============================================================ */
+
+#cancel-preview {
+  @extend %button-ghost;
+
+  padding: var(--space-sm) var(--space-xl);
   font-weight: 700;
   font-size: 14px;
-  align-self: center;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 12px rgba(46, 204, 113, 0.12);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
 
-  &:hover {
-    background: rgba(111, 207, 186, 0.18);
-    border-color: rgba(111, 207, 186, 0.55);
-    transform: translateY(-3px);
-    box-shadow: 0 15px 25px rgba(46, 204, 113, 0.22);
-  }
-
-  &:active {
-    transform: translateY(0);
-  }
-}
-
-/* Кнопки підтвердження */
-.btn-confirm {
-  flex: 1;
-  padding: 14px 20px;
-  border-radius: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.25s ease;
-  border: none;
-}
-
-.btn-danger {
-  background: #fcede8;
-  color: #c0392b;
-  border: 1px solid #e6b5a8;
-  transition: all 0.3s ease;
-
-  &:hover {
-    background: #f8d7cf;
-    color: #a83224;
-    border-color: #d99f90;
-    transform: translateY(-3px);
-  }
-}
-
-/* Кнопка "Додати рецепт" */
-.btn-add-recipe {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-
-  padding: 14px 28px;
-  background: var(--color-accent-soft);
-  color: var(--color-text-primary);
-
-  border: 1px solid rgba(111, 207, 186, 0.45);
-  border-radius: 16px;
-
-  font-weight: 700;
-  font-size: 16px;
-  cursor: pointer;
-
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 12px rgba(46, 204, 113, 0.15);
-
-  svg {
-    stroke: var(--color-text-primary);
-    transition: transform 0.25s ease;
-  }
-
-  &:hover {
-    background: rgba(111, 207, 186, 0.32);
-    border-color: rgba(111, 207, 186, 0.55);
-    transform: translateY(-3px);
-    box-shadow: 0 15px 25px rgba(46, 204, 113, 0.25);
-
-    svg {
-      transform: rotate(90deg);
-    }
+  &:hover:not(:disabled) {
+    background: var(--color-bg-hover);
+    border-color: var(--color-accent);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-2);
   }
 }

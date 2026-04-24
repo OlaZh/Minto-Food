@@ -350,6 +350,117 @@ textarea {
   --water-text: #b3ded7;
 }
 
+:root {
+  --space-xxs: 4px;
+  --space-xs: 8px;
+  --space-sm: 12px;
+  --space-md: 16px;
+  --space-lg: 20px;
+  --space-xl: 24px;
+  --space-2xl: 32px;
+  --space-3xl: 40px;
+  --space-4xl: 56px;
+  --radius-xs: 6px;
+  --radius-sm: 10px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-2xl: 24px;
+  --radius-pill: 999px;
+  --shadow-1:
+    0 1px 2px rgba(15, 31, 27, 0.04), 0 2px 6px rgba(15, 31, 27, 0.06);
+  --shadow-2:
+    0 6px 20px rgba(15, 31, 27, 0.08), 0 14px 32px rgba(15, 31, 27, 0.1);
+  --shadow-3:
+    0 12px 30px rgba(15, 31, 27, 0.14), 0 30px 60px rgba(15, 31, 27, 0.18);
+  --shadow-inset: inset 0 2px 4px rgba(15, 31, 27, 0.06);
+  --focus-ring: 0 0 0 3px rgba(74, 181, 132, 0.25);
+  --duration-fast: 150ms;
+  --duration-base: 250ms;
+  --duration-slow: 350ms;
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+[data-theme=dark] {
+  --shadow-1:
+    0 2px 4px rgba(0, 0, 0, 0.3), 0 4px 12px rgba(0, 0, 0, 0.35);
+  --shadow-2:
+    0 8px 24px rgba(0, 0, 0, 0.4), 0 16px 40px rgba(0, 0, 0, 0.45);
+  --shadow-3:
+    0 16px 40px rgba(0, 0, 0, 0.5), 0 40px 80px rgba(0, 0, 0, 0.55);
+  --focus-ring: 0 0 0 3px rgba(111, 207, 186, 0.35);
+}
+
+.btn-danger, #cancel-preview, .smart-import__btn, .btn-save-mini, .btn-upload, .btn-secondary, .button--secondary, .btn-add-recipe, .btn-confirm, .btn-primary, .button--primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-xs);
+  padding: var(--space-sm) var(--space-lg);
+  min-height: 40px;
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  user-select: none;
+  text-align: center;
+  text-decoration: none;
+  transition: background-color var(--duration-base) var(--ease-out), border-color var(--duration-base) var(--ease-out), transform var(--duration-fast) var(--ease-out), box-shadow var(--duration-base) var(--ease-out);
+}
+.btn-danger:focus-visible, #cancel-preview:focus-visible, .smart-import__btn:focus-visible, .btn-save-mini:focus-visible, .btn-upload:focus-visible, .btn-secondary:focus-visible, .button--secondary:focus-visible, .btn-add-recipe:focus-visible, .btn-confirm:focus-visible, .btn-primary:focus-visible, .button--primary:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+.btn-danger:disabled, #cancel-preview:disabled, .smart-import__btn:disabled, .btn-save-mini:disabled, .btn-upload:disabled, .btn-secondary:disabled, .button--secondary:disabled, .btn-add-recipe:disabled, .btn-confirm:disabled, .btn-primary:disabled, .button--primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.btn-add-recipe, .btn-confirm, .btn-primary, .button--primary {
+  background: var(--color-accent);
+  color: var(--color-text-inverse);
+  box-shadow: var(--shadow-1);
+}
+.btn-add-recipe:hover:not(:disabled), .btn-confirm:hover:not(:disabled), .btn-primary:hover:not(:disabled), .button--primary:hover:not(:disabled) {
+  background: var(--color-accent-hover);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-2);
+}
+.btn-add-recipe:active:not(:disabled), .btn-confirm:active:not(:disabled), .btn-primary:active:not(:disabled), .button--primary:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: var(--shadow-1);
+}
+
+.smart-import__btn, .btn-save-mini, .btn-upload, .btn-secondary, .button--secondary {
+  background: transparent;
+  color: var(--color-text-primary);
+  border-color: var(--color-border);
+}
+.smart-import__btn:hover:not(:disabled), .btn-save-mini:hover:not(:disabled), .btn-upload:hover:not(:disabled), .btn-secondary:hover:not(:disabled), .button--secondary:hover:not(:disabled) {
+  background: var(--color-bg-hover);
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+.smart-import__btn:active:not(:disabled), .btn-save-mini:active:not(:disabled), .btn-upload:active:not(:disabled), .btn-secondary:active:not(:disabled), .button--secondary:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+#cancel-preview {
+  background: transparent;
+  color: var(--color-text-secondary);
+  min-height: 36px;
+  padding: var(--space-xs) var(--space-md);
+}
+#cancel-preview:hover:not(:disabled) {
+  background: var(--color-bg-hover);
+  color: var(--color-text-primary);
+}
+
 /* =============================================================
    GLOBAL LAYOUT — CANONICAL
    ============================================================= */
@@ -1193,185 +1304,128 @@ textarea {
 }
 
 /* ============================================================
-   COMPONENT: BASE BUTTONS (GLOBAL)
+   BASE BUTTONS (GLOBAL)
    ============================================================ */
-.button {
-  display: inline-block;
-  font-family: "Mulish", sans-serif;
-  font-weight: 500;
+/* ============================================================
+   FORM BUTTONS (РЕЦЕПТИ, МОДАЛКИ)
+   ============================================================ */
+/* Головна кнопка форм (Зберегти, Додати) */
+.btn-primary {
+  padding: var(--space-sm) var(--space-xl);
+  font-size: 16px;
+  font-weight: 700;
+  border-radius: var(--radius-md);
+  flex: 2;
+}
+
+/* Друга кнопка (Скасувати, Назад) */
+.btn-secondary {
+  padding: var(--space-sm) var(--space-lg);
   font-size: 14px;
-  border-radius: 10px;
-  padding: 10px 16px;
-  cursor: pointer;
-  text-align: center;
-  user-select: none;
-  transition: background-color 0.2s ease;
-}
-.button--primary {
-  background-color: var(--color-accent);
-  color: var(--color-text-inverse);
-  border: none;
-}
-.button--primary:hover, .button--primary:focus {
-  background-color: var(--color-accent-hover);
-  outline: none;
-}
-.button--secondary {
-  background-color: transparent;
-  color: var(--color-text-primary);
-  border: 1px solid var(--color-border);
-}
-.button--secondary:hover, .button--secondary:focus {
-  background-color: var(--color-bg-secondary);
-  outline: none;
+  font-weight: 600;
+  border-radius: var(--radius-md);
+  flex: 1;
 }
 
 /* ============================================================
-   COMPONENT: BUTTONS (RECIPES PAGE)
+   CONFIRM BUTTONS (ДІАЛОГИ ПІДТВЕРДЖЕННЯ)
    ============================================================ */
-/* Головна кнопка (Зберегти/Додати у формах) */
-.btn-primary {
-  background: var(--color-accent-soft);
-  color: var(--color-text-primary);
-  backdrop-filter: blur(10px);
-  border: none;
-  padding: 14px 28px;
-  border-radius: 14px;
-  flex: 2;
-  font-weight: 700;
-  font-size: 16px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 12px rgba(46, 204, 113, 0.15);
-}
-.btn-primary:hover {
-  background: rgba(111, 207, 186, 0.32);
-  border-color: rgba(111, 207, 186, 0.45);
-  transform: translateY(-3px);
-  box-shadow: 0 15px 25px rgba(46, 204, 113, 0.25);
-}
-.btn-primary:active {
-  transform: translateY(0);
-}
-
-/* Друга кнопка (Скасувати) */
-.btn-secondary {
-  border: 1px solid var(--color-accent-soft);
-  background: var(--color-accent-soft);
-  backdrop-filter: blur(10px);
-  color: var(--color-text-primary);
-  padding: 14px 20px;
-  border-radius: 14px;
-  flex: 1;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 12px rgba(46, 204, 113, 0.15);
-}
-.btn-secondary:hover {
-  background: rgba(111, 207, 186, 0.32);
-  border-color: rgba(111, 207, 186, 0.45);
-  transform: translateY(-3px);
-  box-shadow: 0 15px 25px rgba(46, 204, 113, 0.25);
-}
-
-/* Кнопка загрузки фото */
-.btn-upload {
-  padding: 12px 20px;
-  background: var(--color-accent-soft);
-  border: 1px solid rgba(111, 207, 186, 0.45);
-  border-radius: 14px;
-  font-weight: 700;
-  font-size: 14px;
-  cursor: pointer;
-  color: var(--color-text-primary);
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 12px rgba(46, 204, 113, 0.12);
-}
-.btn-upload:hover {
-  background: rgba(111, 207, 186, 0.18);
-  border-color: rgba(111, 207, 186, 0.55);
-  transform: translateY(-3px);
-  box-shadow: 0 15px 25px rgba(46, 204, 113, 0.22);
-}
-
-/* Міні-кнопка збереження */
-.btn-save-mini {
-  margin-top: 12px;
-  padding: 12px 24px;
-  background: var(--color-accent-soft);
-  color: var(--color-text-primary);
-  border: 1px solid rgba(111, 207, 186, 0.45);
-  border-radius: 14px;
-  font-weight: 700;
-  font-size: 14px;
-  align-self: center;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 12px rgba(46, 204, 113, 0.12);
-}
-.btn-save-mini:hover {
-  background: rgba(111, 207, 186, 0.18);
-  border-color: rgba(111, 207, 186, 0.55);
-  transform: translateY(-3px);
-  box-shadow: 0 15px 25px rgba(46, 204, 113, 0.22);
-}
-.btn-save-mini:active {
-  transform: translateY(0);
-}
-
-/* Кнопки підтвердження */
 .btn-confirm {
   flex: 1;
-  padding: 14px 20px;
-  border-radius: 14px;
+  padding: var(--space-sm) var(--space-lg);
+  border-radius: var(--radius-md);
   font-weight: 600;
-  cursor: pointer;
-  transition: all 0.25s ease;
-  border: none;
 }
 
+/* Небезпечна дія (видалення) — окремий семантичний варіант */
 .btn-danger {
   background: #fcede8;
   color: #c0392b;
   border: 1px solid #e6b5a8;
-  transition: all 0.3s ease;
+  font-weight: 600;
+  padding: var(--space-sm) var(--space-lg);
+  border-radius: var(--radius-md);
 }
-.btn-danger:hover {
+.btn-danger:hover:not(:disabled) {
   background: #f8d7cf;
   color: #a83224;
   border-color: #d99f90;
-  transform: translateY(-3px);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-2);
+}
+[data-theme=dark] .btn-danger {
+  background: rgba(192, 57, 43, 0.15);
+  color: #ff8b78;
+  border-color: rgba(192, 57, 43, 0.4);
+}
+[data-theme=dark] .btn-danger:hover:not(:disabled) {
+  background: rgba(192, 57, 43, 0.25);
+  color: #ffb3a6;
 }
 
-/* Кнопка "Додати рецепт" */
+/* ============================================================
+   SPECIALIZED BUTTONS
+   ============================================================ */
+/* "Додати рецепт" — з SVG-іконкою, що обертається на hover */
 .btn-add-recipe {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 14px 28px;
-  background: var(--color-accent-soft);
-  color: var(--color-text-primary);
-  border: 1px solid rgba(111, 207, 186, 0.45);
-  border-radius: 16px;
-  font-weight: 700;
+  padding: var(--space-sm) var(--space-xl);
   font-size: 16px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 12px rgba(46, 204, 113, 0.15);
+  font-weight: 700;
+  border-radius: var(--radius-lg);
+  gap: var(--space-xs);
 }
 .btn-add-recipe svg {
-  stroke: var(--color-text-primary);
-  transition: transform 0.25s ease;
+  stroke: currentColor;
+  transition: transform var(--duration-base) var(--ease-out);
 }
-.btn-add-recipe:hover {
-  background: rgba(111, 207, 186, 0.32);
-  border-color: rgba(111, 207, 186, 0.55);
-  transform: translateY(-3px);
-  box-shadow: 0 15px 25px rgba(46, 204, 113, 0.25);
-}
-.btn-add-recipe:hover svg {
+.btn-add-recipe:hover:not(:disabled) svg {
   transform: rotate(90deg);
+}
+
+/* Кнопка завантаження фото */
+.btn-upload {
+  padding: var(--space-sm) var(--space-lg);
+  font-size: 14px;
+  font-weight: 700;
+  border-radius: var(--radius-md);
+}
+
+/* Міні-кнопка збереження */
+.btn-save-mini {
+  margin-top: var(--space-sm);
+  padding: var(--space-sm) var(--space-xl);
+  font-size: 14px;
+  font-weight: 700;
+  border-radius: var(--radius-md);
+  align-self: center;
+}
+
+/* ============================================================
+   SMART-IMPORT BUTTON (РЕЦЕПТИ: ВСТАВКА URL)
+   ============================================================ */
+.smart-import__btn {
+  flex: 1;
+  max-width: 140px;
+  height: 48px;
+  font-weight: 700;
+  border-radius: var(--radius-md);
+}
+
+/* ============================================================
+   CANCEL PREVIEW (ID-SELECTOR — LEGACY, треба переробити в клас)
+   ============================================================ */
+#cancel-preview {
+  padding: var(--space-sm) var(--space-xl);
+  font-weight: 700;
+  font-size: 14px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+}
+#cancel-preview:hover:not(:disabled) {
+  background: var(--color-bg-hover);
+  border-color: var(--color-accent);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-2);
 }
 
 .card {
@@ -2346,17 +2400,16 @@ textarea {
 }
 
 /* ============================================================
-   COMPONENT: DELETE BUTTON & CONFIRM MODAL (RECIPES PAGE)
+   COMPONENT: DELETE BUTTON & CONFIRM MODAL
    ============================================================ */
-/* Кнопка на картці рецепта */
 .btn-delete-recipe {
   position: absolute;
   top: 10px;
   right: 10px;
-  background: var(--color-bg);
+  background: var(--color-bg-secondary);
   backdrop-filter: blur(4px);
   border: none;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   width: 32px;
   height: 32px;
   display: flex;
@@ -2364,7 +2417,7 @@ textarea {
   align-items: center;
   cursor: pointer;
   color: #e74c3c;
-  transition: all 0.2s ease;
+  transition: all var(--duration-fast) var(--ease-out);
   z-index: 10;
 }
 .btn-delete-recipe:hover {
@@ -2373,34 +2426,41 @@ textarea {
   transform: scale(1.1);
 }
 
-/* Вікно підтвердження видалення */
+/* ============================================================
+   CONFIRM BOX — Універсальна модалка підтвердження
+   Використовується з showConfirmModal() у ui-components.js
+   ============================================================ */
 .confirm-box {
-  max-width: 450px;
+  max-width: 420px;
+  width: calc(100% - 40px);
   text-align: center;
-  padding: 10px;
+  padding: var(--space-2xl) var(--space-xl);
+}
+.confirm-box .confirm-title {
+  font-family: var(--font-heading);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin: 0 0 var(--space-sm);
+}
+.confirm-box .confirm-message {
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  margin: 0 0 var(--space-xl);
+  line-height: 1.5;
 }
 .confirm-box .confirm-btns {
   display: flex;
-  gap: 12px;
-  margin-top: 25px;
-  justify-content: center;
+  gap: var(--space-sm);
   width: 100%;
 }
 .confirm-box .confirm-btns button {
   flex: 1;
-  padding: 14px 0;
+  padding: 14px 20px;
   font-size: 15px;
   font-weight: 700;
-  border-radius: 12px;
-  text-align: center;
-}
-
-/* Контейнер кнопок */
-.confirm-btns {
-  display: flex;
-  gap: 12px;
-  margin-top: 25px;
-  width: 100%;
+  border-radius: var(--radius-md);
+  white-space: nowrap;
 }
 
 /* ============================================================
