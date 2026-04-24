@@ -596,38 +596,46 @@
   }
 }
 
-/* ================= DAY SUMMARY ================= */
+/* ================= DAY SUMMARY (плоска стрічка) ================= */
 
 .day-summary {
-  @extend %premium-card;
-  width: 100%;
-  margin-top: 32px;
-  padding: 20px;
-  background-color: var(--color-accent-soft);
-  border-radius: 16px;
-  border: 1px solid var(--color-accent);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
 
-  &__item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
+  width: 100%;
+  margin-top: var(--space-lg);
+  padding: var(--space-md) 0;
+
+  // Без рамки, без фону, без тіні
+  background: transparent;
+  border: none;
+  border-top: 1px solid var(--color-border);
+  border-radius: 0;
+  box-shadow: none;
+
+  font-size: 14px;
 
   &__label {
-    font-family: var(--font-body);
-    font-size: 16px;
+    color: var(--color-text-secondary);
     font-weight: 500;
-    color: var(--color-text-primary);
   }
 
   &__value {
     font-family: var(--font-heading);
-    font-size: 22px;
-    font-weight: 600;
+    font-size: 15px;
+    font-weight: 700;
     color: var(--color-text-primary);
   }
-}
 
+  // Без hover-ефектів
+  &:hover {
+    transform: none;
+    border-color: var(--color-border);
+    box-shadow: none;
+  }
+}
 /* ================= MEAL ADD BUTTON ================= */
 
 .meal__add {
@@ -681,18 +689,6 @@
       background-color: #fff;
     }
   }
-}
-
-/* ================= RIGHT SIDEBAR ================= */
-
-.right-sidebar__section-title {
-  font-family: var(--font-heading);
-  font-size: 13px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.07em;
-  color: var(--color-text-secondary);
-  margin: 0 0 var(--space-sm);
 }
 
 /* ================= MACRO BARS ================= */
@@ -847,5 +843,27 @@
 
   .macro-bars {
     gap: var(--space-sm);
+  }
+}
+/* =============================================================
+   MACROS / QUICK ACTIONS CARDS — обгортки правої колонки
+   ============================================================= */
+
+.macros-card,
+.quick-actions-card {
+  @extend %premium-card;
+  padding: var(--space-lg) var(--space-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+
+  &__title {
+    font-family: var(--font-body);
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--color-text-secondary);
+    margin: 0;
   }
 }

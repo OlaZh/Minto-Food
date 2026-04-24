@@ -2,9 +2,16 @@
    GLOBAL RESPONSIVE — cross-component
    768px  → tablet portrait
    480px  → mobile phones
+
+   ⚠️  ТЕХ-БОРГ:
+   Цей файл — антипаттерн "responsive далеко від компонента".
+   При наступному редизайні кожної сторінки (Фази 3-8)
+   мобільні стилі переносяться у відповідний файл компонента.
+   Поки залишаємо як перехідний шар — без !important.
    ============================================== */
 
-/* ---- RECIPES GRID ---- */
+
+/* ---- RECIPES PAGE (заголовок) ---- */
 @media (max-width: 768px) {
   .recipe-page {
     padding: 24px 0;
@@ -13,26 +20,9 @@
       font-size: 24px;
     }
   }
-
-  .recipes-grid {
-    grid-template-columns: repeat(2, 1fr) !important;
-    gap: 12px;
-  }
-
-  .recipe-card__content {
-    padding: 16px;
-  }
-
-  .recipe-card__name {
-    font-size: 16px;
-  }
 }
 
 @media (max-width: 480px) {
-  .recipes-grid {
-    grid-template-columns: 1fr !important;
-  }
-
   .recipe-page {
     padding: 16px 0;
 
@@ -41,6 +31,7 @@
     }
   }
 }
+
 
 /* ---- FILTERS / CHIPS (product-guide, recipes) ---- */
 @media (max-width: 768px) {
@@ -60,12 +51,14 @@
   }
 }
 
+
 /* ---- CARDS ---- */
 @media (max-width: 768px) {
   .card {
     padding: 12px 16px;
   }
 }
+
 
 /* ---- BUTTONS ---- */
 @media (max-width: 768px) {
@@ -75,7 +68,7 @@
     font-size: 15px;
   }
 
-  /* Мінімальна зона дотику 48px */
+  /* Мінімальна зона дотику 44px (Apple HIG) */
   button,
   .button,
   .btn-primary,
@@ -86,6 +79,7 @@
   }
 }
 
+
 /* ---- INPUTS ---- */
 @media (max-width: 768px) {
   input,
@@ -94,6 +88,7 @@
     font-size: 16px; /* запобігає auto-zoom на iOS */
   }
 }
+
 
 /* ---- DAY MENU (index.html) ---- */
 @media (max-width: 768px) {
@@ -107,11 +102,12 @@
   }
 }
 
+
 /* ---- COOKBOOK ---- */
 @media (max-width: 768px) {
   .cookbook-grid,
   .books-grid {
-    grid-template-columns: repeat(2, 1fr) !important;
+    grid-template-columns: repeat(2, 1fr);
     gap: 12px;
   }
 }
@@ -119,9 +115,10 @@
 @media (max-width: 480px) {
   .cookbook-grid,
   .books-grid {
-    grid-template-columns: 1fr !important;
+    grid-template-columns: 1fr;
   }
 }
+
 
 /* ---- PROFILE PAGE ---- */
 @media (max-width: 768px) {
@@ -130,16 +127,17 @@
   }
 
   .stats-grid {
-    grid-template-columns: repeat(2, 1fr) !important;
+    grid-template-columns: repeat(2, 1fr);
     gap: 12px;
   }
 }
 
 @media (max-width: 480px) {
   .stats-grid {
-    grid-template-columns: 1fr !important;
+    grid-template-columns: 1fr;
   }
 }
+
 
 /* ---- GENERAL TYPOGRAPHY ---- */
 @media (max-width: 480px) {

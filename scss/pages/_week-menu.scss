@@ -162,20 +162,25 @@
   font-size: 14px;
   white-space: nowrap;
 }
+/* ================= DAY NAME (стовпчик з днем тижня) ================= */
+/* Підвищена специфічність через подвійний клас — прибирає потребу в !important */
 
-/* Day name */
-.week-grid__day-name {
+.week-grid__cell.week-grid__day-name {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   text-align: center;
   gap: 2px;
-  background: var(--color-bg-primary) !important;
-  border-color: var(--color-border) !important;
 
+  background: var(--color-bg-primary);
+  border-color: var(--color-border);
+
+  // Дні тижня — статичні, не повинні підстрибувати
   &:hover {
-    transform: none !important;
+    transform: none;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+    border-color: var(--color-border);
   }
 }
 
@@ -194,15 +199,20 @@
   line-height: 1;
 }
 
-.week-grid__row--today .week-grid__day-name {
-  background: var(--color-accent) !important;
-  border-color: var(--color-accent) !important;
+/* ================= TODAY (підсвічений день) ================= */
+/* Специфічність: .week-grid__row--today .week-grid__cell.week-grid__day-name (3 класи) */
+
+.week-grid__row--today .week-grid__cell.week-grid__day-name {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
 
   span:first-child,
   .week-grid__day-date {
-    color: var(--color-text-inverse) !important;
+    color: var(--color-text-inverse);
   }
 }
+
+/* ================= DARK THEME OVERRIDES ================= */
 
 [data-theme='dark'] {
   .week-grid__cell {
@@ -218,17 +228,19 @@
 }
 
 /* ================= MEAL CELL ================= */
+
 .meal-cell {
   display: flex;
   flex-direction: column;
   align-items: stretch;
   gap: 8px;
 
-  // Drag over стан
+  // Drag over стан — підвищена специфічність через подвійний клас
+  &.week-grid__cell.drag-over,
   &.drag-over {
-    border-color: var(--color-accent) !important;
-    background: var(--color-accent-soft) !important;
-    box-shadow: 0 0 0 2px rgba(111, 207, 186, 0.35) !important;
+    border-color: var(--color-accent);
+    background: var(--color-accent-soft);
+    box-shadow: 0 0 0 2px var(--color-accent-soft);
   }
 }
 
@@ -301,7 +313,6 @@
     color: #c0392b;
   }
 }
-
 
 /* ================= КНОПКА ДОДАВАННЯ ================= */
 .meal-cell__add {

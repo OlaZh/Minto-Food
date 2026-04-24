@@ -69,11 +69,9 @@
 
 .right-sidebar {
   align-self: start;
-  margin-left: -12px;
 }
 
 .right-sidebar__inner {
-  position: sticky;
   top: calc(var(--header-height, 60px) + 20px);
 
   display: flex;
