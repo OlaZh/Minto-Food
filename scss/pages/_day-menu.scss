@@ -10,10 +10,10 @@
 
   &__arrow {
     @extend %button-ghost;
-    min-height: 40px;
-    min-width: 40px;
+    height: 40px;
+    width: 120px;
     padding: var(--space-xs);
-    border-radius: 50%;
+    border-radius: 10px;
     flex-shrink: 0;
     border: 1px solid var(--color-border);
 
@@ -30,16 +30,16 @@
 
   &__pill {
     display: inline-flex;
-    flex-direction: column;
+
     align-items: center;
     gap: 2px;
     padding: var(--space-xs) var(--space-md);
-    min-height: 52px;
-    min-width: 60px;
-
+    height: 40px;
+    width: 120px;
+    border-radius: 10px;
     font-family: var(--font-body);
     border: 1px solid var(--color-border);
-    border-radius: var(--radius-pill);
+
     background: var(--color-surface);
     cursor: pointer;
     user-select: none;
@@ -49,7 +49,7 @@
       box-shadow var(--duration-base) var(--ease-out);
 
     // Override sidebar__day-btn defaults
-    width: auto;
+
     justify-content: center;
 
     &::after {
