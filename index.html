@@ -241,7 +241,8 @@
                 <article class="meal" data-meal="breakfast">
                   <div class="meal__header">
                     <h2 class="meal__title" data-i18n="breakfast">Сніданок</h2>
-                    <button class="meal__add" aria-label="Додати продукт" data-i18n-aria="addMeal">
+                    <div class="meal__summary"></div>
+                    <button class="meal__add" aria-label="Додати продукт">
                       <span></span>
                     </button>
                   </div>
@@ -251,6 +252,7 @@
                 <article class="meal" data-meal="snack1">
                   <div class="meal__header">
                     <h2 class="meal__title" data-i18n="snack1">Перекус 1</h2>
+                    <div class="meal__summary"></div>
                     <button class="meal__add" aria-label="Додати продукт" data-i18n-aria="addMeal">
                       <span></span>
                     </button>
@@ -261,6 +263,7 @@
                 <article class="meal" data-meal="lunch">
                   <div class="meal__header">
                     <h2 class="meal__title" data-i18n="lunch">Обід</h2>
+                    <div class="meal__summary"></div>
                     <button class="meal__add" aria-label="Додати продукт" data-i18n-aria="addMeal">
                       <span></span>
                     </button>
@@ -271,6 +274,7 @@
                 <article class="meal" data-meal="snack2">
                   <div class="meal__header">
                     <h2 class="meal__title" data-i18n="snack2">Перекус 2</h2>
+                    <div class="meal__summary"></div>
                     <button class="meal__add" aria-label="Додати продукт" data-i18n-aria="addMeal">
                       <span></span>
                     </button>
@@ -281,6 +285,7 @@
                 <article class="meal" data-meal="dinner">
                   <div class="meal__header">
                     <h2 class="meal__title" data-i18n="dinner">Вечеря</h2>
+                    <div class="meal__summary"></div>
                     <button class="meal__add" aria-label="Додати продукт" data-i18n-aria="addMeal">
                       <span></span>
                     </button>
@@ -650,5 +655,7 @@
     <script src="js/theme-toggle.js"></script>
     <script src="js/mobile-nav.js"></script>
     <script src="js/mobile-tab-bar.js"></script>
+    <script type="module" src="js/streak.js"></script>
+    <script type="module" src="js/meal-accordion.js"></script>
   </body>
 </html>

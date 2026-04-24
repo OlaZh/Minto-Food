@@ -4171,42 +4171,56 @@ textarea {
 .day-week-nav {
   display: flex;
   align-items: center;
-  justify-content: center;
+  width: 100%;
   gap: var(--space-xs);
   padding: var(--space-md) 0 var(--space-xl);
   position: relative;
 }
 .day-week-nav__arrow {
-  height: 40px;
-  width: 120px;
-  padding: var(--space-xs);
-  border-radius: 10px;
-  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  min-height: 36px;
+  padding: 0;
+  border-radius: var(--radius-sm);
   border: 1px solid var(--color-border);
+  flex-shrink: 0;
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.day-week-nav__arrow svg {
+  width: 14px;
+  height: 14px;
 }
 .day-week-nav__arrow:hover {
   border-color: var(--color-accent);
   color: var(--color-accent);
+  background: var(--color-surface);
 }
 .day-week-nav__pills {
   display: flex;
   gap: var(--space-xs);
+  flex: 1;
+  flex-wrap: nowrap;
 }
 .day-week-nav__pill {
   display: inline-flex;
   align-items: center;
-  gap: 2px;
-  padding: var(--space-xs) var(--space-md);
-  height: 40px;
-  width: 120px;
-  border-radius: 10px;
-  font-family: var(--font-body);
+  justify-content: center;
+  gap: var(--space-xxs);
+  flex: 1;
+  height: 36px;
+  padding: 0 var(--space-md);
+  min-width: 0;
+  border-radius: var(--radius-sm);
   border: 1px solid var(--color-border);
   background: var(--color-surface);
+  font-family: var(--font-body);
   cursor: pointer;
   user-select: none;
   transition: background-color var(--duration-base) var(--ease-out), border-color var(--duration-base) var(--ease-out), box-shadow var(--duration-base) var(--ease-out);
-  justify-content: center;
 }
 .day-week-nav__pill::after {
   display: none;
@@ -4227,50 +4241,95 @@ textarea {
   color: var(--color-text-inverse);
 }
 .day-week-nav__pill-abbr {
-  font-size: 11px;
-  font-weight: 700;
+  font-size: 12px;
+  font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.03em;
   color: var(--color-text-secondary);
+  line-height: 1;
 }
 .day-week-nav__pill-num {
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 700;
   color: var(--color-text-primary);
+  line-height: 1;
 }
 .day-week-nav__month {
-  position: absolute;
-  right: 0;
-  font-size: 13px;
+  margin-left: var(--space-md);
+  font-size: 12px;
   font-weight: 500;
   color: var(--color-text-secondary);
   white-space: nowrap;
+  flex-shrink: 0;
+  position: static;
 }
 
+/* ================= RESPONSIVE ================= */
+@media (max-width: 1024px) {
+  .day-week-nav {
+    flex-wrap: wrap;
+    padding: var(--space-md) 0;
+  }
+  .day-week-nav__pills {
+    order: 1;
+    width: 100%;
+    flex: 1 1 100%;
+    justify-content: space-between;
+    overflow-x: auto;
+    padding: 0 var(--space-xs);
+  }
+  .day-week-nav__pills::-webkit-scrollbar {
+    display: none;
+  }
+  .day-week-nav__pills {
+    scrollbar-width: none;
+  }
+  .day-week-nav__arrow {
+    order: 0;
+  }
+  .day-week-nav__month {
+    display: none;
+  }
+}
+@media (max-width: 768px) {
+  .day-week-nav {
+    gap: 6px;
+  }
+  .day-week-nav__pill {
+    min-width: 56px;
+    height: 44px;
+    padding: 0 10px;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .day-week-nav__pill-num {
+    font-size: 13px;
+  }
+}
 /* ================= DAY RING CARD ================= */
 .day-ring-card {
-  padding: var(--space-lg);
+  padding: var(--space-lg) var(--space-md);
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--space-md);
+  gap: var(--space-sm);
 }
 .day-ring-card__date {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
   color: var(--color-text-secondary);
   text-align: center;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  margin: 0;
+  margin: 0 0 var(--space-xxs);
 }
 .day-ring-card__ring-wrap {
   position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 160px;
-  height: 160px;
+  width: 120px;
+  height: 120px;
 }
 .day-ring-card__ring-wrap .circular-chart {
   width: 100%;
@@ -4284,16 +4343,17 @@ textarea {
   align-items: center;
   justify-content: center;
   text-align: center;
+  gap: 2px;
 }
 .day-ring-card__value {
   font-family: var(--font-heading);
-  font-size: 28px;
+  font-size: 32px;
   font-weight: 700;
   color: var(--color-text-primary);
   line-height: 1;
 }
 .day-ring-card__unit {
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -4301,9 +4361,48 @@ textarea {
   margin-top: 2px;
 }
 .day-ring-card__norm {
-  font-size: 11px;
+  font-size: 10px;
   color: var(--color-text-secondary);
+  margin-top: 1px;
+  line-height: 1.2;
+}
+
+/* ================= DAY GOAL BAR ================= */
+.day-goal {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xxs);
+  margin-top: var(--space-xs);
+}
+.day-goal__bar-wrap {
+  background: rgba(0, 0, 0, 0.08);
+  height: 6px;
+}
+.day-goal__bar-fill {
+  height: 100%;
+  background: var(--color-accent);
+  border-radius: inherit;
+  width: 0%;
+  transition: width var(--duration-slow) var(--ease-smooth);
+}
+.day-goal__meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   margin-top: 2px;
+}
+.day-goal__label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.day-goal__value {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-text-primary);
 }
 
 /* ================= DAY GOAL BAR ================= */
@@ -4368,7 +4467,42 @@ textarea {
   font-size: 11px;
   color: var(--color-text-secondary);
 }
+.streak-card {
+  /* === STATES === */
+}
+.streak-card--inactive {
+  opacity: 0.7;
+}
+.streak-card--inactive .streak-card__flame {
+  filter: grayscale(0.6);
+}
+.streak-card {
+  /* === TIER VARIANTS (по числу днів) === */
+}
+.streak-card[data-tier=silver] {
+  border-color: rgba(192, 192, 192, 0.4);
+}
+.streak-card[data-tier=gold] {
+  border-color: rgba(255, 193, 7, 0.5);
+  background: linear-gradient(135deg, var(--color-surface), rgba(255, 193, 7, 0.08));
+}
+.streak-card[data-tier=legend] {
+  border-color: rgba(255, 87, 34, 0.5);
+  background: linear-gradient(135deg, var(--color-surface), rgba(255, 87, 34, 0.1));
+}
+.streak-card[data-tier=legend] .streak-card__flame {
+  animation: flameFlicker 2s ease-in-out infinite;
+}
 
+/* === ANIMATION FOR LEGEND TIER === */
+@keyframes flameFlicker {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.15);
+  }
+}
 /* ================= DAY MENU ================= */
 .day-menu {
   display: flex;
@@ -4380,26 +4514,75 @@ textarea {
   box-sizing: border-box;
 }
 
-/* ================= MEAL BLOCK ================= */
+/* ================= MEAL BLOCK (АККОРДЕОН) ================= */
 .meal {
   width: 100%;
   box-sizing: border-box;
-  background-color: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: 16px;
-  padding: 16px 20px;
+  padding: 0;
+  overflow: hidden;
   transition: all 0.3s ease;
 }
 .meal:hover {
   border-color: var(--color-accent-soft);
-  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.06);
-  transform: translateY(-2px);
+}
+.meal {
+  /* === HEADER (КЛІКАБЕЛЬНИЙ ТРИГЕР) === */
 }
 .meal__header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  margin-bottom: 12px;
+  gap: var(--space-md);
+  padding: var(--space-md) var(--space-lg);
+  cursor: pointer;
+  user-select: none;
+  transition: background-color var(--duration-base) var(--ease-out);
+}
+.meal__header:hover {
+  background: var(--color-bg-hover);
+}
+.meal {
+  /* === TITLE (ліворуч, не розтягується) === */
+}
+.meal__title {
+  font-family: var(--font-heading);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin: 0;
+  flex-shrink: 0;
+}
+.meal {
+  /* === SUMMARY (по центру, розтягується) === */
+}
+.meal__summary {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-sm);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+.meal__summary .meal__summary-divider {
+  opacity: 0.5;
+}
+.meal__summary .meal__summary-kcal {
+  color: var(--color-accent);
+  font-weight: 700;
+}
+.meal__summary:empty {
+  display: none;
+}
+.meal {
+  /* === КНОПКА "+" === */
+}
+.meal__add {
+  flex-shrink: 0;
+  z-index: 2;
+}
+.meal {
+  /* === БЛОК ЗІ СПИСКОМ ЇЖІ (ЗГОРТАЄТЬСЯ) === */
 }
 .meal__recipes {
   list-style: none;
@@ -4408,6 +4591,39 @@ textarea {
   display: flex;
   flex-direction: column;
   gap: 10px;
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: var(--space-lg);
+  padding-right: var(--space-lg);
+  transition: max-height 0.35s var(--ease-smooth), opacity 0.25s var(--ease-out), padding 0.3s var(--ease-out);
+}
+.meal {
+  /* === РОЗГОРНУТИЙ СТАН === */
+}
+.meal.is-open .meal__recipes {
+  max-height: 1000px;
+  opacity: 1;
+  padding-top: var(--space-xs);
+  padding-bottom: var(--space-md);
+}
+.meal.is-open .meal__header {
+  border-bottom: 1px solid var(--color-border);
+}
+.meal {
+  /* === КОЛИ Є КОНТЕНТ І ЗГОРНУТО — індикатор кількості === */
+}
+.meal--has-items:not(.is-open) .meal__title::after {
+  content: "";
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin-left: var(--space-xs);
+  vertical-align: middle;
+  background: var(--color-accent);
+  border-radius: 50%;
 }
 
 /* ================= MEAL RECIPE ================= */

@@ -853,21 +853,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       date: currentSelectedDate,
       user_id: user ? user.id : null,
     };
-
-    let result;
-    if (editingIndex !== null) {
-      result = await supabase
-        .from('meals')
-        .update(payload)
-        .eq('id', mealsState[activeMealKey][editingIndex].id);
-    } else {
-      result = await supabase.from('meals').insert([payload]);
-    }
-
-    if (!result.error) {
-      loadMealsFromSupabase(currentSelectedDate);
-      closeModal();
-    }
   }
 
   // ================== EVENTS ==================

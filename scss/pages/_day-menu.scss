@@ -3,54 +3,72 @@
 .day-week-nav {
   display: flex;
   align-items: center;
-  justify-content: center;
+  width: 100%;
   gap: var(--space-xs);
   padding: var(--space-md) 0 var(--space-xl);
   position: relative;
 
   &__arrow {
     @extend %button-ghost;
-    height: 40px;
-    width: 120px;
-    padding: var(--space-xs);
-    border-radius: 10px;
-    flex-shrink: 0;
+
+    width: 36px;
+    height: 36px;
+    min-height: 36px;
+    padding: 0;
+
+    border-radius: var(--radius-sm);
     border: 1px solid var(--color-border);
+    flex-shrink: 0;
+
+    background: var(--color-surface);
+    color: var(--color-text-secondary);
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    svg {
+      width: 14px;
+      height: 14px;
+    }
 
     &:hover {
       border-color: var(--color-accent);
       color: var(--color-accent);
+      background: var(--color-surface);
     }
   }
 
   &__pills {
     display: flex;
     gap: var(--space-xs);
+    flex: 1; // ← головна зміна — займає весь доступний простір
+    flex-wrap: nowrap;
   }
 
   &__pill {
     display: inline-flex;
-
     align-items: center;
-    gap: 2px;
-    padding: var(--space-xs) var(--space-md);
-    height: 40px;
-    width: 120px;
-    border-radius: 10px;
-    font-family: var(--font-body);
-    border: 1px solid var(--color-border);
+    justify-content: center;
+    gap: var(--space-xxs);
 
+    flex: 1; // ← рівномірно ділять простір
+    height: 36px;
+    padding: 0 var(--space-md);
+    min-width: 0; // ← дозволяє стискатись на вузьких екранах
+
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-border);
     background: var(--color-surface);
+
+    font-family: var(--font-body);
     cursor: pointer;
     user-select: none;
+
     transition:
       background-color var(--duration-base) var(--ease-out),
       border-color var(--duration-base) var(--ease-out),
       box-shadow var(--duration-base) var(--ease-out);
-
-    // Override sidebar__day-btn defaults
-
-    justify-content: center;
 
     &::after {
       display: none;
@@ -76,26 +94,78 @@
   }
 
   &__pill-abbr {
-    font-size: 11px;
-    font-weight: 700;
+    font-size: 12px;
+    font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.03em;
     color: var(--color-text-secondary);
+    line-height: 1;
   }
 
   &__pill-num {
-    font-size: 16px;
+    font-size: 14px;
     font-weight: 700;
     color: var(--color-text-primary);
+    line-height: 1;
   }
 
   &__month {
-    position: absolute;
-    right: 0;
-    font-size: 13px;
+    margin-left: var(--space-md);
+    font-size: 12px;
     font-weight: 500;
     color: var(--color-text-secondary);
     white-space: nowrap;
+    flex-shrink: 0;
+    position: static;
+  }
+}
+
+/* ================= RESPONSIVE ================= */
+
+@media (max-width: 1024px) {
+  .day-week-nav {
+    flex-wrap: wrap;
+    padding: var(--space-md) 0;
+
+    &__pills {
+      order: 1;
+      width: 100%;
+      flex: 1 1 100%;
+      justify-content: space-between;
+      overflow-x: auto;
+      padding: 0 var(--space-xs);
+
+      &::-webkit-scrollbar {
+        display: none;
+      }
+      scrollbar-width: none;
+    }
+
+    &__arrow {
+      order: 0;
+    }
+
+    &__month {
+      display: none;
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .day-week-nav {
+    gap: 6px;
+
+    &__pill {
+      min-width: 56px;
+      height: 44px;
+      padding: 0 10px;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    &__pill-num {
+      font-size: 13px;
+    }
   }
 }
 
@@ -103,20 +173,21 @@
 
 .day-ring-card {
   @extend %premium-card;
-  padding: var(--space-lg);
+  padding: var(--space-lg) var(--space-md);
+
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--space-md);
+  gap: var(--space-sm);
 
   &__date {
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 600;
     color: var(--color-text-secondary);
     text-align: center;
     text-transform: uppercase;
     letter-spacing: 0.06em;
-    margin: 0;
+    margin: 0 0 var(--space-xxs);
   }
 
   &__ring-wrap {
@@ -124,8 +195,10 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 160px;
-    height: 160px;
+
+    // ↓ Зменшено зі 160px до 120px (як у макеті)
+    width: 120px;
+    height: 120px;
 
     .circular-chart {
       width: 100%;
@@ -141,18 +214,21 @@
     align-items: center;
     justify-content: center;
     text-align: center;
+    gap: 2px;
   }
 
   &__value {
     font-family: var(--font-heading);
-    font-size: 28px;
+
+    // ↑ Збільшено з 28px до 32px (для контрасту з меншим кільцем)
+    font-size: 32px;
     font-weight: 700;
     color: var(--color-text-primary);
     line-height: 1;
   }
 
   &__unit {
-    font-size: 11px;
+    font-size: 10px;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.06em;
@@ -161,12 +237,59 @@
   }
 
   &__norm {
-    font-size: 11px;
+    font-size: 10px;
     color: var(--color-text-secondary);
-    margin-top: 2px;
+    margin-top: 1px;
+    line-height: 1.2;
   }
 }
 
+/* ================= DAY GOAL BAR ================= */
+
+.day-goal {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xxs);
+  margin-top: var(--space-xs);
+
+  &__bar-wrap {
+    @extend %progress-bar-thick;
+    background: rgba(0, 0, 0, 0.08);
+    height: 6px; // ↓ Тонше (було 12px)
+  }
+
+  &__bar-fill {
+    height: 100%;
+    background: var(--color-accent);
+    border-radius: inherit;
+    width: 0%;
+    transition: width var(--duration-slow) var(--ease-smooth);
+  }
+
+  &__meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    // ↓ Менший margin зверху
+    margin-top: 2px;
+  }
+
+  &__label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--color-text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  &__value {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--color-text-primary);
+  }
+}
 /* ================= DAY GOAL BAR ================= */
 
 .day-goal {
@@ -241,6 +364,47 @@
     font-size: 11px;
     color: var(--color-text-secondary);
   }
+  /* === STATES === */
+
+  &--inactive {
+    opacity: 0.7;
+
+    .streak-card__flame {
+      filter: grayscale(0.6);
+    }
+  }
+
+  /* === TIER VARIANTS (по числу днів) === */
+
+  &[data-tier='silver'] {
+    border-color: rgba(192, 192, 192, 0.4);
+  }
+
+  &[data-tier='gold'] {
+    border-color: rgba(255, 193, 7, 0.5);
+    background: linear-gradient(135deg, var(--color-surface), rgba(255, 193, 7, 0.08));
+  }
+
+  &[data-tier='legend'] {
+    border-color: rgba(255, 87, 34, 0.5);
+    background: linear-gradient(135deg, var(--color-surface), rgba(255, 87, 34, 0.1));
+
+    .streak-card__flame {
+      animation: flameFlicker 2s ease-in-out infinite;
+    }
+  }
+}
+
+/* === ANIMATION FOR LEGEND TIER === */
+
+@keyframes flameFlicker {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.15);
+  }
 }
 
 /* ================= DAY MENU ================= */
@@ -257,31 +421,81 @@
   box-sizing: border-box;
 }
 
-/* ================= MEAL BLOCK ================= */
+/* ================= MEAL BLOCK (АККОРДЕОН) ================= */
 
 .meal {
   @extend %premium-card;
   width: 100%;
   box-sizing: border-box;
-  background-color: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: 16px;
-  padding: 16px 20px;
+  padding: 0; // ← важливо: padding тепер усередині елементів
+  overflow: hidden;
   transition: all 0.3s ease;
 
   &:hover {
     border-color: var(--color-accent-soft);
-    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.06);
-    transform: translateY(-2px);
   }
-
+  /* === HEADER (КЛІКАБЕЛЬНИЙ ТРИГЕР) === */
   &__header {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    margin-bottom: 12px;
+    gap: var(--space-md);
+
+    padding: var(--space-md) var(--space-lg);
+    cursor: pointer;
+    user-select: none;
+
+    transition: background-color var(--duration-base) var(--ease-out);
+
+    &:hover {
+      background: var(--color-bg-hover);
+    }
   }
 
+  /* === TITLE (ліворуч, не розтягується) === */
+  &__title {
+    font-family: var(--font-heading);
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--color-text-primary);
+    margin: 0;
+    flex-shrink: 0;
+  }
+
+  /* === SUMMARY (по центру, розтягується) === */
+  &__summary {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: var(--space-sm);
+
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--color-text-secondary);
+
+    // Дрібний роздільник між кількістю і ккал
+    .meal__summary-divider {
+      opacity: 0.5;
+    }
+
+    // Виділяємо ккал акцентом
+    .meal__summary-kcal {
+      color: var(--color-accent);
+      font-weight: 700;
+    }
+
+    &:empty {
+      display: none;
+    }
+  }
+
+  /* === КНОПКА "+" === */
+  &__add {
+    flex-shrink: 0;
+    z-index: 2;
+  }
+
+  /* === БЛОК ЗІ СПИСКОМ ЇЖІ (ЗГОРТАЄТЬСЯ) === */
   &__recipes {
     list-style: none;
     margin: 0;
@@ -289,6 +503,49 @@
     display: flex;
     flex-direction: column;
     gap: 10px;
+
+    // За замовчуванням згорнуто
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    padding-left: var(--space-lg);
+    padding-right: var(--space-lg);
+
+    transition:
+      max-height 0.35s var(--ease-smooth),
+      opacity 0.25s var(--ease-out),
+      padding 0.3s var(--ease-out);
+  }
+
+  /* === РОЗГОРНУТИЙ СТАН === */
+  &.is-open {
+    .meal__recipes {
+      max-height: 1000px; // достатньо для будь-якої кількості страв
+      opacity: 1;
+      padding-top: var(--space-xs);
+      padding-bottom: var(--space-md);
+    }
+
+    .meal__header {
+      // Тонка лінія між шапкою і вмістом
+      border-bottom: 1px solid var(--color-border);
+    }
+  }
+
+  /* === КОЛИ Є КОНТЕНТ І ЗГОРНУТО — індикатор кількості === */
+  &--has-items:not(.is-open) {
+    .meal__title::after {
+      content: '';
+      display: inline-block;
+      width: 6px;
+      height: 6px;
+      margin-left: var(--space-xs);
+      vertical-align: middle;
+      background: var(--color-accent);
+      border-radius: 50%;
+    }
   }
 }
 
