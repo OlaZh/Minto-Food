@@ -3,9 +3,10 @@
    ============================================================= */
 
 .sidebar {
-  padding: 0 0 16px;
-  background-color: transparent;
-  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  align-self: start;
 }
 
 .sidebar__days {

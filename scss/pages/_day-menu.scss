@@ -599,16 +599,16 @@
 /* ================= DAY SUMMARY (плоска стрічка) ================= */
 
 .day-summary {
-  display: flex;
+   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: var(--space-md);
 
   width: 100%;
   margin-top: var(--space-lg);
-  padding: var(--space-md) 0;
+  padding: var(--space-md) var(--space-lg);
 
-  // Без рамки, без фону, без тіні
+  // Дуже легкий фон, без обрамлення і тіней
   background: transparent;
   border: none;
   border-top: 1px solid var(--color-border);
@@ -623,19 +623,19 @@
   }
 
   &__value {
-    font-family: var(--font-heading);
-    font-size: 15px;
     font-weight: 700;
     color: var(--color-text-primary);
+    font-family: var(--font-heading);
   }
 
-  // Без hover-ефектів
+  // Прибираємо hover-ефекти від premium-card
   &:hover {
     transform: none;
     border-color: var(--color-border);
     box-shadow: none;
   }
 }
+
 /* ================= MEAL ADD BUTTON ================= */
 
 .meal__add {
