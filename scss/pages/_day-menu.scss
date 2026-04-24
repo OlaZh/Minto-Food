@@ -121,14 +121,16 @@
   }
 
   &__ring-wrap {
-    @extend %ring-hero;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     width: 160px;
     height: 160px;
 
     .circular-chart {
       width: 100%;
       height: 100%;
-      transform: rotate(-90deg);
     }
   }
 

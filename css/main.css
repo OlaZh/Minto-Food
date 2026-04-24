@@ -473,17 +473,6 @@ textarea {
   height: 12px;
 }
 
-.day-ring-card__ring-wrap {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.day-ring-card__ring-wrap svg {
-  width: 100%;
-  height: 100%;
-  transform: rotate(-90deg);
-}
 /* =============================================================
    GLOBAL LAYOUT — CANONICAL
    ============================================================= */
@@ -722,9 +711,9 @@ textarea {
 }
 
 .header__logo img {
-  height: 28px;
+  height: 40px;
   width: auto;
-  filter: drop-shadow(0 0 8px rgba(71, 145, 112, 0.4));
+  filter: drop-shadow(0 0 8px rgba(47, 99, 88, 0.35));
 }
 
 /* ---------- NAVIGATION ---------- */
@@ -4258,13 +4247,16 @@ textarea {
   margin: 0;
 }
 .day-ring-card__ring-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 160px;
   height: 160px;
 }
 .day-ring-card__ring-wrap .circular-chart {
   width: 100%;
   height: 100%;
-  transform: rotate(-90deg);
 }
 .day-ring-card__center {
   position: absolute;
