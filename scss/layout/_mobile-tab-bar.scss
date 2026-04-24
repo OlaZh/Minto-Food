@@ -1,0 +1,239 @@
+/* ============================================================
+   MOBILE TAB BAR — bottom navigation for screens ≤ 768px
+   Інжектується через js/mobile-tab-bar.js
+   ============================================================ */
+
+.mobile-tab-bar {
+  display: none;
+
+  @media (max-width: 768px) {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 900;
+
+    height: 64px;
+    padding: 0 var(--space-xxs);
+    // iOS safe area для iPhone з виступом
+    padding-bottom: env(safe-area-inset-bottom, 0);
+
+    background: var(--color-bg-primary);
+    border-top: 1px solid var(--color-border);
+    backdrop-filter: blur(12px);
+
+    align-items: stretch;
+    justify-content: space-around;
+  }
+}
+
+/* ---------- TAB ITEM ---------- */
+
+.mobile-tab-bar__item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  flex: 1;
+
+  padding: var(--space-xs) 0;
+  min-height: 44px; // мінімальна touch-зона
+
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+
+  color: var(--color-text-secondary);
+  transition: color var(--duration-fast) var(--ease-out);
+
+  &:hover {
+    color: var(--color-text-primary);
+  }
+
+  &.is-active {
+    color: var(--color-accent);
+
+    .mobile-tab-bar__icon {
+      transform: translateY(-1px);
+    }
+  }
+}
+
+/* ---------- ICON ---------- */
+
+.mobile-tab-bar__icon {
+  width: 22px;
+  height: 22px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 1.75;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  flex-shrink: 0;
+  transition: transform var(--duration-fast) var(--ease-out);
+}
+
+/* ---------- LABEL ---------- */
+
+.mobile-tab-bar__label {
+  font-family: var(--font-body);
+  font-size: 10px;
+  font-weight: 600;
+  white-space: nowrap;
+  line-height: 1;
+}
+
+/* ---------- PAGE PADDING (щоб контент не перекривався баром) ---------- */
+
+@media (max-width: 768px) {
+  .page {
+    padding-bottom: 64px;
+  }
+}
+
+/* ============================================================
+   BOTTOM SHEET — "Ще" popup
+   ============================================================ */
+
+.bottom-sheet {
+  display: none;
+
+  &.is-open {
+    display: block;
+  }
+}
+
+.bottom-sheet__overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 910;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  animation: fadeIn var(--duration-base) var(--ease-out);
+}
+
+.bottom-sheet__card {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 920;
+
+  background: var(--color-bg-primary);
+  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+  border-top: 1px solid var(--color-border);
+
+  padding: var(--space-md) var(--space-xl);
+  padding-bottom: calc(80px + env(safe-area-inset-bottom, 0));
+
+  animation: slideUp var(--duration-base) var(--ease-out);
+}
+
+.bottom-sheet__handle {
+  width: 36px;
+  height: 4px;
+  background: var(--color-border);
+  border-radius: var(--radius-pill);
+  margin: 0 auto var(--space-xl);
+}
+
+.bottom-sheet__title {
+  font-family: var(--font-heading);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: var(--space-sm);
+}
+
+.bottom-sheet__link {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--space-md) 0;
+
+  color: var(--color-text-primary);
+  text-decoration: none;
+  font-family: var(--font-body);
+  font-size: 16px;
+  font-weight: 500;
+
+  border-bottom: 1px solid var(--color-border);
+  transition: color var(--duration-fast) var(--ease-out);
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &:hover {
+    color: var(--color-accent);
+  }
+
+  svg {
+    width: 20px;
+    height: 20px;
+    stroke: var(--color-accent);
+    fill: none;
+    stroke-width: 1.75;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    flex-shrink: 0;
+  }
+}
+
+/* ---------- ANIMATIONS ---------- */
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
+
+/* ============================================================
+   PAGE SUBHEADER — стандартний заголовок сторінки
+   HTML додається на кожній сторінці окремо (Фази 2–8)
+   ============================================================ */
+
+.page-subheader {
+  padding: var(--space-lg) 0 var(--space-sm);
+
+  &__title {
+    font-family: var(--font-heading);
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--color-text-primary);
+    margin: 0;
+  }
+
+  &__breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    margin-top: var(--space-xxs);
+
+    font-family: var(--font-body);
+    font-size: 13px;
+    color: var(--color-text-secondary);
+
+    a {
+      color: var(--color-accent);
+      text-decoration: none;
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+
+    span {
+      color: var(--color-border);
+    }
+  }
+}

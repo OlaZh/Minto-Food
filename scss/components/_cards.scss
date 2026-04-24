@@ -5,13 +5,13 @@
   border-radius: 12px;
   padding: 16px 20px;
 
-  box-shadow: $shadow-sm;
+  box-shadow: var(--shadow-1);
   transition:
-    box-shadow 0.25s ease,
-    transform 0.25s ease;
+    box-shadow var(--duration-base) var(--ease-out),
+    transform var(--duration-base) var(--ease-out);
 
   &:hover {
-    box-shadow: $shadow-md;
+    box-shadow: var(--shadow-2);
     transform: translateY(-2px);
   }
 }

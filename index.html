@@ -125,73 +125,123 @@
     <div class="app-bg">
       <div class="app-shell">
         <div class="container">
+          <!-- ===== ГОРИЗОНТАЛЬНІ ДНІ ТИЖНЯ ===== -->
+          <nav class="day-week-nav">
+            <button class="day-week-nav__arrow" id="prevWeekBtn" aria-label="Попередній тиждень">
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round">
+                <polyline points="15 18 9 12 15 6" />
+              </svg>
+            </button>
+            <div class="day-week-nav__pills">
+              <button class="sidebar__day-btn day-week-nav__pill" data-day="monday">
+                <span class="day-week-nav__pill-abbr">Пн</span>
+                <span class="day-week-nav__pill-num" data-day-num="monday">—</span>
+              </button>
+              <button class="sidebar__day-btn day-week-nav__pill" data-day="tuesday">
+                <span class="day-week-nav__pill-abbr">Вт</span>
+                <span class="day-week-nav__pill-num" data-day-num="tuesday">—</span>
+              </button>
+              <button class="sidebar__day-btn day-week-nav__pill" data-day="wednesday">
+                <span class="day-week-nav__pill-abbr">Ср</span>
+                <span class="day-week-nav__pill-num" data-day-num="wednesday">—</span>
+              </button>
+              <button class="sidebar__day-btn day-week-nav__pill" data-day="thursday">
+                <span class="day-week-nav__pill-abbr">Чт</span>
+                <span class="day-week-nav__pill-num" data-day-num="thursday">—</span>
+              </button>
+              <button class="sidebar__day-btn day-week-nav__pill" data-day="friday">
+                <span class="day-week-nav__pill-abbr">Пт</span>
+                <span class="day-week-nav__pill-num" data-day-num="friday">—</span>
+              </button>
+              <button class="sidebar__day-btn day-week-nav__pill" data-day="saturday">
+                <span class="day-week-nav__pill-abbr">Сб</span>
+                <span class="day-week-nav__pill-num" data-day-num="saturday">—</span>
+              </button>
+              <button class="sidebar__day-btn day-week-nav__pill" data-day="sunday">
+                <span class="day-week-nav__pill-abbr">Нд</span>
+                <span class="day-week-nav__pill-num" data-day-num="sunday">—</span>
+              </button>
+            </div>
+            <button class="day-week-nav__arrow" id="nextWeekBtn" aria-label="Наступний тиждень">
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round">
+                <polyline points="9 18 15 12 9 6" />
+              </svg>
+            </button>
+            <span class="day-week-nav__month" id="weekLabel"></span>
+          </nav>
+
+          <!-- ===== 4-COLUMN LAYOUT ===== -->
           <div class="layout">
+            <!-- LEFT: Calorie ring + Streak -->
             <aside class="sidebar">
-              <div class="column-header">
-                <div class="week-nav week-nav--sidebar">
-                  <button class="week-nav-btn" id="prevWeekBtn" aria-label="Попередній тиждень">
-                    ←
-                  </button>
-                  <span class="week-nav__label" id="weekLabel">30 березня – 5 квітня</span>
-                  <button class="week-nav-btn" id="nextWeekBtn" aria-label="Наступний тиждень">
-                    →
-                  </button>
+              <div class="day-ring-card">
+                <p class="day-ring-card__date" id="dayDate"></p>
+                <div class="day-ring-card__ring-wrap">
+                  <svg viewBox="0 0 36 36" class="circular-chart">
+                    <path
+                      class="circle-bg"
+                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                    <path
+                      class="circle-progress"
+                      id="kcalCircle"
+                      stroke-dasharray="0, 100"
+                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                  </svg>
+                  <div class="day-ring-card__center">
+                    <span class="day-ring-card__value" id="kcalCurrent">0</span>
+                    <span class="day-ring-card__unit">Калорії</span>
+                    <span class="day-ring-card__norm" id="kcalNormLabel">з 1200 ккал</span>
+                  </div>
+                </div>
+                <div class="day-goal">
+                  <div class="day-goal__bar-wrap">
+                    <div class="day-goal__bar-fill" id="goalBar"></div>
+                  </div>
+                  <div class="day-goal__meta">
+                    <span class="day-goal__label">Ціль</span>
+                    <span class="day-goal__value" id="goalValue">1200 ккал</span>
+                  </div>
                 </div>
               </div>
 
-              <ul class="sidebar__days">
-                <li>
-                  <button class="sidebar__day-btn" data-day="monday" data-i18n="monday">
-                    Понеділок
-                  </button>
-                </li>
-                <li>
-                  <button class="sidebar__day-btn" data-day="tuesday" data-i18n="tuesday">
-                    Вівторок
-                  </button>
-                </li>
-                <li>
-                  <button class="sidebar__day-btn" data-day="wednesday" data-i18n="wednesday">
-                    Середа
-                  </button>
-                </li>
-                <li>
-                  <button class="sidebar__day-btn" data-day="thursday" data-i18n="thursday">
-                    Четвер
-                  </button>
-                </li>
-                <li>
-                  <button class="sidebar__day-btn" data-day="friday" data-i18n="friday">
-                    Пʼятниця
-                  </button>
-                </li>
-                <li>
-                  <button class="sidebar__day-btn" data-day="saturday" data-i18n="saturday">
-                    Субота
-                  </button>
-                </li>
-                <li>
-                  <button class="sidebar__day-btn" data-day="sunday" data-i18n="sunday">
-                    Неділя
-                  </button>
-                </li>
-              </ul>
+              <div class="streak-card" id="streakCard">
+                <span class="streak-card__flame">🔥</span>
+                <div class="streak-card__body">
+                  <span class="streak-card__count"
+                    ><span id="streakCount">0</span> дні поспіль</span
+                  >
+                  <span class="streak-card__sub">Видатні досягнення!</span>
+                </div>
+              </div>
             </aside>
 
+            <!-- CENTER: Meals -->
             <main class="main">
               <section class="day-header column-header">
-                <h1 class="column-header__title" data-i18n="dayMenuTitle">Меню на день</h1>
-                <p class="column-header__meta" id="dayDate"></p>
+                <h1 class="column-header__title" data-i18n="dayMenuTitle">Прийоми їжі</h1>
               </section>
 
               <section class="day-menu">
                 <article class="meal" data-meal="breakfast">
                   <div class="meal__header">
                     <h2 class="meal__title" data-i18n="breakfast">Сніданок</h2>
-                    <button
-                      class="meal__add"
-                      aria-label="Додати прийом їжі"
-                      data-i18n-aria="addMeal">
+                    <button class="meal__add" aria-label="Додати продукт" data-i18n-aria="addMeal">
                       <span></span>
                     </button>
                   </div>
@@ -201,10 +251,7 @@
                 <article class="meal" data-meal="snack1">
                   <div class="meal__header">
                     <h2 class="meal__title" data-i18n="snack1">Перекус 1</h2>
-                    <button
-                      class="meal__add"
-                      aria-label="Додати прийом їжі"
-                      data-i18n-aria="addMeal">
+                    <button class="meal__add" aria-label="Додати продукт" data-i18n-aria="addMeal">
                       <span></span>
                     </button>
                   </div>
@@ -214,10 +261,7 @@
                 <article class="meal" data-meal="lunch">
                   <div class="meal__header">
                     <h2 class="meal__title" data-i18n="lunch">Обід</h2>
-                    <button
-                      class="meal__add"
-                      aria-label="Додати прийом їжі"
-                      data-i18n-aria="addMeal">
+                    <button class="meal__add" aria-label="Додати продукт" data-i18n-aria="addMeal">
                       <span></span>
                     </button>
                   </div>
@@ -227,10 +271,7 @@
                 <article class="meal" data-meal="snack2">
                   <div class="meal__header">
                     <h2 class="meal__title" data-i18n="snack2">Перекус 2</h2>
-                    <button
-                      class="meal__add"
-                      aria-label="Додати прийом їжі"
-                      data-i18n-aria="addMeal">
+                    <button class="meal__add" aria-label="Додати продукт" data-i18n-aria="addMeal">
                       <span></span>
                     </button>
                   </div>
@@ -240,10 +281,7 @@
                 <article class="meal" data-meal="dinner">
                   <div class="meal__header">
                     <h2 class="meal__title" data-i18n="dinner">Вечеря</h2>
-                    <button
-                      class="meal__add"
-                      aria-label="Додати прийом їжі"
-                      data-i18n-aria="addMeal">
+                    <button class="meal__add" aria-label="Додати продукт" data-i18n-aria="addMeal">
                       <span></span>
                     </button>
                   </div>
@@ -253,97 +291,11 @@
 
               <section class="day-summary">
                 <span class="day-summary__label" data-i18n="dayTotal">Разом за день</span>
-                <span class="day-summary__value">0 ккал</span>
-                <button id="clearDayBtn" type="button" data-i18n="clearDay">Очистити день</button>
+                <span class="day-summary__value">0 ккал · Б 0 · Ж 0 · В 0</span>
               </section>
             </main>
 
-            <aside class="right-sidebar">
-              <div class="right-sidebar__inner">
-                <div class="column-header">
-                  <h2 class="column-header__title" data-i18n="daySummary">Підсумок дня</h2>
-                </div>
-                <section class="stats">
-                  <div class="stat-card stat-card--main">
-                    <div class="stat-card__chart">
-                      <svg viewBox="0 0 36 36" class="circular-chart">
-                        <path
-                          class="circle-bg"
-                          d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                        <path
-                          class="circle-progress"
-                          id="kcalCircle"
-                          stroke-dasharray="0, 100"
-                          d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                      </svg>
-                    </div>
-                    <div class="stat-card__info">
-                      <h3 class="stat-card__title" data-i18n="calories">Калорії</h3>
-                      <div class="stat-card__value">
-                        <span id="kcalCurrent">0</span> <span data-i18n="kcalUnit">ккал</span>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="macros-grid">
-                    <div class="macro-item">
-                      <div class="macro-item__chart">
-                        <svg viewBox="0 0 36 36">
-                          <path
-                            class="circle-bg"
-                            d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                          <path
-                            class="circle-progress circle-progress--p"
-                            id="pCircle"
-                            stroke-dasharray="0, 100"
-                            d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                        </svg>
-                      </div>
-                      <div class="macro-item__info">
-                        <span class="macro-item__label" data-i18n="protein">Білки</span
-                        ><span class="macro-item__value"><span id="pCurrent">0</span>г</span>
-                      </div>
-                    </div>
-                    <div class="macro-item">
-                      <div class="macro-item__chart">
-                        <svg viewBox="0 0 36 36">
-                          <path
-                            class="circle-bg"
-                            d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                          <path
-                            class="circle-progress circle-progress--f"
-                            id="fCircle"
-                            stroke-dasharray="0, 100"
-                            d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                        </svg>
-                      </div>
-                      <div class="macro-item__info">
-                        <span class="macro-item__label" data-i18n="fat">Жири</span
-                        ><span class="macro-item__value"><span id="fCurrent">0</span>г</span>
-                      </div>
-                    </div>
-                    <div class="macro-item">
-                      <div class="macro-item__chart">
-                        <svg viewBox="0 0 36 36">
-                          <path
-                            class="circle-bg"
-                            d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                          <path
-                            class="circle-progress circle-progress--c"
-                            id="cCircle"
-                            stroke-dasharray="0, 100"
-                            d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                        </svg>
-                      </div>
-                      <div class="macro-item__info">
-                        <span class="macro-item__label" data-i18n="carbs">Вуглеводи</span
-                        ><span class="macro-item__value"><span id="cCurrent">0</span>г</span>
-                      </div>
-                    </div>
-                  </div>
-                </section>
-              </div>
-            </aside>
-
+            <!-- WATER: unchanged -->
             <aside class="water-sidebar">
               <div class="column-header">
                 <h2 class="column-header__title" data-i18n="water">Вода</h2>
@@ -356,46 +308,126 @@
                 <div class="water-actions">
                   <button class="water-btn" data-amount="0.25">
                     <svg
-                      width="24"
-                      height="24"
+                      width="20"
+                      height="20"
                       viewBox="0 0 24 24"
                       fill="none"
                       stroke="currentColor"
-                      stroke-width="1.5">
+                      stroke-width="1.5"
+                      stroke-linecap="round"
+                      stroke-linejoin="round">
                       <path d="M12 22a7 7 0 0 0 7-7c0-5-7-13-7-13S5 10 5 15a7 7 0 0 0 7 7z" />
                     </svg>
-                    <span class="water-btn__text" data-i18n="water025">0.25 л</span>
+                    <span class="water-btn__text">+0.25 л</span>
                   </button>
                   <button class="water-btn" data-amount="0.5">
                     <svg
-                      width="24"
-                      height="24"
+                      width="20"
+                      height="20"
                       viewBox="0 0 24 24"
                       fill="none"
                       stroke="currentColor"
-                      stroke-width="1.5">
-                      <path
-                        d="M12 2L12 22M12 22a7 7 0 0 0 7-7c0-5-7-13-7-13S5 10 5 15a7 7 0 0 0 7 7z" />
+                      stroke-width="1.5"
+                      stroke-linecap="round"
+                      stroke-linejoin="round">
+                      <path d="M12 22a7 7 0 0 0 7-7c0-5-7-13-7-13S5 10 5 15a7 7 0 0 0 7 7z" />
                     </svg>
-                    <span class="water-btn__text" data-i18n="water05">0.5 л</span>
+                    <span class="water-btn__text">+0.5 л</span>
                   </button>
                   <button class="water-btn" data-amount="0.75">
                     <svg
-                      width="24"
-                      height="24"
+                      width="20"
+                      height="20"
                       viewBox="0 0 24 24"
                       fill="none"
                       stroke="currentColor"
-                      stroke-width="1.5">
+                      stroke-width="1.5"
+                      stroke-linecap="round"
+                      stroke-linejoin="round">
                       <path d="M12 22a7 7 0 0 0 7-7c0-5-7-13-7-13S5 10 5 15a7 7 0 0 0 7 7z" />
-                      <path d="M7 15c1 0 2-1 3-1s2 1 3 1 2-1 3-1 2 1 3 1" opacity="0.5" />
                     </svg>
-                    <span class="water-btn__text" data-i18n="water075">0.75 л</span>
+                    <span class="water-btn__text">+0.75 л</span>
                   </button>
                 </div>
-                <button id="resetWater" class="water-reset-btn" data-i18n="resetWater">
-                  ✕ СКИНУТИ ДЕНЬ
-                </button>
+                <button id="resetWater" class="water-reset-btn">✕ Скинути</button>
+              </div>
+            </aside>
+
+            <!-- RIGHT: Macro bars + Quick actions -->
+            <aside class="right-sidebar">
+              <div class="right-sidebar__inner">
+                <h2 class="right-sidebar__section-title" data-i18n="macros">Макронутрієнти</h2>
+
+                <!-- Hidden circles (оновлюються stats.js) -->
+                <div hidden aria-hidden="true">
+                  <svg viewBox="0 0 36 36">
+                    <path
+                      class="circle-progress"
+                      id="pCircle"
+                      stroke-dasharray="0,100"
+                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                  </svg>
+                  <svg viewBox="0 0 36 36">
+                    <path
+                      class="circle-progress"
+                      id="fCircle"
+                      stroke-dasharray="0,100"
+                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                  </svg>
+                  <svg viewBox="0 0 36 36">
+                    <path
+                      class="circle-progress"
+                      id="cCircle"
+                      stroke-dasharray="0,100"
+                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                  </svg>
+                </div>
+
+                <!-- Progress bars -->
+                <div class="macro-bars">
+                  <div class="macro-bar-item">
+                    <div class="macro-bar-item__row">
+                      <span class="macro-bar-item__label" data-i18n="protein">Білки</span>
+                      <span class="macro-bar-item__value"><span id="pCurrent">0</span>г</span>
+                    </div>
+                    <div class="macro-bar-item__track">
+                      <div class="macro-bar-item__fill" id="pBar"></div>
+                    </div>
+                  </div>
+                  <div class="macro-bar-item">
+                    <div class="macro-bar-item__row">
+                      <span class="macro-bar-item__label" data-i18n="fat">Жири</span>
+                      <span class="macro-bar-item__value"><span id="fCurrent">0</span>г</span>
+                    </div>
+                    <div class="macro-bar-item__track">
+                      <div class="macro-bar-item__fill macro-bar-item__fill--fat" id="fBar"></div>
+                    </div>
+                  </div>
+                  <div class="macro-bar-item">
+                    <div class="macro-bar-item__row">
+                      <span class="macro-bar-item__label" data-i18n="carbs">Вуглеводи</span>
+                      <span class="macro-bar-item__value"><span id="cCurrent">0</span>г</span>
+                    </div>
+                    <div class="macro-bar-item__track">
+                      <div class="macro-bar-item__fill macro-bar-item__fill--carbs" id="cBar"></div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- КБЖУ баланс -->
+                <div class="kbju-balance" id="kbjuBalance"></div>
+
+                <!-- Швидкі дії -->
+                <div class="day-quick-actions">
+                  <h3 class="day-quick-actions__title">Швидкі дії</h3>
+                  <button class="day-quick-btn" id="copyDayBtn">Скопіювати день</button>
+                  <button
+                    class="day-quick-btn day-quick-btn--danger"
+                    id="clearDayBtn"
+                    data-i18n="clearDay">
+                    Очистити день
+                  </button>
+                </div>
               </div>
             </aside>
           </div>
@@ -617,5 +649,6 @@
     <script type="module" src="js/auth.js"></script>
     <script src="js/theme-toggle.js"></script>
     <script src="js/mobile-nav.js"></script>
+    <script src="js/mobile-tab-bar.js"></script>
   </body>
 </html>

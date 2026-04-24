@@ -392,7 +392,47 @@
 }
 
 // ============================================================
-//  7. UTILITY: visually-hidden (для доступності)
+//  7. WATER CAPSULE (vertical fill indicator)
+// ============================================================
+
+// Вертикальна капсула води — структурний wrapper з анімованим заповненням
+// Реальний контент (текст, хвиля) будується в HTML/JS
+// Приклад: колонка води на "Меню на день"
+%water-capsule {
+  position: relative;
+  width: 100%;
+  border-radius: var(--radius-pill);
+  overflow: hidden;
+  background: var(--water-bg);
+  border: 1px solid rgba(56, 189, 248, 0.15);
+
+  &__fill {
+    position: absolute;
+    inset-inline: 0;
+    bottom: 0;
+    background: linear-gradient(
+      180deg,
+      rgba(56, 189, 248, 0.35),
+      rgba(14, 165, 233, 0.55)
+    );
+    border-radius: inherit;
+    transition: height var(--duration-slow) var(--ease-smooth);
+  }
+
+  &__value {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-body);
+    color: var(--water-text);
+  }
+}
+
+// ============================================================
+//  8. UTILITY: visually-hidden (для доступності)
 // ============================================================
 
 // Приховує елемент візуально, але залишає доступним для screen readers

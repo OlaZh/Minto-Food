@@ -13,6 +13,7 @@ import {
 // Calories & Macros UI Elements
 const kcalCurrentEl = document.getElementById('kcalCurrent');
 const kcalCircleEl = document.getElementById('kcalCircle');
+const kcalNormLabelEl = document.getElementById('kcalNormLabel');
 
 const pCircleEl = document.getElementById('pCircle');
 const fCircleEl = document.getElementById('fCircle');
@@ -21,6 +22,12 @@ const cCircleEl = document.getElementById('cCircle');
 const pCurrentEl = document.getElementById('pCurrent');
 const fCurrentEl = document.getElementById('fCurrent');
 const cCurrentEl = document.getElementById('cCurrent');
+
+// Progress bars (new layout)
+const goalBarEl = document.getElementById('goalBar');
+const pBarEl = document.getElementById('pBar');
+const fBarEl = document.getElementById('fBar');
+const cBarEl = document.getElementById('cBar');
 
 // Water UI Elements
 const waterValueEl = document.getElementById('currentWaterText');
@@ -78,8 +85,15 @@ export function updateStats(consumed) {
   const carbs = consumed.carbs ?? 0;
 
   if (kcalCurrentEl) kcalCurrentEl.textContent = Math.round(kcal);
+  if (kcalNormLabelEl) kcalNormLabelEl.textContent = `з ${dailyCaloriesNorm} ккал`;
 
   setCirclePercent(kcalCircleEl, kcal, dailyCaloriesNorm);
+
+  // Goal bar
+  if (goalBarEl) {
+    const goalPct = dailyCaloriesNorm ? Math.min((kcal / dailyCaloriesNorm) * 100, 100) : 0;
+    goalBarEl.style.width = `${goalPct}%`;
+  }
 
   if (pCurrentEl) pCurrentEl.textContent = Math.round(protein);
   if (fCurrentEl) fCurrentEl.textContent = Math.round(fat);
@@ -88,6 +102,11 @@ export function updateStats(consumed) {
   setCirclePercent(pCircleEl, protein, proteinNorm);
   setCirclePercent(fCircleEl, fat, fatNorm);
   setCirclePercent(cCircleEl, carbs, carbsNorm);
+
+  // Macro progress bars
+  if (pBarEl) pBarEl.style.width = `${proteinNorm ? Math.min((protein / proteinNorm) * 100, 100) : 0}%`;
+  if (fBarEl) fBarEl.style.width = `${fatNorm ? Math.min((fat / fatNorm) * 100, 100) : 0}%`;
+  if (cBarEl) cBarEl.style.width = `${carbsNorm ? Math.min((carbs / carbsNorm) * 100, 100) : 0}%`;
 }
 
 // ===============================

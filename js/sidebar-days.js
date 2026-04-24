@@ -44,6 +44,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  function updatePillDates() {
+    buttons.forEach((btn) => {
+      const numSpan = btn.querySelector('[data-day-num]');
+      if (!numSpan) return;
+      const dayIndex = dayMapping[btn.dataset.day];
+      const info = getWeekDayDate(dayIndex);
+      numSpan.textContent = info.dayNumber;
+    });
+  }
+
   function getWeekDayDate(dayIndex) {
     const monday = getMondayOfWeek(weekOffset);
     const targetDate = new Date(monday);
@@ -101,6 +111,7 @@ document.addEventListener('DOMContentLoaded', () => {
     prevWeekBtn.addEventListener('click', () => {
       weekOffset--;
       updateWeekLabel();
+      updatePillDates();
 
       const activeBtn = document.querySelector('.sidebar__day-btn[aria-current="true"]');
       if (activeBtn) {
@@ -113,6 +124,7 @@ document.addEventListener('DOMContentLoaded', () => {
     nextWeekBtn.addEventListener('click', () => {
       weekOffset++;
       updateWeekLabel();
+      updatePillDates();
 
       const activeBtn = document.querySelector('.sidebar__day-btn[aria-current="true"]');
       if (activeBtn) {
@@ -123,6 +135,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Ініціалізація
   updateWeekLabel();
+  updatePillDates();
 
   const today = new Date();
   const currentDay = today.getDay();
