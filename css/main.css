@@ -392,7 +392,7 @@ textarea {
   --focus-ring: 0 0 0 3px rgba(111, 207, 186, 0.35);
 }
 
-.btn-danger, .day-week-nav__arrow, #cancel-preview, .day-quick-btn, .smart-import__btn, .btn-save-mini, .btn-upload, .btn-secondary, .button--secondary, .btn-add-recipe, .btn-confirm, .btn-primary, .button--primary {
+.btn-danger, .week-nav-btn, .day-week-nav__arrow, #cancel-preview, .week-action-btn, .day-quick-btn, .smart-import__btn, .btn-save-mini, .btn-upload, .btn-secondary, .button--secondary, .btn-add-recipe, .btn-confirm, .btn-primary, .button--primary {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -411,11 +411,11 @@ textarea {
   text-decoration: none;
   transition: background-color var(--duration-base) var(--ease-out), border-color var(--duration-base) var(--ease-out), transform var(--duration-fast) var(--ease-out), box-shadow var(--duration-base) var(--ease-out);
 }
-.btn-danger:focus-visible, .day-week-nav__arrow:focus-visible, #cancel-preview:focus-visible, .day-quick-btn:focus-visible, .smart-import__btn:focus-visible, .btn-save-mini:focus-visible, .btn-upload:focus-visible, .btn-secondary:focus-visible, .button--secondary:focus-visible, .btn-add-recipe:focus-visible, .btn-confirm:focus-visible, .btn-primary:focus-visible, .button--primary:focus-visible {
+.btn-danger:focus-visible, .week-nav-btn:focus-visible, .day-week-nav__arrow:focus-visible, #cancel-preview:focus-visible, .week-action-btn:focus-visible, .day-quick-btn:focus-visible, .smart-import__btn:focus-visible, .btn-save-mini:focus-visible, .btn-upload:focus-visible, .btn-secondary:focus-visible, .button--secondary:focus-visible, .btn-add-recipe:focus-visible, .btn-confirm:focus-visible, .btn-primary:focus-visible, .button--primary:focus-visible {
   outline: none;
   box-shadow: var(--focus-ring);
 }
-.btn-danger:disabled, .day-week-nav__arrow:disabled, #cancel-preview:disabled, .day-quick-btn:disabled, .smart-import__btn:disabled, .btn-save-mini:disabled, .btn-upload:disabled, .btn-secondary:disabled, .button--secondary:disabled, .btn-add-recipe:disabled, .btn-confirm:disabled, .btn-primary:disabled, .button--primary:disabled {
+.btn-danger:disabled, .week-nav-btn:disabled, .day-week-nav__arrow:disabled, #cancel-preview:disabled, .week-action-btn:disabled, .day-quick-btn:disabled, .smart-import__btn:disabled, .btn-save-mini:disabled, .btn-upload:disabled, .btn-secondary:disabled, .button--secondary:disabled, .btn-add-recipe:disabled, .btn-confirm:disabled, .btn-primary:disabled, .button--primary:disabled {
   opacity: 0.5;
   cursor: not-allowed;
   pointer-events: none;
@@ -436,27 +436,27 @@ textarea {
   box-shadow: var(--shadow-1);
 }
 
-.day-quick-btn, .smart-import__btn, .btn-save-mini, .btn-upload, .btn-secondary, .button--secondary {
+.week-action-btn, .day-quick-btn, .smart-import__btn, .btn-save-mini, .btn-upload, .btn-secondary, .button--secondary {
   background: transparent;
   color: var(--color-text-primary);
   border-color: var(--color-border);
 }
-.day-quick-btn:hover:not(:disabled), .smart-import__btn:hover:not(:disabled), .btn-save-mini:hover:not(:disabled), .btn-upload:hover:not(:disabled), .btn-secondary:hover:not(:disabled), .button--secondary:hover:not(:disabled) {
+.week-action-btn:hover:not(:disabled), .day-quick-btn:hover:not(:disabled), .smart-import__btn:hover:not(:disabled), .btn-save-mini:hover:not(:disabled), .btn-upload:hover:not(:disabled), .btn-secondary:hover:not(:disabled), .button--secondary:hover:not(:disabled) {
   background: var(--color-bg-hover);
   border-color: var(--color-accent);
   color: var(--color-accent);
 }
-.day-quick-btn:active:not(:disabled), .smart-import__btn:active:not(:disabled), .btn-save-mini:active:not(:disabled), .btn-upload:active:not(:disabled), .btn-secondary:active:not(:disabled), .button--secondary:active:not(:disabled) {
+.week-action-btn:active:not(:disabled), .day-quick-btn:active:not(:disabled), .smart-import__btn:active:not(:disabled), .btn-save-mini:active:not(:disabled), .btn-upload:active:not(:disabled), .btn-secondary:active:not(:disabled), .button--secondary:active:not(:disabled) {
   transform: translateY(1px);
 }
 
-.day-week-nav__arrow, #cancel-preview {
+.week-nav-btn, .day-week-nav__arrow, #cancel-preview {
   background: transparent;
   color: var(--color-text-secondary);
   min-height: 36px;
   padding: var(--space-xs) var(--space-md);
 }
-.day-week-nav__arrow:hover:not(:disabled), #cancel-preview:hover:not(:disabled) {
+.week-nav-btn:hover:not(:disabled), .day-week-nav__arrow:hover:not(:disabled), #cancel-preview:hover:not(:disabled) {
   background: var(--color-bg-hover);
   color: var(--color-text-primary);
 }
@@ -4189,8 +4189,12 @@ textarea {
   width: auto;
   justify-content: center;
 }
+.day-week-nav__pill::after {
+  display: none;
+}
 .day-week-nav__pill:hover {
   border-color: var(--color-accent);
+  transform: none;
 }
 .day-week-nav__pill[aria-current=true], .day-week-nav__pill.is-active {
   background: var(--color-accent);
@@ -5195,7 +5199,7 @@ textarea {
 }
 
 /* ================= ДЕНЬ ================= */
-.day-summary {
+.profile-main .day-summary {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -5208,18 +5212,18 @@ textarea {
   width: 100%;
   box-sizing: border-box;
 }
-.day-summary__label {
+.profile-main .day-summary__label {
   font-size: 16px;
   color: var(--color-text-secondary);
   font-weight: 500;
 }
-.day-summary__value {
+.profile-main .day-summary__value {
   font-size: 18px;
   font-weight: 800;
   color: var(--color-text-primary);
   flex-grow: 1;
 }
-.day-summary #clearDayBtn {
+.profile-main .day-summary #clearDayBtn {
   margin-left: auto;
   background: var(--color-bg-primary);
   border: 1px solid var(--color-border);
@@ -5232,21 +5236,21 @@ textarea {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   white-space: nowrap;
 }
-.day-summary #clearDayBtn:hover {
+.profile-main .day-summary #clearDayBtn:hover {
   background: var(--color-bg-secondary);
   color: var(--color-accent);
   border-color: var(--color-accent);
   transform: translateY(-1px);
 }
-.day-summary #clearDayBtn:active {
+.profile-main .day-summary #clearDayBtn:active {
   transform: translateY(0);
 }
 @media (max-width: 850px) {
-  .day-summary {
+  .profile-main .day-summary {
     flex-direction: column;
     text-align: center;
   }
-  .day-summary #clearDayBtn {
+  .profile-main .day-summary #clearDayBtn {
     margin-left: 0;
     width: 100%;
     margin-top: 8px;
@@ -6235,32 +6239,21 @@ textarea {
 }
 
 .week-nav-btn {
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
+  width: 40px;
+  height: 40px;
+  min-height: 40px;
+  padding: var(--space-xs);
+  border-radius: 50%;
+  flex-shrink: 0;
   border: 1px solid var(--color-border);
-  background: var(--color-surface);
-  color: var(--color-text-primary);
-  font-size: 16px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.25s ease;
-  box-shadow: var(--shadow-1);
 }
 .week-nav-btn:hover {
-  background: var(--color-accent-soft);
   border-color: var(--color-accent);
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-2);
-}
-.week-nav-btn:active {
-  transform: translateY(0);
+  color: var(--color-accent);
 }
 
 .week-nav__label {
-  font-family: "Rubik", sans-serif;
+  font-family: var(--font-heading);
   font-weight: 600;
   font-size: 15px;
   color: var(--color-text-primary);
@@ -6277,38 +6270,21 @@ textarea {
 }
 
 .week-action-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 10px 16px;
-  border-radius: 12px;
-  border: 1px solid var(--color-border);
-  background: var(--color-surface);
-  color: var(--color-text-primary);
-  font-family: "Mulish", sans-serif;
-  font-weight: 600;
   font-size: 13px;
-  cursor: pointer;
-  transition: all 0.25s ease;
+  gap: var(--space-xs);
+}
+
+.week-action-btn--primary {
+  background: var(--color-accent);
+  color: var(--color-text-inverse);
+  border-color: var(--color-accent);
   box-shadow: var(--shadow-1);
 }
-.week-action-btn:hover {
-  background: var(--color-accent-soft);
-  border-color: var(--color-accent);
+.week-action-btn--primary:hover:not(:disabled) {
+  background: var(--color-accent-hover);
+  border-color: var(--color-accent-hover);
   transform: translateY(-1px);
   box-shadow: var(--shadow-2);
-}
-.week-action-btn:active {
-  transform: translateY(0);
-}
-.week-action-btn--primary {
-  background: var(--color-accent-soft);
-  border-color: rgba(111, 207, 186, 0.45);
-}
-.week-action-btn--primary:hover {
-  background: rgba(111, 207, 186, 0.32);
-  border-color: var(--color-accent);
-  box-shadow: 0 8px 20px rgba(111, 207, 186, 0.3);
 }
 
 /* ================= GRID ================= */
@@ -6387,18 +6363,36 @@ textarea {
   align-items: center;
   justify-content: center;
   text-align: center;
-  gap: 4px;
+  gap: 2px;
+  background: var(--color-bg-primary) !important;
+  border-color: var(--color-border) !important;
+}
+.week-grid__day-name:hover {
+  transform: none !important;
 }
 
 .week-grid__day-name span:first-child {
-  font-weight: 600;
-  font-size: 14px;
+  font-weight: 700;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-secondary);
 }
 
 .week-grid__day-date {
-  font-size: 12px;
-  color: var(--color-text-secondary);
-  font-weight: 400;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  line-height: 1;
+}
+
+.week-grid__row--today .week-grid__day-name {
+  background: var(--color-accent) !important;
+  border-color: var(--color-accent) !important;
+}
+.week-grid__row--today .week-grid__day-name span:first-child,
+.week-grid__row--today .week-grid__day-name .week-grid__day-date {
+  color: var(--color-text-inverse) !important;
 }
 
 [data-theme=dark] .week-grid__cell {
@@ -6560,7 +6554,7 @@ textarea {
 .balance-bar__track {
   flex: 1;
   height: 5px;
-  background: var(--color-border);
+  background: rgba(0, 0, 0, 0.08);
   border-radius: 99px;
   overflow: hidden;
 }
@@ -6627,15 +6621,14 @@ textarea {
   justify-content: center;
 }
 
-.modal__title {
-  font-family: "Rubik", sans-serif;
+.modal__window .modal__title {
+  font-family: var(--font-heading);
   font-size: 18px;
   font-weight: 700;
   color: var(--color-text-primary);
   text-align: center;
 }
-
-.modal__close {
+.modal__window .modal__close {
   position: absolute;
   top: 16px;
   right: 16px;
@@ -6647,7 +6640,7 @@ textarea {
   line-height: 1;
   transition: color 0.2s ease;
 }
-.modal__close:hover {
+.modal__window .modal__close:hover {
   color: var(--color-accent);
 }
 
@@ -6667,7 +6660,7 @@ textarea {
   border: none;
   background: transparent;
   color: var(--color-text-secondary);
-  font-family: "Mulish", sans-serif;
+  font-family: var(--font-body);
   font-weight: 600;
   font-size: 12px;
   cursor: pointer;
@@ -6701,7 +6694,7 @@ textarea {
   border: 1px solid var(--color-border);
   background: var(--color-surface);
   color: var(--color-text-primary);
-  font-family: "Mulish", sans-serif;
+  font-family: var(--font-body);
   font-size: 14px;
   box-shadow: var(--shadow-inset);
   transition: border-color 0.2s ease;
@@ -6725,7 +6718,7 @@ textarea {
   border: 1px solid rgba(111, 207, 186, 0.45);
   background: var(--color-accent-soft);
   color: var(--color-text-primary);
-  font-family: "Mulish", sans-serif;
+  font-family: var(--font-body);
   font-weight: 600;
   font-size: 13px;
   cursor: pointer;
@@ -6844,7 +6837,7 @@ textarea {
   border: 1px solid var(--color-border);
   background: var(--color-surface);
   color: var(--color-text-primary);
-  font-family: "Mulish", sans-serif;
+  font-family: var(--font-body);
   font-size: 13px;
   box-shadow: var(--shadow-inset);
   transition: border-color 0.2s ease;
@@ -6866,7 +6859,7 @@ textarea {
   border: none;
   background: var(--color-accent);
   color: var(--color-text-inverse);
-  font-family: "Mulish", sans-serif;
+  font-family: var(--font-body);
   font-weight: 700;
   font-size: 14px;
   cursor: pointer;
@@ -7106,7 +7099,7 @@ textarea {
   border: 1px dashed var(--color-accent);
   background: var(--color-accent-soft);
   color: var(--color-text-primary);
-  font-family: "Mulish", sans-serif;
+  font-family: var(--font-body);
   font-weight: 600;
   font-size: 13px;
   cursor: pointer;

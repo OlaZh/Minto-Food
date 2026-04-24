@@ -52,8 +52,13 @@
     width: auto;
     justify-content: center;
 
+    &::after {
+      display: none;
+    }
+
     &:hover {
       border-color: var(--color-accent);
+      transform: none;
     }
 
     &[aria-current='true'],

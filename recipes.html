@@ -143,33 +143,14 @@
             </header>
 
             <div class="recipe-page__search">
-              <div
-                class="search-wrapper"
-                style="position: relative; width: 100%; display: flex; align-items: center">
+              <div class="search-wrapper">
                 <input
                   type="text"
                   class="recipe-page__search-input"
                   placeholder="Пошук за назвою або інгредієнтом..."
                   data-i18n-placeholder="searchPlaceholder"
-                  id="recipe-search-input"
-                  style="padding-right: 80px; width: 100%" />
-                <button
-                  id="clear-search-btn"
-                  type="button"
-                  style="
-                    display: none;
-                    position: absolute;
-                    right: 45px;
-                    background: none;
-                    border: none;
-                    cursor: pointer;
-                    color: #888;
-                    font-size: 20px;
-                    line-height: 1;
-                    padding: 10px;
-                  ">
-                  &times;
-                </button>
+                  id="recipe-search-input" />
+                <button id="clear-search-btn" type="button">&times;</button>
                 <button class="search-icon-btn" id="search-mode-btn" type="button"></button>
               </div>
             </div>
@@ -403,8 +384,8 @@
 
     <div id="confirm-modal" class="modal-overlay">
       <div class="modal-card confirm-box">
-        <h3 data-i18n="deleteRecipeTitle">Видалити рецепт?</h3>
-        <p data-i18n="deleteRecipeWarning">Цю дію неможливо буде скасувати.</p>
+        <p class="confirm-title" data-i18n="deleteRecipeTitle">Видалити рецепт?</p>
+        <p class="confirm-message" data-i18n="deleteRecipeWarning">Цю дію неможливо буде скасувати.</p>
         <div class="confirm-btns">
           <button id="confirm-yes" class="btn-confirm btn-danger" data-i18n="confirmDelete">
             Так, видалити

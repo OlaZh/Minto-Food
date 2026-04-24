@@ -245,26 +245,82 @@
   }
 }
 
-/* ================= CANCEL PREVIEW BUTTON ================= */
+/* ================= PREVIEW FORM FOOTER ================= */
 
-#cancel-preview {
-  background: var(--color-bg);
+.preview-form__footer {
+  display: flex;
+  gap: var(--space-sm);
+  margin-top: var(--space-xl);
+  padding-top: var(--space-md);
+  border-top: 1px solid var(--color-border);
+
+  .btn-save {
+    @extend %button-primary;
+    flex: 2;
+    padding: var(--space-sm) var(--space-xl);
+    font-size: 15px;
+    font-weight: 700;
+    border-radius: var(--radius-md);
+  }
+}
+
+/* ================= API SEARCH RESULTS ================= */
+
+.api-results {
+  margin-top: var(--space-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.api-result-card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--space-sm) var(--space-md);
+  background: var(--color-bg-secondary);
   border: 1px solid var(--color-border);
-  color: #5a8d83;
-  padding: 12px 24px;
-  border-radius: 12px;
-  font-weight: 700;
-  font-size: 14px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 6px rgba(46, 204, 113, 0.1);
-  font-family: inherit;
+  border-radius: var(--radius-md);
+  transition: border-color var(--duration-fast) var(--ease-out);
 
   &:hover {
-    background: var(--color-bg-secondary);
-    border-color: var(--color-border);
-    color: #2c4e47;
-    transform: translateY(-3px);
-    box-shadow: 0 15px 25px rgba(46, 204, 113, 0.1);
+    border-color: var(--color-accent);
+  }
+
+  &__image-box {
+    width: 56px;
+    height: 56px;
+    flex-shrink: 0;
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  }
+
+  &__content {
+    flex: 1;
+    min-width: 0;
+
+    h4 {
+      margin: 0 0 8px;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--color-text-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .api-add-btn {
+      @extend %button-secondary;
+      padding: var(--space-xs) var(--space-md);
+      font-size: 12px;
+      font-weight: 600;
+      border-radius: var(--radius-sm);
+    }
   }
 }

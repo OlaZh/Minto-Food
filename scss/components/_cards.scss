@@ -100,7 +100,7 @@
 
   &:hover {
     transform: translateY(-3px);
-    box-shadow: 0 15px 25px rgba(46, 204, 113, 0.1);
+    box-shadow: var(--shadow-2);
 
     .recipe-card__img {
       transform: scale(1.05);
@@ -120,36 +120,23 @@
     transition: transform 0.5s ease;
   }
 
-  &__stats {
-    position: absolute;
-    top: 15px;
-    right: 15px;
-     display: none;
-    padding: 6px 14px;
-    background: var(--color-surface);
-    backdrop-filter: blur(10px);
-    border-radius: 12px;
-    font-size: 12px;
-    font-weight: 800;
-    color: #2e5d6c;
-    box-shadow: 0 4px 10px rgba(46, 204, 113, 0.1);
-  }
 
   &__content {
     padding: 24px;
   }
 
   &__name {
-    font-size: 20px;
+    font-family: var(--font-body);
+    font-size: 18px;
     font-weight: 600;
     margin-bottom: 8px;
     color: var(--color-text-primary);
     display: -webkit-box;
     -webkit-line-clamp: 2;
-    line-clamp: 2; /* кількість рядків */
+    line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
-    min-height: 48px; /* висота під 2 рядки Rubik 20px */
+    min-height: 44px;
   }
 
   &__macros {
@@ -174,24 +161,11 @@
   }
 
   &__btn {
-    width: 100%;
-    padding: 12px;
-    border-radius: 14px;
-    border: 1px solid var(--color-accent-soft);
-    background: var(--color-accent-soft);
-    backdrop-filter: blur(10px);
-    color: var(--color-text-primary);
-    font-weight: 700;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 12px rgba(46, 204, 113, 0.15);
-
-    &:hover {
-      background: rgba(111, 207, 186, 0.32);
-      border-color: rgba(111, 207, 186, 0.45);
-      color: var(--color-text-primary);
-      transform: translateY(-3px);
-      box-shadow: 0 15px 25px rgba(46, 204, 113, 0.25);
-    }
+    @extend %button-secondary;
+    padding: var(--space-xs) var(--space-md);
+    font-size: 13px;
+    font-weight: 600;
+    border-radius: var(--radius-md);
+    width: auto;
   }
 }

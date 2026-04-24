@@ -132,7 +132,12 @@ async function displayRecipes(recipes) {
   recipeGrid.innerHTML = '';
 
   if (recipes.length === 0) {
-    recipeGrid.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: #888;"><p>Рецептів не знайдено</p></div>`;
+    recipeGrid.innerHTML = `
+      <div class="recipe-empty-state">
+        <div class="recipe-empty-state__icon">🍽️</div>
+        <p class="recipe-empty-state__title">Рецептів не знайдено</p>
+        <p class="recipe-empty-state__text">Спробуйте змінити фільтр або додайте свій перший рецепт</p>
+      </div>`;
     return;
   }
 
@@ -330,12 +335,9 @@ export async function openRecipeView(recipeId) {
       const cleanText = text.replace(/^\d+[\s.)-]*\s*/, '');
       const stepDiv = document.createElement('div');
       stepDiv.className = 'step-item';
-      stepDiv.style.display = 'flex';
-      stepDiv.style.gap = '15px';
-      stepDiv.style.marginBottom = '15px';
       stepDiv.innerHTML = `
-        <span class="step-num" style="flex-shrink:0;">${i + 1}</span>
-        <p style="margin:0; line-height:1.5;">${cleanText}</p>
+        <span class="step-num">${i + 1}</span>
+        <p>${cleanText}</p>
       `;
       stepsContainer.appendChild(stepDiv);
     });

@@ -56,10 +56,19 @@
   @extend %button-secondary;
   font-size: 13px;
   gap: var(--space-xs);
+}
 
-  &--primary {
-    @extend %button-primary;
-    font-size: 13px;
+.week-action-btn--primary {
+  background: var(--color-accent);
+  color: var(--color-text-inverse);
+  border-color: var(--color-accent);
+  box-shadow: var(--shadow-1);
+
+  &:hover:not(:disabled) {
+    background: var(--color-accent-hover);
+    border-color: var(--color-accent-hover);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-2);
   }
 }
 
@@ -445,28 +454,30 @@
   }
 }
 
-.modal__title {
-  font-family: var(--font-heading);
-  font-size: 18px;
-  font-weight: 700;
-  color: var(--color-text-primary);
-  text-align: center;
-}
+.modal__window {
+  .modal__title {
+    font-family: var(--font-heading);
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--color-text-primary);
+    text-align: center;
+  }
 
-.modal__close {
-  position: absolute;
-  top: 16px;
-  right: 16px;
-  background: transparent;
-  border: none;
-  font-size: 22px;
-  color: var(--color-text-secondary);
-  cursor: pointer;
-  line-height: 1;
-  transition: color 0.2s ease;
+  .modal__close {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background: transparent;
+    border: none;
+    font-size: 22px;
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    line-height: 1;
+    transition: color 0.2s ease;
 
-  &:hover {
-    color: var(--color-accent);
+    &:hover {
+      color: var(--color-accent);
+    }
   }
 }
 

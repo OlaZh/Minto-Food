@@ -104,12 +104,12 @@
 .nutrition-val {
   font-size: 1.2rem;
   font-weight: 800;
-  color: #2c4e47;
+  color: var(--color-text-primary);
 }
 
 .nutrition-label {
   font-size: 9px;
-  color: #7a9a9a;
+  color: var(--color-text-secondary);
   text-transform: uppercase;
   letter-spacing: 1px;
   font-weight: 700;

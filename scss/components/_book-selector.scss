@@ -21,13 +21,13 @@
     h3 {
       margin: 0 0 6px;
       font-size: 1.25rem;
-      color: var(--text-primary);
+      color: var(--color-text-primary);
     }
 
     p {
       margin: 0;
       font-size: 0.875rem;
-      color: var(--text-secondary);
+      color: var(--color-text-secondary);
     }
   }
 
@@ -46,30 +46,30 @@
     align-items: center;
     gap: 12px;
     padding: 12px 14px;
-    background: var(--bg-secondary);
+    background: var(--color-bg-secondary);
     border: 2px solid transparent;
     border-radius: 12px;
     cursor: pointer;
     transition: all 0.2s ease;
 
     &:hover {
-      background: var(--bg-tertiary);
+      background: var(--color-surface);
     }
 
     &--default {
-      border-color: var(--accent-color);
-      background: rgba(var(--accent-rgb), 0.08);
+      border-color: var(--color-accent);
+      background: var(--color-accent-soft);
     }
 
     input[type='checkbox'] {
       width: 20px;
       height: 20px;
-      accent-color: var(--accent-color);
+      accent-color: var(--color-accent);
       cursor: pointer;
     }
 
     &:has(input:checked) {
-      border-color: var(--accent-color);
+      border-color: var(--color-accent);
       background: rgba(var(--accent-rgb), 0.1);
     }
   }
@@ -82,13 +82,13 @@
   &__name {
     flex: 1;
     font-size: 0.95rem;
-    color: var(--text-primary);
+    color: var(--color-text-primary);
   }
 
   &__badge {
     font-size: 0.7rem;
     padding: 3px 8px;
-    background: var(--accent-color);
+    background: var(--color-accent);
     color: white;
     border-radius: 20px;
     font-weight: 600;
@@ -103,7 +103,7 @@
       margin-right: auto;
       background: transparent;
       border: none;
-      color: var(--accent-color);
+      color: var(--color-accent);
       cursor: pointer;
       font-size: 0.875rem;
 
@@ -130,25 +130,25 @@
     align-items: center;
     gap: 10px;
     padding: 10px 12px;
-    background: var(--bg-secondary);
+    background: var(--color-bg-secondary);
     border: 2px solid transparent;
     border-radius: 10px;
     cursor: pointer;
     transition: all 0.2s ease;
 
     &:hover {
-      background: var(--bg-tertiary);
+      background: var(--color-surface);
     }
 
     &:has(input:checked) {
-      border-color: var(--accent-color);
-      background: rgba(var(--accent-rgb), 0.08);
+      border-color: var(--color-accent);
+      background: var(--color-accent-soft);
     }
 
     input[type='checkbox'] {
       width: 18px;
       height: 18px;
-      accent-color: var(--accent-color);
+      accent-color: var(--color-accent);
       cursor: pointer;
     }
   }
@@ -160,11 +160,11 @@
   &__name {
     flex: 1;
     font-size: 0.9rem;
-    color: var(--text-primary);
+    color: var(--color-text-primary);
   }
 
   &__badge {
-    color: var(--accent-color);
+    color: var(--color-accent);
     font-size: 0.9rem;
   }
 
@@ -174,16 +174,16 @@
     width: 100%;
     padding: 8px;
     background: transparent;
-    border: 1px dashed var(--border-color);
+    border: 1px dashed var(--color-border);
     border-radius: 8px;
-    color: var(--text-secondary);
+    color: var(--color-text-secondary);
     cursor: pointer;
     font-size: 0.85rem;
     transition: all 0.2s ease;
 
     &:hover {
-      border-color: var(--accent-color);
-      color: var(--accent-color);
+      border-color: var(--color-accent);
+      color: var(--color-accent);
     }
   }
 
@@ -271,23 +271,23 @@
   &__trigger {
     width: 36px;
     height: 36px;
-    background: var(--bg-secondary);
+    background: var(--color-bg-secondary);
     border: none;
     border-radius: 50%;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.2s ease;
+    transition: all var(--duration-fast) var(--ease-out);
 
     &:hover {
-      background: var(--bg-tertiary);
+      background: var(--color-surface);
     }
 
     svg {
       width: 20px;
       height: 20px;
-      color: var(--text-secondary);
+      color: var(--color-text-secondary);
     }
   }
 
@@ -296,14 +296,14 @@
     top: 100%;
     right: 0;
     min-width: 180px;
-    background: var(--bg-primary);
-    border: 1px solid var(--border-color);
-    border-radius: 12px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-3);
     opacity: 0;
     visibility: hidden;
     transform: translateY(-10px);
-    transition: all 0.2s ease;
+    transition: all var(--duration-fast) var(--ease-out);
     z-index: 100;
     overflow: hidden;
 
@@ -323,34 +323,34 @@
     background: none;
     border: none;
     cursor: pointer;
-    font-size: 0.9rem;
-    color: var(--text-primary);
+    font-size: 14px;
+    color: var(--color-text-primary);
     text-align: left;
-    transition: background 0.15s ease;
+    transition: background var(--duration-fast) var(--ease-out);
 
     &:hover {
-      background: var(--bg-secondary);
+      background: var(--color-bg-secondary);
     }
 
     svg {
       width: 18px;
       height: 18px;
-      color: var(--text-secondary);
+      color: var(--color-text-secondary);
     }
 
     &--danger {
-      color: #e74c3c;
+      color: #c94040;
 
       svg {
-        color: #e74c3c;
+        color: #c94040;
       }
     }
 
     &--warning {
-      color: #e67e22;
+      color: #c07c30;
 
       svg {
-        color: #e67e22;
+        color: #c07c30;
       }
     }
 
@@ -362,7 +362,7 @@
 
   &__divider {
     height: 1px;
-    background: var(--border-color);
+    background: var(--color-border);
     margin: 4px 0;
   }
 }
@@ -383,26 +383,26 @@
     justify-content: center;
     gap: 8px;
     padding: 14px 16px;
-    background: var(--bg-secondary);
+    background: var(--color-bg-secondary);
     border: 2px solid transparent;
     border-radius: 12px;
     cursor: pointer;
     transition: all 0.2s ease;
 
     &:hover {
-      background: var(--bg-tertiary);
+      background: var(--color-surface);
     }
 
     &--active {
-      border-color: var(--accent-color);
+      border-color: var(--color-accent);
       background: rgba(var(--accent-rgb), 0.1);
 
       .visibility-toggle__icon {
-        color: var(--accent-color);
+        color: var(--color-accent);
       }
 
       .visibility-toggle__label {
-        color: var(--text-primary);
+        color: var(--color-text-primary);
         font-weight: 600;
       }
     }
@@ -418,7 +418,7 @@
 
   &__label {
     font-size: 0.9rem;
-    color: var(--text-secondary);
+    color: var(--color-text-secondary);
   }
 }
 
@@ -429,7 +429,7 @@
 .recipe-books-section {
   margin-top: 20px;
   padding-top: 20px;
-  border-top: 1px solid var(--border-color);
+  border-top: 1px solid var(--color-border);
 
   &__header {
     display: flex;
@@ -440,7 +440,7 @@
     h4 {
       margin: 0;
       font-size: 0.95rem;
-      color: var(--text-primary);
+      color: var(--color-text-primary);
       display: flex;
       align-items: center;
       gap: 8px;
@@ -467,13 +467,13 @@
     h3 {
       margin: 0 0 8px;
       font-size: 1.2rem;
-      color: var(--text-primary);
+      color: var(--color-text-primary);
     }
   }
 
   &__recipe-name {
     font-size: 0.9rem;
-    color: var(--text-secondary);
+    color: var(--color-text-secondary);
     margin: 0;
   }
 
@@ -510,7 +510,7 @@
 .cookbook-book__edit-btn {
   width: 32px;
   height: 32px;
-  background: var(--bg-secondary);
+  background: var(--color-bg-secondary);
   border: none;
   border-radius: 8px;
   cursor: pointer;
@@ -520,7 +520,7 @@
   transition: all 0.2s ease;
 
   &:hover {
-    background: var(--accent-color);
+    background: var(--color-accent);
 
     svg {
       color: white;
@@ -530,7 +530,7 @@
   svg {
     width: 16px;
     height: 16px;
-    color: var(--text-secondary);
+    color: var(--color-text-secondary);
   }
 }
 
@@ -540,7 +540,7 @@
   right: 8px;
   font-size: 0.65rem;
   padding: 2px 6px;
-  background: var(--accent-color);
+  background: var(--color-accent);
   color: white;
   border-radius: 4px;
   font-weight: 600;
