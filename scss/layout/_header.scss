@@ -27,11 +27,16 @@
   align-items: center;
 }
 
-.header__logo {
-  font-family: var(--font-logo);
-  font-size: 24px;
-  font-weight: 600;
-  color: var(--color-text-primary);
+// .header__logo {
+//   font-family: var(--font-logo);
+//   font-size: 24px;
+//   font-weight: 600;
+//   color: var(--color-text-primary);
+// }
+
+.header__logo img {
+  height: 30px;
+  width: auto;
 }
 
 /* ---------- NAVIGATION ---------- */
@@ -195,7 +200,9 @@
     height: 2px;
     background: currentColor;
     border-radius: 2px;
-    transition: transform 0.3s ease, opacity 0.3s ease;
+    transition:
+      transform 0.3s ease,
+      opacity 0.3s ease;
     transform-origin: center;
   }
 

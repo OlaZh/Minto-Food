@@ -587,11 +587,9 @@ textarea {
   align-items: center;
 }
 
-.header__logo {
-  font-family: var(--font-logo);
-  font-size: 24px;
-  font-weight: 600;
-  color: var(--color-text-primary);
+.header__logo img {
+  height: 30px;
+  width: auto;
 }
 
 /* ---------- NAVIGATION ---------- */
@@ -995,42 +993,18 @@ textarea {
 /* =============================================================
    4 КОЛОНКА — WATER SIDEBAR (PREMIUM HEALTH APP)
    ============================================================= */
-.water-sidebar {
-  align-self: start;
-  width: 64px;
-  display: flex;
-  justify-content: center;
-}
-
-.water-sidebar .column-header {
-  margin-bottom: 20px;
-  text-align: center;
-}
-
-/* ================= WATER METER ================= */
-.water-meter {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
-  font-family: var(--font-body);
-}
-
-/* === GLASS / CAPSULE === */
 .water-meter__glass {
   position: relative;
   width: 100%;
   height: min(320px, 100vh - 360px);
-  border-radius: 20px;
+  border-radius: 999px;
   overflow: hidden;
-  /* Додаємо flex для легкого центрування тексту */
   display: flex;
-  align-items: center; /* Центрує по вертикалі */
-  justify-content: center; /* Центрує по горизонталі */
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.55) 0%, rgba(255, 255, 255, 0.18) 100%);
-  border: 1px solid rgba(255, 255, 255, 0.45);
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.35), inset 0 -18px 28px rgba(0, 0, 0, 0.08), 0 12px 32px rgba(0, 0, 0, 0.06);
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(180deg, rgba(240, 250, 247, 0.75) 0%, rgba(210, 240, 232, 0.55) 100%);
+  border: 1px solid var(--color-border);
+  box-shadow: inset 0 -10px 20px rgba(40, 110, 95, 0.08), 0 12px 32px rgba(15, 60, 50, 0.12), 0 2px 6px rgba(15, 60, 50, 0.06);
 }
 
 /* === WATER FILL === */
@@ -1040,30 +1014,44 @@ textarea {
   bottom: 0;
   height: var(--level, 0%);
   z-index: 1;
-  /* НОВИЙ ПАСТЕЛЬНИЙ КОЛІР */
-  background: linear-gradient(180deg, #e0f2f1 0%, #b3ded7 55%, #8cc9bb 100%);
+  background: linear-gradient(180deg, #b6e4dc 0%, #7ec9bb 50%, #5cb3a2 100%);
   border-radius: 999px 999px 0 0;
   transition: height 0.7s cubic-bezier(0.4, 0, 0.2, 1);
-  /* М'якша тінь, щоб не було "брудного" ефекту */
-  box-shadow: inset 0 10px 14px rgba(255, 255, 255, 0.4), inset 0 -10px 18px rgba(0, 0, 0, 0.05);
+  box-shadow: inset 0 6px 10px rgba(255, 255, 255, 0.45), inset 0 -8px 14px rgba(40, 110, 95, 0.15), 0 -2px 8px rgba(182, 228, 220, 0.4);
+}
+.water-meter__fill::before {
+  content: "";
+  position: absolute;
+  top: -2px;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.6) 50%, transparent 100%);
+  border-radius: 50%;
+  animation: waterWave 3s ease-in-out infinite;
 }
 
+@keyframes waterWave {
+  0%, 100% {
+    transform: translateY(0);
+    opacity: 0.6;
+  }
+  50% {
+    transform: translateY(-1px);
+    opacity: 1;
+  }
+}
 /* === VERTICAL VALUE TEXT === */
 .water-meter__value {
-  /* 1. Позиціювання: дозволяємо Flexbox-у батька керувати центром */
   position: relative;
   z-index: 10 !important;
-  /* 2. Розвертаємо вздовж капсули */
-  /* rotate(-90deg) повертає текст вертикально (читається знизу вгору) */
   transform: rotate(-90deg);
-  /* 3. Оформлення */
-  font-size: 11px; /* Для вертикального тексту краще трохи менший шрифт */
+  font-size: 11px;
   font-weight: 800;
   white-space: nowrap;
-  /* 4. Колір (темно-м'ятний для контрасту) */
-  color: #2c4e47 !important;
-  /* 5. Читабельність на будь-якому рівні води */
-  text-shadow: 0 0 10px rgba(255, 255, 255, 0.9);
+  letter-spacing: 0.05em;
+  color: #1a3d28 !important;
+  text-shadow: 0 0 6px rgba(255, 255, 255, 0.95), 0 0 12px rgba(255, 255, 255, 0.6);
   pointer-events: none;
 }
 
@@ -1073,7 +1061,7 @@ textarea {
   flex-direction: column;
   gap: 8px;
   width: 100%;
-  margin-top: 10px;
+  margin-top: 12px;
 }
 
 .water-btn {
@@ -1084,19 +1072,21 @@ textarea {
   align-items: center;
   justify-content: center;
   gap: 4px;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.6);
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid var(--color-border);
   border-radius: 14px;
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 4px 12px rgba(15, 60, 50, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.9);
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .water-btn:hover {
-  background: rgba(168, 233, 221, 0.06); /* Трохи яскравіше при наведенні */
-  box-shadow: 0 8px 20px rgba(91, 189, 245, 0.2); /* Блакитне сяйво */
+  background: rgba(230, 245, 240, 0.95);
+  border-color: var(--color-accent);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.05);
 }
 
 .water-btn:active {
@@ -1107,13 +1097,13 @@ textarea {
 .water-btn svg {
   width: 22px;
   height: 22px;
-  color: #2e5d6c; /* Твій основний синій колір */
+  color: #2d7a68;
   transition: all 0.3s ease;
-  filter: drop-shadow(0 0 2px rgba(41, 89, 97, 0.452)); /* Легке сяйво самої іконки */
+  filter: drop-shadow(0 1px 2px rgba(45, 122, 104, 0.25));
 }
 
 .water-btn:hover svg {
-  color: #2b5965; /* Світліший при наведенні */
+  color: #1f5d4f;
   transform: translateY(-2px);
 }
 
@@ -1121,7 +1111,7 @@ textarea {
   font-size: 9px;
   font-weight: 700;
   letter-spacing: 0.04em;
-  color: var(--color-text-secondary);
+  color: #1a3d28;
 }
 
 /* ================= RESET ================= */
@@ -1131,15 +1121,14 @@ textarea {
   border: none;
   font-size: 9px;
   letter-spacing: 0.12em;
-  color: var(--color-text-secondary);
-  opacity: 0.35;
+  color: #1a3d28;
+  opacity: 0.5;
   cursor: pointer;
   transition: opacity 0.2s ease, color 0.2s ease;
 }
-
 .water-reset-btn:hover {
   opacity: 1;
-  color: #e06b6b;
+  color: #c25c5c;
 }
 
 /* =============================================================
