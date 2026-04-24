@@ -25,6 +25,7 @@ const cCurrentEl = document.getElementById('cCurrent');
 
 // Progress bars (new layout)
 const goalBarEl = document.getElementById('goalBar');
+const goalValueEl = document.getElementById('goalValue');
 const pBarEl = document.getElementById('pBar');
 const fBarEl = document.getElementById('fBar');
 const cBarEl = document.getElementById('cBar');
@@ -86,6 +87,7 @@ export function updateStats(consumed) {
 
   if (kcalCurrentEl) kcalCurrentEl.textContent = Math.round(kcal);
   if (kcalNormLabelEl) kcalNormLabelEl.textContent = `з ${dailyCaloriesNorm} ккал`;
+  if (goalValueEl) goalValueEl.textContent = `${dailyCaloriesNorm} ккал`;
 
   setCirclePercent(kcalCircleEl, kcal, dailyCaloriesNorm);
 

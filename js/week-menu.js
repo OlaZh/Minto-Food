@@ -106,17 +106,22 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     weekLabel.textContent = `${from} — ${to}`;
 
-    // Оновлюємо підписи дат під днями
+    // Оновлюємо підписи дат, абревіатури і виділяємо поточний день
     const dates7 = getWeekDates(currentWeekStart);
+    const todayStr = new Date().toDateString();
     DAYS.forEach((day, i) => {
-      const dateEl = document.querySelector(
-        `.week-grid__row[data-day="${day}"] .week-grid__day-date`,
-      );
+      const row = document.querySelector(`.week-grid__row[data-day="${day}"]`);
+      const dateEl = row?.querySelector('.week-grid__day-date');
+      const abbrEl = row?.querySelector('.week-grid__day-abbr');
       if (dateEl) {
-        dateEl.textContent = dates7[i].toLocaleDateString(locale, {
-          day: 'numeric',
-          month: 'short',
-        });
+        dateEl.textContent = dates7[i].getDate();
+      }
+      if (abbrEl) {
+        const raw = dates7[i].toLocaleDateString(locale, { weekday: 'short' });
+        abbrEl.textContent = raw.charAt(0).toUpperCase() + raw.slice(1).replace('.', '');
+      }
+      if (row) {
+        row.classList.toggle('week-grid__row--today', dates7[i].toDateString() === todayStr);
       }
     });
   }

@@ -20,34 +20,23 @@
 }
 
 .week-nav-btn {
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
+  @extend %button-ghost;
+  width: 40px;
+  height: 40px;
+  min-height: 40px;
+  padding: var(--space-xs);
+  border-radius: 50%;
+  flex-shrink: 0;
   border: 1px solid var(--color-border);
-  background: var(--color-surface);
-  color: var(--color-text-primary);
-  font-size: 16px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.25s ease;
-  box-shadow: var(--shadow-1);
 
   &:hover {
-    background: var(--color-accent-soft);
     border-color: var(--color-accent);
-    transform: translateY(-1px);
-    box-shadow: var(--shadow-2);
-  }
-
-  &:active {
-    transform: translateY(0);
+    color: var(--color-accent);
   }
 }
 
 .week-nav__label {
-  font-family: $font-heading;
+  font-family: var(--font-heading);
   font-weight: 600;
   font-size: 15px;
   color: var(--color-text-primary);
@@ -64,41 +53,13 @@
 }
 
 .week-action-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 10px 16px;
-  border-radius: 12px;
-  border: 1px solid var(--color-border);
-  background: var(--color-surface);
-  color: var(--color-text-primary);
-  font-family: $font-ui;
-  font-weight: 600;
+  @extend %button-secondary;
   font-size: 13px;
-  cursor: pointer;
-  transition: all 0.25s ease;
-  box-shadow: var(--shadow-1);
-
-  &:hover {
-    background: var(--color-accent-soft);
-    border-color: var(--color-accent);
-    transform: translateY(-1px);
-    box-shadow: var(--shadow-2);
-  }
-
-  &:active {
-    transform: translateY(0);
-  }
+  gap: var(--space-xs);
 
   &--primary {
-    background: var(--color-accent-soft);
-    border-color: rgba(111, 207, 186, 0.45);
-
-    &:hover {
-      background: rgba(111, 207, 186, 0.32);
-      border-color: var(--color-accent);
-      box-shadow: 0 8px 20px rgba(111, 207, 186, 0.3);
-    }
+    @extend %button-primary;
+    font-size: 13px;
   }
 }
 
@@ -200,18 +161,38 @@
   align-items: center;
   justify-content: center;
   text-align: center;
-  gap: 4px;
+  gap: 2px;
+  background: var(--color-bg-primary) !important;
+  border-color: var(--color-border) !important;
+
+  &:hover {
+    transform: none !important;
+  }
 }
 
 .week-grid__day-name span:first-child {
-  font-weight: 600;
-  font-size: 14px;
+  font-weight: 700;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-secondary);
 }
 
 .week-grid__day-date {
-  font-size: 12px;
-  color: var(--color-text-secondary);
-  font-weight: 400;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  line-height: 1;
+}
+
+.week-grid__row--today .week-grid__day-name {
+  background: var(--color-accent) !important;
+  border-color: var(--color-accent) !important;
+
+  span:first-child,
+  .week-grid__day-date {
+    color: var(--color-text-inverse) !important;
+  }
 }
 
 [data-theme='dark'] {
@@ -390,7 +371,7 @@
 .balance-bar__track {
   flex: 1;
   height: 5px;
-  background: var(--color-border);
+  background: rgba(0, 0, 0, 0.08);
   border-radius: 99px;
   overflow: hidden;
 }
@@ -465,7 +446,7 @@
 }
 
 .modal__title {
-  font-family: $font-heading;
+  font-family: var(--font-heading);
   font-size: 18px;
   font-weight: 700;
   color: var(--color-text-primary);
@@ -505,7 +486,7 @@
   border: none;
   background: transparent;
   color: var(--color-text-secondary);
-  font-family: $font-ui;
+  font-family: var(--font-body);
   font-weight: 600;
   font-size: 12px;
   cursor: pointer;
@@ -542,7 +523,7 @@
   border: 1px solid var(--color-border);
   background: var(--color-surface);
   color: var(--color-text-primary);
-  font-family: $font-body;
+  font-family: var(--font-body);
   font-size: 14px;
   box-shadow: var(--shadow-inset);
   transition: border-color 0.2s ease;
@@ -568,7 +549,7 @@
   border: 1px solid rgba(111, 207, 186, 0.45);
   background: var(--color-accent-soft);
   color: var(--color-text-primary);
-  font-family: $font-ui;
+  font-family: var(--font-body);
   font-weight: 600;
   font-size: 13px;
   cursor: pointer;
@@ -691,7 +672,7 @@
       border: 1px solid var(--color-border);
       background: var(--color-surface);
       color: var(--color-text-primary);
-      font-family: $font-body;
+      font-family: var(--font-body);
       font-size: 13px;
       box-shadow: var(--shadow-inset);
       transition: border-color 0.2s ease;
@@ -716,7 +697,7 @@
   border: none;
   background: var(--color-accent);
   color: var(--color-text-inverse);
-  font-family: $font-ui;
+  font-family: var(--font-body);
   font-weight: 700;
   font-size: 14px;
   cursor: pointer;
@@ -967,7 +948,7 @@
   border: 1px dashed var(--color-accent);
   background: var(--color-accent-soft);
   color: var(--color-text-primary);
-  font-family: $font-ui;
+  font-family: var(--font-body);
   font-weight: 600;
   font-size: 13px;
   cursor: pointer;

@@ -3,14 +3,10 @@
 .day-week-nav {
   display: flex;
   align-items: center;
-  gap: var(--space-sm);
+  justify-content: center;
+  gap: var(--space-xs);
   padding: var(--space-md) 0 var(--space-xl);
-  overflow-x: auto;
-  scrollbar-width: none;
-
-  &::-webkit-scrollbar {
-    display: none;
-  }
+  position: relative;
 
   &__arrow {
     @extend %button-ghost;
@@ -30,8 +26,6 @@
   &__pills {
     display: flex;
     gap: var(--space-xs);
-    flex: 1;
-    justify-content: center;
   }
 
   &__pill {
@@ -91,12 +85,12 @@
   }
 
   &__month {
+    position: absolute;
+    right: 0;
     font-size: 13px;
     font-weight: 500;
     color: var(--color-text-secondary);
     white-space: nowrap;
-    flex-shrink: 0;
-    margin-left: var(--space-xs);
   }
 }
 
@@ -178,6 +172,7 @@
 
   &__bar-wrap {
     @extend %progress-bar-thick;
+    background: rgba(0, 0, 0, 0.08);
   }
 
   &__bar-fill {
@@ -473,6 +468,7 @@
 
   &__track {
     @extend %progress-bar;
+    background: rgba(0, 0, 0, 0.08);
   }
 
   &__fill {

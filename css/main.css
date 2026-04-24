@@ -486,7 +486,7 @@ textarea {
 
 .layout {
   display: grid;
-  grid-template-columns: 260px minmax(520px, 1fr) 280px 120px;
+  grid-template-columns: 240px minmax(480px, 1fr) 180px 210px;
   gap: 28px;
 }
 
@@ -625,7 +625,7 @@ textarea {
    ============================================================= */
 @media (max-width: 1200px) {
   .layout {
-    grid-template-columns: 240px minmax(0, 1fr) 240px 80px;
+    grid-template-columns: 220px minmax(0, 1fr) 160px 190px;
     gap: 20px;
   }
 }
@@ -4150,13 +4150,10 @@ textarea {
 .day-week-nav {
   display: flex;
   align-items: center;
-  gap: var(--space-sm);
+  justify-content: center;
+  gap: var(--space-xs);
   padding: var(--space-md) 0 var(--space-xl);
-  overflow-x: auto;
-  scrollbar-width: none;
-}
-.day-week-nav::-webkit-scrollbar {
-  display: none;
+  position: relative;
 }
 .day-week-nav__arrow {
   min-height: 40px;
@@ -4173,8 +4170,6 @@ textarea {
 .day-week-nav__pills {
   display: flex;
   gap: var(--space-xs);
-  flex: 1;
-  justify-content: center;
 }
 .day-week-nav__pill {
   display: inline-flex;
@@ -4221,12 +4216,12 @@ textarea {
   color: var(--color-text-primary);
 }
 .day-week-nav__month {
+  position: absolute;
+  right: 0;
   font-size: 13px;
   font-weight: 500;
   color: var(--color-text-secondary);
   white-space: nowrap;
-  flex-shrink: 0;
-  margin-left: var(--space-xs);
 }
 
 /* ================= DAY RING CARD ================= */
@@ -4294,6 +4289,9 @@ textarea {
   display: flex;
   flex-direction: column;
   gap: var(--space-xs);
+}
+.day-goal__bar-wrap {
+  background: rgba(0, 0, 0, 0.08);
 }
 .day-goal__bar-fill {
   height: 100%;
@@ -4537,6 +4535,9 @@ textarea {
   font-size: 13px;
   font-weight: 700;
   color: var(--color-text-primary);
+}
+.macro-bar-item__track {
+  background: rgba(0, 0, 0, 0.08);
 }
 .macro-bar-item__fill {
   height: 100%;
