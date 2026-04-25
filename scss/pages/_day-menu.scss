@@ -23,6 +23,7 @@
 
     .day-week-nav {
       flex: 0 0 auto;
+      padding: 14px 0 12px;
     }
 
     .layout {
@@ -539,7 +540,7 @@
   &__recipes {
     list-style: none;
     margin: 0;
-    padding: var(--space-xs) var(--space-lg) var(--space-md);
+    padding: 0;
     display: flex;
     flex-direction: column;
     gap: 10px;
@@ -557,6 +558,7 @@
   &.is-open {
     .meal__recipes {
       opacity: 1;
+      padding: var(--space-xs) 0 var(--space-md);
       // height задається через JS
     }
 

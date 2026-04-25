@@ -4023,6 +4023,7 @@ textarea {
   }
   .page--day-menu .day-week-nav {
     flex: 0 0 auto;
+    padding: 14px 0 12px;
   }
   .page--day-menu .layout {
     flex: 1 1 auto;
@@ -4462,7 +4463,7 @@ textarea {
 .meal__recipes {
   list-style: none;
   margin: 0;
-  padding: var(--space-xs) var(--space-lg) var(--space-md);
+  padding: 0;
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -4476,6 +4477,7 @@ textarea {
 }
 .meal.is-open .meal__recipes {
   opacity: 1;
+  padding: var(--space-xs) 0 var(--space-md);
 }
 .meal.is-open .meal__header {
   border-bottom: 0;
