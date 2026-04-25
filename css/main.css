@@ -4064,6 +4064,12 @@ textarea {
     font-size: 10px;
     line-height: 1.2;
   }
+  .page--day-menu .right-sidebar {
+    align-self: start;
+  }
+  .page--day-menu .right-sidebar__inner {
+    height: auto;
+  }
 }
 @media (min-width: 1025px) and (max-width: 1279px) {
   .page--day-menu .layout {

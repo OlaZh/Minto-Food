@@ -73,6 +73,14 @@
       font-size: 10px;
       line-height: 1.2;
     }
+
+    .right-sidebar {
+      align-self: start;
+    }
+
+    .right-sidebar__inner {
+      height: auto;
+    }
   }
 }
 
