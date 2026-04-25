@@ -4026,10 +4026,17 @@ textarea {
   }
   .page--day-menu .layout {
     flex: 1 1 auto;
-    grid-template-columns: 240px minmax(0, 420px) 120px 240px;
+    grid-template-columns: 240px minmax(0, 540px) 100px 260px;
+    gap: 14px;
     justify-content: center;
     height: auto;
     min-height: 0;
+  }
+}
+@media (min-width: 1025px) and (max-width: 1279px) {
+  .page--day-menu .layout {
+    grid-template-columns: 220px minmax(0, 1fr) 90px 220px;
+    gap: 14px;
   }
 }
 .day-week-nav {
@@ -4344,7 +4351,7 @@ textarea {
 }
 /* ================= MENU CARD (спільна обгортка) ================= */
 .menu-card {
-  padding: 0;
+  padding: 20px 18px 0;
   overflow: hidden;
   width: 100%;
   min-height: 100%;
@@ -4354,15 +4361,15 @@ textarea {
 }
 .menu-card__title {
   font-family: var(--font-body);
-  font-size: 12px;
+  font-size: 18px;
   font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.07em;
-  color: var(--color-text-secondary);
-  text-align: center;
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--color-text-primary);
+  text-align: left;
   margin: 0;
-  padding: var(--space-lg) var(--space-lg);
-  border-bottom: 1px solid var(--color-border);
+  padding: 0 0 18px;
+  border-bottom: 0;
 }
 
 /* ================= DAY MENU ================= */
@@ -4390,8 +4397,9 @@ textarea {
 .meal__header {
   display: flex;
   align-items: center;
-  gap: var(--space-md);
-  padding: var(--space-md) var(--space-lg);
+  gap: 12px;
+  min-height: 56px;
+  padding: 10px 0;
   cursor: pointer;
   -webkit-user-select: none;
      -moz-user-select: none;
@@ -4406,11 +4414,11 @@ textarea {
 }
 .meal__title {
   font-family: var(--font-heading);
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 700;
   color: var(--color-text-primary);
   margin: 0;
-  flex-shrink: 0;
+  flex: 0 0 150px;
 }
 .meal {
   /* === SUMMARY (по центру, розтягується) === */
@@ -4464,7 +4472,7 @@ textarea {
   opacity: 1;
 }
 .meal.is-open .meal__header {
-  border-bottom: 1px solid var(--color-border);
+  border-bottom: 0;
 }
 .meal {
   /* === КОЛИ Є КОНТЕНТ І ЗГОРНУТО — індикатор кількості === */
@@ -4483,10 +4491,10 @@ textarea {
 /* ================= MEAL RECIPE ================= */
 .meal__recipe {
   position: relative;
-  padding: 12px 14px;
+  padding: 8px 10px 10px 40px;
   padding-right: 45px;
-  background-color: var(--color-bg-primary);
-  border-radius: 10px;
+  background-color: transparent;
+  border-radius: 0;
   cursor: pointer;
   transition: background-color 0.2s ease;
 }
@@ -4506,11 +4514,11 @@ textarea {
   font-family: var(--font-body);
   font-weight: 500;
   color: var(--color-text-primary);
-  line-height: 1.4;
+  line-height: 1.25;
   word-break: break-word;
 }
 .meal__recipe-kcal {
-  font-size: 13px;
+  font-size: 12px;
   color: var(--color-text-secondary);
   margin-top: 2px;
 }
@@ -4528,7 +4536,7 @@ textarea {
   gap: var(--space-md);
   width: 100%;
   margin-top: auto;
-  padding: var(--space-md) var(--space-lg);
+  padding: 12px 0;
   background: transparent;
   border: none;
   border-top: 1px solid var(--color-border);
@@ -4553,15 +4561,15 @@ textarea {
 
 /* ================= MEAL ADD BUTTON ================= */
 .meal__add {
-  width: 36px;
-  height: 36px;
+  width: 28px;
+  height: 28px;
   margin-left: auto;
   flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 50%;
-  background-color: var(--color-bg-primary);
+  border-radius: var(--radius-sm);
+  background-color: transparent;
   border: 1px solid var(--color-border);
   cursor: pointer;
   transition: background-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
@@ -4576,7 +4584,7 @@ textarea {
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 14px;
+  width: 10px;
   height: 2px;
   background-color: var(--color-accent);
   border-radius: 2px;
