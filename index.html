@@ -297,6 +297,68 @@
             </main>
 
             <!-- WATER: unchanged -->
+            <!-- ===== WATER COLUMN ===== -->
+            <aside class="water-sidebar">
+              <h3 class="water-section__title" data-i18n="water">Вода</h3>
+
+              <!-- Число зверху капсули -->
+              <div class="water-meter__display">
+                <span class="water-meter__display-current" id="currentWaterText">0.00</span>
+                <span class="water-meter__display-norm" id="waterNormText">з 2.5 л</span>
+              </div>
+
+              <!-- Капсула -->
+              <div class="water-meter__glass">
+                <div class="water-meter__fill" id="waterFill"></div>
+              </div>
+
+              <!-- Кнопки додавання -->
+              <div class="water-actions">
+                <button class="water-btn" data-amount="0.25" type="button">
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path>
+                  </svg>
+                  <span class="water-btn__text">+0.25 л</span>
+                </button>
+
+                <button class="water-btn" data-amount="0.5" type="button">
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path>
+                  </svg>
+                  <span class="water-btn__text">+0.5 л</span>
+                </button>
+
+                <button class="water-btn" data-amount="0.75" type="button">
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path>
+                  </svg>
+                  <span class="water-btn__text">+0.75 л</span>
+                </button>
+              </div>
+
+              <!-- Скинути -->
+              <button class="water-reset-btn" id="resetWater" type="button" data-i18n="resetDay">
+                × Скинути день
+              </button>
+            </aside>
             <!-- RIGHT: Macro bars + Quick actions -->
             <aside class="right-sidebar">
               <div class="right-sidebar__inner">

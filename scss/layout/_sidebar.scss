@@ -113,118 +113,85 @@
   stroke: #e53935; // червоний
 }
 
-/* === MAIN CALORIES CARD === */
 
-.stat-card--main {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-
-  padding: 20px;
-  background: var(--color-surface);
-
-  border-radius: 20px;
-  border: 1px solid var(--color-border);
-}
-
-.stat-card__chart {
-  width: 64px;
-  height: 64px;
-  flex-shrink: 0;
-
-  svg {
-    width: 100%;
-    height: 100%;
-  }
-}
-
-.stat-card__title {
-  font-size: 14px;
-  font-weight: 600;
-}
-
-.stat-card__value {
-  font-size: 16px;
-  font-weight: 700;
-}
-
-/* === MACROS === */
-
-.macros-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.macro-item {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-
-  padding: 10px 16px;
-  background: var(--color-surface);
-
-  border-radius: 16px;
-  border: 1px solid var(--color-border);
-}
-
-.macro-item__chart {
-  width: 48px;
-  height: 48px;
-  flex-shrink: 0;
-
-  svg {
-    width: 100%;
-    height: 100%;
-  }
-}
-
-.macro-item__label {
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--color-text-secondary);
-}
-
-.macro-item__value {
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--color-text-primary);
-}
-
-.stat-card--main,
-.macro-item {
-  @extend %premium-card;
-}
 
 /* =============================================================
-   4 КОЛОНКА — WATER SIDEBAR (PREMIUM HEALTH APP)
+   WATER COLUMN — компактна, з числом зверху і кнопками внизу
    ============================================================= */
+
+.water-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  align-items: center;
+}
+
+/* === ЗАГОЛОВОК КОЛОНКИ === */
+
+.water-section__title {
+  font-family: var(--font-heading);
+  font-size: 14px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--color-text-secondary);
+  margin: 0;
+  text-align: center;
+}
+
+/* === ЧИСЛО ЗВЕРХУ КАПСУЛИ === */
+
+.water-meter__display {
+  text-align: center;
+  font-family: var(--font-heading);
+  margin-bottom: var(--space-xs);
+
+  &-current {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--color-text-primary);
+    line-height: 1.1;
+  }
+
+  &-norm {
+    display: block;
+    margin-top: 2px;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--color-text-secondary);
+    letter-spacing: 0.04em;
+  }
+}
+
+/* === КАПСУЛА (СКЛЯНКА) === */
 
 .water-meter__glass {
   position: relative;
   width: 100%;
-  height: min(320px, calc(100vh - 360px));
+  max-width: 100px;
+  height: 240px;
 
-  border-radius: 999px;
+  // Менш кругла, як на макеті
+  border-radius: 28px;
   overflow: hidden;
 
   display: flex;
   align-items: center;
   justify-content: center;
 
-  // Скляна капсула — світла бірюзова з натяком на вміст
-  background: linear-gradient(180deg, rgba(240, 250, 247, 0.75) 0%, rgba(210, 240, 232, 0.55) 100%);
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.55) 0%,
+    rgba(220, 240, 232, 0.4) 100%
+  );
   border: 1px solid var(--color-border);
 
-  // Скляний ефект — внутрішня блискавка зверху + м'яка тінь знизу
   box-shadow:
-    inset 0 -10px 20px rgba(40, 110, 95, 0.08),
-    0 12px 32px rgba(15, 60, 50, 0.12),
-    0 2px 6px rgba(15, 60, 50, 0.06);
+    inset 0 -8px 16px rgba(40, 110, 95, 0.06),
+    var(--shadow-1);
 }
 
-/* === WATER FILL === */
+/* === ЗАПОВНЕННЯ ВОДОЮ === */
 
 .water-meter__fill {
   position: absolute;
@@ -233,26 +200,20 @@
   height: var(--level, 0%);
   z-index: 1;
 
-  // Морська бірюза — холодніша і світліша за фон, але того ж сімейства
   background: linear-gradient(
     180deg,
     #b6e4dc 0%,
-    // світла поверхня
     #7ec9bb 50%,
-    // основна морська бірюза
-    #5cb3a2 100% // глибше знизу
+    #5cb3a2 100%
   );
 
-  border-radius: 999px 999px 0 0;
+  border-radius: 28px 28px 0 0;
   transition: height 0.7s cubic-bezier(0.4, 0, 0.2, 1);
 
-  // Меніск зверху — світла "плівка" поверхні води
   box-shadow:
     inset 0 6px 10px rgba(255, 255, 255, 0.45),
-    inset 0 -8px 14px rgba(40, 110, 95, 0.15),
-    0 -2px 8px rgba(182, 228, 220, 0.4);
+    inset 0 -8px 14px rgba(40, 110, 95, 0.15);
 
-  // Легка анімація колихання поверхні води
   &::before {
     content: '';
     position: absolute;
@@ -283,124 +244,89 @@
   }
 }
 
-/* === VERTICAL VALUE TEXT === */
-
+/* Прибираємо вертикальний текст всередині — тепер число зверху */
 .water-meter__value {
-  position: relative;
-
-  // Вода має z-index: 1, нам треба бути ВИЩЕ води
-  z-index: 2;
-
-  transform: rotate(-90deg);
-
-  font-size: 11px;
-  font-weight: 800;
-  white-space: nowrap;
-  letter-spacing: 0.05em;
-
-  // Використовуємо токен — адаптивно до теми
-  color: var(--water-text);
-  
-
-  // Білий halo для читабельності на воді
-  text-shadow:
-    0 0 6px rgba(255, 255, 255, 0.95),
-    0 0 12px rgba(255, 255, 255, 0.6);
-
-  pointer-events: none;
+  display: none;
 }
 
-/* ================= ACTION BUTTONS ================= */
+/* === КНОПКИ ДОДАВАННЯ ВОДИ === */
 
 .water-actions {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--space-xs);
   width: 100%;
-  margin-top: 12px;
+  margin-top: var(--space-sm);
 }
 
 .water-btn {
   width: 100%;
-  height: 52px;
+  height: 44px;
 
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 4px;
+  gap: var(--space-xs);
 
-  // Біла капсула з бірюзовим hover — гармонує з водою
-  background: rgba(255, 255, 255, 0.7);
+  background: var(--color-surface);
   border: 1px solid var(--color-border);
-  border-radius: 14px;
+  border-radius: var(--radius-pill);
 
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-
-  box-shadow:
-    0 4px 12px rgba(15, 60, 50, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.9);
-
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.water-btn:hover {
-  background: rgba(230, 245, 240, 0.95);
-  border-color: var(--color-accent);
-  transform: translateY(-2px);
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.05);
-}
-
-.water-btn:active {
-  transform: translateY(0);
-}
-
-/* IMPORTANT: JS SAFE */
-.water-btn svg {
-  width: 22px;
-  height: 22px;
-  color: #2d7a68;
-  transition: all 0.3s ease;
-  filter: drop-shadow(0 1px 2px rgba(45, 122, 104, 0.25));
-}
-
-.water-btn:hover svg {
-  color: #1f5d4f;
-  transform: translateY(-2px);
-}
-
-.water-btn__text {
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  color: #1a3d28;
-}
-
-/* ================= RESET ================= */
-
-.water-reset-btn {
-  margin-top: 6px;
-
-  background: none;
-  border: none;
-
-  font-size: 9px;
-  letter-spacing: 0.12em;
-  color: #1a3d28;
-  opacity: 0.5;
+  color: var(--color-text-primary);
+  font-size: 13px;
+  font-weight: 600;
 
   cursor: pointer;
   transition:
-    opacity 0.2s ease,
-    color 0.2s ease;
+    background-color var(--duration-base) var(--ease-out),
+    border-color var(--duration-base) var(--ease-out),
+    transform var(--duration-fast) var(--ease-out);
+
+  svg {
+    width: 14px;
+    height: 14px;
+    color: var(--color-accent);
+    flex-shrink: 0;
+  }
+
+  &:hover {
+    background: var(--color-accent-soft);
+    border-color: var(--color-accent);
+    transform: translateY(-1px);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+}
+
+.water-btn__text {
+  font-weight: 700;
+}
+
+/* === КНОПКА СКИНУТИ === */
+
+.water-reset-btn {
+  margin-top: var(--space-xs);
+  background: none;
+  border: none;
+
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  color: var(--color-text-secondary);
+  opacity: 0.6;
+
+  cursor: pointer;
+  transition:
+    opacity var(--duration-base) var(--ease-out),
+    color var(--duration-base) var(--ease-out);
 
   &:hover {
     opacity: 1;
     color: #c25c5c;
   }
 }
+
 /* =============================================================
    ТВОЯ ПАЛІТРА КОЛЬОРІВ — ПІДСИЛЕНА, АЛЕ ТА САМА ГАМА
    ============================================================= */
