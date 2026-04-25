@@ -28,8 +28,8 @@
 
     .layout {
       flex: 0 1 auto;
-      grid-template-columns: 240px minmax(0, 540px) 100px 260px;
-      gap: 14px;
+      grid-template-columns: 240px minmax(0, 620px) 88px 270px;
+      gap: 10px;
       align-items: start;
       justify-content: center;
       height: auto;
@@ -52,25 +52,28 @@
 
     .water-sidebar {
       gap: 6px;
-      padding: 10px;
+      padding: 10px 8px;
     }
 
     .water-meter__glass {
-      height: 135px;
+      width: 42px;
+      height: 150px;
+      max-width: 42px;
     }
 
     .water-actions {
-      gap: 8px;
-      margin-top: 8px;
+      gap: 4px;
+      margin-top: 6px;
     }
 
     .water-btn {
-      height: 34px;
+      height: 28px;
+      font-size: 12px;
     }
 
     .water-reset-btn {
-      margin-top: 2px;
-      font-size: 10px;
+      margin-top: 0;
+      font-size: 9px;
       line-height: 1.2;
     }
 
@@ -87,8 +90,8 @@
 @media (min-width: 1025px) and (max-width: 1279px) {
   .page--day-menu {
     .layout {
-      grid-template-columns: 220px minmax(0, 1fr) 90px 220px;
-      gap: 14px;
+      grid-template-columns: 220px minmax(0, 1fr) 82px 230px;
+      gap: 10px;
     }
   }
 }
@@ -470,7 +473,7 @@
 
 .menu-card {
   @extend %premium-card;
-  padding: 20px 18px 0;
+  padding: 22px 18px 0;
   overflow: hidden;
   width: 100%;
   min-height: 0;
@@ -519,8 +522,8 @@
     align-items: center;
     gap: 12px;
 
-    min-height: 56px;
-    padding: 10px 0;
+    min-height: 58px;
+    padding: 11px 0;
     cursor: pointer;
     user-select: none;
 
