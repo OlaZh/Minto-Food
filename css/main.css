@@ -4036,7 +4036,6 @@ textarea {
   }
   .page--day-menu .layout:has(.meal.is-open) {
     flex: 1 1 auto;
-    align-items: stretch;
   }
   .page--day-menu .main {
     height: auto;
