@@ -484,33 +484,25 @@
   &__recipes {
     list-style: none;
     margin: 0;
-    padding: 0;
+    padding: var(--space-xs) var(--space-lg) var(--space-md);
     display: flex;
     flex-direction: column;
     gap: 10px;
 
-    // За замовчуванням згорнуто
-    max-height: 0;
+    height: 0;
     overflow: hidden;
     opacity: 0;
-    padding-top: 0;
-    padding-bottom: 0;
-    padding-left: var(--space-lg);
-    padding-right: var(--space-lg);
 
     transition:
-      max-height 0.35s var(--ease-smooth),
-      opacity 0.25s var(--ease-out),
-      padding 0.3s var(--ease-out);
+      height 0.22s cubic-bezier(0.25, 0, 0, 1),
+      opacity 0.16s ease-out;
   }
 
   /* === РОЗГОРНУТИЙ СТАН === */
   &.is-open {
     .meal__recipes {
-      max-height: 1000px; // достатньо для будь-якої кількості страв
       opacity: 1;
-      padding-top: var(--space-xs);
-      padding-bottom: var(--space-md);
+      // height задається через JS
     }
 
     .meal__header {

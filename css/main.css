@@ -4369,27 +4369,20 @@ textarea {
 .meal__recipes {
   list-style: none;
   margin: 0;
-  padding: 0;
+  padding: var(--space-xs) var(--space-lg) var(--space-md);
   display: flex;
   flex-direction: column;
   gap: 10px;
-  max-height: 0;
+  height: 0;
   overflow: hidden;
   opacity: 0;
-  padding-top: 0;
-  padding-bottom: 0;
-  padding-left: var(--space-lg);
-  padding-right: var(--space-lg);
-  transition: max-height 0.35s var(--ease-smooth), opacity 0.25s var(--ease-out), padding 0.3s var(--ease-out);
+  transition: height 0.22s cubic-bezier(0.25, 0, 0, 1), opacity 0.16s ease-out;
 }
 .meal {
   /* === РОЗГОРНУТИЙ СТАН === */
 }
 .meal.is-open .meal__recipes {
-  max-height: 1000px;
   opacity: 1;
-  padding-top: var(--space-xs);
-  padding-bottom: var(--space-md);
 }
 .meal.is-open .meal__header {
   border-bottom: 1px solid var(--color-border);

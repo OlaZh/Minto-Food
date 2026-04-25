@@ -9,12 +9,31 @@ document.addEventListener('DOMContentLoaded', () => {
 
   meals.forEach((meal) => {
     const header = meal.querySelector('.meal__header');
-    if (!header) return;
+    const recipes = meal.querySelector('.meal__recipes');
+    if (!header || !recipes) return;
 
-    // Toggle аккордеону при кліку (крім кнопки +)
     header.addEventListener('click', (e) => {
       if (e.target.closest('.meal__add')) return;
-      meal.classList.toggle('is-open');
+
+      if (meal.classList.contains('is-open')) {
+        // Закриваємо: фіксуємо поточну висоту → анімуємо до 0
+        recipes.style.height = recipes.scrollHeight + 'px';
+        meal.classList.remove('is-open');
+        requestAnimationFrame(() => {
+          recipes.style.height = '0px';
+        });
+      } else {
+        // Відкриваємо: додаємо клас → вимірюємо → анімуємо до реальної висоти
+        meal.classList.add('is-open');
+        const targetHeight = recipes.scrollHeight;
+        recipes.style.height = '0px';
+        requestAnimationFrame(() => {
+          recipes.style.height = targetHeight + 'px';
+        });
+        recipes.addEventListener('transitionend', () => {
+          recipes.style.height = 'auto';
+        }, { once: true });
+      }
     });
   });
 
