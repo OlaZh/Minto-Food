@@ -4003,6 +4003,33 @@ textarea {
 }
 
 /* ================= DAY WEEK NAV ================= */
+@media (min-width: 1025px) {
+  .page--day-menu {
+    height: 100dvh;
+    overflow: hidden;
+  }
+  .page--day-menu .app-bg {
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+  }
+  .page--day-menu .app-shell,
+  .page--day-menu .container {
+    height: 100%;
+  }
+  .page--day-menu .container {
+    display: flex;
+    flex-direction: column;
+  }
+  .page--day-menu .day-week-nav {
+    flex: 0 0 auto;
+  }
+  .page--day-menu .layout {
+    flex: 1 1 auto;
+    height: auto;
+    min-height: 0;
+  }
+}
 .day-week-nav {
   display: flex;
   align-items: center;
@@ -4318,7 +4345,8 @@ textarea {
   padding: 0;
   overflow: hidden;
   width: 100%;
-  flex: 1;
+  min-height: 100%;
+  flex: 0 0 auto;
   display: flex;
   flex-direction: column;
 }

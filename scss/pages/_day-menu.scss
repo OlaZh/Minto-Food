@@ -1,5 +1,38 @@
 /* ================= DAY WEEK NAV ================= */
 
+@media (min-width: 1025px) {
+  .page--day-menu {
+    height: 100dvh;
+    overflow: hidden;
+
+    .app-bg {
+      flex: 1;
+      min-height: 0;
+      overflow: hidden;
+    }
+
+    .app-shell,
+    .container {
+      height: 100%;
+    }
+
+    .container {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .day-week-nav {
+      flex: 0 0 auto;
+    }
+
+    .layout {
+      flex: 1 1 auto;
+      height: auto;
+      min-height: 0;
+    }
+  }
+}
+
 .day-week-nav {
   display: flex;
   align-items: center;
@@ -380,7 +413,8 @@
   padding: 0;
   overflow: hidden;
   width: 100%;
-  flex: 1;
+  min-height: 100%;
+  flex: 0 0 auto;
   display: flex;
   flex-direction: column;
 
