@@ -232,8 +232,9 @@
 
             <!-- CENTER: Meals -->
             <main class="main">
-              <!-- <h1 class="meal-section__title" data-i18n="dayMenuTitle">Прийоми їжі</h1> -->
-              <section class="day-menu">
+              <div class="menu-card">
+                <h2 class="menu-card__title" data-i18n="dayMenuTitle">Прийоми їжі</h2>
+                <section class="day-menu">
                 <article class="meal" data-meal="breakfast">
                   <div class="meal__header">
                     <h2 class="meal__title" data-i18n="breakfast">Сніданок</h2>
@@ -294,6 +295,7 @@
                 <span class="day-summary__label" data-i18n="dayTotal">Разом за день</span>
                 <span class="day-summary__value">0 ккал · Б 0 · Ж 0 · В 0</span>
               </section>
+              </div>
             </main>
 
             <!-- ===== WATER COLUMN ===== -->
@@ -433,7 +435,7 @@
                       Скопіювати день
                     </button>
                     <button
-                      class="day-quick-btn 
+                      class="day-quick-btn"
                       id="insertDayBtn"
                       data-i18n="insertDay">
                       Вставити день

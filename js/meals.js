@@ -3,7 +3,7 @@ import { i18n } from './i18n.js';
 import { supabase } from './supabaseClient.js';
 import { initAuth, requireAuth } from './auth.js';
 import { initBarcodeScanner, closeScanner } from './barcode-scanner.js';
-import { getLocalDateString } from './utils.js';
+import { getLocalDateString, showToast } from './utils.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
   let currentSelectedDate = getLocalDateString();
@@ -192,6 +192,77 @@ document.addEventListener('DOMContentLoaded', async () => {
       });
       renderSummary();
       saveMealsToStorage();
+    }
+  }
+
+  function copyDay() {
+    const snapshot = JSON.parse(JSON.stringify(mealsState));
+    const hasItems = Object.values(snapshot).some((arr) => arr.length > 0);
+    if (!hasItems) {
+      showToast('Немає страв для копіювання', 'info');
+      return;
+    }
+    localStorage.setItem('copied_day', JSON.stringify(snapshot));
+    showToast('День скопійовано ✓');
+  }
+
+  async function pasteDay() {
+    if (!requireAuth()) return;
+
+    const saved = localStorage.getItem('copied_day');
+    if (!saved) {
+      showToast('Немає скопійованого дня', 'info');
+      return;
+    }
+
+    const copiedMeals = JSON.parse(saved);
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    // Видаляємо поточний день
+    let deleteQuery = supabase.from('meals').delete().eq('date', currentSelectedDate);
+    if (user) {
+      deleteQuery = deleteQuery.eq('user_id', user.id);
+    } else {
+      deleteQuery = deleteQuery.is('user_id', null);
+    }
+    const { error: deleteError } = await deleteQuery;
+    if (deleteError) {
+      showToast('Помилка вставки', 'error');
+      return;
+    }
+
+    // Вставляємо скопійовані страви
+    const rows = [];
+    Object.entries(copiedMeals).forEach(([mealType, items]) => {
+      items.forEach((item) => {
+        rows.push({
+          meal_type: mealType,
+          name: item.name,
+          weight: item.weight,
+          kcal: item.kcal,
+          protein: item.protein,
+          fat: item.fat,
+          carbs: item.carbs,
+          date: currentSelectedDate,
+          user_id: user ? user.id : null,
+        });
+      });
+    });
+
+    if (rows.length === 0) {
+      showToast('Скопійований день порожній', 'info');
+      return;
+    }
+
+    const { error: insertError } = await supabase.from('meals').insert(rows);
+    if (!insertError) {
+      await loadMealsFromSupabase(currentSelectedDate);
+      showToast('День вставлено ✓');
+    } else {
+      showToast('Помилка вставки', 'error');
     }
   }
 
@@ -909,6 +980,16 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   closeBtn.addEventListener('click', closeModal);
   overlay.addEventListener('click', closeModal);
+
+  const copyBtn = document.getElementById('copyDayBtn');
+  if (copyBtn) {
+    copyBtn.addEventListener('click', copyDay);
+  }
+
+  const insertBtn = document.getElementById('insertDayBtn');
+  if (insertBtn) {
+    insertBtn.addEventListener('click', pasteDay);
+  }
 
   const clearBtn = document.getElementById('clearDayBtn');
   if (clearBtn) {

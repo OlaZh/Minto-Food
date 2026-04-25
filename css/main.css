@@ -85,10 +85,6 @@
 }
 /* ---- DAY MENU (index.html) ---- */
 @media (max-width: 768px) {
-  .meal {
-    padding: 12px 16px;
-    border-radius: 16px;
-  }
   .meal__header {
     font-size: 14px;
   }
@@ -455,7 +451,7 @@ textarea {
 }
 
 .macros-card,
-.quick-actions-card, .meal, .streak-card, .day-ring-card, .card {
+.quick-actions-card, .menu-card, .streak-card, .day-ring-card, .card {
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
@@ -463,7 +459,7 @@ textarea {
   transition: box-shadow var(--duration-base) var(--ease-out), transform var(--duration-base) var(--ease-out), border-color var(--duration-base) var(--ease-out);
 }
 .macros-card:hover,
-.quick-actions-card:hover, .meal:hover, .streak-card:hover, .day-ring-card:hover, .card:hover {
+.quick-actions-card:hover, .streak-card:hover, .day-ring-card:hover, .card:hover {
   box-shadow: var(--shadow-2);
   transform: translateY(-2px);
 }
@@ -945,7 +941,6 @@ textarea {
   display: flex;
   flex-direction: column;
   gap: var(--space-md);
-  align-self: start;
 }
 
 .sidebar__days {
@@ -1001,11 +996,11 @@ textarea {
    RIGHT SIDEBAR — СТАТИСТИКА
    ============================================================= */
 .right-sidebar {
-  align-self: start;
+  align-self: stretch;
 }
 
 .right-sidebar__inner {
-  top: calc(var(--header-height, 60px) + 20px);
+  height: 100%;
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -4108,16 +4103,16 @@ textarea {
   flex-direction: column;
   align-items: center;
   gap: var(--space-sm);
-  flex: 1;
+  flex: 2;
+  justify-content: space-between;
 }
 .day-ring-card__date {
-  font-size: 11px;
-  font-weight: 600;
+  font-size: 14px;
+  font-weight: 800;
   color: var(--color-text-secondary);
   text-align: center;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  margin: 0 0 var(--space-xxs);
 }
 .day-ring-card__ring-wrap {
   position: relative;
@@ -4205,18 +4200,25 @@ textarea {
 .streak-card {
   padding: var(--space-md) var(--space-lg);
   display: flex;
+  flex-direction: column;
   align-items: center;
+  justify-content: center;
   gap: var(--space-md);
+  flex: 1;
 }
 .streak-card__flame {
   font-size: 28px;
   line-height: 1;
   flex-shrink: 0;
+  display: flex;
+  justify-content: center;
 }
 .streak-card__body {
   display: flex;
   flex-direction: column;
   gap: 2px;
+  align-items: center;
+  text-align: center;
 }
 .streak-card__count {
   font-family: var(--font-heading);
@@ -4264,15 +4266,33 @@ textarea {
     transform: scale(1.15);
   }
 }
+/* ================= MENU CARD (спільна обгортка) ================= */
+.menu-card {
+  padding: 0;
+  overflow: hidden;
+  width: 100%;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+.menu-card__title {
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--color-text-secondary);
+  text-align: center;
+  margin: 0;
+  padding: var(--space-lg) var(--space-lg);
+  border-bottom: 1px solid var(--color-border);
+}
+
 /* ================= DAY MENU ================= */
 .day-menu {
   display: flex;
   flex-direction: column;
-  gap: 4px;
   width: 100%;
-  max-width: 560px;
-  margin: 0 auto;
-  box-sizing: border-box;
 }
 
 /* ================= MEAL BLOCK (АККОРДЕОН) ================= */
@@ -4281,10 +4301,11 @@ textarea {
   box-sizing: border-box;
   padding: 0;
   overflow: hidden;
-  transition: all 0.3s ease;
+  border-bottom: 1px solid var(--color-border);
+  transition: background-color 0.2s ease;
 }
 .meal:hover {
-  border-color: var(--color-accent-soft);
+  background: var(--color-bg-hover);
 }
 .meal {
   /* === HEADER (КЛІКАБЕЛЬНИЙ ТРИГЕР) === */
@@ -4434,11 +4455,10 @@ textarea {
   justify-content: space-between;
   gap: var(--space-md);
   width: 100%;
-  margin-top: var(--space-lg);
+  margin-top: auto;
   padding: var(--space-md) var(--space-lg);
   background: transparent;
   border: none;
-  border-top: 1px solid var(--color-border);
   border-radius: 0;
   box-shadow: none;
   font-size: 14px;
@@ -4462,6 +4482,8 @@ textarea {
 .meal__add {
   width: 36px;
   height: 36px;
+  margin-left: auto;
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -4638,6 +4660,7 @@ textarea {
   display: flex;
   flex-direction: column;
   gap: var(--space-sm);
+  flex: 1;
 }
 .macros-card__title,
 .quick-actions-card__title {
