@@ -483,7 +483,7 @@ textarea {
   display: grid;
   grid-template-columns: 240px minmax(420px, 1fr) 120px 240px;
   gap: 20px;
-  align-items: start;
+  align-items: stretch;
 }
 
 /* =============================================================
@@ -1044,12 +1044,12 @@ textarea {
 .water-sidebar {
   display: flex;
   flex-direction: column;
-  gap: var(--space-md);
+  gap: var(--space-xxs);
   align-items: center;
   background: var(--color-surface);
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  padding: var(--space-md);
+  border-radius: var(--radius-sm);
+  padding: var(--space-sm);
 }
 
 /* === ЗАГОЛОВОК КОЛОНКИ === */
@@ -1079,7 +1079,7 @@ textarea {
 .water-meter__display-norm {
   display: block;
   margin-top: 2px;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 500;
   color: var(--color-text-secondary);
   letter-spacing: 0.04em;
@@ -1089,9 +1089,9 @@ textarea {
 .water-meter__glass {
   position: relative;
   width: 100%;
-  max-width: 64px;
-  height: 260px;
-  border-radius: 28px;
+  max-width: 60px;
+  height: 200px;
+  border-radius: 16px;
   overflow: hidden;
   display: flex;
   align-items: center;
@@ -1109,7 +1109,7 @@ textarea {
   height: var(--level, 0%);
   z-index: 1;
   background: linear-gradient(180deg, #b6e4dc 0%, #7ec9bb 50%, #5cb3a2 100%);
-  border-radius: 28px 28px 0 0;
+  border-radius: 16px 16px 0 0;
   transition: height 0.7s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: inset 0 6px 10px rgba(255, 255, 255, 0.45), inset 0 -8px 14px rgba(40, 110, 95, 0.15);
 }
@@ -1158,7 +1158,7 @@ textarea {
   gap: var(--space-xs);
   background: var(--color-surface);
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-pill);
+  border-radius: var(--radius-sm);
   color: var(--color-text-primary);
   font-size: 13px;
   font-weight: 600;
@@ -4108,6 +4108,7 @@ textarea {
   flex-direction: column;
   align-items: center;
   gap: var(--space-sm);
+  flex: 1;
 }
 .day-ring-card__date {
   font-size: 11px;
@@ -4267,7 +4268,7 @@ textarea {
 .day-menu {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 4px;
   width: 100%;
   max-width: 560px;
   margin: 0 auto;
@@ -4636,7 +4637,7 @@ textarea {
   padding: var(--space-lg) var(--space-md);
   display: flex;
   flex-direction: column;
-  gap: var(--space-md);
+  gap: var(--space-sm);
 }
 .macros-card__title,
 .quick-actions-card__title {

@@ -13,7 +13,7 @@
   display: grid;
   grid-template-columns: 240px minmax(420px, 1fr) 120px 240px;
   gap: 20px;
-  align-items: start; 
+  align-items: stretch;
 }
 
 /* =============================================================

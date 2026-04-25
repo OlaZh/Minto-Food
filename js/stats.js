@@ -32,6 +32,7 @@ const cBarEl = document.getElementById('cBar');
 
 // Water UI Elements
 const waterValueEl = document.getElementById('currentWaterText');
+const waterNormEl = document.getElementById('waterNormText');
 const waterFillEl = document.getElementById('waterFill');
 
 // ===============================
@@ -106,7 +107,8 @@ export function updateStats(consumed) {
   setCirclePercent(cCircleEl, carbs, carbsNorm);
 
   // Macro progress bars
-  if (pBarEl) pBarEl.style.width = `${proteinNorm ? Math.min((protein / proteinNorm) * 100, 100) : 0}%`;
+  if (pBarEl)
+    pBarEl.style.width = `${proteinNorm ? Math.min((protein / proteinNorm) * 100, 100) : 0}%`;
   if (fBarEl) fBarEl.style.width = `${fatNorm ? Math.min((fat / fatNorm) * 100, 100) : 0}%`;
   if (cBarEl) cBarEl.style.width = `${carbsNorm ? Math.min((carbs / carbsNorm) * 100, 100) : 0}%`;
 }
@@ -130,9 +132,13 @@ export function updateWaterUI(currentLiters) {
     waterFillEl.style.setProperty('--level', `${visualPercent}%`);
   }
 
+  // СТАЛО:
   if (waterValueEl) {
-    waterValueEl.textContent = `${liters.toFixed(2)} / ${waterNorm.toFixed(1)} L`;
+    waterValueEl.textContent = liters.toFixed(2);
     waterValueEl.style.opacity = liters > 0 ? '1' : '0.5';
+  }
+  if (waterNormEl) {
+    waterNormEl.textContent = `з ${waterNorm.toFixed(1)} л`;
   }
 }
 
