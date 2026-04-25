@@ -27,20 +27,52 @@
     }
 
     .layout {
-      flex: 1 1 auto;
+      flex: 0 1 auto;
       grid-template-columns: 240px minmax(0, 540px) 100px 260px;
       gap: 14px;
+      align-items: start;
       justify-content: center;
       height: auto;
       min-height: 0;
+
+      &:has(.meal.is-open) {
+        flex: 1 1 auto;
+        align-items: stretch;
+      }
     }
 
     .main {
+      height: auto;
       overflow-y: hidden;
 
       &:has(.meal.is-open) {
+        height: 100%;
         overflow-y: auto;
       }
+    }
+
+    .water-sidebar {
+      gap: 6px;
+      padding: 10px;
+    }
+
+    .water-meter__glass {
+      height: 135px;
+    }
+
+    .water-actions {
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .water-btn {
+      height: 34px;
+    }
+
+    .water-reset-btn {
+      margin-top: 2px;
+      font-size: 10px;
+      line-height: 1.2;
     }
   }
 }
@@ -434,7 +466,7 @@
   padding: 20px 18px 0;
   overflow: hidden;
   width: 100%;
-  min-height: 100%;
+  min-height: 0;
   flex: 0 0 auto;
   display: flex;
   flex-direction: column;

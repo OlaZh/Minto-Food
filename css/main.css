@@ -4026,18 +4026,44 @@ textarea {
     padding: 14px 0 12px;
   }
   .page--day-menu .layout {
-    flex: 1 1 auto;
+    flex: 0 1 auto;
     grid-template-columns: 240px minmax(0, 540px) 100px 260px;
     gap: 14px;
+    align-items: start;
     justify-content: center;
     height: auto;
     min-height: 0;
   }
+  .page--day-menu .layout:has(.meal.is-open) {
+    flex: 1 1 auto;
+    align-items: stretch;
+  }
   .page--day-menu .main {
+    height: auto;
     overflow-y: hidden;
   }
   .page--day-menu .main:has(.meal.is-open) {
+    height: 100%;
     overflow-y: auto;
+  }
+  .page--day-menu .water-sidebar {
+    gap: 6px;
+    padding: 10px;
+  }
+  .page--day-menu .water-meter__glass {
+    height: 135px;
+  }
+  .page--day-menu .water-actions {
+    gap: 8px;
+    margin-top: 8px;
+  }
+  .page--day-menu .water-btn {
+    height: 34px;
+  }
+  .page--day-menu .water-reset-btn {
+    margin-top: 2px;
+    font-size: 10px;
+    line-height: 1.2;
   }
 }
 @media (min-width: 1025px) and (max-width: 1279px) {
@@ -4361,7 +4387,7 @@ textarea {
   padding: 20px 18px 0;
   overflow: hidden;
   width: 100%;
-  min-height: 100%;
+  min-height: 0;
   flex: 0 0 auto;
   display: flex;
   flex-direction: column;
