@@ -11,7 +11,7 @@ import {
   clearIngredients,
   setLanguage,
 } from './recipe-ingredients.js';
-import { showToast, toBase64 } from './utils.js';
+import { showToast, toBase64, setInputVal } from './utils.js';
 import {
   initBookSelector,
   getBooks,
@@ -401,18 +401,14 @@ async function showRecipeForm(data = null) {
   createInlineBookSelector('rm-book-selector');
 
   if (data) {
-    const setVal = (id, val) => {
-      const el = document.getElementById(id);
-      if (el) el.value = val || '';
-    };
-    setVal('rm-name', data.name || data.title);
-    setVal('rm-calories', data.kcal || data.calories);
-    setVal('rm-proteins', data.proteins || data.protein);
-    setVal('rm-fats', data.fats || data.fat);
-    setVal('rm-carbs', data.carbs);
-    setVal('rm-steps', data.steps);
-    setVal('rm-category', data.category || 'lunch');
-    setVal('rm-image-url', data.image);
+    setInputVal('rm-name', data.name || data.title);
+    setInputVal('rm-calories', data.kcal || data.calories);
+    setInputVal('rm-proteins', data.proteins || data.protein);
+    setInputVal('rm-fats', data.fats || data.fat);
+    setInputVal('rm-carbs', data.carbs);
+    setInputVal('rm-steps', data.steps);
+    setInputVal('rm-category', data.category || 'lunch');
+    setInputVal('rm-image-url', data.image);
   }
 }
 

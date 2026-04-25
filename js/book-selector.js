@@ -3,7 +3,7 @@
 // =============================================================
 
 import { supabase } from './supabaseClient.js';
-import { showToast } from './utils.js';
+import { showToast, escapeHTML } from './utils.js';
 
 // =============================================================
 // СТАН
@@ -263,7 +263,7 @@ function renderBooksList(showAll = false) {
     <label class="book-selector__item ${book.is_default ? 'book-selector__item--default' : ''}">
       <input type="checkbox" value="${book.id}" ${book.is_default ? 'checked' : ''}>
       <span class="book-selector__icon">${book.icon || '📖'}</span>
-      <span class="book-selector__name">${escapeHtml(book.name)}</span>
+      <span class="book-selector__name">${escapeHTML(book.name)}</span>
       ${book.is_default ? '<span class="book-selector__badge">Головна</span>' : ''}
     </label>
   `,
@@ -344,7 +344,7 @@ export function createInlineBookSelector(containerId, preselectedBookIds = []) {
             <input type="checkbox" name="recipe_books" value="${book.id}" 
               ${defaultSelected.includes(book.id) ? 'checked' : ''}>
             <span class="inline-book-selector__icon">${book.icon || '📖'}</span>
-            <span class="inline-book-selector__name">${escapeHtml(book.name)}</span>
+            <span class="inline-book-selector__name">${escapeHTML(book.name)}</span>
           </label>
         `,
           )
@@ -385,7 +385,7 @@ function showFullBookSelector(containerId, currentSelection) {
             <input type="checkbox" name="recipe_books" value="${book.id}"
               ${currentSelection.includes(book.id) ? 'checked' : ''}>
             <span class="inline-book-selector__icon">${book.icon || '📖'}</span>
-            <span class="inline-book-selector__name">${escapeHtml(book.name)}</span>
+            <span class="inline-book-selector__name">${escapeHTML(book.name)}</span>
             ${book.is_default ? '<span class="inline-book-selector__badge">★</span>' : ''}
           </label>
         `,
@@ -410,17 +410,6 @@ export function getSelectedBooksFromContainer(containerId) {
 
   const checkboxes = container.querySelectorAll('input[name="recipe_books"]:checked');
   return Array.from(checkboxes).map((cb) => parseInt(cb.value));
-}
-
-// =============================================================
-// УТИЛІТИ
-// =============================================================
-
-function escapeHtml(text) {
-  if (!text) return '';
-  const div = document.createElement('div');
-  div.textContent = text;
-  return div.innerHTML;
 }
 
 // =============================================================

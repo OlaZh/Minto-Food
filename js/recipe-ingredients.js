@@ -144,10 +144,6 @@ async function loadProductsCache() {
       .select('product_id, unit_type, size, grams');
 
     productUnitsCache = units || [];
-
-    console.log(
-      `Завантажено ${productsCache.length} продуктів, ${productUnitsCache.length} одиниць`,
-    );
   } catch (error) {
     console.error('Помилка завантаження кешу:', error);
   }

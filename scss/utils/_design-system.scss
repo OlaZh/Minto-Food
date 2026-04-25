@@ -347,7 +347,30 @@
 }
 
 // ============================================================
-//  6. RING (hero circular progress)
+//  6. CARD (base surface for all content blocks)
+// ============================================================
+
+// Базова "преміум" картка — поверхня з бордером, тінню і hover-підйомом
+// Приклад: day-ring-card, streak-card, macros-card, meal-block
+%premium-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-1);
+
+  transition:
+    box-shadow var(--duration-base) var(--ease-out),
+    transform var(--duration-base) var(--ease-out),
+    border-color var(--duration-base) var(--ease-out);
+
+  &:hover {
+    box-shadow: var(--shadow-2);
+    transform: translateY(-2px);
+  }
+}
+
+// ============================================================
+//  7. RING (hero circular progress)
 // ============================================================
 
 // Контейнер для великого кільця калорій — один на сторінку

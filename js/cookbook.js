@@ -2,7 +2,7 @@
 // Логіка сторінки "Книга рецептів"
 import { openAuthModal } from './auth.js';
 import { supabase } from './supabaseClient.js';
-import { showToast } from './utils.js';
+import { showToast, escapeHTML } from './utils.js';
 import { showConfirmModal } from './ui-components.js';
 
 // =====================================
@@ -287,7 +287,7 @@ async function createBookElement(book) {
     </div>
 
     <div class="cookbook-book__body">
-      <h3 class="cookbook-book__name">${escapeHtml(book.name)}</h3>
+      <h3 class="cookbook-book__name">${escapeHTML(book.name)}</h3>
       <div class="cookbook-book__meta">
         <span class="cookbook-book__count">${recipesLabel(recipeCount)}</span>
         <div class="cookbook-book__arrow">
@@ -600,7 +600,7 @@ function renderBookRecipes(recipes) {
         : '';
 
       const imageHtml = recipe.image
-        ? `<img src="${recipe.image}" alt="${escapeHtml(recipe.name_ua)}" loading="lazy">`
+        ? `<img src="${recipe.image}" alt="${escapeHTML(recipe.name_ua)}" loading="lazy">`
         : `<div class="cookbook-recipe-card__placeholder">🍽️</div>`;
 
       return `
@@ -616,7 +616,7 @@ function renderBookRecipes(recipes) {
             </button>
           </div>
           <div class="cookbook-recipe-card__body">
-            <h3 class="cookbook-recipe-card__title">${escapeHtml(recipe.name_ua)}</h3>
+            <h3 class="cookbook-recipe-card__title">${escapeHTML(recipe.name_ua)}</h3>
           </div>
         </article>
       `;
@@ -737,10 +737,10 @@ function renderNotes(notes) {
       (note) => `
     <article class="cookbook-note" data-note-id="${note.id}">
       <div class="cookbook-note__header">
-        <h4 class="cookbook-note__title">${escapeHtml(note.title)}</h4>
+        <h4 class="cookbook-note__title">${escapeHTML(note.title)}</h4>
         <span class="cookbook-note__date">${formatDate(note.created_at)}</span>
       </div>
-      <div class="cookbook-note__content">${escapeHtml(note.content || '').replace(/\n/g, '<br>')}</div>
+      <div class="cookbook-note__content">${escapeHTML(note.content || '').replace(/\n/g, '<br>')}</div>
       <div class="cookbook-note__actions">
         <button class="cookbook-note__edit" data-note-id="${note.id}" aria-label="Редагувати">
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -883,13 +883,6 @@ async function deleteNote(noteId) {
 // =====================================
 // УТИЛІТИ
 // =====================================
-
-function escapeHtml(text) {
-  if (!text) return '';
-  const div = document.createElement('div');
-  div.textContent = text;
-  return div.innerHTML;
-}
 
 function formatDate(dateStr) {
   if (!dateStr) return '';

@@ -1,5 +1,3 @@
-console.log('week-menu.js запустився');
-
 import { supabase } from './supabaseClient.js';
 import { i18n } from './i18n.js';
 import { initRecipeModal, openRecipeModal } from './recipe-modal.js';

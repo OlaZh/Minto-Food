@@ -200,7 +200,6 @@ function recordNewWeight() {
 // =====================================
 
 function initStatisticsCharts() {
-  console.log('Запускаємо initStatisticsCharts');
 
   Object.values(statisticsCharts).forEach((chart) => {
     if (chart) chart.destroy();
@@ -293,7 +292,6 @@ function initStatisticsCharts() {
     });
   }
 
-  console.log('initStatisticsCharts завершена успішно');
 }
 
 // =====================================

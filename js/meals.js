@@ -1,5 +1,3 @@
-console.log('meals.js запустився');
-
 import { updateStats, updateWaterUI } from './stats.js';
 import { i18n } from './i18n.js';
 import { supabase } from './supabaseClient.js';
@@ -828,9 +826,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const factor = grams / 100;
     const gramsLabel = lang === 'ua' ? 'гр' : lang === 'pl' ? 'g' : 'g';
+    const baseName = nameInput.value.trim() || selectedFood.name;
 
     const newItem = {
-      name: `${selectedFood.name} (${grams} ${gramsLabel})`,
+      name: `${baseName} (${grams} ${gramsLabel})`,
       weight: grams,
       kcal: Math.round(selectedFood.kcal * factor),
       protein: Number((selectedFood.protein * factor).toFixed(1)),
@@ -853,6 +852,25 @@ document.addEventListener('DOMContentLoaded', async () => {
       date: currentSelectedDate,
       user_id: user ? user.id : null,
     };
+
+    let error;
+
+    if (editingIndex !== null && selectedFood.id) {
+      let query = supabase.from('meals').update(payload).eq('id', selectedFood.id);
+      if (user) {
+        query = query.eq('user_id', user.id);
+      } else {
+        query = query.is('user_id', null);
+      }
+      ({ error } = await query);
+    } else {
+      ({ error } = await supabase.from('meals').insert([payload]));
+    }
+
+    if (!error) {
+      closeModal();
+      await loadMealsFromSupabase(currentSelectedDate);
+    }
   }
 
   // ================== EVENTS ==================

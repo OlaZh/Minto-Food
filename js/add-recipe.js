@@ -1,6 +1,6 @@
 import { supabase } from './supabaseClient.js';
 import { initAuth } from './auth.js';
-import { showToast, toBase64, parseNumber } from './utils.js';
+import { showToast, toBase64, parseNumber, setInputVal } from './utils.js';
 import {
   initBookSelector,
   quickSaveToDefault,
@@ -476,19 +476,14 @@ function editRecipe(recipe) {
     if (options) options.style.display = 'none';
     if (form) form.style.display = 'block';
 
-    const setVal = (id, val) => {
-      const el = document.getElementById(id);
-      if (el) el.value = val || '';
-    };
-
-    setVal('prev-name', name);
-    setVal('prev-calories', recipe.kcal);
-    setVal('prev-ingredients', recipe.ingredients);
-    setVal('prev-steps', recipe.steps);
-    setVal('prev-category', recipe.category);
-    setVal('prev-proteins', recipe.protein);
-    setVal('prev-carbs', recipe.carbs);
-    setVal('prev-fats', recipe.fat);
+    setInputVal('prev-name', name);
+    setInputVal('prev-calories', recipe.kcal);
+    setInputVal('prev-ingredients', recipe.ingredients);
+    setInputVal('prev-steps', recipe.steps);
+    setInputVal('prev-category', recipe.category);
+    setInputVal('prev-proteins', recipe.protein);
+    setInputVal('prev-carbs', recipe.carbs);
+    setInputVal('prev-fats', recipe.fat);
   }
 }
 
@@ -600,23 +595,18 @@ const showForm = (data = null) => {
       window.tempAiImage = data.image;
     }
 
-    const setVal = (id, val) => {
-      const el = document.getElementById(id);
-      if (el) el.value = val || '';
-    };
-
-    setVal('prev-name', data.name);
+    setInputVal('prev-name', data.name);
 
     const kcalVal = data.kcal || data.calories || '';
     const kcalInput = document.getElementById('prev-calories');
     if (kcalInput) kcalInput.value = kcalVal;
 
-    setVal('prev-ingredients', data.ingredients);
-    setVal('prev-steps', data.steps);
-    setVal('prev-category', data.category || 'breakfast');
-    setVal('prev-proteins', data.proteins || data.protein);
-    setVal('prev-carbs', data.carbs);
-    setVal('prev-fats', data.fats || data.fat);
+    setInputVal('prev-ingredients', data.ingredients);
+    setInputVal('prev-steps', data.steps);
+    setInputVal('prev-category', data.category || 'breakfast');
+    setInputVal('prev-proteins', data.proteins || data.protein);
+    setInputVal('prev-carbs', data.carbs);
+    setInputVal('prev-fats', data.fats || data.fat);
 
     setTimeout(() => {
       autoResizer(document.getElementById('prev-ingredients'));

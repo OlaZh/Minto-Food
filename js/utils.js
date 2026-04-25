@@ -150,6 +150,11 @@ export function escapeHTML(str) {
   return div.innerHTML;
 }
 
+export function setInputVal(id, val) {
+  const el = document.getElementById(id);
+  if (el) el.value = val || '';
+}
+
 /**
  * Обрізати текст до максимальної довжини
  * @param {string} text - Текст
