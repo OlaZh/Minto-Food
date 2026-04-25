@@ -33,6 +33,14 @@
       height: auto;
       min-height: 0;
     }
+
+    .main {
+      overflow-y: hidden;
+
+      &:has(.meal.is-open) {
+        overflow-y: auto;
+      }
+    }
   }
 }
 

@@ -4032,6 +4032,12 @@ textarea {
     height: auto;
     min-height: 0;
   }
+  .page--day-menu .main {
+    overflow-y: hidden;
+  }
+  .page--day-menu .main:has(.meal.is-open) {
+    overflow-y: auto;
+  }
 }
 @media (min-width: 1025px) and (max-width: 1279px) {
   .page--day-menu .layout {
