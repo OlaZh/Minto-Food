@@ -113,8 +113,6 @@
   stroke: #e53935; // червоний
 }
 
-
-
 /* =============================================================
    WATER COLUMN — компактна, з числом зверху і кнопками внизу
    ============================================================= */
@@ -124,6 +122,10 @@
   flex-direction: column;
   gap: var(--space-md);
   align-items: center;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-md);
 }
 
 /* === ЗАГОЛОВОК КОЛОНКИ === */
@@ -144,11 +146,11 @@
 .water-meter__display {
   text-align: center;
   font-family: var(--font-heading);
-  margin-bottom: var(--space-xs);
+  margin-bottom: 0;
 
   &-current {
-    font-size: 28px;
-    font-weight: 700;
+    font-size: 20px;
+    font-weight: 500;
     color: var(--color-text-primary);
     line-height: 1.1;
   }
@@ -168,22 +170,17 @@
 .water-meter__glass {
   position: relative;
   width: 100%;
-  max-width: 100px;
-  height: 240px;
+  max-width: 64px;
+  height: 260px;
 
   // Менш кругла, як на макеті
   border-radius: 28px;
   overflow: hidden;
-
   display: flex;
   align-items: center;
   justify-content: center;
 
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.55) 0%,
-    rgba(220, 240, 232, 0.4) 100%
-  );
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.55) 0%, rgba(220, 240, 232, 0.4) 100%);
   border: 1px solid var(--color-border);
 
   box-shadow:
@@ -200,12 +197,7 @@
   height: var(--level, 0%);
   z-index: 1;
 
-  background: linear-gradient(
-    180deg,
-    #b6e4dc 0%,
-    #7ec9bb 50%,
-    #5cb3a2 100%
-  );
+  background: linear-gradient(180deg, #b6e4dc 0%, #7ec9bb 50%, #5cb3a2 100%);
 
   border-radius: 28px 28px 0 0;
   transition: height 0.7s cubic-bezier(0.4, 0, 0.2, 1);

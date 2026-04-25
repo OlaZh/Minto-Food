@@ -10,5 +10,7 @@
     "**/node_modules/**",
     ".vscode/**"
   ],
-  "liveSassCompile.settings.generateMap": false
+  "liveSassCompile.settings.generateMap": false,
+  "css.lint.emptyRules": "ignore",
+  "scss.lint.emptyRules": "ignore"
 }

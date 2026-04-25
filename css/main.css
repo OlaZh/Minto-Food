@@ -1046,6 +1046,10 @@ textarea {
   flex-direction: column;
   gap: var(--space-md);
   align-items: center;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-md);
 }
 
 /* === ЗАГОЛОВОК КОЛОНКИ === */
@@ -1064,11 +1068,11 @@ textarea {
 .water-meter__display {
   text-align: center;
   font-family: var(--font-heading);
-  margin-bottom: var(--space-xs);
+  margin-bottom: 0;
 }
 .water-meter__display-current {
-  font-size: 28px;
-  font-weight: 700;
+  font-size: 20px;
+  font-weight: 500;
   color: var(--color-text-primary);
   line-height: 1.1;
 }
@@ -1085,8 +1089,8 @@ textarea {
 .water-meter__glass {
   position: relative;
   width: 100%;
-  max-width: 100px;
-  height: 240px;
+  max-width: 64px;
+  height: 260px;
   border-radius: 28px;
   overflow: hidden;
   display: flex;
