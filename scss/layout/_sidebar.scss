@@ -287,7 +287,9 @@
 
 .water-meter__value {
   position: relative;
-  z-index: 10 !important;
+
+  // Вода має z-index: 1, нам треба бути ВИЩЕ води
+  z-index: 2;
 
   transform: rotate(-90deg);
 
@@ -296,9 +298,11 @@
   white-space: nowrap;
   letter-spacing: 0.05em;
 
-  color: #1a3d28 !important;
+  // Використовуємо токен — адаптивно до теми
+  color: var(--water-text);
+  
 
-  // Білий halo для читабельності і на воді, і на склі
+  // Білий halo для читабельності на воді
   text-shadow:
     0 0 6px rgba(255, 255, 255, 0.95),
     0 0 12px rgba(255, 255, 255, 0.6);
