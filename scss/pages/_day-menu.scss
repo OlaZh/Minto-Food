@@ -27,6 +27,8 @@
 
     .layout {
       flex: 1 1 auto;
+      grid-template-columns: 240px minmax(0, 420px) 120px 240px;
+      justify-content: center;
       height: auto;
       min-height: 0;
     }
