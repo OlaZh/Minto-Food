@@ -11,9 +11,10 @@
 
 .layout {
   display: grid;
-  grid-template-columns: 240px minmax(420px, 1fr) 120px 240px;
+  grid-template-columns: 240px minmax(0, 560px) 120px 240px;
   gap: 20px;
   align-items: stretch;
+  height: calc(100vh - 180px);
 }
 
 /* =============================================================
@@ -97,6 +98,12 @@
   min-width: 0;
 }
 
+.sidebar,
+.water-sidebar,
+.right-sidebar {
+  overflow: hidden;
+}
+
 /* Центрування капсули води */
 .water-sidebar {
   align-items: center;
@@ -108,6 +115,10 @@
 
 .main {
   width: 100%;
+  height: 100%;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border) transparent;
 }
 
 /* =============================================================
@@ -177,6 +188,8 @@
 @media (max-width: 1024px) {
   .layout {
     grid-template-columns: 1fr;
+    height: auto;
+    overflow: visible;
   }
 
   .sidebar,
