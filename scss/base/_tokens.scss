@@ -24,6 +24,18 @@
   /* Water card */
   --water-bg: rgba(56, 189, 248, 0.08);
   --water-text: #2c4e47;
+
+  /* Danger / Error */
+  --color-danger: #c0392b;
+  --color-danger-soft: rgba(192, 57, 43, 0.1);
+
+  /* Macro nutrients */
+  --color-macro-protein: #6fcfba;
+  --color-macro-fat: #f5a623;
+  --color-macro-carbs: #7b9cda;
+
+  /* Progress / chart track */
+  --color-progress-track: rgba(15, 40, 24, 0.1);
 }
 
 [data-theme='dark'] {
@@ -47,4 +59,11 @@
   /* Water card */
   --water-bg: rgba(56, 189, 248, 0.12);
   --water-text: #b3ded7;
+
+  /* Danger / Error */
+  --color-danger: #e74c3c;
+  --color-danger-soft: rgba(231, 76, 60, 0.12);
+
+  /* Progress / chart track */
+  --color-progress-track: rgba(255, 255, 255, 0.08);
 }

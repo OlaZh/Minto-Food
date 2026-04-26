@@ -234,18 +234,30 @@
             <main class="main">
               <!-- MOBILE WATER STRIP (hidden on desktop) -->
               <div class="water-compact-strip">
-                <svg class="water-compact-strip__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <svg
+                  class="water-compact-strip__icon"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round">
                   <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path>
                 </svg>
                 <div class="water-compact-strip__info">
                   <span class="water-compact-strip__title">Вода</span>
                   <span class="water-compact-strip__value">
-                    <span id="currentWaterMobile">0.00</span> / <span id="waterNormMobile">2.5 л</span>
+                    <span id="currentWaterMobile">0.00</span> /
+                    <span id="waterNormMobile">2.5 л</span>
                   </span>
                 </div>
                 <div class="water-compact-strip__actions">
-                  <button class="water-btn water-compact-btn" data-amount="0.25" type="button">+0.25л</button>
-                  <button class="water-btn water-compact-btn" data-amount="0.5" type="button">+0.5л</button>
+                  <button class="water-btn water-compact-btn" data-amount="0.25" type="button">
+                    +0.25л
+                  </button>
+                  <button class="water-btn water-compact-btn" data-amount="0.5" type="button">
+                    +0.5л
+                  </button>
                 </div>
               </div>
 
@@ -253,8 +265,12 @@
               <div class="streak-compact-strip" id="streakStripMobile">
                 <span class="streak-compact-strip__flame">🔥</span>
                 <div class="streak-compact-strip__info">
-                  <span class="streak-compact-strip__count" id="streakCountMobile">0 днів поспіль</span>
-                  <span class="streak-compact-strip__sub" id="streakSubMobile">Класний початок! 🌱</span>
+                  <span class="streak-compact-strip__count" id="streakCountMobile"
+                    >0 днів поспіль</span
+                  >
+                  <span class="streak-compact-strip__sub" id="streakSubMobile"
+                    >Класний початок! 🌱</span
+                  >
                 </div>
               </div>
 
@@ -262,8 +278,14 @@
               <div class="day-compact-strip">
                 <div class="day-compact-strip__ring">
                   <svg viewBox="0 0 36 36" class="circular-chart">
-                    <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                    <path class="circle-progress" id="kcalCircleMobile" stroke-dasharray="0, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                    <path
+                      class="circle-bg"
+                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                    <path
+                      class="circle-progress"
+                      id="kcalCircleMobile"
+                      stroke-dasharray="0, 100"
+                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
                   </svg>
                 </div>
                 <div class="day-compact-strip__info">
@@ -284,91 +306,152 @@
                 <div class="menu-card__header">
                   <h2 class="menu-card__title" data-i18n="dayMenuTitle">Прийоми їжі</h2>
                   <div class="day-menu-actions">
-                    <button class="day-menu-actions__btn" id="menuActionsBtn" aria-label="Дії з днем" type="button">
-                      <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true">
-                        <circle cx="12" cy="5" r="1.5"/>
-                        <circle cx="12" cy="12" r="1.5"/>
-                        <circle cx="12" cy="19" r="1.5"/>
+                    <button
+                      class="day-menu-actions__btn"
+                      id="menuActionsBtn"
+                      aria-label="Дії з днем"
+                      type="button">
+                      <svg
+                        viewBox="0 0 24 24"
+                        width="16"
+                        height="16"
+                        fill="currentColor"
+                        aria-hidden="true">
+                        <circle cx="12" cy="5" r="1.5" />
+                        <circle cx="12" cy="12" r="1.5" />
+                        <circle cx="12" cy="19" r="1.5" />
                       </svg>
                     </button>
                     <div class="day-menu-actions__dropdown" id="menuActionsDropdown">
                       <button class="day-menu-actions__item" id="copyDayMenuBtn" type="button">
-                        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                        <svg
+                          viewBox="0 0 24 24"
+                          width="14"
+                          height="14"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round">
+                          <rect x="9" y="9" width="13" height="13" rx="2" />
+                          <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                        </svg>
                         Копіювати день
                       </button>
                       <button class="day-menu-actions__item" id="insertDayMenuBtn" type="button">
-                        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M12 12v4m-2-2 2 2 2-2"/></svg>
+                        <svg
+                          viewBox="0 0 24 24"
+                          width="14"
+                          height="14"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round">
+                          <path
+                            d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+                          <rect x="8" y="2" width="8" height="4" rx="1" />
+                          <path d="M12 12v4m-2-2 2 2 2-2" />
+                        </svg>
                         Вставити день
                       </button>
                       <div class="day-menu-actions__divider"></div>
-                      <button class="day-menu-actions__item day-menu-actions__item--danger" id="clearDayMenuBtn" type="button">
-                        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+                      <button
+                        class="day-menu-actions__item day-menu-actions__item--danger"
+                        id="clearDayMenuBtn"
+                        type="button">
+                        <svg
+                          viewBox="0 0 24 24"
+                          width="14"
+                          height="14"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round">
+                          <polyline points="3 6 5 6 21 6" />
+                          <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+                          <path d="M10 11v6M14 11v6" />
+                          <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
+                        </svg>
                         Очистити день
                       </button>
                     </div>
                   </div>
                 </div>
                 <section class="day-menu">
-                <article class="meal" data-meal="breakfast">
-                  <div class="meal__header">
-                    <h2 class="meal__title" data-i18n="breakfast">Сніданок</h2>
-                    <div class="meal__summary"></div>
-                    <button class="meal__add" aria-label="Додати продукт">
-                      <span></span>
-                    </button>
-                  </div>
-                  <ul class="meal__recipes"></ul>
-                </article>
+                  <article class="meal" data-meal="breakfast">
+                    <div class="meal__header">
+                      <h2 class="meal__title" data-i18n="breakfast">Сніданок</h2>
+                      <div class="meal__summary"></div>
+                      <button class="meal__add" aria-label="Додати продукт">
+                        <span></span>
+                      </button>
+                    </div>
+                    <ul class="meal__recipes"></ul>
+                  </article>
 
-                <article class="meal" data-meal="snack1">
-                  <div class="meal__header">
-                    <h2 class="meal__title" data-i18n="snack1">Перекус 1</h2>
-                    <div class="meal__summary"></div>
-                    <button class="meal__add" aria-label="Додати продукт" data-i18n-aria="addMeal">
-                      <span></span>
-                    </button>
-                  </div>
-                  <ul class="meal__recipes"></ul>
-                </article>
+                  <article class="meal" data-meal="snack1">
+                    <div class="meal__header">
+                      <h2 class="meal__title" data-i18n="snack1">Перекус 1</h2>
+                      <div class="meal__summary"></div>
+                      <button
+                        class="meal__add"
+                        aria-label="Додати продукт"
+                        data-i18n-aria="addMeal">
+                        <span></span>
+                      </button>
+                    </div>
+                    <ul class="meal__recipes"></ul>
+                  </article>
 
-                <article class="meal" data-meal="lunch">
-                  <div class="meal__header">
-                    <h2 class="meal__title" data-i18n="lunch">Обід</h2>
-                    <div class="meal__summary"></div>
-                    <button class="meal__add" aria-label="Додати продукт" data-i18n-aria="addMeal">
-                      <span></span>
-                    </button>
-                  </div>
-                  <ul class="meal__recipes"></ul>
-                </article>
+                  <article class="meal" data-meal="lunch">
+                    <div class="meal__header">
+                      <h2 class="meal__title" data-i18n="lunch">Обід</h2>
+                      <div class="meal__summary"></div>
+                      <button
+                        class="meal__add"
+                        aria-label="Додати продукт"
+                        data-i18n-aria="addMeal">
+                        <span></span>
+                      </button>
+                    </div>
+                    <ul class="meal__recipes"></ul>
+                  </article>
 
-                <article class="meal" data-meal="snack2">
-                  <div class="meal__header">
-                    <h2 class="meal__title" data-i18n="snack2">Перекус 2</h2>
-                    <div class="meal__summary"></div>
-                    <button class="meal__add" aria-label="Додати продукт" data-i18n-aria="addMeal">
-                      <span></span>
-                    </button>
-                  </div>
-                  <ul class="meal__recipes"></ul>
-                </article>
+                  <article class="meal" data-meal="snack2">
+                    <div class="meal__header">
+                      <h2 class="meal__title" data-i18n="snack2">Перекус 2</h2>
+                      <div class="meal__summary"></div>
+                      <button
+                        class="meal__add"
+                        aria-label="Додати продукт"
+                        data-i18n-aria="addMeal">
+                        <span></span>
+                      </button>
+                    </div>
+                    <ul class="meal__recipes"></ul>
+                  </article>
 
-                <article class="meal" data-meal="dinner">
-                  <div class="meal__header">
-                    <h2 class="meal__title" data-i18n="dinner">Вечеря</h2>
-                    <div class="meal__summary"></div>
-                    <button class="meal__add" aria-label="Додати продукт" data-i18n-aria="addMeal">
-                      <span></span>
-                    </button>
-                  </div>
-                  <ul class="meal__recipes"></ul>
-                </article>
-              </section>
+                  <article class="meal" data-meal="dinner">
+                    <div class="meal__header">
+                      <h2 class="meal__title" data-i18n="dinner">Вечеря</h2>
+                      <div class="meal__summary"></div>
+                      <button
+                        class="meal__add"
+                        aria-label="Додати продукт"
+                        data-i18n-aria="addMeal">
+                        <span></span>
+                      </button>
+                    </div>
+                    <ul class="meal__recipes"></ul>
+                  </article>
+                </section>
 
-              <section class="day-summary">
-                <span class="day-summary__label" data-i18n="dayTotal">Разом за день</span>
-                <span class="day-summary__value">0 ккал · Б 0 · Ж 0 · В 0</span>
-              </section>
+                <section class="day-summary">
+                  <span class="day-summary__label" data-i18n="dayTotal">Разом за день</span>
+                  <span class="day-summary__value">0 ккал · Б 0 · Ж 0 · В 0</span>
+                </section>
               </div>
             </main>
 
@@ -508,10 +591,7 @@
                     <button class="day-quick-btn" id="copyDayBtn" data-i18n="copyDay">
                       Скопіювати день
                     </button>
-                    <button
-                      class="day-quick-btn"
-                      id="insertDayBtn"
-                      data-i18n="insertDay">
+                    <button class="day-quick-btn" id="insertDayBtn" data-i18n="insertDay">
                       Вставити день
                     </button>
                     <button

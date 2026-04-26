@@ -98,7 +98,7 @@
   position: relative;
   background: var(--color-surface);
   border: 1px solid var(--color-border);
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   padding: 10px 12px;
   box-sizing: border-box;
   box-shadow:
@@ -175,6 +175,7 @@
 
   background: var(--color-bg-primary);
   border-color: var(--color-border);
+  border-radius: var(--radius-pill);
 
   // Дні тижня — статичні, не повинні підстрибувати
   &:hover {
@@ -309,8 +310,8 @@
   flex-shrink: 0;
 
   &:hover {
-    background: #fcede8;
-    color: #c0392b;
+    background: var(--color-danger-soft);
+    color: var(--color-danger);
   }
 }
 
@@ -391,7 +392,7 @@
 .balance-bar__track {
   flex: 1;
   height: 5px;
-  background: rgba(0, 0, 0, 0.08);
+  background: var(--color-progress-track);
   border-radius: 99px;
   overflow: hidden;
 }
@@ -402,15 +403,15 @@
   transition: width 0.4s ease;
 
   &--protein {
-    background: #6fcfba;
+    background: var(--color-macro-protein);
   }
 
   &--fat {
-    background: #f5a623;
+    background: var(--color-macro-fat);
   }
 
   &--carbs {
-    background: #7b9cda;
+    background: var(--color-macro-carbs);
   }
 }
 
@@ -918,8 +919,8 @@
   transition: all 0.2s ease;
 
   &:hover {
-    background: #fcede8;
-    color: #c0392b;
+    background: var(--color-danger-soft);
+    color: var(--color-danger);
   }
 }
 
@@ -990,7 +991,7 @@
    RESPONSIVE — WEEK MENU
    ============================================== */
 
-@media (max-width: 1024px) {
+@media (min-width: 769px) and (max-width: 1024px) {
   .week-menu {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
@@ -1029,4 +1030,288 @@
   .week-modal__manual-macros {
     grid-template-columns: repeat(2, 1fr);
   }
+}
+
+/* ==============================================
+   MOBILE VIEW (≤768px) — акордеон-картки днів
+   ============================================== */
+
+.week-mobile-view {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .week-menu__header,
+  .week-grid {
+    display: none;
+  }
+
+  .week-mobile-view {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+    padding: var(--space-md) 0 var(--space-4xl);
+  }
+}
+
+/* Навігація між тижнями на мобільному */
+.week-mobile__nav {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  margin-bottom: var(--space-xs);
+}
+
+.week-mobile__nav-inner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.week-mobile__nav-actions {
+  display: flex;
+  gap: var(--space-xs);
+  flex-wrap: wrap;
+}
+
+/* Картка дня */
+.week-mobile__day {
+  @extend %premium-card;
+  overflow: hidden;
+  padding: 0;
+
+  &--today > .week-mobile__day-header {
+    background: var(--color-accent-soft);
+  }
+}
+
+.week-mobile__day-header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-sm) var(--space-md);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  transition: background var(--duration-fast) var(--ease-out);
+
+  &:active {
+    background: var(--color-bg-hover);
+  }
+}
+
+/* Pill з днем тижня */
+.week-mobile__day-pill {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  width: 44px;
+  min-height: 48px;
+  border-radius: var(--radius-pill);
+  background: var(--color-bg-primary);
+  border: 1px solid var(--color-border);
+  flex-shrink: 0;
+
+  &--today {
+    background: var(--color-accent);
+    border-color: var(--color-accent);
+    box-shadow: 0 4px 12px rgba(74, 181, 132, 0.3);
+  }
+}
+
+.week-mobile__day-abbr {
+  font-family: var(--font-body);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-secondary);
+  line-height: 1;
+
+  .week-mobile__day-pill--today & {
+    color: var(--color-text-inverse);
+  }
+}
+
+.week-mobile__day-num {
+  font-family: var(--font-heading);
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  line-height: 1;
+
+  .week-mobile__day-pill--today & {
+    color: var(--color-text-inverse);
+  }
+}
+
+.week-mobile__day-kcal {
+  flex: 1;
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.week-mobile__chevron {
+  color: var(--color-text-secondary);
+  transition: transform var(--duration-base) var(--ease-smooth);
+  flex-shrink: 0;
+
+  .week-mobile__day.is-open & {
+    transform: rotate(180deg);
+  }
+}
+
+/* Тіло картки */
+.week-mobile__day-body {
+  padding: 0 var(--space-md) var(--space-md);
+  border-top: 1px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+
+  &[hidden] {
+    display: none;
+  }
+}
+
+/* Секція прийому їжі */
+.week-mobile__meal {
+  padding-top: var(--space-sm);
+}
+
+.week-mobile__meal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-xxs);
+}
+
+.week-mobile__meal-name {
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-text-secondary);
+}
+
+.week-mobile__add-btn {
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-pill);
+  border: 1px dashed var(--color-border);
+  background: transparent;
+  color: var(--color-text-secondary);
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--duration-fast) var(--ease-out);
+  flex-shrink: 0;
+
+  &:hover {
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+    background: var(--color-accent-soft);
+    border-style: solid;
+  }
+}
+
+/* Список страв */
+.week-mobile__items {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.week-mobile__item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  padding: var(--space-xxs) var(--space-xs);
+  border-radius: var(--radius-xs);
+
+  &.is-done {
+    .week-mobile__item-name {
+      text-decoration: line-through;
+      color: var(--color-text-secondary);
+    }
+
+    .week-mobile__item-kcal {
+      opacity: 0.5;
+    }
+  }
+}
+
+.week-mobile__item-label {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  flex: 1;
+  cursor: pointer;
+  min-width: 0;
+}
+
+/* Кастомний чекбокс */
+.week-mobile__checkbox {
+  width: 18px;
+  height: 18px;
+  border-radius: var(--radius-xs);
+  border: 1.5px solid var(--color-border);
+  appearance: none;
+  -webkit-appearance: none;
+  background: transparent;
+  cursor: pointer;
+  flex-shrink: 0;
+  position: relative;
+  transition: all var(--duration-fast) var(--ease-out);
+
+  &:checked {
+    background: var(--color-accent);
+    border-color: var(--color-accent);
+
+    &::after {
+      content: '';
+      position: absolute;
+      left: 4px;
+      top: 1px;
+      width: 6px;
+      height: 10px;
+      border: 2px solid var(--color-text-inverse);
+      border-top: none;
+      border-left: none;
+      transform: rotate(45deg);
+    }
+  }
+}
+
+.week-mobile__item-name {
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: color var(--duration-fast) var(--ease-out);
+}
+
+.week-mobile__item-kcal {
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: opacity var(--duration-fast) var(--ease-out);
 }
