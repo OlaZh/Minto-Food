@@ -1132,7 +1132,12 @@
   .menu-card {
     min-height: 0;
     padding: 16px 14px 0;
+    order: 2;
   }
+
+  .day-compact-strip    { order: 1; }
+  .water-compact-strip  { order: 3; }
+  .streak-compact-strip { order: 4; }
 
   .meal__recipe {
     margin: 0 -14px;
