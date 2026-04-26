@@ -261,9 +261,11 @@
 
     transform: translateX(-100%);
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: none;
 
     &.is-open {
       transform: translateX(0);
+      box-shadow: 4px 0 24px rgba(0, 0, 0, 0.12);
     }
   }
 
@@ -300,6 +302,16 @@
   }
 
   .header__right {
-    display: none;
+    .lang-switcher {
+      display: none;
+    }
+
+    .header__profile-name {
+      font-size: 13px;
+      padding: 6px 12px;
+      border: 1px solid var(--color-border);
+      border-radius: 8px;
+      white-space: nowrap;
+    }
   }
 }
