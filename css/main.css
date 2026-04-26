@@ -224,6 +224,11 @@ body {
   margin: 0 auto;
   padding: 0 24px;
 }
+@media (max-width: 768px) {
+  .app-shell {
+    padding: 0;
+  }
+}
 
 /* ===============================
    HEADINGS

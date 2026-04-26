@@ -46,7 +46,15 @@ export async function initAuth(onAuthChange = null) {
     // Закриваємо модалку після успішного логіну
     if (event === 'SIGNED_IN') {
       closeAuthModal();
-      showToast('Ласкаво просимо! 👋');
+
+      const userId = session?.user?.id;
+      const today = new Date().toDateString();
+      const key = `minto_welcome_${userId}`;
+
+      if (userId && localStorage.getItem(key) !== today) {
+        localStorage.setItem(key, today);
+        showToast('Ласкаво просимо! 👋');
+      }
     }
 
     if (event === 'SIGNED_OUT') {
