@@ -23,6 +23,14 @@ const pCurrentEl = document.getElementById('pCurrent');
 const fCurrentEl = document.getElementById('fCurrent');
 const cCurrentEl = document.getElementById('cCurrent');
 
+// Mobile compact strip
+const kcalCurrentMobileEl = document.getElementById('kcalCurrentMobile');
+const kcalNormMobileEl    = document.getElementById('kcalNormMobile');
+const kcalCircleMobileEl  = document.getElementById('kcalCircleMobile');
+const pCurrentMobileEl    = document.getElementById('pCurrentMobile');
+const fCurrentMobileEl    = document.getElementById('fCurrentMobile');
+const cCurrentMobileEl    = document.getElementById('cCurrentMobile');
+
 // Progress bars (new layout)
 const goalBarEl = document.getElementById('goalBar');
 const goalValueEl = document.getElementById('goalValue');
@@ -105,6 +113,14 @@ export function updateStats(consumed) {
   setCirclePercent(pCircleEl, protein, proteinNorm);
   setCirclePercent(fCircleEl, fat, fatNorm);
   setCirclePercent(cCircleEl, carbs, carbsNorm);
+
+  // Mobile compact strip
+  if (kcalCurrentMobileEl) kcalCurrentMobileEl.textContent = Math.round(kcal);
+  if (kcalNormMobileEl) kcalNormMobileEl.textContent = `з ${dailyCaloriesNorm} ккал`;
+  if (pCurrentMobileEl) pCurrentMobileEl.textContent = Math.round(protein);
+  if (fCurrentMobileEl) fCurrentMobileEl.textContent = Math.round(fat);
+  if (cCurrentMobileEl) cCurrentMobileEl.textContent = Math.round(carbs);
+  setCirclePercent(kcalCircleMobileEl, kcal, dailyCaloriesNorm);
 
   // Macro progress bars
   if (pBarEl)

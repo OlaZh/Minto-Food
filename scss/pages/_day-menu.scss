@@ -271,6 +271,87 @@
   }
 }
 
+/* ================= DAY COMPACT STRIP (mobile only) ================= */
+
+.day-compact-strip {
+  display: none;
+}
+
+@media (max-width: 1024px) {
+  .day-compact-strip {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 14px;
+    margin-bottom: 10px;
+
+    background: linear-gradient(180deg, var(--color-surface) 0%, var(--color-bg-secondary) 100%);
+    border-radius: var(--radius-lg, 16px);
+    border: 1px solid var(--color-border);
+    box-shadow: 0 2px 8px rgba(15, 31, 27, 0.06);
+
+    &__ring {
+      width: 52px;
+      height: 52px;
+      flex-shrink: 0;
+
+      .circular-chart {
+        width: 100%;
+        height: 100%;
+      }
+    }
+
+    &__info {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 0;
+    }
+
+    &__label {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--color-text-secondary);
+      line-height: 1;
+    }
+
+    &__row {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+    }
+
+    &__value {
+      font-family: var(--font-heading);
+      font-size: 26px;
+      font-weight: 700;
+      color: var(--color-text-primary);
+      line-height: 1;
+    }
+
+    &__norm {
+      font-size: 12px;
+      color: var(--color-text-secondary);
+    }
+
+    &__macros {
+      display: flex;
+      gap: 10px;
+      font-size: 11px;
+      color: var(--color-text-secondary);
+      margin-top: 1px;
+
+      span span {
+        font-weight: 700;
+        color: var(--color-text-primary);
+      }
+    }
+  }
+}
+
 /* ================= DAY RING CARD ================= */
 
 .day-ring-card {

@@ -232,6 +232,28 @@
 
             <!-- CENTER: Meals -->
             <main class="main">
+              <!-- MOBILE COMPACT STRIP (hidden on desktop) -->
+              <div class="day-compact-strip">
+                <div class="day-compact-strip__ring">
+                  <svg viewBox="0 0 36 36" class="circular-chart">
+                    <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                    <path class="circle-progress" id="kcalCircleMobile" stroke-dasharray="0, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                  </svg>
+                </div>
+                <div class="day-compact-strip__info">
+                  <span class="day-compact-strip__label">Калорії сьогодні</span>
+                  <div class="day-compact-strip__row">
+                    <span class="day-compact-strip__value" id="kcalCurrentMobile">0</span>
+                    <span class="day-compact-strip__norm" id="kcalNormMobile">з 1200 ккал</span>
+                  </div>
+                  <div class="day-compact-strip__macros">
+                    <span>Б <span id="pCurrentMobile">0</span>г</span>
+                    <span>Ж <span id="fCurrentMobile">0</span>г</span>
+                    <span>В <span id="cCurrentMobile">0</span>г</span>
+                  </div>
+                </div>
+              </div>
+
               <div class="menu-card">
                 <h2 class="menu-card__title" data-i18n="dayMenuTitle">Прийоми їжі</h2>
                 <section class="day-menu">
