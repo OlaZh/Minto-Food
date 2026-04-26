@@ -383,9 +383,7 @@ textarea {
   border: 1px solid transparent;
   border-radius: var(--radius-sm);
   cursor: pointer;
-  -webkit-user-select: none;
-     -moz-user-select: none;
-          user-select: none;
+  user-select: none;
   text-align: center;
   text-decoration: none;
   transition: background-color var(--duration-base) var(--ease-out), border-color var(--duration-base) var(--ease-out), transform var(--duration-fast) var(--ease-out), box-shadow var(--duration-base) var(--ease-out);
@@ -1657,8 +1655,7 @@ textarea {
 .recipe-card__img {
   width: 100%;
   height: 100%;
-  -o-object-fit: cover;
-     object-fit: cover;
+  object-fit: cover;
   transition: transform 0.5s ease;
 }
 .recipe-card__content {
@@ -1825,9 +1822,6 @@ textarea {
   background: var(--color-surface);
   color: var(--color-text-primary);
   box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.08), 0 1px 0 rgba(255, 255, 255, 0.04);
-}
-.modal__input::-moz-placeholder, .modal__weight::-moz-placeholder, .modal__search::-moz-placeholder {
-  color: var(--color-text-secondary);
 }
 .modal__input::placeholder,
 .modal__weight::placeholder,
@@ -2121,9 +2115,6 @@ textarea {
   font-size: 15px;
   box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.08);
 }
-.scanner-modal__input::-moz-placeholder {
-  color: var(--color-text-secondary);
-}
 .scanner-modal__input::placeholder {
   color: var(--color-text-secondary);
 }
@@ -2229,8 +2220,7 @@ textarea {
   font-weight: 600;
   color: var(--color-text-primary);
   /* Прибираємо стрілки */
-  -webkit-appearance: none;
-          appearance: none;
+  appearance: none;
   -moz-appearance: textfield;
 }
 .scanned-card__field input::-webkit-outer-spin-button, .scanned-card__field input::-webkit-inner-spin-button {
@@ -2366,7 +2356,6 @@ textarea {
   padding: 10px 15px;
   background: var(--color-bg);
   border-radius: 14px;
-  width: -moz-fit-content;
   width: fit-content;
 }
 .recipe-rating .star {
@@ -2540,11 +2529,6 @@ textarea {
   box-shadow: 0 8px 25px rgba(46, 204, 113, 0.12);
   transform: translateY(-1px);
 }
-.modal-card textarea:not(:-moz-placeholder), .preview-form textarea:not(:-moz-placeholder), .recipe-section--notes textarea:not(:-moz-placeholder) {
-  padding-top: 18px;
-  padding-bottom: 18px;
-  background-color: var(--color-bg-secondary);
-}
 .modal-card textarea:not(:placeholder-shown),
 .preview-form textarea:not(:placeholder-shown),
 .recipe-section--notes textarea:not(:placeholder-shown) {
@@ -2560,10 +2544,6 @@ textarea {
   font-size: 16px;
   padding: 20px 18px;
   line-height: 1.7;
-}
-#prev-ingredients:not(:-moz-placeholder), #prev-steps:not(:-moz-placeholder) {
-  border-left-width: 6px;
-  border-left-color: var(--color-accent);
 }
 #prev-ingredients:not(:placeholder-shown),
 #prev-steps:not(:placeholder-shown) {
@@ -3017,8 +2997,7 @@ textarea {
 .api-result-card__image-box img {
   width: 100%;
   height: 100%;
-  -o-object-fit: cover;
-     object-fit: cover;
+  object-fit: cover;
 }
 .api-result-card__content {
   flex: 1;
@@ -3210,9 +3189,6 @@ textarea {
   box-shadow: inset 0 2px 4px rgba(15, 31, 27, 0.06);
   transition: border-color 0.2s ease;
 }
-.auth-modal__form .form-group input::-moz-placeholder {
-  color: var(--color-text-secondary);
-}
 .auth-modal__form .form-group input::placeholder {
   color: var(--color-text-secondary);
 }
@@ -3324,9 +3300,6 @@ textarea {
   font-size: 13px;
   transition: border-color 0.2s ease;
 }
-.ingredient-builder__input::-moz-placeholder {
-  color: var(--color-text-secondary);
-}
 .ingredient-builder__input::placeholder {
   color: var(--color-text-secondary);
 }
@@ -3346,9 +3319,6 @@ textarea {
   text-align: center;
   flex-shrink: 0;
   transition: border-color 0.2s ease;
-}
-.ingredient-builder__weight::-moz-placeholder {
-  color: var(--color-text-secondary);
 }
 .ingredient-builder__weight::placeholder {
   color: var(--color-text-secondary);
@@ -4048,15 +4018,16 @@ textarea {
   .page--day-menu .water-sidebar {
     gap: 6px;
     padding: 10px 8px;
+    height: 536px;
   }
   .page--day-menu .water-meter__glass {
     width: 42px;
-    height: 150px;
+    flex: 1;
     max-width: 42px;
   }
   .page--day-menu .water-actions {
     gap: 4px;
-    margin-top: 6px;
+    margin-top: auto;
   }
   .page--day-menu .water-btn {
     height: 28px;
@@ -4072,6 +4043,10 @@ textarea {
   }
   .page--day-menu .right-sidebar__inner {
     height: auto;
+    gap: 10px;
+  }
+  .page--day-menu .sidebar {
+    gap: 10px;
   }
 }
 @media (min-width: 1025px) and (max-width: 1279px) {
@@ -4131,9 +4106,7 @@ textarea {
   background: var(--color-surface);
   font-family: var(--font-body);
   cursor: pointer;
-  -webkit-user-select: none;
-     -moz-user-select: none;
-          user-select: none;
+  user-select: none;
   transition: background-color var(--duration-base) var(--ease-out), border-color var(--duration-base) var(--ease-out), box-shadow var(--duration-base) var(--ease-out);
 }
 .day-week-nav__pill::after {
@@ -4227,7 +4200,7 @@ textarea {
   flex-direction: column;
   align-items: center;
   gap: var(--space-sm);
-  flex: 2;
+  flex: 0 0 320px;
   justify-content: space-between;
 }
 .day-ring-card__date {
@@ -4328,7 +4301,7 @@ textarea {
   align-items: center;
   justify-content: center;
   gap: var(--space-md);
-  flex: 1;
+  flex: 0 0 206px;
 }
 .streak-card__flame {
   font-size: 28px;
@@ -4395,7 +4368,7 @@ textarea {
   padding: 22px 18px 0;
   overflow: hidden;
   width: 100%;
-  min-height: 0;
+  min-height: 536px;
   flex: 0 0 auto;
   display: flex;
   flex-direction: column;
@@ -4442,9 +4415,7 @@ textarea {
   min-height: 58px;
   padding: 11px 0;
   cursor: pointer;
-  -webkit-user-select: none;
-     -moz-user-select: none;
-          user-select: none;
+  user-select: none;
   transition: background-color var(--duration-base) var(--ease-out);
 }
 .meal__header:hover {
@@ -4796,6 +4767,14 @@ textarea {
   margin: 0;
 }
 
+.macros-card {
+  flex: 0 0 320px;
+}
+
+.quick-actions-card {
+  flex: 0 0 206px;
+}
+
 /* ============================================================
    PAGE: RECIPES (MAIN LIST PAGE)
    ============================================================ */
@@ -4838,9 +4817,6 @@ textarea {
   color: var(--color-text-primary);
   font-size: 15px;
   transition: border-color var(--duration-base) var(--ease-out), box-shadow var(--duration-base) var(--ease-out);
-}
-.recipe-page__search .recipe-page__search-input::-moz-placeholder {
-  color: var(--color-text-secondary);
 }
 .recipe-page__search .recipe-page__search-input::placeholder {
   color: var(--color-text-secondary);
@@ -5071,8 +5047,7 @@ textarea {
   background-size: cover;
   background-position: center;
   border: 2px solid var(--color-border);
-  -o-object-fit: cover;
-     object-fit: cover;
+  object-fit: cover;
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
   transition: transform 0.3s ease;
   flex-shrink: 0;
@@ -5662,7 +5637,6 @@ textarea {
   position: sticky;
   top: 100px;
   align-self: start;
-  height: -moz-fit-content;
   height: fit-content;
 }
 
@@ -5688,8 +5662,7 @@ textarea {
 .profile-sidebar__avatar img {
   width: 100%;
   height: 100%;
-  -o-object-fit: cover;
-     object-fit: cover;
+  object-fit: cover;
 }
 
 .profile-sidebar__item {
@@ -6915,9 +6888,6 @@ textarea {
   box-shadow: var(--shadow-inset);
   transition: border-color 0.2s ease;
 }
-.week-modal__search::-moz-placeholder {
-  color: var(--color-text-secondary);
-}
 .week-modal__search::placeholder {
   color: var(--color-text-secondary);
 }
@@ -7395,8 +7365,7 @@ textarea {
   width: 72px;
   height: 72px;
   border-radius: 14px;
-  -o-object-fit: cover;
-     object-fit: cover;
+  object-fit: cover;
 }
 
 .product-card-mini__content {
@@ -7492,8 +7461,7 @@ textarea {
 .product-modal__image {
   width: 100%;
   max-height: 220px;
-  -o-object-fit: cover;
-     object-fit: cover;
+  object-fit: cover;
   border-radius: 16px;
   border: 1px solid var(--color-border);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
@@ -7893,9 +7861,7 @@ input.product-search__input {
   font-size: 88px;
   opacity: 0.08;
   pointer-events: none;
-  -webkit-user-select: none;
-     -moz-user-select: none;
-          user-select: none;
+  user-select: none;
 }
 .cookbook-page__title {
   font-size: 40px;
@@ -8006,9 +7972,7 @@ input.product-search__input {
   color: rgba(255, 255, 255, 0.92);
   filter: drop-shadow(0 4px 14px rgba(0, 0, 0, 0.35));
   transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
-  -webkit-user-select: none;
-     -moz-user-select: none;
-          user-select: none;
+  user-select: none;
   position: relative;
   z-index: 1;
   display: flex;
@@ -8300,8 +8264,7 @@ input.product-search__input {
 .cookbook-recipe__image img {
   width: 100%;
   height: 100%;
-  -o-object-fit: cover;
-     object-fit: cover;
+  object-fit: cover;
 }
 .cookbook-recipe__placeholder {
   font-size: 28px;
@@ -8410,8 +8373,7 @@ input.product-search__input {
 .cookbook-recipe-card__image img {
   width: 100%;
   height: 100%;
-  -o-object-fit: cover;
-     object-fit: cover;
+  object-fit: cover;
   transition: transform 0.4s ease;
 }
 .cookbook-recipe-card__placeholder {
@@ -8659,9 +8621,6 @@ input.product-search__input {
   outline: none;
   border-color: var(--color-accent);
   box-shadow: 0 0 0 3px rgba(111, 207, 186, 0.15);
-}
-.cookbook-form__field input::-moz-placeholder, .cookbook-form__field textarea::-moz-placeholder {
-  color: var(--color-text-secondary);
 }
 .cookbook-form__field input::placeholder,
 .cookbook-form__field textarea::placeholder {
