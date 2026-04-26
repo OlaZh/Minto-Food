@@ -153,5 +153,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     buttons.forEach((b) => b.removeAttribute('aria-current'));
     activeBtn.setAttribute('aria-current', 'true');
+
+    activeBtn.scrollIntoView({ behavior: 'instant', block: 'nearest', inline: 'center' });
   }
 });
