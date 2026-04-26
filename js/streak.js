@@ -16,6 +16,9 @@ const streakCardEl = document.getElementById('streakCard');
 const streakCountEl = document.getElementById('streakCount');
 const streakSubEl = streakCardEl?.querySelector('.streak-card__sub');
 
+const streakCountMobileEl = document.getElementById('streakCountMobile');
+const streakSubMobileEl   = document.getElementById('streakSubMobile');
+
 // ============================================================
 //  УКРАЇНСЬКА ПЛЮРАЛІЗАЦІЯ
 // ============================================================
@@ -75,6 +78,14 @@ function updateStreakUI({ current_streak, longest_streak, is_active }) {
   // Мотиваційне повідомлення
   if (streakSubEl) {
     streakSubEl.textContent = getMotivationalText(current_streak, is_active);
+  }
+
+  // Mobile streak strip
+  if (streakCountMobileEl) {
+    streakCountMobileEl.textContent = `${current_streak} ${getDayWord(current_streak)} поспіль`;
+  }
+  if (streakSubMobileEl) {
+    streakSubMobileEl.textContent = getMotivationalText(current_streak, is_active);
   }
 
   // Стилізуємо картку залежно від стану

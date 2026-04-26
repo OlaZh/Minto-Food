@@ -23,6 +23,10 @@ const pCurrentEl = document.getElementById('pCurrent');
 const fCurrentEl = document.getElementById('fCurrent');
 const cCurrentEl = document.getElementById('cCurrent');
 
+// Mobile water strip
+const currentWaterMobileEl = document.getElementById('currentWaterMobile');
+const waterNormMobileEl    = document.getElementById('waterNormMobile');
+
 // Mobile compact strip
 const kcalCurrentMobileEl = document.getElementById('kcalCurrentMobile');
 const kcalNormMobileEl    = document.getElementById('kcalNormMobile');
@@ -156,6 +160,9 @@ export function updateWaterUI(currentLiters) {
   if (waterNormEl) {
     waterNormEl.textContent = `з ${waterNorm.toFixed(1)} л`;
   }
+
+  if (currentWaterMobileEl) currentWaterMobileEl.textContent = liters.toFixed(2);
+  if (waterNormMobileEl) waterNormMobileEl.textContent = `${waterNorm.toFixed(1)} л`;
 }
 
 export function addWater(ml) {

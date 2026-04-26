@@ -232,6 +232,32 @@
 
             <!-- CENTER: Meals -->
             <main class="main">
+              <!-- MOBILE WATER STRIP (hidden on desktop) -->
+              <div class="water-compact-strip">
+                <svg class="water-compact-strip__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path>
+                </svg>
+                <div class="water-compact-strip__info">
+                  <span class="water-compact-strip__title">Вода</span>
+                  <span class="water-compact-strip__value">
+                    <span id="currentWaterMobile">0.00</span> / <span id="waterNormMobile">2.5 л</span>
+                  </span>
+                </div>
+                <div class="water-compact-strip__actions">
+                  <button class="water-btn water-compact-btn" data-amount="0.25" type="button">+0.25л</button>
+                  <button class="water-btn water-compact-btn" data-amount="0.5" type="button">+0.5л</button>
+                </div>
+              </div>
+
+              <!-- MOBILE STREAK STRIP (hidden on desktop) -->
+              <div class="streak-compact-strip" id="streakStripMobile">
+                <span class="streak-compact-strip__flame">🔥</span>
+                <div class="streak-compact-strip__info">
+                  <span class="streak-compact-strip__count" id="streakCountMobile">0 днів поспіль</span>
+                  <span class="streak-compact-strip__sub" id="streakSubMobile">Класний початок! 🌱</span>
+                </div>
+              </div>
+
               <!-- MOBILE COMPACT STRIP (hidden on desktop) -->
               <div class="day-compact-strip">
                 <div class="day-compact-strip__ring">

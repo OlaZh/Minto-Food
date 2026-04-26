@@ -271,6 +271,122 @@
   }
 }
 
+/* ================= WATER COMPACT STRIP (mobile only) ================= */
+
+.water-compact-strip {
+  display: none;
+}
+
+@media (max-width: 1024px) {
+  .water-compact-strip {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    margin-bottom: 10px;
+
+    background: linear-gradient(180deg, var(--color-surface) 0%, var(--color-bg-secondary) 100%);
+    border-radius: var(--radius-lg, 16px);
+    border: 1px solid var(--color-border);
+    box-shadow: 0 2px 8px rgba(15, 31, 27, 0.06);
+
+    &__icon {
+      width: 28px;
+      height: 28px;
+      flex-shrink: 0;
+      color: #5cb3a2;
+    }
+
+    &__info {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 0;
+    }
+
+    &__title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--color-text-primary);
+      line-height: 1;
+    }
+
+    &__value {
+      font-size: 12px;
+      color: var(--color-text-secondary);
+
+      span {
+        font-weight: 600;
+        color: var(--color-text-primary);
+      }
+    }
+
+    &__actions {
+      display: flex;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+  }
+
+  .water-compact-btn {
+    height: 34px;
+    padding: 0 12px;
+    font-size: 12px;
+    font-weight: 700;
+    border-radius: 8px;
+    min-height: unset;
+    width: auto;
+  }
+}
+
+/* ================= STREAK COMPACT STRIP (mobile only) ================= */
+
+.streak-compact-strip {
+  display: none;
+}
+
+@media (max-width: 1024px) {
+  .streak-compact-strip {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    margin-bottom: 10px;
+
+    background: linear-gradient(180deg, var(--color-surface) 0%, var(--color-bg-secondary) 100%);
+    border-radius: var(--radius-lg, 16px);
+    border: 1px solid var(--color-border);
+    box-shadow: 0 2px 8px rgba(15, 31, 27, 0.06);
+
+    &__flame {
+      font-size: 28px;
+      line-height: 1;
+      flex-shrink: 0;
+    }
+
+    &__info {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 0;
+    }
+
+    &__count {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--color-text-primary);
+      line-height: 1.2;
+    }
+
+    &__sub {
+      font-size: 12px;
+      color: var(--color-text-secondary);
+    }
+  }
+}
+
 /* ================= DAY COMPACT STRIP (mobile only) ================= */
 
 .day-compact-strip {
@@ -714,8 +830,8 @@
 
 .meal__recipe {
   position: relative;
-  padding: 8px 10px 10px 40px;
-  padding-right: 45px;
+  padding: 8px 63px 10px 58px;
+  margin: 0 -18px;
   background-color: transparent;
   border-radius: 0;
   cursor: pointer;
@@ -1016,6 +1132,11 @@
   .menu-card {
     min-height: 0;
     padding: 16px 14px 0;
+  }
+
+  .meal__recipe {
+    margin: 0 -14px;
+    padding: 8px 59px 10px 54px;
   }
 
   .meal__title {

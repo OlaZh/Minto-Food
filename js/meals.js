@@ -287,10 +287,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         <div class="meal__recipe-info">
           <div class="meal__recipe-name">${item.name}</div>
           <div class="meal__recipe-kcal">
-            ${item.kcal} ${t('kcal')} · 
-            ${t('protein')} ${item.protein} · 
-            ${t('fat')} ${item.fat} · 
-            ${t('carbs')} ${item.carbs}
+            ${Math.round(item.kcal)} ${t('kcal')} ·
+            ${t('protein')} ${Math.round(item.protein)} ·
+            ${t('fat')} ${Math.round(item.fat)} ·
+            ${t('carbs')} ${Math.round(item.carbs)}
           </div>
         </div>
         <button class="meal__delete-btn" data-index="${index}">🗑</button>
@@ -329,7 +329,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       );
 
     if (summaryValue) {
-      summaryValue.textContent = `${total.kcal} ${t('kcal')} · ${t('protein')} ${total.protein.toFixed(1)} · ${t('fat')} ${total.fat.toFixed(1)} · ${t('carbs')} ${total.carbs.toFixed(1)}`;
+      summaryValue.textContent = `${Math.round(total.kcal)} ${t('kcal')} · ${t('protein')} ${Math.round(total.protein)} · ${t('fat')} ${Math.round(total.fat)} · ${t('carbs')} ${Math.round(total.carbs)}`;
     }
 
     const progress = dailyNorm ? total.kcal / dailyNorm : 0;
