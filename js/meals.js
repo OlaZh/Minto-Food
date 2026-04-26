@@ -996,6 +996,49 @@ document.addEventListener('DOMContentLoaded', async () => {
     clearBtn.addEventListener('click', clearDay);
   }
 
+  // ================== 3-КРАПКИ МЕНЮ ==================
+
+  const menuActionsBtn = document.getElementById('menuActionsBtn');
+  const menuActionsDropdown = document.getElementById('menuActionsDropdown');
+
+  function closeActionsMenu() {
+    menuActionsDropdown?.classList.remove('is-open');
+    menuActionsBtn?.classList.remove('is-open');
+  }
+
+  if (menuActionsBtn && menuActionsDropdown) {
+    menuActionsBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const isOpen = menuActionsDropdown.classList.toggle('is-open');
+      menuActionsBtn.classList.toggle('is-open', isOpen);
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!menuActionsBtn.contains(e.target) && !menuActionsDropdown.contains(e.target)) {
+        closeActionsMenu();
+      }
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeActionsMenu();
+    });
+  }
+
+  const copyMenuBtn = document.getElementById('copyDayMenuBtn');
+  if (copyMenuBtn) {
+    copyMenuBtn.addEventListener('click', () => { closeActionsMenu(); copyDay(); });
+  }
+
+  const insertMenuBtn = document.getElementById('insertDayMenuBtn');
+  if (insertMenuBtn) {
+    insertMenuBtn.addEventListener('click', () => { closeActionsMenu(); pasteDay(); });
+  }
+
+  const clearMenuBtn = document.getElementById('clearDayMenuBtn');
+  if (clearMenuBtn) {
+    clearMenuBtn.addEventListener('click', () => { closeActionsMenu(); clearDay(); });
+  }
+
   // ================== INIT ==================
 
   // Ініціалізація сканера штрих-кодів

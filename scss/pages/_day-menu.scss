@@ -676,12 +676,20 @@
 .menu-card {
   @extend %premium-card;
   padding: 22px 0 0;
-  overflow: hidden;
+  overflow: visible;
   width: 100%;
   min-height: 536px;
   flex: 0 0 auto;
   display: flex;
   flex-direction: column;
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 18px 18px;
+    position: relative;
+  }
 
   &__title {
     font-family: var(--font-body);
@@ -692,8 +700,117 @@
     color: var(--color-text-primary);
     text-align: left;
     margin: 0;
-    padding: 0 18px 18px;
+    padding: 0;
     border-bottom: 0;
+  }
+}
+
+/* ================= DAY MENU ACTIONS (3-крапки дропдаун) ================= */
+
+.day-menu-actions {
+  position: relative;
+  flex-shrink: 0;
+
+  &__btn {
+    width: 28px;
+    height: 28px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-border);
+    background: transparent;
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    transition:
+      background-color 0.15s ease,
+      border-color 0.15s ease,
+      color 0.15s ease;
+
+    &:hover,
+    &.is-open {
+      border-color: var(--color-accent);
+      color: var(--color-accent);
+      background: var(--color-accent-soft, rgba(74, 181, 132, 0.08));
+    }
+  }
+
+  &__dropdown {
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 0;
+    z-index: 300;
+    min-width: 190px;
+
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(-6px);
+    transition:
+      opacity 0.15s ease,
+      transform 0.15s ease;
+
+    &.is-open {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateY(0);
+    }
+  }
+
+  &__item {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    background: none;
+    border: none;
+    text-align: left;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--color-text-primary);
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+    white-space: nowrap;
+
+    &:first-child {
+      border-radius: var(--radius-md) var(--radius-md) 0 0;
+    }
+
+    &:last-child {
+      border-radius: 0 0 var(--radius-md) var(--radius-md);
+    }
+
+    &:hover {
+      background: var(--color-bg-hover);
+    }
+
+    svg {
+      flex-shrink: 0;
+      color: var(--color-text-secondary);
+    }
+
+    &--danger {
+      color: #c94040;
+
+      svg {
+        color: #c94040;
+      }
+
+      &:hover {
+        background: rgba(201, 64, 64, 0.08);
+      }
+    }
+  }
+
+  &__divider {
+    height: 1px;
+    background: var(--color-border);
+    margin: 2px 0;
   }
 }
 
@@ -1135,8 +1252,8 @@
     margin-bottom: 10px;
     order: 2;
 
-    &__title {
-      padding: 0 14px 16px;
+    &__header {
+      padding: 0 14px 14px;
     }
   }
 
