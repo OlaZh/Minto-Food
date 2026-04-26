@@ -1797,7 +1797,8 @@ textarea {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  overflow: visible;
+  overflow-y: auto;
+  min-height: 0;
 }
 
 /* ---------- Search + Barcode ---------- */
@@ -2061,6 +2062,8 @@ textarea {
 }
 .scanner-modal__body {
   padding: 20px;
+  overflow-y: auto;
+  min-height: 0;
 }
 .scanner-modal__reader {
   width: 100%;
@@ -2262,10 +2265,19 @@ textarea {
   .scanner-modal__content {
     max-width: 100%;
     border-radius: 20px 20px 0 0;
-    max-height: 90vh;
+    max-height: 92dvh;
+    display: flex;
+    flex-direction: column;
+  }
+  .scanner-modal__header {
+    flex-shrink: 0;
+  }
+  .scanner-modal__body {
+    flex: 1;
+    min-height: 0;
   }
   .scanner-modal__reader {
-    min-height: 250px;
+    min-height: 200px;
   }
 }
 /* ==============================================

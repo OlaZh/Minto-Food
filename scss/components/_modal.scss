@@ -102,7 +102,8 @@
   flex-direction: column;
   gap: 12px;
 
-  overflow: visible;
+  overflow-y: auto;
+  min-height: 0;
 }
 
 /* ---------- Search + Barcode ---------- */
@@ -430,6 +431,8 @@
 
   &__body {
     padding: 20px;
+    overflow-y: auto;
+    min-height: 0;
   }
 
   &__reader {
@@ -673,11 +676,22 @@
     &__content {
       max-width: 100%;
       border-radius: 20px 20px 0 0;
-      max-height: 90vh;
+      max-height: 92dvh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    &__header {
+      flex-shrink: 0;
+    }
+
+    &__body {
+      flex: 1;
+      min-height: 0;
     }
 
     &__reader {
-      min-height: 250px;
+      min-height: 200px;
     }
   }
 }
