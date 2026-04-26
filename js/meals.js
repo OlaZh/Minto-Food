@@ -1036,7 +1036,24 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   const clearMenuBtn = document.getElementById('clearDayMenuBtn');
   if (clearMenuBtn) {
-    clearMenuBtn.addEventListener('click', () => { closeActionsMenu(); clearDay(); });
+    clearMenuBtn.addEventListener('click', () => {
+      closeActionsMenu();
+      const confirmModal = document.getElementById('confirm-modal');
+      if (!confirmModal) { clearDay(); return; }
+      const titleEl = confirmModal.querySelector('.confirm-title');
+      const yes = document.getElementById('confirm-yes');
+      const no = document.getElementById('confirm-no');
+      if (titleEl) titleEl.textContent = 'Очистити весь день?';
+      confirmModal.classList.add('is-active');
+      confirmModal.hidden = false;
+      const close = () => {
+        confirmModal.classList.remove('is-active');
+        confirmModal.hidden = true;
+        if (titleEl) titleEl.textContent = 'Точно видалити?';
+      };
+      yes.onclick = () => { close(); clearDay(); };
+      no.onclick = close;
+    });
   }
 
   // ================== INIT ==================
