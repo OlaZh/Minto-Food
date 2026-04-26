@@ -1,54 +1,45 @@
 /* ================= WEEK MENU ================= */
 .week-menu {
   width: 100%;
+  padding-top: var(--space-md);
 }
 
-/* ================= ЗАГОЛОВОК + КАРУСЕЛЬ ================= */
+/* ================= ЗАГОЛОВОК ================= */
 .week-menu__header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 16px;
-  margin-bottom: 16px;
-}
-
-.week-menu__nav {
-  display: flex;
-  align-items: center;
-  gap: 12px;
+  gap: var(--space-xs);
+  margin-bottom: var(--space-md);
 }
 
 .week-nav-btn {
   @extend %button-ghost;
-  width: 40px;
-  height: 40px;
-  min-height: 40px;
-  padding: var(--space-xs);
-  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  min-height: 36px;
+  padding: 0;
+  border-radius: var(--radius-sm);
   flex-shrink: 0;
   border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 
   &:hover {
     border-color: var(--color-accent);
     color: var(--color-accent);
+    background: var(--color-surface);
   }
-}
-
-.week-nav__label {
-  font-family: var(--font-heading);
-  font-weight: 600;
-  font-size: 15px;
-  color: var(--color-text-primary);
-  min-width: 220px;
-  text-align: center;
 }
 
 /* ================= КНОПКИ ДІЙ ================= */
 .week-menu__actions {
+  flex: 1;
   display: flex;
   align-items: center;
-  gap: 8px;
+  justify-content: center;
+  gap: var(--space-xs);
   flex-wrap: wrap;
 }
 
@@ -1056,19 +1047,16 @@
 /* Навігація між тижнями на мобільному */
 .week-mobile__nav {
   display: flex;
-  flex-direction: column;
+  align-items: center;
   gap: var(--space-xs);
   margin-bottom: var(--space-xs);
 }
 
-.week-mobile__nav-inner {
+.week-mobile__nav-actions {
+  flex: 1;
   display: flex;
   align-items: center;
-  gap: var(--space-sm);
-}
-
-.week-mobile__nav-actions {
-  display: flex;
+  justify-content: center;
   gap: var(--space-xs);
   flex-wrap: wrap;
 }

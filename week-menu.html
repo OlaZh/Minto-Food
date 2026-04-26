@@ -123,32 +123,34 @@
         <div class="container">
         <main class="main">
           <section class="week-menu">
-            <!-- ЗАГОЛОВОК + КАРУСЕЛЬ ТИЖНІВ -->
+            <!-- ЗАГОЛОВОК: стрілки по краях, дії по центру -->
             <div class="week-menu__header">
-              <div class="week-menu__nav">
-                <button class="week-nav-btn" id="prevWeek" aria-label="Попередній тиждень">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-                </button>
-                <span class="week-nav__label" id="weekLabel">Завантаження...</span>
-                <button class="week-nav-btn" id="nextWeek" aria-label="Наступний тиждень">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-                </button>
-              </div>
+              <button class="week-nav-btn" id="prevWeek" aria-label="Попередній тиждень">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+              </button>
 
               <div class="week-menu__actions">
                 <button class="week-action-btn" id="copyWeekBtn" data-i18n="copyWeek">
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
                   Копіювати тиждень
                 </button>
                 <button class="week-action-btn" id="pasteWeekBtn" data-i18n="pasteWeek">
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg>
                   Вставити тиждень
                 </button>
+                <button class="week-action-btn" id="clearWeekBtn">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+                  Очистити тиждень
+                </button>
                 <button class="week-action-btn week-action-btn--primary" id="weekToShoppingBtn" data-i18n="toShoppingList">
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
                   Список покупок
                 </button>
               </div>
+
+              <button class="week-nav-btn" id="nextWeek" aria-label="Наступний тиждень">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+              </button>
             </div>
 
             <!-- СІТКА ТИЖНЯ -->
@@ -400,6 +402,18 @@
 
         <!-- РЕЗУЛЬТАТИ — скролляться нижче -->
         <div id="weekUnifiedResults" class="week-modal__results"></div>
+      </div>
+    </div>
+
+    <!-- МОДАЛЬНЕ ВІКНО ПІДТВЕРДЖЕННЯ ОЧИЩЕННЯ ТИЖНЯ -->
+    <div id="week-clear-modal" class="modal-overlay">
+      <div class="modal-card confirm-box">
+        <h3 class="confirm-title">Очистити весь тиждень?</h3>
+        <p class="confirm-message">Усі страви цього тижня будуть видалені. Цю дію неможливо скасувати.</p>
+        <div class="confirm-btns">
+          <button id="week-clear-yes" class="btn-confirm btn-danger">Так, очистити</button>
+          <button id="week-clear-no" class="btn-secondary">Скасувати</button>
+        </div>
       </div>
     </div>
 

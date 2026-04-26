@@ -83,30 +83,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     return DAYS.map((_, i) => addDays(mondayDate, i));
   }
 
-  // ================== ЗАГОЛОВОК ТИЖНЯ ==================
+  // ================== НАВІГАЦІЯ ==================
 
-  const weekLabel = document.getElementById('weekLabel');
   const prevWeekBtn = document.getElementById('prevWeek');
   const nextWeekBtn = document.getElementById('nextWeek');
 
   function updateWeekLabel() {
-    if (!weekLabel) return;
-
-    const dates = getWeekDates(currentWeekStart);
-    const firstDate = dates[0];
-    const lastDate = dates[6];
-
-    const options = { day: 'numeric', month: 'long' };
     const locale = lang === 'ua' ? 'uk-UA' : lang === 'pl' ? 'pl-PL' : 'en-US';
-
-    const from = firstDate.toLocaleDateString(locale, options);
-    const to = lastDate.toLocaleDateString(locale, { ...options, year: 'numeric' });
-
-    weekLabel.textContent = `${from} — ${to}`;
-
-    // Оновлюємо підписи дат, абревіатури і виділяємо поточний день
     const dates7 = getWeekDates(currentWeekStart);
     const todayStr = new Date().toDateString();
+
     DAYS.forEach((day, i) => {
       const row = document.querySelector(`.week-grid__row[data-day="${day}"]`);
       const dateEl = row?.querySelector('.week-grid__day-date');
@@ -841,6 +827,64 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
+  // ================== ОЧИЩЕННЯ ТИЖНЯ ==================
+
+  const clearWeekBtn = document.getElementById('clearWeekBtn');
+  const clearWeekModal = document.getElementById('week-clear-modal');
+  const clearWeekYes = document.getElementById('week-clear-yes');
+  const clearWeekNo = document.getElementById('week-clear-no');
+
+  function openClearWeekModal() {
+    if (clearWeekModal) {
+      clearWeekModal.classList.add('is-active');
+      clearWeekModal.hidden = false;
+    }
+  }
+
+  function closeClearWeekModal() {
+    if (clearWeekModal) {
+      clearWeekModal.classList.remove('is-active');
+      clearWeekModal.hidden = true;
+    }
+  }
+
+  if (clearWeekBtn) {
+    clearWeekBtn.addEventListener('click', openClearWeekModal);
+  }
+
+  if (clearWeekYes) {
+    clearWeekYes.addEventListener('click', async () => {
+      const weekStartStr = getLocalDateString(currentWeekStart);
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      let query = supabase.from('week_meals').delete().eq('week_start', weekStartStr);
+      if (user) {
+        query = query.eq('user_id', user.id);
+      } else {
+        query = query.is('user_id', null);
+      }
+
+      const { error } = await query;
+      if (!error) {
+        DAYS.forEach((day) => {
+          MEAL_TYPES.forEach((meal) => {
+            weekMealsState[day][meal] = [];
+          });
+        });
+        renderAllCells();
+        showToast('Тиждень очищено ✓');
+      }
+
+      closeClearWeekModal();
+    });
+  }
+
+  if (clearWeekNo) {
+    clearWeekNo.addEventListener('click', closeClearWeekModal);
+  }
+
   // ================== МОБІЛЬНИЙ ВИГЛЯД ==================
 
   function renderMobileView() {
@@ -853,36 +897,29 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     mobileView.innerHTML = '';
 
-    // Навігація між тижнями
-    const from = weekDates[0].toLocaleDateString(locale, { day: 'numeric', month: 'long' });
-    const to = weekDates[6].toLocaleDateString(locale, {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric',
-    });
-
     const navEl = document.createElement('div');
     navEl.className = 'week-mobile__nav';
     navEl.innerHTML = `
-      <div class="week-mobile__nav-inner">
-        <button type="button" class="week-nav-btn js-mob-prev" aria-label="Попередній тиждень">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-        </button>
-        <span class="week-nav__label">${from} — ${to}</span>
-        <button type="button" class="week-nav-btn js-mob-next" aria-label="Наступний тиждень">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-        </button>
-      </div>
+      <button type="button" class="week-nav-btn js-mob-prev" aria-label="Попередній тиждень">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
       <div class="week-mobile__nav-actions">
         <button type="button" class="week-action-btn js-mob-copy">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-          Копіювати тиждень
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          Копіювати
         </button>
         <button type="button" class="week-action-btn js-mob-paste">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg>
-          Вставити тиждень
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg>
+          Вставити
+        </button>
+        <button type="button" class="week-action-btn js-mob-clear">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+          Очистити
         </button>
       </div>
+      <button type="button" class="week-nav-btn js-mob-next" aria-label="Наступний тиждень">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>
     `;
 
     navEl.querySelector('.js-mob-prev').addEventListener('click', () => {
@@ -895,6 +932,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
     navEl.querySelector('.js-mob-copy').addEventListener('click', () => copyWeekBtn?.click());
     navEl.querySelector('.js-mob-paste').addEventListener('click', () => pasteWeekBtn?.click());
+    navEl.querySelector('.js-mob-clear').addEventListener('click', () => clearWeekBtn?.click());
 
     mobileView.appendChild(navEl);
 
