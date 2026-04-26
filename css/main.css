@@ -188,6 +188,7 @@ table {
 /* Global box model — MUST BE HERE */
 html {
   box-sizing: border-box;
+  overflow-x: hidden;
   font-size: 16px;
   /* theme smoothness (НЕ transition!) */
   background-color: var(--color-bg-primary);
@@ -203,6 +204,7 @@ html {
 /* Body */
 body {
   min-height: 100vh;
+  overflow-x: hidden;
   font-family: var(--font-body);
   font-weight: 400;
   line-height: 1.6;
@@ -3048,8 +3050,10 @@ textarea {
 .auth-modal__window {
   position: relative;
   z-index: 1;
-  width: 100%;
+  width: calc(100% - 32px);
   max-width: 400px;
+  max-height: calc(100dvh - 32px);
+  overflow-y: auto;
   background: linear-gradient(180deg, var(--color-surface) 0%, var(--color-bg-secondary) 100%);
   border-radius: 24px;
   border: 1px solid var(--color-border);
@@ -4720,26 +4724,46 @@ textarea {
 }
 @media (max-width: 768px) {
   .day-week-nav {
-    gap: var(--space-xs);
+    gap: 6px;
     padding: var(--space-sm) 0 var(--space-md);
   }
   .day-week-nav__pill {
-    min-width: 48px;
+    min-width: 40px;
     min-height: 48px;
-    padding: var(--space-xs) 10px;
+    padding: 6px 8px;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .day-week-nav__pill-abbr {
+    font-size: 10px;
   }
   .day-week-nav__pill-num {
-    font-size: 14px;
+    font-size: 13px;
   }
-  .day-ring-card {
-    padding: var(--space-md);
+  .menu-card {
+    min-height: 0;
+    padding: 16px 14px 0;
   }
-  .day-ring-card__ring-wrap {
-    width: 130px;
-    height: 130px;
+  .meal__title {
+    flex: 0 0 110px;
+    font-size: 13px;
+  }
+  .meal__summary {
+    font-size: 12px;
+    gap: 4px;
+  }
+  .meal__add {
+    width: 24px;
+    height: 24px;
   }
   .day-summary {
-    margin-top: 16px;
+    font-size: 13px;
+    gap: var(--space-xs);
+    padding: 10px 0;
+    margin-top: 8px;
+  }
+  .day-summary__label {
+    white-space: nowrap;
   }
   .macro-bars {
     gap: var(--space-sm);

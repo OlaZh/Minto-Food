@@ -895,31 +895,55 @@
 
 @media (max-width: 768px) {
   .day-week-nav {
-    gap: var(--space-xs);
+    gap: 6px;
     padding: var(--space-sm) 0 var(--space-md);
-  }
 
-  .day-week-nav__pill {
-    min-width: 48px;
-    min-height: 48px;
-    padding: var(--space-xs) 10px;
-  }
+    &__pill {
+      min-width: 40px;
+      min-height: 48px;
+      padding: 6px 8px;
+      flex-direction: column;
+      gap: 2px;
+    }
 
-  .day-week-nav__pill-num {
-    font-size: 14px;
-  }
+    &__pill-abbr {
+      font-size: 10px;
+    }
 
-  .day-ring-card {
-    padding: var(--space-md);
-
-    &__ring-wrap {
-      width: 130px;
-      height: 130px;
+    &__pill-num {
+      font-size: 13px;
     }
   }
 
+  .menu-card {
+    min-height: 0;
+    padding: 16px 14px 0;
+  }
+
+  .meal__title {
+    flex: 0 0 110px;
+    font-size: 13px;
+  }
+
+  .meal__summary {
+    font-size: 12px;
+    gap: 4px;
+  }
+
+  .meal__add {
+    width: 24px;
+    height: 24px;
+  }
+
   .day-summary {
-    margin-top: 16px;
+    font-size: 13px;
+    gap: var(--space-xs);
+    padding: 10px 0;
+    margin-top: 8px;
+
+    &__label {
+      white-space: nowrap;
+    }
   }
 
   .macro-bars {

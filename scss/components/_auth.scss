@@ -29,7 +29,7 @@
 .auth-modal__window {
   position: relative;
   z-index: 1;
-  width: 100%;
+  width: calc(100% - 32px);
   max-width: 400px;
   max-height: calc(100dvh - 32px);
   overflow-y: auto;

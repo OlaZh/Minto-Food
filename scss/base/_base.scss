@@ -5,6 +5,7 @@
 /* Global box model — MUST BE HERE */
 html {
   box-sizing: border-box;
+  overflow-x: hidden;
 
   font-size: 16px;
 
@@ -23,6 +24,7 @@ html {
 /* Body */
 body {
   min-height: 100vh;
+  overflow-x: hidden;
 
   font-family: var(--font-body);
   font-weight: 400;
