@@ -1,4 +1,4 @@
-import { supabase } from './supabaseClient.js';
+﻿import { supabase } from './supabaseClient.js';
 import { i18n } from './i18n.js';
 import { initRecipeModal, openRecipeModal } from './recipe-modal.js';
 import { openRecipeView } from './add-recipe.js';
@@ -897,153 +897,305 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     mobileView.innerHTML = '';
 
-    const navEl = document.createElement('div');
-    navEl.className = 'week-mobile__nav';
-    navEl.innerHTML = `
-      <button type="button" class="week-nav-btn js-mob-prev" aria-label="Попередній тиждень">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-      </button>
-      <div class="week-mobile__nav-actions">
-        <button type="button" class="week-action-btn js-mob-copy">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-          Копіювати
-        </button>
-        <button type="button" class="week-action-btn js-mob-paste">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg>
-          Вставити
-        </button>
-        <button type="button" class="week-action-btn js-mob-clear">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
-          Очистити
-        </button>
-      </div>
-      <button type="button" class="week-nav-btn js-mob-next" aria-label="Наступний тиждень">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-      </button>
-    `;
-
-    navEl.querySelector('.js-mob-prev').addEventListener('click', () => {
-      currentWeekStart = addDays(currentWeekStart, -7);
-      loadWeekFromSupabase();
-    });
-    navEl.querySelector('.js-mob-next').addEventListener('click', () => {
-      currentWeekStart = addDays(currentWeekStart, 7);
-      loadWeekFromSupabase();
-    });
-    navEl.querySelector('.js-mob-copy').addEventListener('click', () => copyWeekBtn?.click());
-    navEl.querySelector('.js-mob-paste').addEventListener('click', () => pasteWeekBtn?.click());
-    navEl.querySelector('.js-mob-clear').addEventListener('click', () => clearWeekBtn?.click());
-
-    mobileView.appendChild(navEl);
-
-    // Картки днів
-    DAYS.forEach((day, i) => {
+    // Precompute per-day info
+    const dayInfo = DAYS.map((day, i) => {
       const date = weekDates[i];
       const isToday = date.toDateString() === todayStr;
-
-      const allItems = MEAL_TYPES.flatMap((meal) => weekMealsState[day][meal] || []);
-      const totalKcal = allItems.reduce((sum, item) => sum + (Number(item.kcal) || 0), 0);
-
       const rawAbbr = date.toLocaleDateString(locale, { weekday: 'short' });
       const abbr = (rawAbbr.charAt(0).toUpperCase() + rawAbbr.slice(1)).replace('.', '');
+      return { day, date, isToday, abbr };
+    });
 
-      const dayCard = document.createElement('div');
-      dayCard.className = `week-mobile__day${isToday ? ' week-mobile__day--today is-open' : ''}`;
+    let activeDayIdx = dayInfo.findIndex((d) => d.isToday);
+    if (activeDayIdx === -1) activeDayIdx = 0;
 
-      // Тіло картки (з прийомами їжі)
-      const body = document.createElement('div');
-      body.className = 'week-mobile__day-body';
-      if (!isToday) body.hidden = true;
+    // ── PILLS ДНІВ (всі 7 в ряд, без стрілок) ────────────────────────────────
+    const pillsEl = document.createElement('div');
+    pillsEl.className = 'week-mobile__day-pills';
+
+    dayInfo.forEach(({ date, abbr }, i) => {
+      const pill = document.createElement('button');
+      pill.type = 'button';
+      pill.className = 'week-mobile__pill';
+      pill.dataset.idx = i;
+      if (i === activeDayIdx) pill.setAttribute('aria-current', 'true');
+      pill.innerHTML = `<span class="week-mobile__pill-abbr">${abbr}</span><span class="week-mobile__pill-num">${date.getDate()}</span>`;
+      pillsEl.appendChild(pill);
+    });
+
+    mobileView.appendChild(pillsEl);
+
+    let swipeStartX = 0;
+    mobileView.addEventListener('touchstart', (e) => { swipeStartX = e.touches[0].clientX; }, { passive: true });
+    mobileView.addEventListener('touchend', (e) => {
+      const dx = e.changedTouches[0].clientX - swipeStartX;
+      if (Math.abs(dx) > 60) {
+        currentWeekStart = addDays(currentWeekStart, dx < 0 ? 7 : -7);
+        loadWeekFromSupabase();
+      }
+    }, { passive: true });
+
+    // ── ТУЛБАР ───────────────────────────────────────────────────────────────
+    const toolbarEl = document.createElement('div');
+    toolbarEl.className = 'week-mobile__toolbar';
+    toolbarEl.innerHTML = `
+      <div class="week-mobile__toggle-group">
+        <button type="button" class="week-mobile__toggle-btn week-mobile__toggle-btn--active" data-view="day">День</button>
+        <button type="button" class="week-mobile__toggle-btn" data-view="week">Весь тиждень</button>
+      </div>
+    `;
+    mobileView.appendChild(toolbarEl);
+
+    // ── КОНТЕЙНЕРИ ВИГЛЯДУ ────────────────────────────────────────────────────
+    const dayViewEl = document.createElement('div');
+    dayViewEl.className = 'week-mobile__day-view';
+    mobileView.appendChild(dayViewEl);
+
+    const weekViewEl = document.createElement('div');
+    weekViewEl.className = 'week-mobile__week-view';
+    weekViewEl.hidden = true;
+    weekViewEl.innerHTML = '<p class="week-mobile__week-placeholder">Вигляд цілого тижня — скоро</p>';
+    mobileView.appendChild(weekViewEl);
+
+    toolbarEl.querySelectorAll('.week-mobile__toggle-btn').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        toolbarEl.querySelectorAll('.week-mobile__toggle-btn').forEach((b) => b.classList.remove('week-mobile__toggle-btn--active'));
+        btn.classList.add('week-mobile__toggle-btn--active');
+        const isDay = btn.dataset.view === 'day';
+        dayViewEl.hidden = !isDay;
+        weekViewEl.hidden = isDay;
+        if (!isDay) renderWeekView();
+      });
+    });
+
+    function syncActivePill() {
+      pillsEl.querySelectorAll('.week-mobile__pill').forEach((p, i) => {
+        if (i === activeDayIdx) p.setAttribute('aria-current', 'true');
+        else p.removeAttribute('aria-current');
+      });
+    }
+
+    function renderDayView() {
+      const { day } = dayInfo[activeDayIdx];
+      dayViewEl.innerHTML = '';
+
+      const mealsCard = document.createElement('div');
+      mealsCard.className = 'week-mobile__meals-card';
+      mealsCard.innerHTML = `
+        <div class="week-mobile__meals-header">
+          <span>Прийоми їжі</span>
+          <div class="week-mobile__menu-wrap">
+            <button type="button" class="week-mobile__menu-btn" aria-label="Дії">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                <circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/>
+              </svg>
+            </button>
+            <div class="week-mobile__dropdown" hidden>
+              <button type="button" class="week-mobile__dropdown-item js-mob-copy">Копіювати тиждень</button>
+              <button type="button" class="week-mobile__dropdown-item js-mob-paste">Вставити тиждень</button>
+              <button type="button" class="week-mobile__dropdown-item week-mobile__dropdown-item--danger js-mob-clear">Очистити тиждень</button>
+              <button type="button" class="week-mobile__dropdown-item js-mob-shopping">До списку покупок</button>
+            </div>
+          </div>
+        </div>
+      `;
+
+      const dropdown = mealsCard.querySelector('.week-mobile__dropdown');
+      mealsCard.querySelector('.week-mobile__menu-btn').addEventListener('click', (e) => {
+        e.stopPropagation();
+        dropdown.hidden = !dropdown.hidden;
+      });
+      mealsCard.querySelector('.js-mob-copy').addEventListener('click', () => { copyWeekBtn?.click(); dropdown.hidden = true; });
+      mealsCard.querySelector('.js-mob-paste').addEventListener('click', () => { pasteWeekBtn?.click(); dropdown.hidden = true; });
+      mealsCard.querySelector('.js-mob-clear').addEventListener('click', () => { clearWeekBtn?.click(); dropdown.hidden = true; });
+      mealsCard.querySelector('.js-mob-shopping').addEventListener('click', () => {
+        document.getElementById('weekToShoppingBtn')?.click();
+        dropdown.hidden = true;
+      });
+      dayViewEl.addEventListener('click', (e) => {
+        if (!e.target.closest('.week-mobile__menu-wrap')) dropdown.hidden = true;
+      });
 
       MEAL_TYPES.forEach((mealType) => {
         const items = weekMealsState[day][mealType] || [];
-        const mealSection = document.createElement('div');
-        mealSection.className = 'week-mobile__meal';
+        const count = items.length;
+        const kcal = items.reduce((s, it) => s + (Number(it.kcal) || 0), 0);
+        const countWord = count === 1 ? 'страва' : count < 5 ? 'страви' : 'страв';
 
-        const mealLabel = t(mealType);
-        const mealHeader = document.createElement('div');
-        mealHeader.className = 'week-mobile__meal-header';
-        mealHeader.innerHTML = `
-          <span class="week-mobile__meal-name">${mealLabel}</span>
-          <button type="button" class="week-mobile__add-btn" data-day="${day}" data-meal="${mealType}" aria-label="Додати до ${mealLabel}">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          </button>
+        const accordion = document.createElement('div');
+        accordion.className = 'week-mobile__accordion';
+
+        const accHeader = document.createElement('button');
+        accHeader.type = 'button';
+        accHeader.className = 'week-mobile__accordion-header';
+
+        const addBtn = document.createElement('button');
+        addBtn.type = 'button';
+        addBtn.className = 'week-mobile__acc-add';
+        addBtn.dataset.day = day;
+        addBtn.dataset.meal = mealType;
+        addBtn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>';
+
+        const infoText = count > 0 ? count + ' ' + countWord + ' · ' + kcal + ' ккал' : '';
+        accHeader.innerHTML = `
+          <span class="week-mobile__acc-name">${t(mealType)}</span>
+          <span class="week-mobile__acc-info">${infoText}</span>
         `;
-        mealSection.appendChild(mealHeader);
+        accHeader.appendChild(addBtn);
 
-        if (items.length > 0) {
+        const accBody = document.createElement('div');
+        accBody.className = 'week-mobile__accordion-body';
+        accBody.hidden = true;
+
+        if (count > 0) {
           const ul = document.createElement('ul');
-          ul.className = 'week-mobile__items';
-
+          ul.className = 'week-mobile__acc-items';
           items.forEach((item) => {
             const cleanName = item.name.replace(/^Рецепт\s+/i, '');
             const li = document.createElement('li');
-            li.className = 'week-mobile__item';
+            li.className = 'week-mobile__acc-item';
             li.innerHTML = `
-              <label class="week-mobile__item-label">
-                <input type="checkbox" class="week-mobile__checkbox">
-                <span class="week-mobile__item-name" title="${cleanName}">${cleanName}</span>
-              </label>
-              <span class="week-mobile__item-kcal">${item.kcal || 0} ккал</span>
+              <span class="week-mobile__acc-item-name">${cleanName}</span>
+              <span class="week-mobile__acc-item-kcal">${item.kcal || 0} ккал</span>
+              <button type="button" class="week-mobile__acc-item-del">×</button>
             `;
-
-            li.querySelector('.week-mobile__checkbox').addEventListener('change', (e) => {
-              li.classList.toggle('is-done', e.target.checked);
+            li.querySelector('.week-mobile__acc-item-del').addEventListener('click', (e) => {
+              e.stopPropagation();
+              openDeleteConfirm(item.id, day, mealType);
             });
-
             ul.appendChild(li);
           });
-
-          mealSection.appendChild(ul);
+          accBody.appendChild(ul);
         }
 
-        body.appendChild(mealSection);
-      });
-
-      // Заголовок картки
-      const header = document.createElement('button');
-      header.type = 'button';
-      header.className = 'week-mobile__day-header';
-      header.setAttribute('aria-expanded', isToday ? 'true' : 'false');
-      header.innerHTML = `
-        <div class="week-mobile__day-pill${isToday ? ' week-mobile__day-pill--today' : ''}">
-          <span class="week-mobile__day-abbr">${abbr}</span>
-          <span class="week-mobile__day-num">${date.getDate()}</span>
-        </div>
-        <span class="week-mobile__day-kcal">${totalKcal > 0 ? totalKcal + ' ккал' : 'Порожній'}</span>
-        <svg class="week-mobile__chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="6 9 12 15 18 9"/>
-        </svg>
-      `;
-
-      header.addEventListener('click', () => {
-        const isOpen = dayCard.classList.contains('is-open');
-        mobileView.querySelectorAll('.week-mobile__day').forEach((d) => {
-          d.classList.remove('is-open');
-          d.querySelector('.week-mobile__day-header')?.setAttribute('aria-expanded', 'false');
-          const b = d.querySelector('.week-mobile__day-body');
-          if (b) b.hidden = true;
+        accHeader.addEventListener('click', (e) => {
+          if (e.target.closest('.week-mobile__acc-add')) return;
+          const isOpen = accordion.classList.contains('is-open');
+          accordion.classList.toggle('is-open', !isOpen);
+          accBody.hidden = isOpen;
         });
-        if (!isOpen) {
-          dayCard.classList.add('is-open');
-          header.setAttribute('aria-expanded', 'true');
-          body.hidden = false;
-        }
+
+        addBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          openAddModal(day, mealType);
+          searchAllRecipes('');
+        });
+
+        accordion.appendChild(accHeader);
+        accordion.appendChild(accBody);
+        mealsCard.appendChild(accordion);
       });
 
-      dayCard.appendChild(header);
-      dayCard.appendChild(body);
-      mobileView.appendChild(dayCard);
-    });
+      dayViewEl.appendChild(mealsCard);
 
-    // Кнопки "+" для додавання страв
-    mobileView.querySelectorAll('.week-mobile__add-btn').forEach((btn) => {
-      btn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        openAddModal(btn.dataset.day, btn.dataset.meal);
-        searchAllRecipes('');
+      const allItems = MEAL_TYPES.flatMap((m) => weekMealsState[day][m] || []);
+      const total = allItems.reduce(
+        (acc, it) => ({
+          kcal: acc.kcal + (Number(it.kcal) || 0),
+          protein: acc.protein + (Number(it.protein) || 0),
+          fat: acc.fat + (Number(it.fat) || 0),
+          carbs: acc.carbs + (Number(it.carbs) || 0),
+        }),
+        { kcal: 0, protein: 0, fat: 0, carbs: 0 }
+      );
+
+      const summaryEl = document.createElement('div');
+      summaryEl.className = 'week-mobile__day-summary';
+      summaryEl.innerHTML = `
+        <span class="week-mobile__summary-label">Разом за день</span>
+        <span class="week-mobile__summary-value">${total.kcal} ккал · Б ${total.protein} · Ж ${total.fat} · В ${total.carbs}</span>
+      `;
+      dayViewEl.appendChild(summaryEl);
+    }
+
+
+    function renderWeekView() {
+      weekViewEl.innerHTML = '';
+
+      const grid = document.createElement('div');
+      grid.className = 'mob-week-grid';
+
+      // Кутова клітинка
+      const corner = document.createElement('div');
+      corner.className = 'mob-week-grid__corner';
+      grid.appendChild(corner);
+
+      // Заголовки днів
+      dayInfo.forEach(({ abbr, date }, i) => {
+        const header = document.createElement('div');
+        header.className = 'mob-week-grid__day-header' + (i === activeDayIdx ? ' mob-week-grid__day-header--active' : '');
+        header.innerHTML = `<span class="mob-week-grid__day-abbr">${abbr}</span><span class="mob-week-grid__day-num">${date.getDate()}</span>`;
+        grid.appendChild(header);
+      });
+
+      // Рядки прийомів їжі
+      MEAL_TYPES.forEach((mealType) => {
+        const label = document.createElement('div');
+        label.className = 'mob-week-grid__meal-label';
+        label.textContent = t(mealType);
+        grid.appendChild(label);
+
+        dayInfo.forEach(({ day }, i) => {
+          const items = weekMealsState[day][mealType] || [];
+          const count = items.length;
+          const kcal = items.reduce((s, it) => s + (Number(it.kcal) || 0), 0);
+
+          const cell = document.createElement('div');
+          cell.className = 'mob-week-grid__cell' + (count > 0 ? ' mob-week-grid__cell--filled' : '');
+
+          if (count > 0) {
+            const maxDots = Math.min(count, 4);
+            let html = '<div class="mob-week-grid__dots">';
+            for (let d = 0; d < maxDots; d++) html += '<span class="mob-week-grid__dot"></span>';
+            html += '</div>';
+            html += `<div class="mob-week-grid__kcal">${kcal}</div>`;
+            cell.innerHTML = html;
+          }
+
+          cell.addEventListener('click', () => {
+            activeDayIdx = i;
+            syncActivePill();
+            toolbarEl.querySelectorAll('.week-mobile__toggle-btn').forEach((b) => {
+              b.classList.toggle('week-mobile__toggle-btn--active', b.dataset.view === 'day');
+            });
+            dayViewEl.hidden = false;
+            weekViewEl.hidden = true;
+            renderDayView();
+          });
+
+          grid.appendChild(cell);
+        });
+      });
+
+      // Рядок "Всього"
+      const totalLabel = document.createElement('div');
+      totalLabel.className = 'mob-week-grid__total-label';
+      totalLabel.textContent = 'Всього';
+      grid.appendChild(totalLabel);
+
+      dayInfo.forEach(({ day }) => {
+        const allItems = MEAL_TYPES.flatMap((m) => weekMealsState[day][m] || []);
+        const total = allItems.reduce((s, it) => s + (Number(it.kcal) || 0), 0);
+        const cell = document.createElement('div');
+        cell.className = 'mob-week-grid__total-cell';
+        cell.innerHTML = total > 0
+          ? `<b>${total}</b><span>ккал</span>`
+          : '<span class="mob-week-grid__empty">—</span>';
+        grid.appendChild(cell);
+      });
+
+      weekViewEl.appendChild(grid);
+    }
+
+    pillsEl.querySelectorAll('.week-mobile__pill').forEach((pill) => {
+      pill.addEventListener('click', () => {
+        activeDayIdx = Number(pill.dataset.idx);
+        syncActivePill();
+        renderDayView();
       });
     });
+
+    renderDayView();
   }
 
   // ================== ІНІЦІАЛІЗАЦІЯ ==================

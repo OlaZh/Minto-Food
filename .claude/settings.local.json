@@ -3,7 +3,13 @@
     "allow": [
       "Bash(python -c ' *)",
       "Bash(sass --version)",
-      "Bash(npx sass *)"
+      "Bash(npx sass *)",
+      "Bash(npm run *)",
+      "Bash(sass scss/main.scss css/main.css)",
+      "Read(//usr/local/bin/**)",
+      "Bash(node -e \"require\\('sass'\\)\")",
+      "Bash(\"/c/Program Files/nodejs/node.exe\" -e \"const sass = require\\('sass'\\); const fs = require\\('fs'\\); const result = sass.compile\\('c:/Users/violk/Desktop/Minto Food/scss/main.scss', {sourceMap: true}\\); fs.writeFileSync\\('c:/Users/violk/Desktop/Minto Food/css/main.css', result.css\\);\")",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(list\\(d.get\\('dependencies',{}\\).keys\\(\\)\\)\\)\")"
     ]
   }
 }

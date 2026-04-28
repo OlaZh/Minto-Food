@@ -287,13 +287,25 @@ export async function openRecipeView(recipeId) {
   if (notesField) notesField.value = recipe.notes || '';
 
   // --- ІНГРЕДІЄНТИ ---
+
   const list = document.getElementById('view-ingredients-list');
   if (list) {
     list.innerHTML = '';
 
     const { data: productRecipes } = await supabase
       .from('product_recipe')
-      .select('amount, unit, ingredient_id, products(name_ua, name_en, name_pl)')
+      .select(
+        `
+    amount,
+    unit,
+    ingredient_id,
+    products!product_recipe_ingredient_id_fkey (
+      name_ua,
+      name_en,
+      name_pl
+    )
+  `,
+      )
       .eq('recipe_id', recipeId);
 
     if (productRecipes && productRecipes.length > 0) {

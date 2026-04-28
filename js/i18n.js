@@ -1,5 +1,11 @@
 export const i18n = {
   ua: {
+    // Прийоми їжі
+    breakfast: 'Сніданок',
+    snack1: 'Перекус 1',
+    lunch: 'Обід',
+    snack2: 'Перекус 2',
+    dinner: 'Вечеря',
     // Меню на день
     kcal: 'ккал',
     protein: 'Б',
@@ -33,6 +39,12 @@ export const i18n = {
     apiImportBtn: 'Пошук',
   },
   pl: {
+    // Прийоми їжі
+    breakfast: 'Śniadanie',
+    snack1: 'Przekąska 1',
+    lunch: 'Obiad',
+    snack2: 'Przekąska 2',
+    dinner: 'Kolacja',
     // Меню на день
     kcal: 'kcal',
     protein: 'B',
@@ -66,6 +78,12 @@ export const i18n = {
     apiImportBtn: 'Szukaj',
   },
   en: {
+    // Прийоми їжі
+    breakfast: 'Breakfast',
+    snack1: 'Snack 1',
+    lunch: 'Lunch',
+    snack2: 'Snack 2',
+    dinner: 'Dinner',
     // Меню на день
     kcal: 'kcal',
     protein: 'P',
