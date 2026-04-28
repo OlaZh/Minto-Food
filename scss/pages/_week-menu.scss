@@ -1124,7 +1124,7 @@
 
 .week-mobile__toggle-group {
   display: flex;
-  background: var(--color-surface-secondary, #f0f0f0);
+  background: rgba(0, 0, 0, 0.1);
   border-radius: 8px;
   padding: 2px;
   gap: 2px;
@@ -1138,16 +1138,16 @@
   background: transparent;
   font-size: 13px;
   font-weight: 500;
-  color: var(--color-text-secondary);
+  color: var(--color-text-primary);
   cursor: pointer;
   white-space: nowrap;
   transition: background 0.15s, color 0.15s;
 
   &--active {
-    background: var(--color-surface);
-    color: var(--color-text-primary);
+    background: var(--color-accent);
+    color: #fff;
     font-weight: 600;
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
   }
 }
 
@@ -1414,7 +1414,7 @@
 }
 
 .mob-week-grid__corner {
-  background: var(--color-surface-secondary, #f5f5f5);
+  background: transparent;
 }
 
 .mob-week-grid__day-header {
@@ -1423,7 +1423,7 @@
   align-items: center;
   justify-content: center;
   padding: 6px 2px;
-  background: var(--color-surface-secondary, #f5f5f5);
+  background: transparent;
   cursor: default;
 
   &--active {
@@ -1456,15 +1456,15 @@
   align-items: center;
   justify-content: center;
   padding: 4px 2px;
-  background: var(--color-surface-secondary, #f5f5f5);
+  background: transparent;
   writing-mode: vertical-rl;
   text-orientation: mixed;
   transform: rotate(180deg);
   font-size: 7px;
-  font-weight: 600;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  color: var(--color-text-secondary);
+  color: var(--color-text-primary);
 }
 
 .mob-week-grid__cell {
@@ -1510,7 +1510,7 @@
   align-items: center;
   justify-content: center;
   padding: 4px 2px;
-  background: var(--color-surface-secondary, #f5f5f5);
+  background: transparent;
   writing-mode: vertical-rl;
   text-orientation: mixed;
   transform: rotate(180deg);
@@ -1528,7 +1528,7 @@
   align-items: center;
   justify-content: center;
   padding: 6px 2px;
-  background: var(--color-surface-secondary, #f5f5f5);
+  background: transparent;
   border-bottom: none;
 
   b {

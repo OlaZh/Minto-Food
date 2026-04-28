@@ -5171,7 +5171,7 @@ textarea {
   width: 100%;
   padding: 12px 88px 12px 16px;
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-sm);
   background: var(--color-surface);
   color: var(--color-text-primary);
   font-size: 15px;
@@ -5247,7 +5247,7 @@ textarea {
 }
 .recipe-filters__item {
   padding: var(--space-xs) var(--space-lg);
-  border-radius: var(--radius-pill);
+  border-radius: var(--radius-sm);
   border: 1px solid var(--color-border);
   background: var(--color-surface);
   color: var(--color-text-secondary);
@@ -7783,7 +7783,7 @@ textarea {
 
 .week-mobile__toggle-group {
   display: flex;
-  background: var(--color-surface-secondary, #f0f0f0);
+  background: rgba(0, 0, 0, 0.1);
   border-radius: 8px;
   padding: 2px;
   gap: 2px;
@@ -7797,16 +7797,16 @@ textarea {
   background: transparent;
   font-size: 13px;
   font-weight: 500;
-  color: var(--color-text-secondary);
+  color: var(--color-text-primary);
   cursor: pointer;
   white-space: nowrap;
   transition: background 0.15s, color 0.15s;
 }
 .week-mobile__toggle-btn--active {
-  background: var(--color-surface);
-  color: var(--color-text-primary);
+  background: var(--color-accent);
+  color: #fff;
   font-weight: 600;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
 }
 
 .week-mobile__menu-wrap {
@@ -8059,7 +8059,7 @@ textarea {
 }
 
 .mob-week-grid__corner {
-  background: var(--color-surface-secondary, #f5f5f5);
+  background: transparent;
 }
 
 .mob-week-grid__day-header {
@@ -8068,7 +8068,7 @@ textarea {
   align-items: center;
   justify-content: center;
   padding: 6px 2px;
-  background: var(--color-surface-secondary, #f5f5f5);
+  background: transparent;
   cursor: default;
 }
 .mob-week-grid__day-header--active {
@@ -8099,15 +8099,15 @@ textarea {
   align-items: center;
   justify-content: center;
   padding: 4px 2px;
-  background: var(--color-surface-secondary, #f5f5f5);
+  background: transparent;
   writing-mode: vertical-rl;
   text-orientation: mixed;
   transform: rotate(180deg);
   font-size: 7px;
-  font-weight: 600;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  color: var(--color-text-secondary);
+  color: var(--color-text-primary);
 }
 
 .mob-week-grid__cell {
@@ -8152,7 +8152,7 @@ textarea {
   align-items: center;
   justify-content: center;
   padding: 4px 2px;
-  background: var(--color-surface-secondary, #f5f5f5);
+  background: transparent;
   writing-mode: vertical-rl;
   text-orientation: mixed;
   transform: rotate(180deg);
@@ -8170,7 +8170,7 @@ textarea {
   align-items: center;
   justify-content: center;
   padding: 6px 2px;
-  background: var(--color-surface-secondary, #f5f5f5);
+  background: transparent;
   border-bottom: none;
 }
 .mob-week-grid__total-cell b {
