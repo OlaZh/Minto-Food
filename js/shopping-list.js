@@ -44,6 +44,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (currentUser) {
     await initLists();
     subscribeToMainList();
+    startPolling();
     checkWeekMenuImport();
   }
   bindEvents();
@@ -302,7 +303,8 @@ async function loadPanelListItems(listId, container) {
     container.appendChild(empty);
   }
 
-  container.appendChild(buildPanelAddForm(listId, container));
+  const isWishlist = allLists.find(l => l.id === listId)?.type === 'wishlist';
+  container.appendChild(buildPanelAddForm(listId, container, isWishlist));
 }
 
 function buildPanelSubItem(item, listId, container) {
@@ -310,12 +312,16 @@ function buildPanelSubItem(item, listId, container) {
   li.className = 'shop-list-item__sub-item';
   li.dataset.id = item.id;
 
-  const amountText = item.amount
+  const isWishlist = allLists.find(l => l.id === listId)?.type === 'wishlist';
+  const amountText = !isWishlist && item.amount
     ? `${item.amount}${item.unit ? ' ' + item.unit : ''}`
     : '';
 
   li.innerHTML = `
-    <span class="shop-list-item__sub-name">${escapeHTML(item.name)}</span>
+    <div class="shop-list-item__sub-info">
+      <span class="shop-list-item__sub-name">${escapeHTML(item.name)}</span>
+      ${item.note ? `<span class="shop-list-item__sub-note">${escapeHTML(item.note)}</span>` : ''}
+    </div>
     ${amountText ? `<span class="shop-list-item__sub-amount">${escapeHTML(amountText)}</span>` : ''}
     <button class="shop-list-item__sub-add" title="Додати до активного списку">→</button>
     <button class="shop-list-item__sub-btn shop-list-item__sub-btn--edit" aria-label="Редагувати">
@@ -351,43 +357,56 @@ function buildPanelSubItem(item, listId, container) {
   return li;
 }
 
-function buildPanelAddForm(listId, container) {
+function buildPanelAddForm(listId, container, isWishlist = false) {
   const li = document.createElement('li');
   li.className = 'shop-panel-item-add';
 
-  li.innerHTML = `
-    <input type="text" class="shop-panel-item-add__input" placeholder="Назва продукту..." />
-    <div class="shop-panel-item-add__row">
-      <input type="number" class="shop-panel-item-add__qty"  placeholder="К-сть" min="0" step="any" />
-      <input type="text"   class="shop-panel-item-add__unit" placeholder="од." maxlength="8" />
-      <button class="shop-panel-item-add__btn" aria-label="Додати">+</button>
-    </div>
-  `;
-
-  const nameEl = li.querySelector('.shop-panel-item-add__input');
-  const qtyEl  = li.querySelector('.shop-panel-item-add__qty');
-  const unitEl = li.querySelector('.shop-panel-item-add__unit');
-  const btn    = li.querySelector('.shop-panel-item-add__btn');
-
-  const doAdd = async () => {
-    const name = nameEl.value.trim();
-    const qty  = parseFloat(qtyEl.value) || null;
-    const unit = unitEl.value.trim() || null;
-    if (!name) { nameEl.focus(); return; }
-    await addPanelItem(name, qty, unit, listId, container, li);
-    nameEl.value = '';
-    qtyEl.value  = '';
-    unitEl.value = '';
-    nameEl.focus();
-  };
-
-  btn.addEventListener('click', doAdd);
-  nameEl.addEventListener('keydown', e => { if (e.key === 'Enter') doAdd(); });
+  if (isWishlist) {
+    li.innerHTML = `
+      <input type="text" class="shop-panel-item-add__input" placeholder="Назва..." />
+      <div class="shop-panel-item-add__row">
+        <input type="text" class="shop-panel-item-add__note" placeholder="Примітка..." />
+        <button class="shop-panel-item-add__btn" aria-label="Додати">+</button>
+      </div>
+    `;
+    const nameEl = li.querySelector('.shop-panel-item-add__input');
+    const noteEl = li.querySelector('.shop-panel-item-add__note');
+    const btn    = li.querySelector('.shop-panel-item-add__btn');
+    const doAdd  = async () => {
+      const name = nameEl.value.trim();
+      if (!name) { nameEl.focus(); return; }
+      await addPanelItem(name, null, null, listId, container, li, noteEl.value.trim() || null);
+      nameEl.value = ''; noteEl.value = ''; nameEl.focus();
+    };
+    btn.addEventListener('click', doAdd);
+    nameEl.addEventListener('keydown', e => { if (e.key === 'Enter') doAdd(); });
+  } else {
+    li.innerHTML = `
+      <input type="text" class="shop-panel-item-add__input" placeholder="Назва продукту..." />
+      <div class="shop-panel-item-add__row">
+        <input type="number" class="shop-panel-item-add__qty"  placeholder="К-сть" min="0" step="any" />
+        <input type="text"   class="shop-panel-item-add__unit" placeholder="од." maxlength="8" />
+        <button class="shop-panel-item-add__btn" aria-label="Додати">+</button>
+      </div>
+    `;
+    const nameEl = li.querySelector('.shop-panel-item-add__input');
+    const qtyEl  = li.querySelector('.shop-panel-item-add__qty');
+    const unitEl = li.querySelector('.shop-panel-item-add__unit');
+    const btn    = li.querySelector('.shop-panel-item-add__btn');
+    const doAdd  = async () => {
+      const name = nameEl.value.trim();
+      if (!name) { nameEl.focus(); return; }
+      await addPanelItem(name, parseFloat(qtyEl.value) || null, unitEl.value.trim() || null, listId, container, li);
+      nameEl.value = ''; qtyEl.value = ''; unitEl.value = ''; nameEl.focus();
+    };
+    btn.addEventListener('click', doAdd);
+    nameEl.addEventListener('keydown', e => { if (e.key === 'Enter') doAdd(); });
+  }
 
   return li;
 }
 
-async function addPanelItem(name, qty, unit, listId, container, formLi) {
+async function addPanelItem(name, qty, unit, listId, container, formLi, note = null) {
   if (!currentUser) return;
 
   const { data, error } = await supabase
@@ -396,6 +415,7 @@ async function addPanelItem(name, qty, unit, listId, container, formLi) {
       list_id: listId,
       user_id: currentUser.id,
       name, amount: qty || null, unit: unit || null,
+      note: note || null,
       category: 'Інше', is_checked: false,
     }])
     .select().single();
@@ -701,17 +721,26 @@ async function shareListById(id) {
    РЕДАГУВАННЯ МОДАЛКА (активний список + панельні списки)
    ============================================================ */
 
-const editModal = document.getElementById('shop-edit-modal');
-const editName  = document.getElementById('shop-edit-name');
-const editQty   = document.getElementById('shop-edit-qty');
-const editUnit  = document.getElementById('shop-edit-unit');
+const editModal   = document.getElementById('shop-edit-modal');
+const editName    = document.getElementById('shop-edit-name');
+const editQty     = document.getElementById('shop-edit-qty');
+const editUnit    = document.getElementById('shop-edit-unit');
+const editNote    = document.getElementById('shop-edit-note');
+const editQtyRow  = document.getElementById('shop-edit-qty-row');
 
 function openEditModal(item, panelCtx = null) {
   editingItemId   = item.id;
   editingPanelCtx = panelCtx;
   editName.value  = item.name;
   editQty.value   = item.amount || '';
-  editUnit.value  = item.unit || '';
+  editUnit.value  = item.unit  || '';
+  editNote.value  = item.note  || '';
+
+  const isWishlist = panelCtx
+    ? allLists.find(l => l.id === panelCtx.listId)?.type === 'wishlist'
+    : false;
+  editQtyRow.style.display = isWishlist ? 'none' : '';
+
   editModal.classList.add('is-active');
   document.body.style.overflow = 'hidden';
   editName.focus();
@@ -731,19 +760,19 @@ async function saveEdit() {
   const unit   = editUnit.value.trim() || null;
   if (!name) { showToast('Введіть назву', 'error'); return; }
 
+  const note = editNote.value.trim() || null;
+
   const { error } = await supabase
-    .from('shopping_items').update({ name, amount, unit })
+    .from('shopping_items').update({ name, amount, unit, note })
     .eq('id', editingItemId).eq('user_id', currentUser.id);
   if (error) { showToast('Помилка', 'error'); return; }
 
   if (editingPanelCtx) {
-    // Оновлюємо панельний список
     const { listId, container } = editingPanelCtx;
     await loadPanelListItems(listId, container);
   } else {
-    // Оновлюємо активний список
     const item = activeItems.find(i => i.id === editingItemId);
-    if (item) { item.name = name; item.amount = amount; item.unit = unit; }
+    if (item) { item.name = name; item.amount = amount; item.unit = unit; item.note = note; }
     renderActiveList();
   }
 
@@ -800,6 +829,36 @@ function subscribeToMainList() {
       filter: `list_id=eq.${mainListId}`,
     }, handleRealtimeEvent)
     .subscribe();
+}
+
+function startPolling() {
+  setInterval(syncActiveItems, 5000);
+}
+
+async function syncActiveItems() {
+  if (!mainListId || !currentUser) return;
+  const { data } = await supabase
+    .from('shopping_items').select('*')
+    .eq('list_id', mainListId).eq('user_id', currentUser.id)
+    .order('created_at', { ascending: true });
+  if (!data) return;
+
+  let changed = false;
+  data.forEach(newItem => {
+    const existing = activeItems.find(i => i.id === newItem.id);
+    if (!existing) {
+      activeItems.push(newItem);
+      changed = true;
+    } else if (existing.is_checked !== newItem.is_checked) {
+      existing.is_checked = newItem.is_checked;
+      changed = true;
+    }
+  });
+  const before = activeItems.length;
+  activeItems = activeItems.filter(i => data.some(d => d.id === i.id));
+  if (activeItems.length !== before) changed = true;
+
+  if (changed) { renderActiveList(); renderProgress(); }
 }
 
 function handleRealtimeEvent(payload) {
