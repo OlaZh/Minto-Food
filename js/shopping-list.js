@@ -1,5 +1,7 @@
 /* ============================================================
-   shopping-list.js — Список покупок (multi-list)
+   shopping-list.js — Список покупок
+   Центр: завжди активний список. Права панель: шаблони, які
+   розкриваються в собі й переносять товари до центру.
    ============================================================ */
 
 import { supabase } from './supabaseClient.js';
@@ -10,13 +12,14 @@ import { showToast } from './utils.js';
    СТАН
    ============================================================ */
 
-let currentUser = null;
-let allLists = [];          // всі списки користувача
-let activeListId = null;    // ID поточного списку в центрі
-let activeItems = [];       // позиції поточного списку
-let wishlistId = null;      // ID вішліст-списку
-let wishlistItems = [];     // позиції вішліста
-let editingItemId = null;
+let currentUser  = null;
+let mainListId   = null;   // завжди відображається в центрі
+let allLists     = [];     // всі списки (без mainList і wishlist)
+let activeItems  = [];     // позиції mainList
+let wishlistId   = null;
+let wishlistItems= [];
+let panelOpenId  = null;   // який список розкрито в правій панелі
+let editingItemId= null;
 
 /* ============================================================
    DOM
@@ -28,7 +31,6 @@ const progressFillEl = document.getElementById('shop-progress-fill');
 const countLabelEl   = document.getElementById('shop-count-label');
 const ringPathEl     = document.getElementById('shop-ring-path');
 const ringValueEl    = document.getElementById('shop-ring-value');
-const mainTitleEl    = document.getElementById('shop-main-title');
 const listsUlEl      = document.getElementById('shop-lists-ul');
 const wishlistUlEl   = document.getElementById('shop-wishlist-ul');
 const importBannerEl = document.getElementById('shop-import-banner');
@@ -51,39 +53,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 async function initLists() {
   await loadAllLists();
 
-  // Знаходимо або створюємо вішліст і постійний список
-  wishlistId = await ensureSystemList('wishlist', 'Вішліст');
-  const permanentId = await ensureSystemList('permanent', 'Постійний список');
-
-  // Якщо є інші списки — активуємо перший; якщо ні — постійний
-  const regularLists = allLists.filter(l => l.type === 'shopping' || l.type === 'event');
-  activeListId = regularLists.length > 0
-    ? regularLists[0].id
-    : permanentId;
+  // Гарантуємо існування системних списків
+  wishlistId = await ensureList('wishlist', 'Вішліст');
+  await ensureList('permanent', 'Постійний список');
+  mainListId = await ensureMainList();
 
   renderLists();
   await Promise.all([loadActiveItems(), loadWishlistItems()]);
 }
-
-async function ensureSystemList(type, name) {
-  const existing = allLists.find(l => l.type === type);
-  if (existing) return existing.id;
-
-  const { data, error } = await supabase
-    .from('shopping_lists')
-    .insert([{ user_id: currentUser.id, name, type }])
-    .select()
-    .single();
-
-  if (error) { console.error('ensureSystemList:', error); return null; }
-
-  allLists.push(data);
-  return data.id;
-}
-
-/* ============================================================
-   ЗАВАНТАЖЕННЯ СПИСКІВ
-   ============================================================ */
 
 async function loadAllLists() {
   const { data, error } = await supabase
@@ -96,18 +73,52 @@ async function loadAllLists() {
   allLists = data || [];
 }
 
+async function ensureList(type, name) {
+  const existing = allLists.find(l => l.type === type);
+  if (existing) return existing.id;
+
+  const { data, error } = await supabase
+    .from('shopping_lists')
+    .insert([{ user_id: currentUser.id, name, type }])
+    .select()
+    .single();
+
+  if (error) { console.error('ensureList:', error); return null; }
+  allLists.push(data);
+  return data.id;
+}
+
+async function ensureMainList() {
+  // Перший shopping список — це головний активний список
+  const existing = allLists.find(l => l.type === 'shopping');
+  if (existing) return existing.id;
+
+  const { data, error } = await supabase
+    .from('shopping_lists')
+    .insert([{ user_id: currentUser.id, name: 'Список покупок', type: 'shopping' }])
+    .select()
+    .single();
+
+  if (error) { console.error('ensureMainList:', error); return null; }
+  allLists.push(data);
+  return data.id;
+}
+
+/* ============================================================
+   ЗАВАНТАЖЕННЯ ПОЗИЦІЙ
+   ============================================================ */
+
 async function loadActiveItems() {
-  if (!activeListId) return;
+  if (!mainListId) return;
 
   const { data, error } = await supabase
     .from('shopping_items')
     .select('*')
-    .eq('list_id', activeListId)
+    .eq('list_id', mainListId)
     .eq('user_id', currentUser.id)
     .order('created_at', { ascending: true });
 
   if (error) { console.error(error); return; }
-
   activeItems = data || [];
   renderActiveList();
   renderProgress();
@@ -124,40 +135,39 @@ async function loadWishlistItems() {
     .order('created_at', { ascending: true });
 
   if (error) { console.error(error); return; }
-
   wishlistItems = data || [];
   renderWishlist();
 }
 
 /* ============================================================
-   РЕНДЕР — СПИСКИ (права панель)
+   РЕНДЕР — ПРАВА ПАНЕЛЬ "МОЇ СПИСКИ"
+   Показує всі списки, КРІМ mainList і wishlist
    ============================================================ */
 
 function renderLists() {
   listsUlEl.innerHTML = '';
 
-  const permanentList = allLists.find(l => l.type === 'permanent');
-  const regularLists  = allLists.filter(l => l.type === 'shopping' || l.type === 'event');
+  const panelLists = allLists.filter(l =>
+    l.id !== mainListId && l.type !== 'wishlist'
+  );
 
-  // Постійний список — завжди перший
-  if (permanentList) {
-    listsUlEl.appendChild(buildListItem(permanentList, true));
-  }
+  // Постійний список завжди першим
+  const permanent = panelLists.find(l => l.type === 'permanent');
+  if (permanent) listsUlEl.appendChild(buildListItem(permanent));
 
-  regularLists.forEach(list => {
-    listsUlEl.appendChild(buildListItem(list, false));
-  });
+  panelLists
+    .filter(l => l.type !== 'permanent')
+    .forEach(l => listsUlEl.appendChild(buildListItem(l)));
 }
 
-function buildListItem(list, isPermanent) {
+function buildListItem(list) {
   const li = document.createElement('li');
-  li.className = `shop-list-item${list.id === activeListId ? ' shop-list-item--active' : ''}`;
+  li.className = 'shop-list-item';
   li.dataset.id = list.id;
 
-  const itemCount = allLists.find(l => l.id === list.id)?._count || 0;
-
+  const isPermanent = list.type === 'permanent';
   const lockIcon = isPermanent
-    ? `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>`
+    ? `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>`
     : '';
 
   const meta = isPermanent
@@ -165,14 +175,20 @@ function buildListItem(list, isPermanent) {
     : formatListMeta(list);
 
   li.innerHTML = `
-    <div class="shop-list-item__left">
-      <p class="shop-list-item__name">${lockIcon}${escapeHTML(list.name)}</p>
-      <p class="shop-list-item__meta">${meta}</p>
+    <div class="shop-list-item__header">
+      <div class="shop-list-item__left">
+        <p class="shop-list-item__name">${lockIcon}${escapeHTML(list.name)}</p>
+        ${meta ? `<p class="shop-list-item__meta">${meta}</p>` : ''}
+      </div>
+      <svg class="shop-list-item__chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
     </div>
-    <svg class="shop-list-item__chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+    <ul class="shop-list-item__sub-items" hidden></ul>
   `;
 
-  li.addEventListener('click', () => selectList(list.id));
+  li.querySelector('.shop-list-item__header').addEventListener('click', () => {
+    togglePanelList(list.id, li);
+  });
+
   return li;
 }
 
@@ -182,24 +198,108 @@ function formatListMeta(list) {
     parts.push(new Date(list.event_date).toLocaleDateString('uk', { day: 'numeric', month: 'short' }));
   }
   if (list.is_shared) parts.push('Спільний');
-  return parts.length > 0 ? parts.join(' · ') : '';
+  return parts.join(' · ');
 }
 
-async function selectList(id) {
-  activeListId = id;
+async function togglePanelList(listId, li) {
+  const subItems = li.querySelector('.shop-list-item__sub-items');
 
-  // Оновлюємо заголовок центральної колонки
-  const list = allLists.find(l => l.id === id);
-  if (list && mainTitleEl) {
-    mainTitleEl.textContent = list.type === 'permanent' ? 'Постійний список' : list.name;
+  if (panelOpenId === listId) {
+    // Закриваємо
+    subItems.hidden = true;
+    li.classList.remove('shop-list-item--open');
+    panelOpenId = null;
+    return;
   }
 
-  // Оновлюємо активний стан у правій панелі
-  listsUlEl.querySelectorAll('.shop-list-item').forEach(el => {
-    el.classList.toggle('shop-list-item--active', Number(el.dataset.id) === id);
-  });
+  // Закриваємо попередній
+  if (panelOpenId) {
+    const prevLi = listsUlEl.querySelector(`[data-id="${panelOpenId}"]`);
+    if (prevLi) {
+      prevLi.querySelector('.shop-list-item__sub-items').hidden = true;
+      prevLi.classList.remove('shop-list-item--open');
+    }
+  }
 
-  await loadActiveItems();
+  panelOpenId = listId;
+  li.classList.add('shop-list-item--open');
+  subItems.hidden = false;
+  await loadPanelListItems(listId, subItems);
+}
+
+async function loadPanelListItems(listId, container) {
+  container.innerHTML = '<li class="shop-list-item__sub-empty">Завантаження...</li>';
+
+  const { data, error } = await supabase
+    .from('shopping_items')
+    .select('*')
+    .eq('list_id', listId)
+    .eq('user_id', currentUser.id)
+    .order('created_at', { ascending: true });
+
+  container.innerHTML = '';
+
+  if (error || !data || data.length === 0) {
+    container.innerHTML = '<li class="shop-list-item__sub-empty">Список порожній</li>';
+    return;
+  }
+
+  data.forEach(item => {
+    const el = document.createElement('li');
+    el.className = 'shop-list-item__sub-item';
+
+    const amountText = item.amount
+      ? `${item.amount}${item.unit ? ' ' + item.unit : ''}`
+      : '';
+
+    el.innerHTML = `
+      <span class="shop-list-item__sub-name">${escapeHTML(item.name)}</span>
+      ${amountText ? `<span class="shop-list-item__sub-amount">${escapeHTML(amountText)}</span>` : ''}
+      <button class="shop-list-item__sub-add">→ Додати</button>
+    `;
+
+    el.querySelector('.shop-list-item__sub-add').addEventListener('click', e => {
+      e.stopPropagation();
+      addFromPanel(item);
+    });
+
+    container.appendChild(el);
+  });
+}
+
+async function addFromPanel(item) {
+  if (!mainListId) return;
+
+  const existing = activeItems.find(i =>
+    i.name.toLowerCase() === item.name.toLowerCase() && !i.is_checked
+  );
+
+  if (existing) {
+    const newAmount = (parseFloat(existing.amount) || 0) + (parseFloat(item.amount) || 0);
+    await updateItemAmount(existing.id, newAmount || null);
+    showToast(`"${item.name}" оновлено`);
+  } else {
+    const { data, error } = await supabase
+      .from('shopping_items')
+      .insert([{
+        list_id: mainListId,
+        user_id: currentUser.id,
+        name: item.name,
+        amount: item.amount || null,
+        unit: item.unit || null,
+        category: item.category || 'Інше',
+        is_checked: false,
+      }])
+      .select()
+      .single();
+
+    if (error) { showToast('Помилка', 'error'); return; }
+    activeItems.push(data);
+    showToast(`"${item.name}" додано до списку`);
+  }
+
+  renderActiveList();
+  renderProgress();
 }
 
 /* ============================================================
@@ -285,6 +385,11 @@ function buildActiveItem(item) {
 function renderWishlist() {
   wishlistUlEl.innerHTML = '';
 
+  if (wishlistItems.length === 0) {
+    wishlistUlEl.innerHTML = '<li style="font-size:12px;color:var(--color-text-secondary);padding:4px 0">Список порожній</li>';
+    return;
+  }
+
   wishlistItems.forEach(item => {
     const li = document.createElement('li');
     li.className = 'shop-wishlist-item';
@@ -300,7 +405,7 @@ function renderWishlist() {
         ${amountText ? `<p class="shop-wishlist-item__amount">${escapeHTML(amountText)}</p>` : ''}
         ${item.note ? `<p class="shop-wishlist-item__note">${escapeHTML(item.note)}</p>` : ''}
       </div>
-      <button class="shop-wishlist-item__move-btn" aria-label="До списку">→ До списку</button>
+      <button class="shop-wishlist-item__move-btn">→ До списку</button>
       <button class="shop-wishlist-item__delete-btn" aria-label="Видалити">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
@@ -308,7 +413,7 @@ function renderWishlist() {
       </button>
     `;
 
-    li.querySelector('.shop-wishlist-item__move-btn').addEventListener('click', () => moveWishlistItemToList(item));
+    li.querySelector('.shop-wishlist-item__move-btn').addEventListener('click', () => addFromPanel(item));
     li.querySelector('.shop-wishlist-item__delete-btn').addEventListener('click', () => deleteWishlistItem(item.id));
 
     wishlistUlEl.appendChild(li);
@@ -346,7 +451,7 @@ function checkWeekMenuImport() {
 }
 
 async function importFromWeekMenu() {
-  if (!activeListId) return;
+  if (!mainListId) return;
   const raw = localStorage.getItem('week_shopping_list');
   if (!raw) return;
 
@@ -355,7 +460,7 @@ async function importFromWeekMenu() {
   if (!items?.length) return;
 
   const rows = items.map(item => ({
-    list_id: activeListId,
+    list_id: mainListId,
     user_id: currentUser.id,
     name: item.name,
     amount: item.amount || null,
@@ -379,12 +484,25 @@ async function importFromWeekMenu() {
 
 async function addItem(name, amount, unit) {
   if (!currentUser) { showToast('Увійдіть в акаунт', 'error'); return; }
-  if (!activeListId) { showToast('Оберіть список', 'error'); return; }
+  if (!mainListId)  { showToast('Помилка ініціалізації', 'error'); return; }
+
+  // Якщо такий товар вже є (та ж назва + та ж одиниця) — сумуємо кількість
+  const existing = activeItems.find(i =>
+    i.name.toLowerCase() === name.toLowerCase() &&
+    (i.unit || '').toLowerCase() === (unit || '').toLowerCase() &&
+    !i.is_checked
+  );
+
+  if (existing && amount) {
+    const newAmount = (parseFloat(existing.amount) || 0) + amount;
+    await updateItemAmount(existing.id, newAmount);
+    return;
+  }
 
   const { data, error } = await supabase
     .from('shopping_items')
     .insert([{
-      list_id: activeListId,
+      list_id: mainListId,
       user_id: currentUser.id,
       name,
       amount: amount || null,
@@ -398,6 +516,22 @@ async function addItem(name, amount, unit) {
   if (error) { showToast('Помилка додавання', 'error'); return; }
 
   activeItems.push(data);
+  renderActiveList();
+  renderProgress();
+}
+
+async function updateItemAmount(id, newAmount) {
+  const { error } = await supabase
+    .from('shopping_items')
+    .update({ amount: newAmount })
+    .eq('id', id)
+    .eq('user_id', currentUser.id);
+
+  if (error) { showToast('Помилка', 'error'); return; }
+
+  const item = activeItems.find(i => i.id === id);
+  if (item) item.amount = newAmount;
+
   renderActiveList();
   renderProgress();
 }
@@ -457,8 +591,7 @@ async function clearCheckedItems() {
    ============================================================ */
 
 async function addWishlistItem(name, note) {
-  if (!currentUser) { showToast('Увійдіть в акаунт', 'error'); return; }
-  if (!wishlistId) return;
+  if (!currentUser || !wishlistId) return;
 
   const { data, error } = await supabase
     .from('shopping_items')
@@ -492,33 +625,8 @@ async function deleteWishlistItem(id) {
   renderWishlist();
 }
 
-async function moveWishlistItemToList(item) {
-  if (!activeListId) { showToast('Оберіть список', 'error'); return; }
-
-  const { data, error } = await supabase
-    .from('shopping_items')
-    .insert([{
-      list_id: activeListId,
-      user_id: currentUser.id,
-      name: item.name,
-      amount: item.amount || null,
-      unit: item.unit || null,
-      category: 'Інше',
-      is_checked: false,
-    }])
-    .select()
-    .single();
-
-  if (error) { showToast('Помилка', 'error'); return; }
-
-  activeItems.push(data);
-  renderActiveList();
-  renderProgress();
-  showToast(`"${item.name}" додано до списку`);
-}
-
 /* ============================================================
-   CRUD — СПИСКИ
+   CRUD — СПИСКИ (права панель)
    ============================================================ */
 
 async function createList(name, type) {
@@ -535,7 +643,6 @@ async function createList(name, type) {
 
   allLists.push(data);
   renderLists();
-  await selectList(data.id);
   showToast(`Список "${data.name}" створено`);
 }
 
@@ -549,7 +656,7 @@ const editQty   = document.getElementById('shop-edit-qty');
 const editUnit  = document.getElementById('shop-edit-unit');
 
 function openEditModal(item) {
-  editingItemId = item.id;
+  editingItemId  = item.id;
   editName.value = item.name;
   editQty.value  = item.amount || '';
   editUnit.value = item.unit || '';
@@ -600,8 +707,7 @@ function printList() {
   });
 
   let html = '<html><head><title>Список покупок</title></head><body>';
-  html += `<h1>${escapeHTML(mainTitleEl?.textContent || 'Список покупок')}</h1>`;
-
+  html += '<h1>Список покупок</h1>';
   Object.entries(groups).forEach(([cat, items]) => {
     html += `<h2>${cat}</h2><ul>`;
     items.forEach(i => {
@@ -610,8 +716,8 @@ function printList() {
     });
     html += '</ul>';
   });
-
   html += '</body></html>';
+
   const win = window.open('', '_blank');
   win.document.write(html);
   win.document.close();
@@ -646,7 +752,9 @@ function bindEvents() {
     const qty  = parseFloat(document.getElementById('shop-add-qty').value) || null;
     const unit = document.getElementById('shop-add-unit').value.trim() || null;
     if (!name) return;
+
     await addItem(name, qty, unit);
+
     document.getElementById('shop-add-input').value = '';
     document.getElementById('shop-add-qty').value   = '';
     document.getElementById('shop-add-unit').value  = '';
@@ -675,24 +783,23 @@ function bindEvents() {
   document.getElementById('shop-edit-save').addEventListener('click', saveEdit);
   editModal.addEventListener('click', e => { if (e.target === editModal) closeEditModal(); });
 
-  // Швидке створення списку в панелі
+  // Швидке створення нового списку в панелі
+  const quickInput = document.getElementById('shop-newlist-quick');
   document.getElementById('shop-newlist-quick-btn').addEventListener('click', async () => {
-    const input = document.getElementById('shop-newlist-quick');
-    const name = input.value.trim();
+    const name = quickInput.value.trim();
     if (!name) return;
     await createList(name, 'shopping');
-    input.value = '';
+    quickInput.value = '';
   });
-  document.getElementById('shop-newlist-quick').addEventListener('keydown', async e => {
-    if (e.key === 'Enter') {
-      const name = e.target.value.trim();
-      if (!name) return;
-      await createList(name, 'shopping');
-      e.target.value = '';
-    }
+  quickInput.addEventListener('keydown', async e => {
+    if (e.key !== 'Enter') return;
+    const name = e.target.value.trim();
+    if (!name) return;
+    await createList(name, 'shopping');
+    e.target.value = '';
   });
 
-  // Форма новий список (панель)
+  // Форма "+ Новий список"
   document.getElementById('newlist-create-btn').addEventListener('click', async () => {
     const name = document.getElementById('newlist-name-input').value.trim();
     const type = document.querySelector('input[name="list-type"]:checked')?.value || 'shopping';
@@ -700,7 +807,7 @@ function bindEvents() {
     await createList(name, type);
     document.getElementById('newlist-name-input').value = '';
     // Закриваємо панель
-    const body = document.getElementById('panel-new-list-body');
+    const body   = document.getElementById('panel-new-list-body');
     const toggle = document.querySelector('[data-panel="new-list"]');
     body.classList.remove('is-open');
     toggle.classList.remove('is-open');
@@ -719,8 +826,8 @@ function bindEvents() {
   // Акордеони правої панелі
   document.querySelectorAll('.shop-panel__toggle').forEach(btn => {
     btn.addEventListener('click', () => {
-      const panel = btn.dataset.panel;
-      const body  = document.getElementById(`panel-${panel}-body`);
+      const panel  = btn.dataset.panel;
+      const body   = document.getElementById(`panel-${panel}-body`);
       const isOpen = btn.classList.contains('is-open');
       btn.classList.toggle('is-open', !isOpen);
       body.classList.toggle('is-open', !isOpen);
@@ -730,9 +837,9 @@ function bindEvents() {
   // Тип списку — radio highlight
   document.querySelectorAll('.shop-newlist__type input[type="radio"]').forEach(radio => {
     radio.addEventListener('change', () => {
-      document.querySelectorAll('.shop-newlist__type').forEach(el => {
-        el.classList.remove('shop-newlist__type--active');
-      });
+      document.querySelectorAll('.shop-newlist__type').forEach(el =>
+        el.classList.remove('shop-newlist__type--active')
+      );
       radio.closest('.shop-newlist__type').classList.add('shop-newlist__type--active');
     });
   });
