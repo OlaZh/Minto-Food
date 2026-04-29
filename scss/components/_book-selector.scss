@@ -204,41 +204,39 @@
   position: absolute;
   bottom: 8px;
   right: 8px;
-  top: auto;
-  left: auto;
-  width: 28px;
-  height: 28px;
-  background: rgba(255, 255, 255, 0.92);
+  background: transparent;
   border: none;
-  border-radius: 50%;
+  padding: 4px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
-  transition: all 0.2s ease;
+  transition: transform 0.2s ease;
   z-index: 3;
 
   svg {
-    width: 14px;
-    height: 14px;
-    stroke: #e74c3c;
+    width: 18px;
+    height: 18px;
+    stroke: #fff;
     stroke-width: 2;
     fill: transparent;
+    filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.5));
     transition: all 0.2s ease;
   }
 
   &:hover {
-    transform: scale(1.1);
+    transform: scale(1.15);
 
     svg {
-      fill: rgba(231, 76, 60, 0.2);
+      fill: rgba(231, 76, 60, 0.3);
+      stroke: #fff;
     }
   }
 
   &--saved {
     svg {
       fill: #e74c3c;
+      stroke: #e74c3c;
     }
   }
 
