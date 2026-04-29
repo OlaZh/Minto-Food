@@ -276,6 +276,24 @@
     &__title {
       font-size: 18px;
     }
+
+    // Кнопки хедера — тільки іконки на мобільному
+    &__intro {
+      gap: var(--space-sm);
+
+      .btn-new-recipes span,
+      .btn-add-recipe span {
+        display: none;
+      }
+
+      .btn-new-recipes,
+      .btn-add-recipe {
+        padding: var(--space-sm);
+        min-width: 40px;
+        width: 40px;
+        justify-content: center;
+      }
+    }
   }
 
   .recipe-grid {

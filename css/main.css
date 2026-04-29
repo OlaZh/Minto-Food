@@ -5589,6 +5589,20 @@ textarea {
   .recipe-page__title {
     font-size: 18px;
   }
+  .recipe-page__intro {
+    gap: var(--space-sm);
+  }
+  .recipe-page__intro .btn-new-recipes span,
+  .recipe-page__intro .btn-add-recipe span {
+    display: none;
+  }
+  .recipe-page__intro .btn-new-recipes,
+  .recipe-page__intro .btn-add-recipe {
+    padding: var(--space-sm);
+    min-width: 40px;
+    width: 40px;
+    justify-content: center;
+  }
   .recipe-grid {
     grid-template-columns: repeat(2, 1fr);
     gap: var(--space-sm);
