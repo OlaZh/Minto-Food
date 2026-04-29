@@ -62,7 +62,8 @@
     background: var(--color-surface);
     color: var(--color-text-primary);
     font-size: 15px;
-    transition: border-color var(--duration-base) var(--ease-out),
+    transition:
+      border-color var(--duration-base) var(--ease-out),
       box-shadow var(--duration-base) var(--ease-out);
 
     &::placeholder {
@@ -180,7 +181,7 @@
 /* ================= SECTIONS (browsing + search) ================= */
 
 .recipe-section {
-  margin-bottom: var(--space-md);
+  margin-bottom: var(--space-sm);
 
   &__header {
     display: flex;
@@ -252,7 +253,7 @@
   // Компактна сітка для пошукових секцій (Мої + Загальні)
   &--compact {
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: var(--space-md);
+    gap: var(--space-sm);
 
     .recipe-card__image-box {
       height: 150px;
