@@ -5509,17 +5509,17 @@ textarea {
 
 /* ================= SECTIONS (browsing + search) ================= */
 .recipe-section {
-  margin-bottom: var(--space-2xl);
+  margin-bottom: var(--space-xl);
 }
 .recipe-section__header {
   display: flex;
   align-items: center;
   gap: var(--space-sm);
-  margin-bottom: var(--space-md);
+  margin-bottom: var(--space-sm);
 }
 .recipe-section__title {
   font-family: var(--font-heading);
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 700;
   color: var(--color-text-primary);
   margin: 0;
@@ -5572,10 +5572,18 @@ textarea {
 }
 .recipe-grid--compact .recipe-card__content {
   padding: var(--space-sm) var(--space-md);
+  gap: var(--space-xxs);
 }
 .recipe-grid--compact .recipe-card__name {
   font-size: 14px;
   min-height: 36px;
+}
+.recipe-grid--compact .recipe-card__kcal {
+  font-size: 12px;
+}
+.recipe-grid--compact .recipe-card__btn {
+  font-size: 12px;
+  padding: var(--space-xxs) var(--space-sm);
 }
 
 /* ================= EMPTY STATE ================= */
