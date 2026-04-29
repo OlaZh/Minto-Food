@@ -180,18 +180,18 @@
 /* ================= SECTIONS (browsing + search) ================= */
 
 .recipe-section {
-  margin-bottom: var(--space-2xl);
+  margin-bottom: var(--space-xl);
 
   &__header {
     display: flex;
     align-items: center;
     gap: var(--space-sm);
-    margin-bottom: var(--space-md);
+    margin-bottom: var(--space-sm);
   }
 
   &__title {
     font-family: var(--font-heading);
-    font-size: 18px;
+    font-size: 16px;
     font-weight: 700;
     color: var(--color-text-primary);
     margin: 0;
@@ -249,7 +249,7 @@
   padding: var(--space-xxs) 0;
   width: 100%;
 
-  // Компактна сітка для пошукової секції "Загальні"
+  // Компактна сітка для пошукових секцій (Мої + Загальні)
   &--compact {
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
     gap: var(--space-md);
@@ -260,11 +260,21 @@
 
     .recipe-card__content {
       padding: var(--space-sm) var(--space-md);
+      gap: var(--space-xxs);
     }
 
     .recipe-card__name {
       font-size: 14px;
       min-height: 36px;
+    }
+
+    .recipe-card__kcal {
+      font-size: 12px;
+    }
+
+    .recipe-card__btn {
+      font-size: 12px;
+      padding: var(--space-xxs) var(--space-sm);
     }
   }
 }
