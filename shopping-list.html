@@ -8,9 +8,7 @@
     <script>
       (function () {
         const theme = localStorage.getItem('theme');
-        if (theme === 'dark') {
-          document.documentElement.setAttribute('data-theme', 'dark');
-        }
+        if (theme === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
       })();
     </script>
 
@@ -26,43 +24,22 @@
 
         <nav class="header__nav">
           <ul class="header__nav-list">
-            <li>
-              <a href="index.html" class="header__nav-link" data-i18n="navDayMenu">Меню на день</a>
-            </li>
-            <li>
-              <a href="week-menu.html" class="header__nav-link" data-i18n="navWeekMenu">Меню на тиждень</a>
-            </li>
-            <li>
-              <a href="recipes.html" class="header__nav-link" data-i18n="navRecipes">Рецепти</a>
-            </li>
-            <li>
-              <a href="product-guide.html" class="header__nav-link" data-i18n="navProductGuide">Путівник по продуктам</a>
-            </li>
-            <li>
-              <a href="shopping-list.html" class="header__nav-link header__nav-link--active" data-i18n="navShoppingList">Список покупок</a>
-            </li>
-            <li>
-              <a href="cookbook.html" class="header__nav-link" data-i18n="cookbook">Книга рецептів</a>
-            </li>
+            <li><a href="index.html" class="header__nav-link" data-i18n="navDayMenu">Меню на день</a></li>
+            <li><a href="week-menu.html" class="header__nav-link" data-i18n="navWeekMenu">Меню на тиждень</a></li>
+            <li><a href="recipes.html" class="header__nav-link" data-i18n="navRecipes">Рецепти</a></li>
+            <li><a href="product-guide.html" class="header__nav-link" data-i18n="navProductGuide">Путівник по продуктам</a></li>
+            <li><a href="shopping-list.html" class="header__nav-link header__nav-link--active" data-i18n="navShoppingList">Список покупок</a></li>
+            <li><a href="cookbook.html" class="header__nav-link" data-i18n="cookbook">Книга рецептів</a></li>
           </ul>
         </nav>
 
         <div class="header__actions">
-          <button
-            class="theme-toggle"
-            type="button"
-            aria-label="Змінити тему"
-            data-i18n-aria="toggleTheme">
+          <button class="theme-toggle" type="button" aria-label="Змінити тему" data-i18n-aria="toggleTheme">
             <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="12" cy="12" r="5"></circle>
-              <line x1="12" y1="1" x2="12" y2="3"></line>
-              <line x1="12" y1="21" x2="12" y2="23"></line>
-              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-              <line x1="1" y1="12" x2="3" y2="12"></line>
-              <line x1="21" y1="12" x2="23" y2="12"></line>
-              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+              <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
+              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+              <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
+              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
             </svg>
             <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
@@ -79,9 +56,7 @@
         </div>
 
         <button class="header__burger" aria-label="Меню" aria-expanded="false">
-          <span></span>
-          <span></span>
-          <span></span>
+          <span></span><span></span><span></span>
         </button>
       </div>
       <div class="header__nav-overlay"></div>
@@ -91,105 +66,148 @@
       <div class="app-shell">
         <main class="shop-page">
           <div class="container">
+            <div class="shop-layout">
 
-            <!-- ===== INTRO ===== -->
-            <header class="shop-page__intro">
-              <h1 class="shop-page__title" data-i18n="shoppingListTitle">Список покупок</h1>
-              <div class="shop-page__actions">
-                <button class="shop-page__action-btn" id="shop-share-btn" aria-label="Поділитися">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
-                    <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
-                  </svg>
-                  <span data-i18n="share">Поділитися</span>
-                </button>
-                <button class="shop-page__action-btn" id="shop-print-btn" aria-label="Друкувати">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
-                    <rect x="6" y="14" width="12" height="8"/>
-                  </svg>
-                  <span data-i18n="print">Друкувати</span>
-                </button>
-                <button class="shop-page__action-btn shop-page__action-btn--danger" id="shop-clear-btn" aria-label="Очистити">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
-                    <path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/>
-                  </svg>
-                  <span data-i18n="clear">Очистити</span>
-                </button>
-              </div>
-            </header>
+              <!-- ===== LEFT SIDEBAR ===== -->
+              <aside class="shop-left">
 
-            <!-- ===== PROGRESS ===== -->
-            <div class="shop-progress" id="shop-progress" hidden>
-              <div class="shop-progress__bar">
-                <div class="shop-progress__fill" id="shop-progress-fill"></div>
-              </div>
-              <span class="shop-progress__label" id="shop-progress-label">0 / 0 куплено</span>
-            </div>
-
-            <!-- ===== SAVED LIST (шпаргалка) ===== -->
-            <section class="shop-saved" id="shop-saved-section">
-              <div class="shop-saved__header">
-                <div class="shop-saved__title-row">
-                  <svg class="shop-saved__lock" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-                    <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-                  </svg>
-                  <h2 class="shop-saved__title" data-i18n="savedListTitle">Постійний список</h2>
+                <!-- Progress Ring -->
+                <div class="shop-progress-card">
+                  <p class="shop-progress-card__label">Прогрес</p>
+                  <div class="shop-progress-card__ring-wrap">
+                    <svg viewBox="0 0 36 36" class="circular-chart">
+                      <path class="circle-bg" stroke-width="2.5"
+                        d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                      <path class="circle-progress shop-ring-fill" id="shop-ring-path"
+                        stroke-dasharray="0, 100"
+                        d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                    </svg>
+                    <div class="shop-progress-card__center">
+                      <span class="shop-progress-card__value" id="shop-ring-value">0/0</span>
+                      <span class="shop-progress-card__sub">куплено</span>
+                    </div>
+                  </div>
                 </div>
-                <button class="shop-saved__add-btn" id="shop-saved-add-btn">
-                  + <span data-i18n="addItem">Додати</span>
-                </button>
-              </div>
-              <ul class="shop-saved__list" id="shop-saved-list">
-                <!-- Rendered by JS -->
-              </ul>
-              <p class="shop-saved__empty" id="shop-saved-empty" hidden data-i18n="savedListEmpty">
-                Додайте товари які купуєте постійно
-              </p>
-            </section>
 
-            <!-- ===== ACTIVE LIST ===== -->
-            <section class="shop-active" id="shop-active-section">
-              <div id="shop-active-list">
-                <!-- Grouped by category, rendered by JS -->
-              </div>
-              <div class="shop-empty" id="shop-empty" hidden>
-                <p class="shop-empty__icon">🛒</p>
-                <p class="shop-empty__title" data-i18n="emptyListTitle">Список порожній</p>
-                <p class="shop-empty__text" data-i18n="emptyListText">Додайте продукти вручну або сформуйте список з тижневого меню</p>
-              </div>
-            </section>
+                <!-- Add Product -->
+                <div class="shop-add-card">
+                  <h3 class="shop-add-card__title">Додати продукт</h3>
+                  <form class="shop-add-form" id="shop-add-form" autocomplete="off">
+                    <input type="text" class="shop-add-form__input" id="shop-add-input" placeholder="Назва..." required />
+                    <input type="number" class="shop-add-form__qty" id="shop-add-qty" placeholder="К-сть" min="0" step="any" />
+                    <input type="text" class="shop-add-form__unit" id="shop-add-unit" placeholder="шт" maxlength="10" />
+                    <button type="submit" class="shop-add-form__btn">+ Додати продукт</button>
+                  </form>
+                </div>
 
-          </div><!-- /.container -->
+                <!-- Actions -->
+                <div class="shop-actions-card">
+                  <button class="shop-action-btn" id="shop-share-btn">Поділитися списком</button>
+                  <button class="shop-action-btn" id="shop-clear-checked-btn">Очистити куплене</button>
+                  <button class="shop-action-btn shop-action-btn--danger" id="shop-print-btn">Друкувати</button>
+                </div>
 
-          <!-- ===== QUICK ADD (fixed bottom) ===== -->
-          <div class="shop-add-bar">
-            <div class="container">
-              <form class="shop-add-form" id="shop-add-form" autocomplete="off">
-                <input
-                  type="text"
-                  class="shop-add-form__input"
-                  id="shop-add-input"
-                  placeholder="Назва продукту..."
-                  data-i18n-placeholder="addProduct"
-                  required />
-                <input
-                  type="number"
-                  class="shop-add-form__qty"
-                  id="shop-add-qty"
-                  placeholder="К-сть"
-                  min="0"
-                  step="any" />
-                <input
-                  type="text"
-                  class="shop-add-form__unit"
-                  id="shop-add-unit"
-                  placeholder="од."
-                  maxlength="10" />
-                <button type="submit" class="shop-add-form__btn" data-i18n="add">Додати</button>
-              </form>
+              </aside>
+
+              <!-- ===== CENTER MAIN ===== -->
+              <section class="shop-main">
+                <div class="shop-main__header">
+                  <h1 class="shop-main__title" id="shop-main-title">Список покупок</h1>
+                  <span class="shop-main__count" id="shop-count-label"></span>
+                </div>
+                <div class="shop-main__progress-bar">
+                  <div class="shop-main__progress-fill" id="shop-progress-fill"></div>
+                </div>
+                <div id="shop-active-list"></div>
+                <div class="shop-empty" id="shop-empty" hidden>
+                  <p class="shop-empty__icon">🛒</p>
+                  <p class="shop-empty__title">Список порожній</p>
+                  <p class="shop-empty__text">Додайте продукти або оберіть зі списків праворуч</p>
+                </div>
+              </section>
+
+              <!-- ===== RIGHT SIDEBAR ===== -->
+              <aside class="shop-right">
+
+                <!-- My Lists -->
+                <div class="shop-panel" id="panel-my-lists">
+                  <button class="shop-panel__toggle is-open" data-panel="my-lists">
+                    Мої списки
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                  </button>
+                  <div class="shop-panel__body is-open" id="panel-my-lists-body">
+                    <ul class="shop-lists" id="shop-lists-ul"></ul>
+                    <div class="shop-lists__quick-add">
+                      <input type="text" class="shop-lists__new-input" id="shop-newlist-quick" placeholder="Новий список..." />
+                      <button class="shop-lists__new-btn" id="shop-newlist-quick-btn">+</button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Wishlist -->
+                <div class="shop-panel" id="panel-wishlist">
+                  <button class="shop-panel__toggle" data-panel="wishlist">
+                    Вішліст
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                  </button>
+                  <div class="shop-panel__body" id="panel-wishlist-body">
+                    <ul class="shop-wishlist" id="shop-wishlist-ul"></ul>
+                    <div class="shop-wishlist__add">
+                      <input type="text" class="shop-wishlist__input" id="wishlist-name-input" placeholder="Назва товару..." />
+                      <input type="text" class="shop-wishlist__input" id="wishlist-note-input" placeholder="Нотатка..." />
+                      <button class="shop-wishlist__btn" id="wishlist-add-btn">Додати до вішліста</button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- New List -->
+                <div class="shop-panel" id="panel-new-list">
+                  <button class="shop-panel__toggle" data-panel="new-list">
+                    + Новий список
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                  </button>
+                  <div class="shop-panel__body" id="panel-new-list-body">
+                    <input type="text" class="shop-newlist__name-input" id="newlist-name-input" placeholder="Назва списку..." />
+                    <p class="shop-newlist__label">Тип списку</p>
+                    <div class="shop-newlist__types" id="newlist-types">
+                      <label class="shop-newlist__type">
+                        <input type="radio" name="list-type" value="shopping" checked />
+                        <span class="shop-newlist__type-dot"></span>
+                        <div>
+                          <strong>Список покупок</strong>
+                          <small>Стандартний список</small>
+                        </div>
+                      </label>
+                      <label class="shop-newlist__type">
+                        <input type="radio" name="list-type" value="event" />
+                        <span class="shop-newlist__type-dot"></span>
+                        <div>
+                          <strong>Список для події</strong>
+                          <small>Барбекю, свято, похід</small>
+                        </div>
+                      </label>
+                    </div>
+                    <button class="shop-newlist__create-btn" id="newlist-create-btn">Створити список</button>
+                  </div>
+                </div>
+
+              </aside>
+
+            </div>
+          </div>
+
+          <!-- Import Banner -->
+          <div class="shop-import-banner" id="shop-import-banner" hidden>
+            <div class="shop-import-banner__text">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/>
+                <path d="M16 10a4 4 0 0 1-8 0"/>
+              </svg>
+              <span>Є список із тижневого меню. Імпортувати?</span>
+            </div>
+            <div class="shop-import-banner__actions">
+              <button class="shop-import-banner__btn shop-import-banner__btn--confirm" id="shop-import-confirm">Так, додати</button>
+              <button class="shop-import-banner__btn shop-import-banner__btn--dismiss" id="shop-import-dismiss">Ні</button>
             </div>
           </div>
 
@@ -197,48 +215,33 @@
       </div>
     </div>
 
-    <!-- ===== EDIT ITEM MODAL ===== -->
+    <!-- Edit Item Modal -->
     <div class="modal-overlay" id="shop-edit-modal">
       <div class="modal-card shop-edit-modal">
         <button class="modal-card__close" id="shop-edit-close">&times;</button>
         <div class="shop-edit-modal__header">
-          <h3 data-i18n="editItem">Редагувати позицію</h3>
+          <h3>Редагувати позицію</h3>
         </div>
         <div class="shop-edit-modal__body">
           <div class="form-group">
-            <label data-i18n="itemName">Назва</label>
+            <label>Назва</label>
             <input type="text" class="form-input" id="shop-edit-name" />
           </div>
           <div class="shop-edit-modal__row">
             <div class="form-group">
-              <label data-i18n="itemQty">Кількість</label>
+              <label>Кількість</label>
               <input type="number" class="form-input" id="shop-edit-qty" min="0" step="any" />
             </div>
             <div class="form-group">
-              <label data-i18n="itemUnit">Одиниця</label>
+              <label>Одиниця</label>
               <input type="text" class="form-input" id="shop-edit-unit" maxlength="10" />
             </div>
           </div>
         </div>
         <div class="shop-edit-modal__actions">
-          <button class="btn-secondary" id="shop-edit-cancel" data-i18n="cancel">Скасувати</button>
-          <button class="btn-primary" id="shop-edit-save" data-i18n="save">Зберегти</button>
+          <button class="btn-secondary" id="shop-edit-cancel">Скасувати</button>
+          <button class="btn-primary" id="shop-edit-save">Зберегти</button>
         </div>
-      </div>
-    </div>
-
-    <!-- ===== IMPORT BANNER ===== -->
-    <div class="shop-import-banner" id="shop-import-banner" hidden>
-      <div class="shop-import-banner__text">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/>
-          <path d="M16 10a4 4 0 0 1-8 0"/>
-        </svg>
-        <span data-i18n="importFromWeek">Є список із тижневого меню. Імпортувати?</span>
-      </div>
-      <div class="shop-import-banner__actions">
-        <button class="shop-import-banner__btn shop-import-banner__btn--confirm" id="shop-import-confirm" data-i18n="importYes">Так, додати</button>
-        <button class="shop-import-banner__btn shop-import-banner__btn--dismiss" id="shop-import-dismiss" data-i18n="importNo">Ні</button>
       </div>
     </div>
 
