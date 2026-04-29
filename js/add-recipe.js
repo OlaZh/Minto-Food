@@ -273,28 +273,16 @@ async function displayRecipes(recipes, isSearch = false) {
   const ownResults = recipes.filter((r) => isOwnRecipe(r));
   const communityResults = recipes.filter((r) => !isOwnRecipe(r));
 
-  // Секція "Мої"
+  // Секція "Мої" — горизонтальний рядок, показуємо всі
   if (sectionSearchOwn) sectionSearchOwn.hidden = ownResults.length === 0;
   const searchOwnGrid = document.getElementById('search-own-grid');
   const searchOwnCount = document.getElementById('search-own-count');
-  const searchOwnShowAllBtn = document.getElementById('search-own-show-all');
 
   if (searchOwnGrid) {
     searchOwnGrid.innerHTML = '';
-    const toShow = searchOwnShowAll ? ownResults : ownResults.slice(0, SEARCH_PREVIEW_LIMIT);
-    toShow.forEach((r) => searchOwnGrid.appendChild(buildRecipeCard(r, savedRecipeIds)));
+    ownResults.forEach((r) => searchOwnGrid.appendChild(buildRecipeCard(r, savedRecipeIds)));
   }
   if (searchOwnCount) searchOwnCount.textContent = ownResults.length;
-  if (searchOwnShowAllBtn) {
-    searchOwnShowAllBtn.hidden = ownResults.length <= SEARCH_PREVIEW_LIMIT;
-    searchOwnShowAllBtn.textContent = searchOwnShowAll
-      ? 'Згорнути'
-      : `Показати всі (${ownResults.length})`;
-    searchOwnShowAllBtn.onclick = () => {
-      searchOwnShowAll = !searchOwnShowAll;
-      displayRecipes(recipes, true);
-    };
-  }
 
   // Секція "Загальні"
   if (sectionSearchCommunity) sectionSearchCommunity.hidden = communityResults.length === 0;

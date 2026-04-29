@@ -5563,6 +5563,20 @@ textarea {
   padding: var(--space-xxs) 0;
   width: 100%;
 }
+.recipe-grid--compact {
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: var(--space-md);
+}
+.recipe-grid--compact .recipe-card__image-box {
+  height: 150px;
+}
+.recipe-grid--compact .recipe-card__content {
+  padding: var(--space-sm) var(--space-md);
+}
+.recipe-grid--compact .recipe-card__name {
+  font-size: 14px;
+  min-height: 36px;
+}
 
 /* ================= EMPTY STATE ================= */
 .recipe-empty-state {

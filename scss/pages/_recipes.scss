@@ -248,6 +248,25 @@
   gap: var(--space-xl);
   padding: var(--space-xxs) 0;
   width: 100%;
+
+  // Компактна сітка для пошукової секції "Загальні"
+  &--compact {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: var(--space-md);
+
+    .recipe-card__image-box {
+      height: 150px;
+    }
+
+    .recipe-card__content {
+      padding: var(--space-sm) var(--space-md);
+    }
+
+    .recipe-card__name {
+      font-size: 14px;
+      min-height: 36px;
+    }
+  }
 }
 
 /* ================= EMPTY STATE ================= */
