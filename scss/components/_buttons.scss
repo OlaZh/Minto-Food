@@ -103,16 +103,18 @@
 
 /* "Додати рецепт" — з SVG-іконкою, що обертається на hover */
 .btn-add-recipe {
-  @extend %button-primary;
+  @extend %button-secondary;
 
-  padding: var(--space-sm) var(--space-xl);
-  font-size: 16px;
-  font-weight: 700;
-  border-radius: var(--radius-lg);
+  padding: var(--space-sm) var(--space-lg);
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: var(--radius-sm);
   gap: var(--space-xs);
+  white-space: nowrap;
 
   svg {
     stroke: currentColor;
+    flex-shrink: 0;
     transition: transform var(--duration-base) var(--ease-out);
   }
 

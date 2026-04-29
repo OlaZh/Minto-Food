@@ -9,33 +9,29 @@
   min-height: 100vh;
 
   &__intro {
-    display: grid;
-    grid-template-columns: 1fr auto 1fr;
+    display: flex;
     align-items: center;
+    justify-content: space-between;
     gap: var(--space-md);
     margin-bottom: var(--space-xl);
-
-    .btn-add-recipe {
-      justify-self: end;
-    }
   }
 
   &__title {
     font-family: var(--font-heading);
-    font-size: 28px;
+    font-size: 24px;
     font-weight: 800;
     color: var(--color-text-primary);
-    text-align: center;
-    justify-self: center;
+    white-space: nowrap;
   }
 }
 
-/* ================= "НОВІ РЕЦЕПТИ" КНОПКА ================= */
+/* ================= КНОПКИ ХЕДЕРА РЕЦЕПТІВ ================= */
 
 .btn-new-recipes {
   @extend %button-secondary;
 
   gap: var(--space-xs);
+  padding: var(--space-sm) var(--space-lg);
   font-size: 14px;
   font-weight: 600;
   border-radius: var(--radius-sm);
@@ -277,25 +273,8 @@
   .recipe-page {
     padding: 24px 0;
 
-    &__intro {
-      grid-template-columns: auto auto;
-      grid-template-rows: auto auto;
-
-      .recipe-page__title {
-        grid-column: 1 / -1;
-        order: -1;
-        font-size: 22px;
-        text-align: left;
-        justify-self: start;
-      }
-
-      .btn-new-recipes {
-        justify-self: start;
-      }
-
-      .btn-add-recipe {
-        justify-self: end;
-      }
+    &__title {
+      font-size: 18px;
     }
   }
 
