@@ -43,6 +43,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   currentUser = await initAuth();
   if (currentUser) {
     await initLists();
+    subscribeToMainList();
     checkWeekMenuImport();
   }
   bindEvents();
@@ -316,7 +317,7 @@ function buildPanelSubItem(item, listId, container) {
   li.innerHTML = `
     <span class="shop-list-item__sub-name">${escapeHTML(item.name)}</span>
     ${amountText ? `<span class="shop-list-item__sub-amount">${escapeHTML(amountText)}</span>` : ''}
-    <button class="shop-list-item__sub-add" title="Додати до активного">→ Додати</button>
+    <button class="shop-list-item__sub-add" title="Додати до активного списку">→</button>
     <button class="shop-list-item__sub-btn shop-list-item__sub-btn--edit" aria-label="Редагувати">
       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
@@ -684,17 +685,15 @@ async function deleteListById(id) {
 }
 
 async function shareListById(id) {
-  const { data, error } = await supabase
-    .from('shopping_items').select('*')
-    .eq('list_id', id).eq('user_id', currentUser.id);
-  if (error || !data?.length) { showToast('Список порожній', 'info'); return; }
-  const name = allLists.find(l => l.id === id)?.name || 'Список';
-  const text = data.map(i => `• ${i.name}${i.amount ? ' ' + i.amount + (i.unit ? ' ' + i.unit : '') : ''}`).join('\n');
+  const list = allLists.find(l => l.id === id);
+  const token = list?.share_token;
+  if (!token) { showToast('Помилка посилання', 'error'); return; }
+  const url = buildShareUrl(token);
   if (navigator.share) {
-    try { await navigator.share({ title: name, text }); } catch { }
+    try { await navigator.share({ title: list.name, url }); } catch { }
   } else {
-    await navigator.clipboard.writeText(text);
-    showToast('Список скопійовано в буфер ✓');
+    await navigator.clipboard.writeText(url);
+    showToast('Посилання скопійовано ✓');
   }
 }
 
@@ -787,8 +786,63 @@ async function importFromWeekMenu() {
 }
 
 /* ============================================================
+   REALTIME — синхронізація з поділеним списком
+   ============================================================ */
+
+function subscribeToMainList() {
+  if (!mainListId) return;
+  supabase
+    .channel(`list-${mainListId}`)
+    .on('postgres_changes', {
+      event: '*',
+      schema: 'public',
+      table: 'shopping_items',
+      filter: `list_id=eq.${mainListId}`,
+    }, handleRealtimeEvent)
+    .subscribe();
+}
+
+function handleRealtimeEvent(payload) {
+  if (payload.eventType === 'INSERT') {
+    if (!activeItems.some(i => i.id === payload.new.id)) {
+      activeItems.push(payload.new);
+      renderActiveList();
+      renderProgress();
+      requestAnimationFrame(() => {
+        activeListEl.querySelector(`[data-id="${payload.new.id}"]`)
+          ?.classList.add('shop-item--new');
+      });
+    }
+  } else if (payload.eventType === 'UPDATE') {
+    const item = activeItems.find(i => i.id === payload.new.id);
+    if (item && item.is_checked !== payload.new.is_checked) {
+      item.is_checked = payload.new.is_checked;
+      const li = activeListEl.querySelector(`[data-id="${item.id}"]`);
+      if (li) {
+        li.classList.toggle('shop-item--checked', item.is_checked);
+        const cb = li.querySelector('.shop-item__checkbox');
+        if (cb) cb.checked = item.is_checked;
+      }
+      renderProgress();
+    }
+  } else if (payload.eventType === 'DELETE') {
+    const before = activeItems.length;
+    activeItems = activeItems.filter(i => i.id !== payload.old.id);
+    if (activeItems.length !== before) {
+      renderActiveList();
+      renderProgress();
+    }
+  }
+}
+
+/* ============================================================
    ДРУК / ПОДІЛИТИСЯ
    ============================================================ */
+
+function buildShareUrl(token) {
+  const base = location.href.split('?')[0].replace(/[^/]+$/, '');
+  return `${base}shared-list.html?token=${token}`;
+}
 
 function printList() {
   const groups = {};
@@ -814,16 +868,15 @@ function printList() {
 }
 
 async function shareList() {
-  const unchecked = activeItems.filter(i => !i.is_checked);
-  if (!unchecked.length) { showToast('Список порожній', 'info'); return; }
-  const text = unchecked.map(i =>
-    `• ${i.name}${i.amount ? ' ' + i.amount + (i.unit ? ' ' + i.unit : '') : ''}`
-  ).join('\n');
+  const list = allLists.find(l => l.id === mainListId);
+  const token = list?.share_token;
+  if (!token) { showToast('Помилка посилання', 'error'); return; }
+  const url = buildShareUrl(token);
   if (navigator.share) {
-    try { await navigator.share({ title: 'Список покупок', text }); } catch { }
+    try { await navigator.share({ title: list.name || 'Список покупок', url }); } catch { }
   } else {
-    await navigator.clipboard.writeText(text);
-    showToast('Список скопійовано в буфер ✓');
+    await navigator.clipboard.writeText(url);
+    showToast('Посилання скопійовано ✓');
   }
 }
 
