@@ -262,7 +262,9 @@ async function displayRecipes(recipes, isSearch = false) {
           document.getElementById('open-add-modal')?.click();
         });
       } else {
-        communityRecipes.forEach((r) => communityGrid.appendChild(buildRecipeCard(r, savedRecipeIds)));
+        communityRecipes.forEach((r) =>
+          communityGrid.appendChild(buildRecipeCard(r, savedRecipeIds)),
+        );
       }
     }
     if (communityCount) communityCount.textContent = communityRecipes.length;
@@ -1167,7 +1169,8 @@ async function loadNewRecipes() {
   const { data, error } = await query;
 
   if (error || !data || data.length === 0) {
-    body.innerHTML = '<p class="new-recipes-drawer__empty">Нових рецептів за останні 24 години немає 🌿</p>';
+    body.innerHTML =
+      '<p class="new-recipes-drawer__empty">Нових рецептів за останні 24 години немає 🌿</p>';
     return;
   }
 
