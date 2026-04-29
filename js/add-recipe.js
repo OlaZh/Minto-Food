@@ -287,42 +287,12 @@ export async function openRecipeView(recipeId) {
   if (notesField) notesField.value = recipe.notes || '';
 
   // --- ІНГРЕДІЄНТИ ---
-
   const list = document.getElementById('view-ingredients-list');
   if (list) {
     list.innerHTML = '';
 
-    const { data: productRecipes } = await supabase
-      .from('product_recipe')
-      .select(
-        `
-    amount,
-    unit,
-    ingredient_id,
-    products!product_recipe_ingredient_id_fkey (
-      name_ua,
-      name_en,
-      name_pl
-    )
-  `,
-      )
-      .eq('recipe_id', recipeId);
-
-    if (productRecipes && productRecipes.length > 0) {
-      const lang = localStorage.getItem('lang') || 'ua';
-      productRecipes.forEach((pr) => {
-        const li = document.createElement('li');
-        li.className = 'ingredient-item-row';
-        const productName =
-          lang === 'pl'
-            ? pr.products?.name_pl
-            : lang === 'en'
-              ? pr.products?.name_en
-              : pr.products?.name_ua;
-        li.innerHTML = `<span>• ${productName || ''}</span> <span class="ing-count">${pr.amount || ''} ${pr.unit || ''}</span>`;
-        list.appendChild(li);
-      });
-    } else if (recipe.ingredients) {
+    // Спочатку показуємо оригінальний текст автора якщо є
+    if (recipe.ingredients) {
       const ingLines = recipe.ingredients.split('\n').filter((l) => l.trim().length > 0);
       ingLines.forEach((line) => {
         const li = document.createElement('li');
@@ -330,6 +300,33 @@ export async function openRecipeView(recipeId) {
         li.innerHTML = `<span>• ${line.trim()}</span>`;
         list.appendChild(li);
       });
+    } else {
+      // Fallback: product_recipe (для старих рецептів без текстового поля)
+      const { data: productRecipes } = await supabase
+        .from('product_recipe')
+        .select(
+          `
+        amount, unit, ingredient_id,
+        products!product_recipe_ingredient_id_fkey (name_ua, name_en, name_pl)
+      `,
+        )
+        .eq('recipe_id', recipeId);
+
+      if (productRecipes && productRecipes.length > 0) {
+        const lang = localStorage.getItem('lang') || 'ua';
+        productRecipes.forEach((pr) => {
+          const productName =
+            lang === 'pl'
+              ? pr.products?.name_pl
+              : lang === 'en'
+                ? pr.products?.name_en
+                : pr.products?.name_ua;
+          const li = document.createElement('li');
+          li.className = 'ingredient-item-row';
+          li.innerHTML = `<span>• ${productName || ''}</span> <span class="ing-count">${pr.amount || ''} ${pr.unit || ''}</span>`;
+          list.appendChild(li);
+        });
+      }
     }
   }
 
