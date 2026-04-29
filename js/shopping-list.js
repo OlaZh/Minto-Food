@@ -355,10 +355,12 @@ function buildPanelAddForm(listId, container) {
   li.className = 'shop-panel-item-add';
 
   li.innerHTML = `
-    <input type="text"   class="shop-panel-item-add__input" placeholder="Назва..." />
-    <input type="number" class="shop-panel-item-add__qty"   placeholder="К-сть" min="0" step="any" />
-    <input type="text"   class="shop-panel-item-add__unit"  placeholder="од." maxlength="8" />
-    <button class="shop-panel-item-add__btn" aria-label="Додати">+</button>
+    <input type="text" class="shop-panel-item-add__input" placeholder="Назва продукту..." />
+    <div class="shop-panel-item-add__row">
+      <input type="number" class="shop-panel-item-add__qty"  placeholder="К-сть" min="0" step="any" />
+      <input type="text"   class="shop-panel-item-add__unit" placeholder="од." maxlength="8" />
+      <button class="shop-panel-item-add__btn" aria-label="Додати">+</button>
+    </div>
   `;
 
   const nameEl = li.querySelector('.shop-panel-item-add__input');
