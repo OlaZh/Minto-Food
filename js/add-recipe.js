@@ -45,6 +45,11 @@ let currentViewingId = null;
 let editingRecipeId = null;
 let currentUser = null;
 
+// Пошук/browsing state
+let searchOwnShowAll = false;
+let searchCommunityShowAll = false;
+const SEARCH_PREVIEW_LIMIT = 4;
+
 // =============================================================
 // 3. ДОПОМІЖНІ ФУНКЦІЇ
 // =============================================================
@@ -90,7 +95,6 @@ function isOwnRecipe(recipe) {
 // =============================================================
 
 async function loadAndDisplayRecipes() {
-  if (!document.querySelector('.recipe-grid')) return;
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -110,7 +114,7 @@ async function loadAndDisplayRecipes() {
     return;
   }
 
-  displayRecipes(data || []);
+  displayRecipes(data || [], false);
 }
 
 const categoryTranslations = {
@@ -126,70 +130,41 @@ const categoryTranslations = {
   no_power: 'Без світла 🔋',
 };
 
-async function displayRecipes(recipes) {
-  const recipeGrid = document.querySelector('.recipe-grid');
+// =============================================================
+// 4.0 ДОПОМІЖНА: будує DOM-картку рецепту
+// =============================================================
 
-  recipeGrid.innerHTML = '';
+function buildRecipeCard(recipe, savedRecipeIds) {
+  const rating = recipe.rating || 0;
+  const name = getRecipeName(recipe);
+  const cardImage =
+    recipe.image || 'https://images.unsplash.com/photo-1495521821757-a1efb6729352?q=80&w=500';
+  const displayCategory = categoryTranslations[recipe.category] || recipe.category || '';
+  const isSaved = savedRecipeIds.includes(recipe.id);
+  const isOwn = isOwnRecipe(recipe);
 
-  if (recipes.length === 0) {
-    recipeGrid.innerHTML = `
-      <div class="recipe-empty-state">
-        <div class="recipe-empty-state__icon">🍽️</div>
-        <p class="recipe-empty-state__title">Рецептів не знайдено</p>
-        <p class="recipe-empty-state__text">Спробуйте змінити фільтр або додайте свій перший рецепт</p>
-      </div>`;
-    return;
-  }
+  const card = document.createElement('div');
+  card.className = 'recipe-card';
+  card.dataset.id = recipe.id;
 
-  let savedRecipeIds = [];
-  if (currentUser) {
-    const { data: savedData } = await supabase
-      .from('cookbook_recipes')
-      .select('recipe_id, cookbooks!inner(user_id)')
-      .eq('cookbooks.user_id', currentUser.id);
-
-    if (savedData) {
-      savedRecipeIds = savedData.map((d) => d.recipe_id);
-    }
-  }
-
-  recipes.forEach((recipe) => {
-    const rating = recipe.rating || 0;
-    const name = getRecipeName(recipe);
-    const cardImage =
-      recipe.image || 'https://images.unsplash.com/photo-1495521821757-a1efb6729352?q=80&w=500';
-    const displayCategory = categoryTranslations[recipe.category] || recipe.category || '';
-    const isSaved = savedRecipeIds.includes(recipe.id);
-    const isOwn = isOwnRecipe(recipe);
-
-    const card = document.createElement('div');
-    card.className = 'recipe-card';
-    card.dataset.id = recipe.id;
-
-    card.innerHTML = `
+  card.innerHTML = `
   <div class="recipe-card__image-box">
-    <img src="${cardImage}" alt="${name}" class="recipe-card__img">
-    
-    <!-- Лівий верхній кут: рейтинг -->
+    <img src="${cardImage}" alt="${name}" class="recipe-card__img" loading="lazy">
     <div class="recipe-card__rating-badge">
-      <span style="color:#f1c40f;">★</span>
+      <span class="recipe-card__rating-star">★</span>
       <span>${rating > 0 ? Number(rating).toFixed(1) : '0'}</span>
     </div>
-
-    <!-- Правий верхній кут: видалити (тільки для власних) -->
-    ${isOwn ? '<button class="btn-delete-recipe js-delete-recipe">✕</button>' : ''}
-
-    <!-- Правий нижній кут: серденько -->
-    <button class="recipe-card__favorite ${isSaved ? 'recipe-card__favorite--saved' : ''}" 
-            data-recipe-id="${recipe.id}" 
+    ${isOwn ? '<button class="btn-delete-recipe js-delete-recipe" aria-label="Видалити рецепт">✕</button>' : ''}
+    <button class="recipe-card__favorite ${isSaved ? 'recipe-card__favorite--saved' : ''}"
+            data-recipe-id="${recipe.id}"
             aria-label="Зберегти в книгу">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
       </svg>
     </button>
   </div>
-
   <div class="recipe-card__content">
+    ${displayCategory ? `<span class="recipe-card__category">${displayCategory}</span>` : ''}
     <h3 class="recipe-card__name">${name}</h3>
     <div class="recipe-card__footer">
       <span class="recipe-card__kcal">${recipe.kcal || 0} ккал</span>
@@ -198,25 +173,166 @@ async function displayRecipes(recipes) {
   </div>
 `;
 
-    card.querySelector('.recipe-card__favorite').addEventListener('click', async (e) => {
-      e.stopPropagation();
-      await handleFavoriteClick(e.currentTarget, recipe.id);
-    });
-
-    card.querySelector('.js-view-recipe').addEventListener('click', () => {
-      openRecipeView(recipe.id);
-    });
-
-    const deleteBtn = card.querySelector('.js-delete-recipe');
-    if (deleteBtn) {
-      deleteBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        openDeleteConfirm(recipe.id);
-      });
-    }
-
-    recipeGrid.appendChild(card);
+  card.querySelector('.recipe-card__favorite').addEventListener('click', async (e) => {
+    e.stopPropagation();
+    await handleFavoriteClick(e.currentTarget, recipe.id);
   });
+
+  card.querySelector('.js-view-recipe').addEventListener('click', () => {
+    openRecipeView(recipe.id);
+  });
+
+  const deleteBtn = card.querySelector('.js-delete-recipe');
+  if (deleteBtn) {
+    deleteBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      openDeleteConfirm(recipe.id);
+    });
+  }
+
+  return card;
+}
+
+// =============================================================
+// 4.1 ВІДОБРАЖЕННЯ РЕЦЕПТІВ: browsing і search режими
+// =============================================================
+
+async function displayRecipes(recipes, isSearch = false) {
+  // --- Завантажити збережені рецепти ---
+  let savedRecipeIds = [];
+  if (currentUser) {
+    const { data: savedData } = await supabase
+      .from('cookbook_recipes')
+      .select('recipe_id, cookbooks!inner(user_id)')
+      .eq('cookbooks.user_id', currentUser.id);
+    if (savedData) savedRecipeIds = savedData.map((d) => d.recipe_id);
+  }
+
+  // --- Показати/сховати секції залежно від режиму ---
+  const sectionOwn = document.getElementById('section-own');
+  const sectionCommunity = document.getElementById('section-community');
+  const sectionSearchOwn = document.getElementById('section-search-own');
+  const sectionSearchCommunity = document.getElementById('section-search-community');
+  const emptyStateEl = document.getElementById('recipes-empty-state');
+
+  const showBrowsing = !isSearch;
+
+  if (sectionOwn) sectionOwn.hidden = isSearch;
+  if (sectionCommunity) sectionCommunity.hidden = isSearch;
+  if (sectionSearchOwn) sectionSearchOwn.hidden = !isSearch;
+  if (sectionSearchCommunity) sectionSearchCommunity.hidden = !isSearch;
+  if (emptyStateEl) emptyStateEl.hidden = true;
+
+  // --- РЕЖИМ BROWSING ---
+  if (showBrowsing) {
+    const ownRecipes = recipes.filter((r) => isOwnRecipe(r));
+    const communityRecipes = recipes.filter((r) => !isOwnRecipe(r));
+
+    // Власна секція (горизонтальний рядок)
+    const ownRow = document.getElementById('own-row');
+    const ownCount = document.getElementById('own-count');
+    if (ownRow) {
+      ownRow.innerHTML = '';
+      ownRecipes.forEach((r) => ownRow.appendChild(buildRecipeCard(r, savedRecipeIds)));
+    }
+    if (ownCount) ownCount.textContent = ownRecipes.length;
+    if (sectionOwn) sectionOwn.hidden = ownRecipes.length === 0;
+
+    // Загальна база (сітка)
+    const communityGrid = document.getElementById('community-grid');
+    const communityCount = document.getElementById('community-count');
+    if (communityGrid) {
+      communityGrid.innerHTML = '';
+
+      if (communityRecipes.length === 0 && ownRecipes.length === 0) {
+        communityGrid.innerHTML = `
+          <div class="recipe-empty-state">
+            <div class="recipe-empty-state__icon">🍽️</div>
+            <p class="recipe-empty-state__title">Рецептів не знайдено</p>
+            <p class="recipe-empty-state__text">Спробуйте змінити фільтр або додайте свій перший рецепт</p>
+            <button class="btn-add-recipe recipe-empty-state__cta" id="empty-state-add-btn">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+              Додати рецепт
+            </button>
+          </div>`;
+        document.getElementById('empty-state-add-btn')?.addEventListener('click', () => {
+          document.getElementById('open-add-modal')?.click();
+        });
+      } else {
+        communityRecipes.forEach((r) => communityGrid.appendChild(buildRecipeCard(r, savedRecipeIds)));
+      }
+    }
+    if (communityCount) communityCount.textContent = communityRecipes.length;
+    return;
+  }
+
+  // --- РЕЖИМ SEARCH ---
+  const ownResults = recipes.filter((r) => isOwnRecipe(r));
+  const communityResults = recipes.filter((r) => !isOwnRecipe(r));
+
+  // Секція "Мої"
+  if (sectionSearchOwn) sectionSearchOwn.hidden = ownResults.length === 0;
+  const searchOwnGrid = document.getElementById('search-own-grid');
+  const searchOwnCount = document.getElementById('search-own-count');
+  const searchOwnShowAllBtn = document.getElementById('search-own-show-all');
+
+  if (searchOwnGrid) {
+    searchOwnGrid.innerHTML = '';
+    const toShow = searchOwnShowAll ? ownResults : ownResults.slice(0, SEARCH_PREVIEW_LIMIT);
+    toShow.forEach((r) => searchOwnGrid.appendChild(buildRecipeCard(r, savedRecipeIds)));
+  }
+  if (searchOwnCount) searchOwnCount.textContent = ownResults.length;
+  if (searchOwnShowAllBtn) {
+    searchOwnShowAllBtn.hidden = ownResults.length <= SEARCH_PREVIEW_LIMIT;
+    searchOwnShowAllBtn.textContent = searchOwnShowAll
+      ? 'Згорнути'
+      : `Показати всі (${ownResults.length})`;
+    searchOwnShowAllBtn.onclick = () => {
+      searchOwnShowAll = !searchOwnShowAll;
+      displayRecipes(recipes, true);
+    };
+  }
+
+  // Секція "Загальні"
+  if (sectionSearchCommunity) sectionSearchCommunity.hidden = communityResults.length === 0;
+  const searchCommunityGrid = document.getElementById('search-community-grid');
+  const searchCommunityCount = document.getElementById('search-community-count');
+  const searchCommunityShowAllBtn = document.getElementById('search-community-show-all');
+
+  if (searchCommunityGrid) {
+    searchCommunityGrid.innerHTML = '';
+    const toShow = searchCommunityShowAll
+      ? communityResults
+      : communityResults.slice(0, SEARCH_PREVIEW_LIMIT * 2);
+    toShow.forEach((r) => searchCommunityGrid.appendChild(buildRecipeCard(r, savedRecipeIds)));
+  }
+  if (searchCommunityCount) searchCommunityCount.textContent = communityResults.length;
+  if (searchCommunityShowAllBtn) {
+    searchCommunityShowAllBtn.hidden = communityResults.length <= SEARCH_PREVIEW_LIMIT * 2;
+    searchCommunityShowAllBtn.textContent = searchCommunityShowAll
+      ? 'Згорнути'
+      : `Показати всі (${communityResults.length})`;
+    searchCommunityShowAllBtn.onclick = () => {
+      searchCommunityShowAll = !searchCommunityShowAll;
+      displayRecipes(recipes, true);
+    };
+  }
+
+  // Empty state якщо нічого не знайдено
+  if (ownResults.length === 0 && communityResults.length === 0) {
+    if (sectionSearchCommunity) sectionSearchCommunity.hidden = false;
+    if (searchCommunityGrid) {
+      searchCommunityGrid.innerHTML = `
+        <div class="recipe-empty-state">
+          <div class="recipe-empty-state__icon">🔍</div>
+          <p class="recipe-empty-state__title">Нічого не знайдено</p>
+          <p class="recipe-empty-state__text">Спробуйте інший запит або змініть фільтр</p>
+        </div>`;
+    }
+  }
 }
 
 // =============================================================
@@ -938,7 +1054,10 @@ async function filterRecipes(query) {
     return;
   }
 
-  displayRecipes(data || []);
+  // Скидаємо "показати всі" при новому запиті
+  searchOwnShowAll = false;
+  searchCommunityShowAll = false;
+  displayRecipes(data || [], true);
 }
 
 if (searchInput) {
@@ -982,6 +1101,17 @@ document.querySelectorAll('.recipe-filters__item').forEach((btn) => {
       .forEach((b) => b.classList.remove('recipe-filters__item--active'));
     btn.classList.add('recipe-filters__item--active');
 
+    // Скидаємо пошук при кліку на фільтр
+    const searchInputEl = document.getElementById('recipe-search-input');
+    const clearBtn = document.getElementById('clear-search-btn');
+    const searchModeEl = document.getElementById('search-mode-btn');
+    if (searchInputEl) searchInputEl.value = '';
+    if (clearBtn) clearBtn.style.display = 'none';
+    if (searchModeEl) {
+      searchModeEl.innerHTML = iconSearch;
+      searchModeEl.classList.remove('is-active');
+    }
+
     const category = btn.dataset.category;
 
     const {
@@ -1001,7 +1131,7 @@ document.querySelectorAll('.recipe-filters__item').forEach((btn) => {
     }
 
     const { data, error } = await query;
-    if (!error) displayRecipes(data || []);
+    if (!error) displayRecipes(data || [], false);
   });
 });
 
@@ -1009,11 +1139,140 @@ document.querySelectorAll('.recipe-filters__item').forEach((btn) => {
 // 15. СЛУХАЧІ ПОДІЙ ТА ІНІЦІАЛІЗАЦІЯ
 // =============================================================
 
+// =============================================================
+// 14.5 DRAWER "НОВІ РЕЦЕПТИ"
+// =============================================================
+
+function formatTimeAgo(dateStr) {
+  const diffMs = Date.now() - new Date(dateStr).getTime();
+  const diffMin = Math.floor(diffMs / 60000);
+  if (diffMin < 60) return `${diffMin} хв тому`;
+  const diffH = Math.floor(diffMin / 60);
+  if (diffH < 24) return `${diffH} год тому`;
+  return `${Math.floor(diffH / 24)} дн тому`;
+}
+
+async function loadNewRecipes() {
+  const body = document.getElementById('new-recipes-body');
+  if (!body) return;
+
+  body.innerHTML = '<p class="new-recipes-drawer__loading">Завантаження...</p>';
+
+  const since24h = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  let query = supabase
+    .from('recipes')
+    .select('*')
+    .gte('created_at', since24h)
+    .order('created_at', { ascending: false });
+
+  if (user) {
+    query = query.or(`status.eq.published,user_id.eq.${user.id}`);
+  } else {
+    query = query.eq('status', 'published');
+  }
+
+  const { data, error } = await query;
+
+  if (error || !data || data.length === 0) {
+    body.innerHTML = '<p class="new-recipes-drawer__empty">Нових рецептів за останні 24 години немає 🌿</p>';
+    return;
+  }
+
+  const now = Date.now();
+  const TWO_HOURS = 2 * 60 * 60 * 1000;
+
+  const fresh = data.filter((r) => now - new Date(r.created_at).getTime() < TWO_HOURS);
+  const today = data.filter((r) => now - new Date(r.created_at).getTime() >= TWO_HOURS);
+
+  // Власний рецепт першим у fresh-групі
+  fresh.sort((a, b) => {
+    if (user) {
+      if (a.user_id === user.id && b.user_id !== user.id) return -1;
+      if (b.user_id === user.id && a.user_id !== user.id) return 1;
+    }
+    return new Date(b.created_at) - new Date(a.created_at);
+  });
+
+  // Сортування решти за рейтингом
+  today.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+
+  body.innerHTML = '';
+
+  function renderGroup(label, items) {
+    if (items.length === 0) return;
+
+    const group = document.createElement('div');
+    group.className = 'new-recipes-group';
+    group.innerHTML = `<div class="new-recipes-group__label">${label}</div>`;
+
+    items.forEach((recipe) => {
+      const isOwn = user && recipe.user_id === user.id;
+      const name = getRecipeName(recipe);
+      const rating = recipe.rating || 0;
+
+      const item = document.createElement('div');
+      item.className = `new-recipe-item${isOwn ? ' new-recipe-item--own' : ''}`;
+      item.innerHTML = `
+        <div class="new-recipe-item__info">
+          <div class="new-recipe-item__name">${name}${isOwn ? ' <span style="font-size:11px;opacity:.7;">(Мій)</span>' : ''}</div>
+          <div class="new-recipe-item__meta">
+            <span>${categoryTranslations[recipe.category] || recipe.category || ''}</span>
+            <span>·</span>
+            <span>${formatTimeAgo(recipe.created_at)}</span>
+          </div>
+        </div>
+        ${rating > 0 ? `<div class="new-recipe-item__rating"><span>★</span>${rating.toFixed(1)}</div>` : ''}
+      `;
+
+      item.addEventListener('click', () => {
+        closeNewRecipesDrawer();
+        openRecipeView(recipe.id);
+      });
+
+      group.appendChild(item);
+    });
+
+    body.appendChild(group);
+  }
+
+  renderGroup('Щойно (до 2 год)', fresh);
+  renderGroup('Сьогодні', today);
+}
+
+function openNewRecipesDrawer() {
+  const drawer = document.getElementById('new-recipes-drawer');
+  if (!drawer) return;
+  const panel = drawer.querySelector('.new-recipes-drawer__panel');
+  drawer.classList.add('is-open');
+  panel?.removeAttribute('inert');
+  document.body.style.overflow = 'hidden';
+  loadNewRecipes();
+}
+
+function closeNewRecipesDrawer() {
+  const drawer = document.getElementById('new-recipes-drawer');
+  if (!drawer) return;
+  const panel = drawer.querySelector('.new-recipes-drawer__panel');
+  drawer.classList.remove('is-open');
+  panel?.setAttribute('inert', '');
+  document.body.style.overflow = '';
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
   await initAuth();
   await initBookSelector();
   loadAndDisplayRecipes();
   initAiUpload();
+
+  // Drawer "Нові рецепти"
+  document.getElementById('btn-new-recipes')?.addEventListener('click', openNewRecipesDrawer);
+  document.getElementById('new-recipes-close')?.addEventListener('click', closeNewRecipesDrawer);
+  document.getElementById('new-recipes-backdrop')?.addEventListener('click', closeNewRecipesDrawer);
 
   const recipeParam = new URLSearchParams(window.location.search).get('recipe');
   if (recipeParam) {

@@ -122,24 +122,26 @@
       <div class="app-shell">
         <main class="recipe-page">
           <div class="container">
+
             <header class="recipe-page__intro">
+              <button class="btn-new-recipes" id="btn-new-recipes">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 2c0 0-4 4-4 9a4 4 0 0 0 8 0c0-5-4-9-4-9z"></path>
+                  <path d="M9 21h6"></path>
+                  <path d="M12 17v4"></path>
+                </svg>
+                Нові рецепти
+              </button>
+
               <h1 class="recipe-page__title" data-i18n="recipesTitle">Рецепти</h1>
 
-              <div class="recipe-page__actions">
-                <button class="btn-add-recipe" id="open-add-modal">
-                  <svg
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2.5">
-                    <line x1="12" y1="5" x2="12" y2="19"></line>
-                    <line x1="5" y1="12" x2="19" y2="12"></line>
-                  </svg>
-                  <span data-i18n="addRecipe">Додати рецепт</span>
-                </button>
-              </div>
+              <button class="btn-add-recipe" id="open-add-modal">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <line x1="12" y1="5" x2="12" y2="19"></line>
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                <span data-i18n="addRecipe">Додати рецепт</span>
+              </button>
             </header>
 
             <div class="recipe-page__search">
@@ -156,72 +158,88 @@
             </div>
 
             <nav class="recipe-filters">
-              <div class="recipe-filters__group">
-                <div class="recipe-filters__list">
-                  <button
-                    class="recipe-filters__item recipe-filters__item--active"
-                    data-category="all"
-                    data-i18n="filterAll">
-                    Всі
-                  </button>
-                  <button
-                    class="recipe-filters__item"
-                    data-category="breakfast"
-                    data-i18n="filterBreakfast">
-                    Сніданок
-                  </button>
-                  <button
-                    class="recipe-filters__item"
-                    data-category="lunch"
-                    data-i18n="filterLunch">
-                    Обід
-                  </button>
-                  <button
-                    class="recipe-filters__item"
-                    data-category="dinner"
-                    data-i18n="filterDinner">
-                    Вечеря
-                  </button>
-                  <button
-                    class="recipe-filters__item"
-                    data-category="dessert"
-                    data-i18n="filterDessert">
-                    Десерти
-                  </button>
-                  <button
-                    class="recipe-filters__item"
-                    data-category="snack"
-                    data-i18n="filterSnack">
-                    Перекуси
-                  </button>
-                  <button
-                    class="recipe-filters__item"
-                    data-category="drinks"
-                    data-i18n="filterDrinks">
-                    Напої
-                  </button>
-                  <button
-                    class="recipe-filters__item"
-                    data-category="bakery"
-                    data-i18n="filterBakery">
-                    Випічка
-                  </button>
-                  <button class="recipe-filters__item" data-category="fast" data-i18n="filterFast">
-                    Швидкі рецепти⚡️
-                  </button>
-                  <button
-                    class="recipe-filters__item"
-                    data-category="no-power"
-                    data-i18n="filterNoPower">
-                    Без світла🔋
-                  </button>
-                </div>
+              <div class="recipe-filters__list">
+                <button class="recipe-filters__item recipe-filters__item--active" data-category="all">Всі</button>
+                <button class="recipe-filters__item" data-category="breakfast">Сніданок</button>
+                <button class="recipe-filters__item" data-category="lunch">Обід</button>
+                <button class="recipe-filters__item" data-category="dinner">Вечеря</button>
+                <button class="recipe-filters__item" data-category="dessert">Десерти</button>
+                <button class="recipe-filters__item" data-category="snack">Перекуси</button>
+                <button class="recipe-filters__item" data-category="drinks">Напої</button>
+                <button class="recipe-filters__item" data-category="bakery">Випічка</button>
+                <button class="recipe-filters__item" data-category="fast">Швидкі ⚡️</button>
+                <button class="recipe-filters__item" data-category="no-power">Без світла 🔋</button>
               </div>
             </nav>
 
-            <div class="recipe-grid" id="recipe-container"></div>
+            <!-- BROWSING: власні рецепти (горизонтальний рядок) -->
+            <section class="recipe-section" id="section-own" hidden>
+              <div class="recipe-section__header">
+                <h2 class="recipe-section__title">Твої рецепти</h2>
+                <span class="recipe-section__badge" id="own-count">0</span>
+              </div>
+              <div class="recipe-row" id="own-row"></div>
+            </section>
+
+            <!-- BROWSING: загальна база -->
+            <section class="recipe-section" id="section-community">
+              <div class="recipe-section__header">
+                <h2 class="recipe-section__title">Загальна база</h2>
+                <span class="recipe-section__badge" id="community-count">0</span>
+              </div>
+              <div class="recipe-grid" id="community-grid"></div>
+            </section>
+
+            <!-- SEARCH: власні результати -->
+            <section class="recipe-section" id="section-search-own" hidden>
+              <div class="recipe-section__header">
+                <h2 class="recipe-section__title">Мої</h2>
+                <span class="recipe-section__badge" id="search-own-count">0</span>
+                <button class="recipe-section__show-all" id="search-own-show-all">Показати всі</button>
+              </div>
+              <div class="recipe-grid" id="search-own-grid"></div>
+            </section>
+
+            <!-- SEARCH: загальні результати -->
+            <section class="recipe-section" id="section-search-community" hidden>
+              <div class="recipe-section__header">
+                <h2 class="recipe-section__title">Загальні</h2>
+                <span class="recipe-section__badge" id="search-community-count">0</span>
+                <button class="recipe-section__show-all" id="search-community-show-all">Показати всі</button>
+              </div>
+              <div class="recipe-grid" id="search-community-grid"></div>
+            </section>
+
+            <!-- EMPTY STATE (показується через JS) -->
+            <div id="recipes-empty-state" hidden></div>
+
           </div>
         </main>
+
+        <!-- DRAWER: Нові рецепти -->
+        <div class="new-recipes-drawer" id="new-recipes-drawer">
+          <div class="new-recipes-drawer__backdrop" id="new-recipes-backdrop"></div>
+          <div class="new-recipes-drawer__panel" inert>
+            <div class="new-recipes-drawer__header">
+              <h2 class="new-recipes-drawer__title">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 2c0 0-4 4-4 9a4 4 0 0 0 8 0c0-5-4-9-4-9z"></path>
+                  <path d="M9 21h6"></path><path d="M12 17v4"></path>
+                </svg>
+                Нові рецепти
+              </h2>
+              <button class="new-recipes-drawer__close" id="new-recipes-close" aria-label="Закрити">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+              </button>
+            </div>
+            <div class="new-recipes-drawer__body" id="new-recipes-body">
+              <p class="new-recipes-drawer__loading">Завантаження...</p>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
