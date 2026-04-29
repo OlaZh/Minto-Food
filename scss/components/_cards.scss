@@ -54,6 +54,10 @@
     height: 150px;
     overflow: hidden;
     flex-shrink: 0;
+
+    @media (max-width: 768px) {
+      height: 110px;
+    }
   }
 
   &__img {
@@ -108,6 +112,12 @@
     gap: var(--space-xs);
     margin-top: auto;
     padding-top: var(--space-xs);
+
+    @media (max-width: 768px) {
+      flex-direction: column;
+      align-items: stretch;
+      gap: var(--space-xxs);
+    }
   }
 
   &__kcal {
@@ -123,5 +133,10 @@
     font-weight: 600;
     border-radius: var(--radius-sm);
     white-space: nowrap;
+
+    @media (max-width: 768px) {
+      width: 100%;
+      justify-content: center;
+    }
   }
 }

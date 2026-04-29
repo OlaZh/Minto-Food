@@ -164,7 +164,6 @@ function buildRecipeCard(recipe, savedRecipeIds) {
     </button>
   </div>
   <div class="recipe-card__content">
-    ${displayCategory ? `<span class="recipe-card__category">${displayCategory}</span>` : ''}
     <h3 class="recipe-card__name">${name}</h3>
     <div class="recipe-card__footer">
       <span class="recipe-card__kcal">${recipe.kcal || 0} ккал</span>
