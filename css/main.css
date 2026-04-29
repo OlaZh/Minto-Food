@@ -390,7 +390,7 @@ textarea {
   --focus-ring: 0 0 0 3px rgba(111, 207, 186, 0.35);
 }
 
-.btn-danger, .week-nav-btn, .recipe-section__show-all, .day-week-nav__arrow, .new-recipes-drawer__close, #cancel-preview, .week-action-btn, .btn-new-recipes, .day-quick-btn, .api-result-card__content .api-add-btn, .recipe-card__btn, .smart-import__btn, .btn-save-mini, .btn-upload, .btn-secondary, .button--secondary, .preview-form__footer .btn-save, .btn-add-recipe, .btn-confirm, .btn-primary, .button--primary {
+.btn-danger, .week-nav-btn, .recipe-section__show-all, .day-week-nav__arrow, .new-recipes-drawer__close, #cancel-preview, .week-action-btn, .btn-new-recipes, .day-quick-btn, .api-result-card__content .api-add-btn, .recipe-card__btn, .smart-import__btn, .btn-save-mini, .btn-upload, .btn-add-recipe, .btn-secondary, .button--secondary, .preview-form__footer .btn-save, .btn-confirm, .btn-primary, .button--primary {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -409,42 +409,42 @@ textarea {
   text-decoration: none;
   transition: background-color var(--duration-base) var(--ease-out), border-color var(--duration-base) var(--ease-out), transform var(--duration-fast) var(--ease-out), box-shadow var(--duration-base) var(--ease-out);
 }
-.btn-danger:focus-visible, .week-nav-btn:focus-visible, .recipe-section__show-all:focus-visible, .day-week-nav__arrow:focus-visible, .new-recipes-drawer__close:focus-visible, #cancel-preview:focus-visible, .week-action-btn:focus-visible, .btn-new-recipes:focus-visible, .day-quick-btn:focus-visible, .api-result-card__content .api-add-btn:focus-visible, .recipe-card__btn:focus-visible, .smart-import__btn:focus-visible, .btn-save-mini:focus-visible, .btn-upload:focus-visible, .btn-secondary:focus-visible, .button--secondary:focus-visible, .preview-form__footer .btn-save:focus-visible, .btn-add-recipe:focus-visible, .btn-confirm:focus-visible, .btn-primary:focus-visible, .button--primary:focus-visible {
+.btn-danger:focus-visible, .week-nav-btn:focus-visible, .recipe-section__show-all:focus-visible, .day-week-nav__arrow:focus-visible, .new-recipes-drawer__close:focus-visible, #cancel-preview:focus-visible, .week-action-btn:focus-visible, .btn-new-recipes:focus-visible, .day-quick-btn:focus-visible, .api-result-card__content .api-add-btn:focus-visible, .recipe-card__btn:focus-visible, .smart-import__btn:focus-visible, .btn-save-mini:focus-visible, .btn-upload:focus-visible, .btn-add-recipe:focus-visible, .btn-secondary:focus-visible, .button--secondary:focus-visible, .preview-form__footer .btn-save:focus-visible, .btn-confirm:focus-visible, .btn-primary:focus-visible, .button--primary:focus-visible {
   outline: none;
   box-shadow: var(--focus-ring);
 }
-.btn-danger:disabled, .week-nav-btn:disabled, .recipe-section__show-all:disabled, .day-week-nav__arrow:disabled, .new-recipes-drawer__close:disabled, #cancel-preview:disabled, .week-action-btn:disabled, .btn-new-recipes:disabled, .day-quick-btn:disabled, .api-result-card__content .api-add-btn:disabled, .recipe-card__btn:disabled, .smart-import__btn:disabled, .btn-save-mini:disabled, .btn-upload:disabled, .btn-secondary:disabled, .button--secondary:disabled, .preview-form__footer .btn-save:disabled, .btn-add-recipe:disabled, .btn-confirm:disabled, .btn-primary:disabled, .button--primary:disabled {
+.btn-danger:disabled, .week-nav-btn:disabled, .recipe-section__show-all:disabled, .day-week-nav__arrow:disabled, .new-recipes-drawer__close:disabled, #cancel-preview:disabled, .week-action-btn:disabled, .btn-new-recipes:disabled, .day-quick-btn:disabled, .api-result-card__content .api-add-btn:disabled, .recipe-card__btn:disabled, .smart-import__btn:disabled, .btn-save-mini:disabled, .btn-upload:disabled, .btn-add-recipe:disabled, .btn-secondary:disabled, .button--secondary:disabled, .preview-form__footer .btn-save:disabled, .btn-confirm:disabled, .btn-primary:disabled, .button--primary:disabled {
   opacity: 0.5;
   cursor: not-allowed;
   pointer-events: none;
 }
 
-.preview-form__footer .btn-save, .btn-add-recipe, .btn-confirm, .btn-primary, .button--primary {
+.preview-form__footer .btn-save, .btn-confirm, .btn-primary, .button--primary {
   background: var(--color-accent);
   color: var(--color-text-inverse);
   box-shadow: var(--shadow-1);
 }
-.preview-form__footer .btn-save:hover:not(:disabled), .btn-add-recipe:hover:not(:disabled), .btn-confirm:hover:not(:disabled), .btn-primary:hover:not(:disabled), .button--primary:hover:not(:disabled) {
+.preview-form__footer .btn-save:hover:not(:disabled), .btn-confirm:hover:not(:disabled), .btn-primary:hover:not(:disabled), .button--primary:hover:not(:disabled) {
   background: var(--color-accent-hover);
   transform: translateY(-1px);
   box-shadow: var(--shadow-2);
 }
-.preview-form__footer .btn-save:active:not(:disabled), .btn-add-recipe:active:not(:disabled), .btn-confirm:active:not(:disabled), .btn-primary:active:not(:disabled), .button--primary:active:not(:disabled) {
+.preview-form__footer .btn-save:active:not(:disabled), .btn-confirm:active:not(:disabled), .btn-primary:active:not(:disabled), .button--primary:active:not(:disabled) {
   transform: translateY(0);
   box-shadow: var(--shadow-1);
 }
 
-.week-action-btn, .btn-new-recipes, .day-quick-btn, .api-result-card__content .api-add-btn, .recipe-card__btn, .smart-import__btn, .btn-save-mini, .btn-upload, .btn-secondary, .button--secondary {
+.week-action-btn, .btn-new-recipes, .day-quick-btn, .api-result-card__content .api-add-btn, .recipe-card__btn, .smart-import__btn, .btn-save-mini, .btn-upload, .btn-add-recipe, .btn-secondary, .button--secondary {
   background: transparent;
   color: var(--color-text-primary);
   border-color: var(--color-border);
 }
-.week-action-btn:hover:not(:disabled), .btn-new-recipes:hover:not(:disabled), .day-quick-btn:hover:not(:disabled), .api-result-card__content .api-add-btn:hover:not(:disabled), .recipe-card__btn:hover:not(:disabled), .smart-import__btn:hover:not(:disabled), .btn-save-mini:hover:not(:disabled), .btn-upload:hover:not(:disabled), .btn-secondary:hover:not(:disabled), .button--secondary:hover:not(:disabled) {
+.week-action-btn:hover:not(:disabled), .btn-new-recipes:hover:not(:disabled), .day-quick-btn:hover:not(:disabled), .api-result-card__content .api-add-btn:hover:not(:disabled), .recipe-card__btn:hover:not(:disabled), .smart-import__btn:hover:not(:disabled), .btn-save-mini:hover:not(:disabled), .btn-upload:hover:not(:disabled), .btn-add-recipe:hover:not(:disabled), .btn-secondary:hover:not(:disabled), .button--secondary:hover:not(:disabled) {
   background: var(--color-bg-hover);
   border-color: var(--color-accent);
   color: var(--color-accent);
 }
-.week-action-btn:active:not(:disabled), .btn-new-recipes:active:not(:disabled), .day-quick-btn:active:not(:disabled), .api-result-card__content .api-add-btn:active:not(:disabled), .recipe-card__btn:active:not(:disabled), .smart-import__btn:active:not(:disabled), .btn-save-mini:active:not(:disabled), .btn-upload:active:not(:disabled), .btn-secondary:active:not(:disabled), .button--secondary:active:not(:disabled) {
+.week-action-btn:active:not(:disabled), .btn-new-recipes:active:not(:disabled), .day-quick-btn:active:not(:disabled), .api-result-card__content .api-add-btn:active:not(:disabled), .recipe-card__btn:active:not(:disabled), .smart-import__btn:active:not(:disabled), .btn-save-mini:active:not(:disabled), .btn-upload:active:not(:disabled), .btn-add-recipe:active:not(:disabled), .btn-secondary:active:not(:disabled), .button--secondary:active:not(:disabled) {
   transform: translateY(1px);
 }
 
@@ -1595,14 +1595,16 @@ textarea {
    ============================================================ */
 /* "Додати рецепт" — з SVG-іконкою, що обертається на hover */
 .btn-add-recipe {
-  padding: var(--space-sm) var(--space-xl);
-  font-size: 16px;
-  font-weight: 700;
-  border-radius: var(--radius-lg);
+  padding: var(--space-sm) var(--space-lg);
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: var(--radius-sm);
   gap: var(--space-xs);
+  white-space: nowrap;
 }
 .btn-add-recipe svg {
   stroke: currentColor;
+  flex-shrink: 0;
   transition: transform var(--duration-base) var(--ease-out);
 }
 .btn-add-recipe:hover:not(:disabled) svg {
@@ -5366,27 +5368,24 @@ textarea {
   min-height: 100vh;
 }
 .recipe-page__intro {
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
+  display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: var(--space-md);
   margin-bottom: var(--space-xl);
 }
-.recipe-page__intro .btn-add-recipe {
-  justify-self: end;
-}
 .recipe-page__title {
   font-family: var(--font-heading);
-  font-size: 28px;
+  font-size: 24px;
   font-weight: 800;
   color: var(--color-text-primary);
-  text-align: center;
-  justify-self: center;
+  white-space: nowrap;
 }
 
-/* ================= "НОВІ РЕЦЕПТИ" КНОПКА ================= */
+/* ================= КНОПКИ ХЕДЕРА РЕЦЕПТІВ ================= */
 .btn-new-recipes {
   gap: var(--space-xs);
+  padding: var(--space-sm) var(--space-lg);
   font-size: 14px;
   font-weight: 600;
   border-radius: var(--radius-sm);
@@ -5587,22 +5586,8 @@ textarea {
   .recipe-page {
     padding: 24px 0;
   }
-  .recipe-page__intro {
-    grid-template-columns: auto auto;
-    grid-template-rows: auto auto;
-  }
-  .recipe-page__intro .recipe-page__title {
-    grid-column: 1/-1;
-    order: -1;
-    font-size: 22px;
-    text-align: left;
-    justify-self: start;
-  }
-  .recipe-page__intro .btn-new-recipes {
-    justify-self: start;
-  }
-  .recipe-page__intro .btn-add-recipe {
-    justify-self: end;
+  .recipe-page__title {
+    font-size: 18px;
   }
   .recipe-grid {
     grid-template-columns: repeat(2, 1fr);
