@@ -13,6 +13,7 @@ let currentUserId = null;
 let cachedBooks = [];
 let selectorModal = null;
 let onSelectCallback = null;
+let previouslySavedBookIds = [];
 
 // =============================================================
 // ІНІЦІАЛІЗАЦІЯ
@@ -174,6 +175,28 @@ export async function removeRecipeFromBook(recipeId, bookId) {
   return true;
 }
 
+export async function removeRecipeFromAllBooks(recipeId) {
+  if (!currentUserId) return false;
+
+  const bookIds = cachedBooks.map((b) => b.id);
+  if (!bookIds.length) return false;
+
+  const { error } = await supabase
+    .from('cookbook_recipes')
+    .delete()
+    .eq('recipe_id', recipeId)
+    .in('cookbook_id', bookIds);
+
+  if (error) {
+    console.error('Error removing from all books:', error);
+    showToast('Помилка видалення', 'error');
+    return false;
+  }
+
+  showToast('Видалено зі збережених');
+  return true;
+}
+
 // =============================================================
 // ПЕРЕВІРКА ЧИ РЕЦЕПТ ЗБЕРЕЖЕНО
 // =============================================================
@@ -251,17 +274,18 @@ function createSelectorModal() {
   modal.querySelector('#book-selector-all').addEventListener('click', showAllBooks);
 }
 
-function renderBooksList(showAll = false) {
+function renderBooksList(showAll = false, preCheckedIds = null) {
   const list = document.getElementById('book-selector-list');
   if (!list) return;
 
+  const checkedIds = preCheckedIds !== null ? preCheckedIds : previouslySavedBookIds;
   const booksToShow = showAll ? cachedBooks : cachedBooks.slice(0, 4);
 
   list.innerHTML = booksToShow
     .map(
       (book) => `
     <label class="book-selector__item ${book.is_default ? 'book-selector__item--default' : ''}">
-      <input type="checkbox" value="${book.id}" ${book.is_default ? 'checked' : ''}>
+      <input type="checkbox" value="${book.id}" ${checkedIds.includes(book.id) ? 'checked' : ''}>
       <span class="book-selector__icon">${book.icon || '📖'}</span>
       <span class="book-selector__name">${escapeHTML(book.name)}</span>
       ${book.is_default ? '<span class="book-selector__badge">Головна</span>' : ''}
@@ -270,7 +294,6 @@ function renderBooksList(showAll = false) {
     )
     .join('');
 
-  // Показуємо/ховаємо кнопку "Усі книги"
   const allBtn = document.getElementById('book-selector-all');
   if (allBtn) {
     allBtn.style.display = cachedBooks.length > 4 && !showAll ? 'block' : 'none';
@@ -281,11 +304,23 @@ function showAllBooks() {
   renderBooksList(true);
 }
 
-export function openBookSelector(recipeId, onSelect = null) {
+export async function openBookSelector(recipeId, onSelect = null) {
   if (!selectorModal) createSelectorModal();
 
   selectorModal.dataset.recipeId = recipeId;
   onSelectCallback = onSelect;
+
+  // Завантажуємо в яких книгах вже збережено
+  previouslySavedBookIds = await getRecipeBooks(recipeId);
+
+  const isEditing = previouslySavedBookIds.length > 0;
+  const header = selectorModal.querySelector('.book-selector__header');
+  if (header) {
+    header.querySelector('h3').textContent = isEditing ? 'Керувати книгами' : 'Зберегти в книгу';
+    header.querySelector('p').textContent = isEditing
+      ? 'Зніміть галочку, щоб видалити з книги'
+      : 'Оберіть одну або кілька книг';
+  }
 
   renderBooksList(false);
 
@@ -303,19 +338,30 @@ function closeBookSelector() {
 
 async function handleSaveSelection() {
   const recipeId = parseInt(selectorModal.dataset.recipeId);
-  const checkboxes = selectorModal.querySelectorAll('input[type="checkbox"]:checked');
-  const bookIds = Array.from(checkboxes).map((cb) => parseInt(cb.value));
+  const allCheckboxes = selectorModal.querySelectorAll('input[type="checkbox"]');
+  const newBookIds = Array.from(allCheckboxes)
+    .filter((cb) => cb.checked)
+    .map((cb) => parseInt(cb.value));
 
-  if (bookIds.length === 0) {
-    showToast('Оберіть хоча б одну книгу', 'error');
-    return;
+  const toAdd = newBookIds.filter((id) => !previouslySavedBookIds.includes(id));
+  const toRemove = previouslySavedBookIds.filter((id) => !newBookIds.includes(id));
+
+  await Promise.all([
+    ...toAdd.map((id) => {
+      const book = cachedBooks.find((b) => b.id === id);
+      return saveRecipeToBook(recipeId, id, book?.name);
+    }),
+    ...toRemove.map((id) => removeRecipeFromBook(recipeId, id)),
+  ]);
+
+  if (newBookIds.length === 0 && previouslySavedBookIds.length > 0) {
+    showToast('Видалено зі збережених');
   }
 
-  await saveRecipeToBooks(recipeId, bookIds);
   closeBookSelector();
 
   if (onSelectCallback) {
-    onSelectCallback(bookIds);
+    onSelectCallback(newBookIds);
   }
 }
 

@@ -8,6 +8,7 @@ import {
   isRecipeSaved,
   openReportModal,
   removeRecipeFromBook,
+  removeRecipeFromAllBooks,
   getRecipeBooks,
 } from './book-selector.js';
 
