@@ -105,7 +105,7 @@ function renderProducts(items) {
 
   items.forEach((product) => {
     const card = document.createElement('div');
-    card.className = 'product-card-mini';
+    card.className = 'product-card';
 
     const imgSrc =
       typeof product.image === 'string' && product.image.trim() !== '' && product.image !== 'NULL'
@@ -113,39 +113,30 @@ function renderProducts(items) {
         : 'img/placeholder.jpg';
 
     const attributionHtml = product.photographer_name
-      ? `<div class="product-card-mini__attribution">
-           Photo by 
-           <a href="${product.photographer_url}?utm_source=MintoFood&utm_medium=referral" 
+      ? `<div class="product-card__attribution">
+           <a href="${product.photographer_url}?utm_source=MintoFood&utm_medium=referral"
               target="_blank"
               onclick="event.stopPropagation()">
-              ${escapeHTML(product.photographer_name)}
+             ${escapeHTML(product.photographer_name)}
            </a>
          </div>`
       : '';
 
     card.innerHTML = `
-      <div class="product-card-mini__img-wrapper">
-        <img src="${imgSrc}" 
-             alt="${escapeHTML(product.name_ua)}" 
-             class="product-card-mini__image"
+      <div class="product-card__image-box">
+        <img src="${imgSrc}"
+             alt="${escapeHTML(product.name_ua)}"
+             class="product-card__img"
+             loading="lazy"
              onerror="this.src='img/placeholder.jpg'">
         ${attributionHtml}
       </div>
-
-      <div class="product-card-mini__content">
-        <h3 class="product-card-mini__title">
-          ${escapeHTML(product.name_ua) || 'Без назви'}
-        </h3>
-
-        <p class="product-card-mini__desc">
-          ${escapeHTML(product.short_desc)}
-        </p>
-
-        <div class="product-card-mini__macros">
-          <span>${product.kcal || 0} ккал</span>
-          <span>${product.protein || 0}Б</span>
-          <span>${product.fat || 0}Ж</span>
-          <span>${product.carbs || 0}В</span>
+      <div class="product-card__content">
+        <h3 class="product-card__name">${escapeHTML(product.name_ua) || 'Без назви'}</h3>
+        <p class="product-card__desc">${escapeHTML(product.short_desc) || ''}</p>
+        <div class="product-card__footer">
+          <span class="product-card__kcal">${product.kcal || 0} ккал</span>
+          <button class="product-card__btn">Детальніше</button>
         </div>
       </div>
     `;
@@ -312,12 +303,12 @@ function openProductModal(product) {
         : '<li>Немає інформації</li>';
   };
 
-  updateList('benefit1', product.benefits);
-  updateList('harm1', product.harm);
-  updateList('eatMorning', product.best_time_to_eat);
-  updateList('notEatNight', product.when_to_avoid);
-  updateList('reaction1', product.body_effects);
-  updateList('myth1', product.myths_and_truths);
+  updateList('benefits', product.benefits);
+  updateList('harm', product.harm);
+  updateList('whenToEat', product.best_time_to_eat);
+  updateList('whenNotToEat', product.when_to_avoid);
+  updateList('bodyReaction', product.body_effects);
+  updateList('myths', product.myths_and_truths);
 
   const updateLinked = (selector, ids) => {
     const box = modal.querySelector(selector);
