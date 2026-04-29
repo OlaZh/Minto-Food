@@ -1692,7 +1692,7 @@ textarea {
 }
 .recipe-card__image-box {
   position: relative;
-  height: 200px;
+  height: 150px;
   overflow: hidden;
   flex-shrink: 0;
 }
@@ -5531,59 +5531,12 @@ textarea {
   border-radius: var(--radius-sm);
 }
 
-/* ================= HORIZONTAL ROW (Твої рецепти) ================= */
-.recipe-row {
-  display: flex;
-  gap: var(--space-sm);
-  overflow-x: auto;
-  padding-bottom: var(--space-sm);
-  scrollbar-width: thin;
-  scrollbar-color: var(--color-border) transparent;
-}
-.recipe-row::-webkit-scrollbar {
-  height: 4px;
-}
-.recipe-row::-webkit-scrollbar-track {
-  background: transparent;
-}
-.recipe-row::-webkit-scrollbar-thumb {
-  background: var(--color-border);
-  border-radius: var(--radius-pill);
-}
-.recipe-row .recipe-card {
-  flex-shrink: 0;
-  width: 240px;
-}
-
 /* ================= RECIPE GRID ================= */
 .recipe-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: var(--space-xl);
-  padding: var(--space-xxs) 0;
+  grid-template-columns: repeat(5, 1fr);
+  gap: var(--space-md);
   width: 100%;
-}
-.recipe-grid--compact {
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: var(--space-sm);
-}
-.recipe-grid--compact .recipe-card__image-box {
-  height: 150px;
-}
-.recipe-grid--compact .recipe-card__content {
-  padding: var(--space-sm) var(--space-md);
-  gap: var(--space-xxs);
-}
-.recipe-grid--compact .recipe-card__name {
-  font-size: 14px;
-  min-height: 36px;
-}
-.recipe-grid--compact .recipe-card__kcal {
-  font-size: 12px;
-}
-.recipe-grid--compact .recipe-card__btn {
-  font-size: 12px;
-  padding: var(--space-xxs) var(--space-sm);
 }
 
 /* ================= EMPTY STATE ================= */
@@ -5620,6 +5573,16 @@ textarea {
 }
 
 /* ================= RESPONSIVE ================= */
+@media (max-width: 1200px) {
+  .recipe-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+@media (max-width: 960px) {
+  .recipe-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
 @media (max-width: 768px) {
   .recipe-page {
     padding: 24px 0;
@@ -5643,15 +5606,13 @@ textarea {
   }
   .recipe-grid {
     grid-template-columns: repeat(2, 1fr);
-    gap: var(--space-md);
-  }
-  .recipe-row .recipe-card {
-    width: 200px;
+    gap: var(--space-sm);
   }
 }
 @media (max-width: 480px) {
   .recipe-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-xs);
   }
 }
 /* =============================================================
