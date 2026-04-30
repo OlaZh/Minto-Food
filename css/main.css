@@ -9733,8 +9733,8 @@ textarea:-webkit-autofill:focus {
 /* ================= RECIPES IN BOOK ================= */
 .cookbook-recipes {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 18px;
 }
 .cookbook-recipes__empty {
   grid-column: 1/-1;
@@ -9862,12 +9862,7 @@ textarea:-webkit-autofill:focus {
   stroke: #e74c3c;
 }
 
-/* ================= RECIPE CARDS IN BOOK (NEW) ================= */
-.cookbook-recipes {
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 18px;
-}
-
+/* ================= RECIPE CARDS IN BOOK ================= */
 .cookbook-recipe-card {
   position: relative;
   display: flex;
@@ -9993,151 +9988,6 @@ textarea:-webkit-autofill:focus {
     padding: 12px;
   }
 }
-/* ================= NOTEBOOK ================= */
-.cookbook-notebook__empty {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 16px;
-  padding: 60px 20px;
-  text-align: center;
-}
-.cookbook-notebook__empty p {
-  color: var(--color-text-secondary);
-  font-size: 15px;
-}
-.cookbook-notebook__create-btn {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 12px 24px;
-  background: var(--color-accent);
-  color: var(--color-text-inverse);
-  border: none;
-  border-radius: 12px;
-  font-size: 15px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-.cookbook-notebook__create-btn:hover {
-  background: var(--color-accent-hover);
-  transform: translateY(-2px);
-}
-.cookbook-notebook__create-btn svg {
-  stroke: currentColor;
-}
-.cookbook-notebook__header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-}
-.cookbook-notebook__title {
-  font-size: 18px;
-  font-weight: 600;
-  color: var(--color-text-primary);
-}
-.cookbook-notebook__add-note-btn {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 16px;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: 10px;
-  color: var(--color-text-secondary);
-  font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-.cookbook-notebook__add-note-btn:hover {
-  border-color: var(--color-accent);
-  color: var(--color-accent);
-}
-.cookbook-notebook__add-note-btn svg {
-  stroke: currentColor;
-}
-.cookbook-notebook__notes {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-.cookbook-notebook__empty-notes {
-  text-align: center;
-  color: var(--color-text-secondary);
-  padding: 40px 20px;
-  font-size: 14px;
-}
-
-/* ================= NOTE CARD ================= */
-.cookbook-note {
-  padding: 16px;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: 14px;
-  transition: all 0.2s ease;
-}
-.cookbook-note:hover {
-  border-color: var(--color-accent);
-}
-.cookbook-note__header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 10px;
-}
-.cookbook-note__title {
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--color-text-primary);
-}
-.cookbook-note__date {
-  font-size: 12px;
-  color: var(--color-text-secondary);
-  white-space: nowrap;
-}
-.cookbook-note__content {
-  font-size: 14px;
-  color: var(--color-text-secondary);
-  line-height: 1.6;
-  margin-bottom: 12px;
-}
-.cookbook-note__actions {
-  display: flex;
-  gap: 8px;
-  justify-content: flex-end;
-}
-.cookbook-note__edit, .cookbook-note__delete {
-  width: 30px;
-  height: 30px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: transparent;
-  border: 1px solid var(--color-border);
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-.cookbook-note__edit svg, .cookbook-note__delete svg {
-  stroke: var(--color-text-secondary);
-}
-.cookbook-note__edit:hover, .cookbook-note__delete:hover {
-  border-color: var(--color-accent);
-}
-.cookbook-note__edit:hover svg, .cookbook-note__delete:hover svg {
-  stroke: var(--color-accent);
-}
-.cookbook-note__delete:hover {
-  border-color: #e74c3c;
-}
-.cookbook-note__delete:hover svg {
-  stroke: #e74c3c;
-}
-
 /* ================= FORMS ================= */
 .cookbook-form {
   padding: 24px;
@@ -10385,14 +10235,6 @@ textarea:-webkit-autofill:focus {
   .cookbook-page__title {
     font-size: 26px;
   }
-  .cookbook-books__header {
-    flex-direction: column;
-    gap: 16px;
-    align-items: stretch;
-  }
-  .cookbook-books__add-btn {
-    justify-content: center;
-  }
   .cookbook-books__grid {
     grid-template-columns: 1fr;
   }
@@ -10407,13 +10249,6 @@ textarea:-webkit-autofill:focus {
   .cookbook-modal__title {
     font-size: 20px;
     padding-right: 40px;
-  }
-  .cookbook-modal__tabs {
-    overflow-x: auto;
-  }
-  .cookbook-modal__tab {
-    padding: 10px 16px;
-    font-size: 13px;
   }
   .cookbook-modal__content {
     padding: 20px;
