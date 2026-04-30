@@ -9932,7 +9932,23 @@ textarea:-webkit-autofill:focus {
 
 @media (max-width: 480px) {
   .cookbook-recipes {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+  .cookbook-recipe-card {
+    border-radius: 14px;
+  }
+  .cookbook-recipe-card__body {
+    padding: 10px 12px 12px;
+  }
+  .cookbook-recipe-card__title {
+    font-size: 13px;
+  }
+  .cookbook-modal {
+    width: 98%;
+  }
+  .cookbook-modal__content {
+    padding: 12px;
   }
 }
 /* ================= NOTEBOOK ================= */
