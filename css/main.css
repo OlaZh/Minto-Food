@@ -10238,12 +10238,12 @@ textarea:-webkit-autofill:focus {
 
 .cookbook-cover-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 10px;
 }
 @media (max-width: 480px) {
   .cookbook-cover-grid {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 .cookbook-cover-grid__label {
@@ -10261,7 +10261,7 @@ textarea:-webkit-autofill:focus {
 
 .cookbook-cover-option {
   position: relative;
-  aspect-ratio: 2/3;
+  aspect-ratio: 3/2;
   border-radius: 10px;
   overflow: hidden;
   cursor: pointer;
