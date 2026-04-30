@@ -28,6 +28,13 @@ function getBookIcon(key) {
   return BOOK_ICONS[key] ?? `<span style="font-size:2em;line-height:1">${key}</span>`;
 }
 
+const LIGHT_COVERS = 16;
+const DARK_COVERS = 14;
+
+function getCoverSrc(filename) {
+  return `img/covers/${filename}.avif`;
+}
+
 function renderIconPickerHTML(activeIcon = 'book') {
   return Object.entries(BOOK_ICONS)
     .map(
@@ -114,8 +121,8 @@ async function init() {
 
   currentUser = user;
 
-  // Створюємо модалку редагування якщо її немає
   createEditBookModal();
+  createCoverPickerModal();
 
   await loadBooks();
   setupEventListeners();
@@ -257,12 +264,22 @@ async function createBookElement(book) {
   const article = document.createElement('article');
   article.className = `cookbook-book${isDefault ? ' cookbook-book--main' : ''}`;
   article.dataset.bookId = book.id;
+  article.dataset.bookIcon = book.icon || 'book';
+
+  const coverHTML = book.cover_image
+    ? `<img class="cookbook-book__cover-img" src="${getCoverSrc(book.cover_image)}" alt="" loading="lazy">`
+    : `<div class="cookbook-book__cover-icon">${getBookIcon(book.icon || 'book')}</div>`;
 
   article.innerHTML = `
     <div class="cookbook-book__cover-area">
-      <div class="cookbook-book__cover-icon">${getBookIcon(book.icon || 'book')}</div>
+      ${coverHTML}
 
       <div class="cookbook-book__cover-controls">
+        <button class="cookbook-book__action-btn cookbook-book__cover-btn" aria-label="Змінити обкладинку" title="Обкладинка">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>
+          </svg>
+        </button>
         <button class="cookbook-book__action-btn cookbook-book__edit-btn" aria-label="Редагувати книгу" title="Редагувати">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
@@ -298,6 +315,12 @@ async function createBookElement(book) {
       </div>
     </div>
   `;
+
+  // Обкладинка
+  article.querySelector('.cookbook-book__cover-btn').addEventListener('click', (e) => {
+    e.stopPropagation();
+    openCoverPicker(book, article);
+  });
 
   // Редагувати
   article.querySelector('.cookbook-book__edit-btn').addEventListener('click', (e) => {
@@ -892,4 +915,115 @@ function formatDate(dateStr) {
     month: '2-digit',
     year: 'numeric',
   });
+}
+
+// =====================================
+// ПІКЕР ОБКЛАДИНОК
+// =====================================
+
+function createCoverPickerModal() {
+  if (document.getElementById('coverPickerModal')) return;
+
+  const modal = document.createElement('div');
+  modal.id = 'coverPickerModal';
+  modal.className = 'modal-overlay';
+  modal.innerHTML = `
+    <div class="cookbook-cover-picker-modal">
+      <div class="cookbook-cover-picker-modal__header">
+        <h3>Оберіть обкладинку</h3>
+        <button class="modal-card__close" id="closeCoverPickerModal">&times;</button>
+      </div>
+      <div class="cookbook-cover-picker-modal__body">
+        <div class="cookbook-cover-grid" id="coverPickerGrid"></div>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+
+  document.getElementById('closeCoverPickerModal').addEventListener('click', () => closeModal(modal));
+  modal.addEventListener('click', e => { if (e.target === modal) closeModal(modal); });
+}
+
+function openCoverPicker(book, cardEl) {
+  const modal = document.getElementById('coverPickerModal');
+  const grid = document.getElementById('coverPickerGrid');
+
+  const checkSvg = `<span class="cookbook-cover-option__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" width="13" height="13"><polyline points="20 6 9 17 4 12"/></svg></span>`;
+
+  const optionBtn = (filename, label) => `
+    <button type="button" class="cookbook-cover-option ${book.cover_image === filename ? 'cookbook-cover-option--active' : ''}" data-cover="${filename}">
+      <img src="img/covers/${filename}.avif" alt="${label}" loading="lazy">
+      ${checkSvg}
+    </button>
+  `;
+
+  let html = `
+    <button type="button" class="cookbook-cover-option cookbook-cover-option--none ${!book.cover_image ? 'cookbook-cover-option--active' : ''}" data-cover="">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="26" height="26"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      <span>Без фото</span>
+      ${checkSvg}
+    </button>
+    <div class="cookbook-cover-grid__label">Світла серія</div>
+  `;
+  for (let i = 1; i <= LIGHT_COVERS; i++) html += optionBtn(`Light theme ${i}`, `Світла ${i}`);
+
+  html += `<div class="cookbook-cover-grid__label">Темна серія</div>`;
+  for (let i = 1; i <= DARK_COVERS; i++) html += optionBtn(`Dark theme ${i}`, `Темна ${i}`);
+
+  grid.innerHTML = html;
+
+  grid.querySelectorAll('.cookbook-cover-option').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const filename = btn.dataset.cover || null;
+      await selectCover(book, filename, cardEl);
+      grid.querySelectorAll('.cookbook-cover-option').forEach(b => b.classList.remove('cookbook-cover-option--active'));
+      btn.classList.add('cookbook-cover-option--active');
+      closeModal(modal);
+    });
+  });
+
+  openModal(modal);
+}
+
+async function selectCover(book, filename, cardEl) {
+  try {
+    const { error } = await supabase
+      .from('cookbooks')
+      .update({ cover_image: filename })
+      .eq('id', book.id);
+    if (error) throw error;
+
+    book.cover_image = filename;
+
+    const coverArea = cardEl.querySelector('.cookbook-book__cover-area');
+    let img = coverArea.querySelector('.cookbook-book__cover-img');
+    let icon = coverArea.querySelector('.cookbook-book__cover-icon');
+
+    if (filename) {
+      if (icon) icon.remove();
+      if (img) {
+        img.src = getCoverSrc(filename);
+      } else {
+        img = document.createElement('img');
+        img.className = 'cookbook-book__cover-img';
+        img.src = getCoverSrc(filename);
+        img.alt = '';
+        img.loading = 'lazy';
+        coverArea.insertBefore(img, coverArea.firstChild);
+      }
+    } else {
+      if (img) img.remove();
+      if (!icon) {
+        icon = document.createElement('div');
+        icon.className = 'cookbook-book__cover-icon';
+        icon.innerHTML = getBookIcon(cardEl.dataset.bookIcon || 'book');
+        coverArea.insertBefore(icon, coverArea.firstChild);
+      }
+    }
+
+    showToast('Обкладинку оновлено!');
+  } catch (err) {
+    console.error(err);
+    showToast('Помилка оновлення обкладинки', 'error');
+  }
 }
