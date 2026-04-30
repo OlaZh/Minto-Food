@@ -376,12 +376,9 @@ textarea:-webkit-autofill:focus {
   --radius-xl: 20px;
   --radius-2xl: 24px;
   --radius-pill: 999px;
-  --shadow-1:
-    0 1px 2px rgba(15, 31, 27, 0.04), 0 2px 6px rgba(15, 31, 27, 0.06);
-  --shadow-2:
-    0 6px 20px rgba(15, 31, 27, 0.08), 0 14px 32px rgba(15, 31, 27, 0.1);
-  --shadow-3:
-    0 12px 30px rgba(15, 31, 27, 0.14), 0 30px 60px rgba(15, 31, 27, 0.18);
+  --shadow-1: 0 1px 2px rgba(15, 31, 27, 0.04), 0 2px 6px rgba(15, 31, 27, 0.06);
+  --shadow-2: 0 6px 20px rgba(15, 31, 27, 0.08), 0 14px 32px rgba(15, 31, 27, 0.1);
+  --shadow-3: 0 12px 30px rgba(15, 31, 27, 0.14), 0 30px 60px rgba(15, 31, 27, 0.18);
   --shadow-inset: inset 0 2px 4px rgba(15, 31, 27, 0.06);
   --focus-ring: 0 0 0 3px rgba(74, 181, 132, 0.25);
   --duration-fast: 150ms;
@@ -392,12 +389,9 @@ textarea:-webkit-autofill:focus {
 }
 
 [data-theme=dark] {
-  --shadow-1:
-    0 2px 4px rgba(0, 0, 0, 0.3), 0 4px 12px rgba(0, 0, 0, 0.35);
-  --shadow-2:
-    0 8px 24px rgba(0, 0, 0, 0.4), 0 16px 40px rgba(0, 0, 0, 0.45);
-  --shadow-3:
-    0 16px 40px rgba(0, 0, 0, 0.5), 0 40px 80px rgba(0, 0, 0, 0.55);
+  --shadow-1: 0 2px 4px rgba(0, 0, 0, 0.3), 0 4px 12px rgba(0, 0, 0, 0.35);
+  --shadow-2: 0 8px 24px rgba(0, 0, 0, 0.4), 0 16px 40px rgba(0, 0, 0, 0.45);
+  --shadow-3: 0 16px 40px rgba(0, 0, 0, 0.5), 0 40px 80px rgba(0, 0, 0, 0.55);
   --focus-ring: 0 0 0 3px rgba(111, 207, 186, 0.35);
 }
 
@@ -4054,18 +4048,6 @@ textarea:-webkit-autofill:focus {
   width: 16px;
   height: 16px;
   color: var(--color-text-secondary);
-}
-
-.cookbook-book__default-badge {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  font-size: 0.65rem;
-  padding: 2px 6px;
-  background: var(--color-accent);
-  color: white;
-  border-radius: 4px;
-  font-weight: 600;
 }
 
 .edit-book-modal {
@@ -9561,10 +9543,18 @@ textarea:-webkit-autofill:focus {
   font-size: 15px;
   font-weight: 700;
   color: var(--color-text-primary);
+  line-height: 1.35;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  overflow: hidden;
+}
+.cookbook-book__name > span:first-child {
+  flex: 1;
+  min-width: 0;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  line-height: 1.35;
 }
 .cookbook-book__meta {
   display: flex;
@@ -9596,26 +9586,21 @@ textarea:-webkit-autofill:focus {
 .cookbook-book__arrow svg {
   stroke: currentColor;
 }
-.cookbook-book {
-  /* Бейдж "Головна" */
-}
+
 .cookbook-book__default-badge {
-  position: absolute;
-  bottom: 8px;
-  left: 8px;
-  font-size: 9px;
+  display: inline-flex;
+  align-items: center;
+  font-size: 10px;
   font-weight: 700;
-  letter-spacing: 0.4px;
+  letter-spacing: 0.3px;
   text-transform: uppercase;
   padding: 2px 7px;
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  color: #1e6b5e;
+  background: var(--color-accent-soft);
+  color: var(--color-accent);
+  border: 1px solid var(--color-accent);
   border-radius: 5px;
-  line-height: 1.5;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
-  z-index: 2;
+  line-height: 1.4;
+  flex-shrink: 0;
 }
 
 /* ================= COVER COLOR VARIANTS ================= */

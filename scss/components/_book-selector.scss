@@ -532,18 +532,6 @@
   }
 }
 
-.cookbook-book__default-badge {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  font-size: 0.65rem;
-  padding: 2px 6px;
-  background: var(--color-accent);
-  color: white;
-  border-radius: 4px;
-  font-weight: 600;
-}
-
 // Модалка редагування книги
 .edit-book-modal {
   max-width: 360px;

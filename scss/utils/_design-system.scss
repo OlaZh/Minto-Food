@@ -43,16 +43,13 @@
 
   // ---------- ELEVATION (SHADOWS) ----------
   // Level 1 — статичні картки
-  --shadow-1:
-    0 1px 2px rgba(15, 31, 27, 0.04), 0 2px 6px rgba(15, 31, 27, 0.06);
+  --shadow-1: 0 1px 2px rgba(15, 31, 27, 0.04), 0 2px 6px rgba(15, 31, 27, 0.06);
 
   // Level 2 — hover state
-  --shadow-2:
-    0 6px 20px rgba(15, 31, 27, 0.08), 0 14px 32px rgba(15, 31, 27, 0.1);
+  --shadow-2: 0 6px 20px rgba(15, 31, 27, 0.08), 0 14px 32px rgba(15, 31, 27, 0.1);
 
   // Level 3 — модалки, dropdowns
-  --shadow-3:
-    0 12px 30px rgba(15, 31, 27, 0.14), 0 30px 60px rgba(15, 31, 27, 0.18);
+  --shadow-3: 0 12px 30px rgba(15, 31, 27, 0.14), 0 30px 60px rgba(15, 31, 27, 0.18);
 
   // Inset — для input'ів
   --shadow-inset: inset 0 2px 4px rgba(15, 31, 27, 0.06);
@@ -72,14 +69,11 @@
 // Тіні мають бути глибшими в темній темі, бо на тлі темного фону
 // стандартна rgba(0,0,0,.08) не читається
 [data-theme='dark'] {
-  --shadow-1:
-    0 2px 4px rgba(0, 0, 0, 0.3), 0 4px 12px rgba(0, 0, 0, 0.35);
+  --shadow-1: 0 2px 4px rgba(0, 0, 0, 0.3), 0 4px 12px rgba(0, 0, 0, 0.35);
 
-  --shadow-2:
-    0 8px 24px rgba(0, 0, 0, 0.4), 0 16px 40px rgba(0, 0, 0, 0.45);
+  --shadow-2: 0 8px 24px rgba(0, 0, 0, 0.4), 0 16px 40px rgba(0, 0, 0, 0.45);
 
-  --shadow-3:
-    0 16px 40px rgba(0, 0, 0, 0.5), 0 40px 80px rgba(0, 0, 0, 0.55);
+  --shadow-3: 0 16px 40px rgba(0, 0, 0, 0.5), 0 40px 80px rgba(0, 0, 0, 0.55);
 
   --focus-ring: 0 0 0 3px rgba(111, 207, 186, 0.35);
 }
@@ -433,11 +427,7 @@
     position: absolute;
     inset-inline: 0;
     bottom: 0;
-    background: linear-gradient(
-      180deg,
-      rgba(56, 189, 248, 0.35),
-      rgba(14, 165, 233, 0.55)
-    );
+    background: linear-gradient(180deg, rgba(56, 189, 248, 0.35), rgba(14, 165, 233, 0.55));
     border-radius: inherit;
     transition: height var(--duration-slow) var(--ease-smooth);
   }
