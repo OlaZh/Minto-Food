@@ -273,11 +273,13 @@ async function createBookElement(book) {
         }
       </div>
 
-      ${isDefault ? '<span class="cookbook-book__default-badge">Головна</span>' : ''}
     </div>
 
     <div class="cookbook-book__body">
-      <h3 class="cookbook-book__name">${escapeHTML(book.name)}</h3>
+      <h3 class="cookbook-book__name">
+        <span>${escapeHTML(book.name)}</span>
+        ${isDefault ? '<span class="cookbook-book__default-badge">Головна</span>' : ''}
+      </h3>
       <div class="cookbook-book__meta">
         <span class="cookbook-book__count">${recipesLabel(recipeCount)}</span>
         <div class="cookbook-book__arrow">
