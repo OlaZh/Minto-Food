@@ -4051,8 +4051,10 @@ textarea:-webkit-autofill:focus {
 }
 
 .edit-book-modal {
-  max-width: 360px;
+  max-width: 520px;
   width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
 }
 .edit-book-modal__header {
   text-align: center;
@@ -9514,6 +9516,12 @@ textarea:-webkit-autofill:focus {
   transition: opacity 0.2s ease, transform 0.2s ease;
   z-index: 2;
 }
+@media (hover: none) {
+  .cookbook-book__cover-controls {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
 .cookbook-book__action-btn {
   width: 30px;
   height: 30px;
@@ -9542,6 +9550,13 @@ textarea:-webkit-autofill:focus {
 }
 .cookbook-book__action-btn--danger:hover {
   color: #e74c3c;
+}
+.cookbook-book__edit-btn {
+  width: auto;
+  padding: 0 10px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
 }
 .cookbook-book {
   /* Інформаційна частина */

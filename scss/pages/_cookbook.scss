@@ -289,6 +289,11 @@
       opacity 0.2s ease,
       transform 0.2s ease;
     z-index: 2;
+
+    @media (hover: none) {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 
   &__action-btn {
@@ -322,6 +327,14 @@
     &--danger:hover {
       color: #e74c3c;
     }
+  }
+
+  &__edit-btn {
+    width: auto;
+    padding: 0 10px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
   }
 
   /* Інформаційна частина */

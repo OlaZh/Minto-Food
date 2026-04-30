@@ -534,8 +534,10 @@
 
 // Модалка редагування книги
 .edit-book-modal {
-  max-width: 360px;
+  max-width: 520px;
   width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
 
   &__header {
     text-align: center;
