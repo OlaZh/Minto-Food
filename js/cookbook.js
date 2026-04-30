@@ -46,7 +46,8 @@ function renderIconPickerHTML(activeIcon = 'book') {
 
 function renderCoverGridHTML(activeCover) {
   const checkSvg = `<span class="cookbook-cover-option__check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" width="13" height="13"><polyline points="20 6 9 17 4 12"/></svg></span>`;
-  const opt = (filename, label) => `<button type="button" class="cookbook-cover-option ${activeCover === filename ? 'cookbook-cover-option--active' : ''}" data-cover="${filename}"><img src="img/covers/${filename}.avif" alt="${label}" loading="lazy">${checkSvg}</button>`;
+  const opt = (filename, label) =>
+    `<button type="button" class="cookbook-cover-option ${activeCover === filename ? 'cookbook-cover-option--active' : ''}" data-cover="${filename}"><img src="img/covers/${filename}.avif" alt="${label}" loading="lazy">${checkSvg}</button>`;
   let html = `<button type="button" class="cookbook-cover-option cookbook-cover-option--none ${!activeCover ? 'cookbook-cover-option--active' : ''}" data-cover=""><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="26" height="26"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg><span>Без фото</span>${checkSvg}</button><div class="cookbook-cover-grid__label">Світла серія</div>`;
   for (let i = 1; i <= LIGHT_COVERS; i++) html += opt(`Light theme ${i}`, `Світла ${i}`);
   html += `<div class="cookbook-cover-grid__label">Темна серія</div>`;
@@ -77,7 +78,6 @@ const closeBookModal = document.getElementById('closeBookModal');
 const bookModalTitle = document.getElementById('bookModalTitle');
 const bookRecipes = document.getElementById('bookRecipes');
 const bookNotebook = document.getElementById('bookNotebook');
-
 
 // Модалка нової книги
 const newBookModal = document.getElementById('newBookModal');
@@ -138,9 +138,9 @@ function initIconPicker() {
 
 function setupEventListeners() {
   // Додати книгу (обидві кнопки — десктопна і мобільна)
-  document.querySelectorAll('.js-add-book-btn').forEach(btn =>
-    btn.addEventListener('click', () => openModal(newBookModal))
-  );
+  document
+    .querySelectorAll('.js-add-book-btn')
+    .forEach((btn) => btn.addEventListener('click', () => openModal(newBookModal)));
 
   // Закрити модалки
   closeBookModal?.addEventListener('click', () => closeModal(bookModal));
@@ -417,13 +417,6 @@ function createEditBookModal() {
         </div>
         
         <div class="form-group">
-          <label>Іконка</label>
-          <div class="cookbook-form__icons" id="editIconPicker">
-            ${renderIconPickerHTML('book')}
-          </div>
-        </div>
-
-        <div class="form-group">
           <label>Обкладинка</label>
           <div class="cookbook-cover-grid" id="editCoverGrid"></div>
         </div>
@@ -452,24 +445,13 @@ function createEditBookModal() {
     if (e.target === modal) closeModal(modal);
   });
 
-  // Вибір іконки
-  let editSelectedIcon = 'book';
-  document.getElementById('editIconPicker').addEventListener('click', (e) => {
-    const iconBtn = e.target.closest('.cookbook-form__icon');
-    if (!iconBtn) return;
-
-    document.querySelectorAll('#editIconPicker .cookbook-form__icon').forEach((btn) => {
-      btn.classList.remove('cookbook-form__icon--active');
-    });
-    iconBtn.classList.add('cookbook-form__icon--active');
-    editSelectedIcon = iconBtn.dataset.icon;
-  });
-
   // Вибір обкладинки
   document.getElementById('editCoverGrid').addEventListener('click', (e) => {
     const coverBtn = e.target.closest('.cookbook-cover-option');
     if (!coverBtn) return;
-    document.querySelectorAll('#editCoverGrid .cookbook-cover-option').forEach(b => b.classList.remove('cookbook-cover-option--active'));
+    document
+      .querySelectorAll('#editCoverGrid .cookbook-cover-option')
+      .forEach((b) => b.classList.remove('cookbook-cover-option--active'));
     coverBtn.classList.add('cookbook-cover-option--active');
     editSelectedCover = coverBtn.dataset.cover || null;
   });
@@ -495,7 +477,7 @@ function createEditBookModal() {
 
       const updateData = {
         name,
-        icon: editSelectedIcon,
+        icon: modal.dataset.bookIcon,
         cover_image: editSelectedCover || null,
       };
 
@@ -522,19 +504,10 @@ function openEditBookModal(book) {
   if (!modal) return;
 
   modal.dataset.bookId = book.id;
+  modal.dataset.bookIcon = book.icon || 'book';
 
   // Заповнюємо поля
   document.getElementById('editBookName').value = book.name;
-
-  // Вибираємо іконку
-  const icons = document.querySelectorAll('#editIconPicker .cookbook-form__icon');
-  let anyMatch = false;
-  icons.forEach((btn) => {
-    const isActive = btn.dataset.icon === book.icon;
-    btn.classList.toggle('cookbook-form__icon--active', isActive);
-    if (isActive) anyMatch = true;
-  });
-  if (!anyMatch) icons[0]?.classList.add('cookbook-form__icon--active');
 
   // Обкладинка
   editSelectedCover = book.cover_image || null;
@@ -908,7 +881,7 @@ async function loadRecentRecipes() {
 
     if (!books?.length) return;
 
-    const bookIds = books.map(b => b.id);
+    const bookIds = books.map((b) => b.id);
 
     const { data, error } = await supabase
       .from('cookbook_recipes')
@@ -920,23 +893,26 @@ async function loadRecentRecipes() {
     if (error) throw error;
 
     const seen = new Set();
-    const unique = (data || []).filter(item => {
-      if (!item.recipes || seen.has(item.recipes.id)) return false;
-      seen.add(item.recipes.id);
-      return true;
-    }).slice(0, 8);
+    const unique = (data || [])
+      .filter((item) => {
+        if (!item.recipes || seen.has(item.recipes.id)) return false;
+        seen.add(item.recipes.id);
+        return true;
+      })
+      .slice(0, 8);
 
     if (!unique.length) {
       container.innerHTML = '';
       return;
     }
 
-    container.innerHTML = unique.map(item => {
-      const r = item.recipes;
-      const imgHtml = r.image
-        ? `<img src="${escapeHTML(r.image)}" alt="${escapeHTML(r.name_ua)}" loading="lazy">`
-        : `<div class="cookbook-recent-item__placeholder">🍽️</div>`;
-      return `
+    container.innerHTML = unique
+      .map((item) => {
+        const r = item.recipes;
+        const imgHtml = r.image
+          ? `<img src="${escapeHTML(r.image)}" alt="${escapeHTML(r.name_ua)}" loading="lazy">`
+          : `<div class="cookbook-recent-item__placeholder">🍽️</div>`;
+        return `
         <a class="cookbook-recent-item" href="recipes.html?recipe=${r.id}&from=cookbook">
           <div class="cookbook-recent-item__img">${imgHtml}</div>
           <div class="cookbook-recent-item__info">
@@ -945,7 +921,8 @@ async function loadRecentRecipes() {
           </div>
         </a>
       `;
-    }).join('');
+      })
+      .join('');
   } catch (err) {
     console.error('Error loading recent recipes:', err);
   }
@@ -988,8 +965,12 @@ function createCoverPickerModal() {
   `;
   document.body.appendChild(modal);
 
-  document.getElementById('closeCoverPickerModal').addEventListener('click', () => closeModal(modal));
-  modal.addEventListener('click', e => { if (e.target === modal) closeModal(modal); });
+  document
+    .getElementById('closeCoverPickerModal')
+    .addEventListener('click', () => closeModal(modal));
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) closeModal(modal);
+  });
 }
 
 function openCoverPicker(book, cardEl) {
@@ -1020,11 +1001,13 @@ function openCoverPicker(book, cardEl) {
 
   grid.innerHTML = html;
 
-  grid.querySelectorAll('.cookbook-cover-option').forEach(btn => {
+  grid.querySelectorAll('.cookbook-cover-option').forEach((btn) => {
     btn.addEventListener('click', async () => {
       const filename = btn.dataset.cover || null;
       await selectCover(book, filename, cardEl);
-      grid.querySelectorAll('.cookbook-cover-option').forEach(b => b.classList.remove('cookbook-cover-option--active'));
+      grid
+        .querySelectorAll('.cookbook-cover-option')
+        .forEach((b) => b.classList.remove('cookbook-cover-option--active'));
       btn.classList.add('cookbook-cover-option--active');
       closeModal(modal);
     });
