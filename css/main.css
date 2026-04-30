@@ -2143,6 +2143,12 @@ textarea:-webkit-autofill:focus {
   margin-bottom: 1rem;
   border: 1px solid var(--color-border);
 }
+.scanner-modal__reader video,
+.scanner-modal__reader > div {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover;
+}
 .scanner-modal__status {
   text-align: center;
   padding: 12px 14px;
@@ -2174,6 +2180,22 @@ textarea:-webkit-autofill:focus {
 .scanner-modal__success {
   font-weight: 600;
   font-size: 15px;
+}
+.scanner-modal__manual-cta {
+  margin-top: 8px;
+  padding: 8px 16px;
+  background: #ef4444;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+.scanner-modal__manual-cta:hover {
+  background: #dc2626;
 }
 .scanner-modal__manual {
   border-top: 1px solid var(--color-border);
@@ -2344,9 +2366,17 @@ textarea:-webkit-autofill:focus {
   .scanner-modal__body {
     flex: 1;
     min-height: 0;
+    overflow-y: auto;
   }
   .scanner-modal__reader {
-    min-height: 200px;
+    height: 36dvh;
+    min-height: 150px;
+    max-height: 230px;
+  }
+  .scanned-card__macros {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
   }
 }
 /* ==============================================

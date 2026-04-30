@@ -1075,6 +1075,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     updateConfirmState();
     weightInput.focus();
   });
+
+  document.addEventListener('scanner:manualEntry', () => {
+    openCreateProductModal();
+  });
   // Експорт для sidebar-days.js
   window.mealsAPI = {
     loadMealsForDate: (dateString) => {

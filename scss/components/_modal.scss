@@ -443,6 +443,15 @@
     overflow: hidden;
     margin-bottom: 1rem;
     border: 1px solid var(--color-border);
+
+    // html5-qrcode та нативний сканер можуть вставляти вкладені div/video —
+    // забезпечуємо що вони не виходять за межі контейнера
+    video,
+    > div {
+      width: 100% !important;
+      height: 100% !important;
+      object-fit: cover;
+    }
   }
 
   &__status {
@@ -480,6 +489,24 @@
   &__success {
     font-weight: 600;
     font-size: 15px;
+  }
+
+  &__manual-cta {
+    margin-top: 8px;
+    padding: 8px 16px;
+    background: #ef4444;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    transition: background 0.15s ease;
+
+    &:hover {
+      background: #dc2626;
+    }
   }
 
   &__manual {
@@ -557,48 +584,48 @@
     display: none;
   }
 
-&__header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 8px;
-  margin-bottom: 4px;
-}
-
-&__name {
-  flex: 1;
-  min-width: 0; // важливо для text-overflow
-  font-weight: 600;
-  font-size: 15px;
-  color: var(--color-text-primary);
-  
-  word-wrap: break-word;
-  overflow-wrap: break-word;
-}
-
-&__clear {
-  flex-shrink: 0;
-  width: 24px;
-  height: 24px;
-  
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  
-  background: transparent;
-  border: none;
-  border-radius: 6px;
-  
-  color: var(--color-text-secondary);
-  font-size: 14px;
-  cursor: pointer;
-  transition: all 0.2s;
-  
-  &:hover {
-    background: rgba(239, 68, 68, 0.15);
-    color: #ef4444;
+  &__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 4px;
   }
-}
+
+  &__name {
+    flex: 1;
+    min-width: 0; // важливо для text-overflow
+    font-weight: 600;
+    font-size: 15px;
+    color: var(--color-text-primary);
+
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+  }
+
+  &__clear {
+    flex-shrink: 0;
+    width: 24px;
+    height: 24px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background: transparent;
+    border: none;
+    border-radius: 6px;
+
+    color: var(--color-text-secondary);
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+
+    &:hover {
+      background: rgba(239, 68, 68, 0.15);
+      color: #ef4444;
+    }
+  }
 
   &__brand {
     font-size: 12px;
@@ -688,11 +715,21 @@
     &__body {
       flex: 1;
       min-height: 0;
+      overflow-y: auto;
     }
 
     &__reader {
-      min-height: 200px;
+      // Фіксована висота камери щоб статус і ручне введення завжди були видимі
+      height: 36dvh;
+      min-height: 150px;
+      max-height: 230px;
     }
+  }
+
+  .scanned-card__macros {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
   }
 }
 

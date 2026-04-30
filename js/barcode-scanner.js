@@ -429,8 +429,15 @@ async function handleBarcodeScan(barcode) {
 
     // 3. Не знайдено
     if (statusEl) {
-      statusEl.textContent = 'Продукт не знайдено 😔 Спробуйте інший або створіть вручну.';
+      statusEl.innerHTML = `
+        <span>Продукт не знайдено 😔</span>
+        <button class="scanner-modal__manual-cta" type="button">Ввести дані вручну</button>
+      `;
       statusEl.className = 'scanner-modal__status scanner-modal__status--error';
+      statusEl.querySelector('.scanner-modal__manual-cta').addEventListener('click', () => {
+        closeScanner();
+        document.dispatchEvent(new CustomEvent('scanner:manualEntry'));
+      });
     }
   } catch (error) {
     console.error('Помилка пошуку:', error);
