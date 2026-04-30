@@ -919,7 +919,13 @@
       width: 22px;
       height: 22px;
       border-radius: 50%;
-      background: radial-gradient(circle at 36% 30%, #ff8a80 0%, #e53935 40%, #b71c1c 80%, #7f0000 100%);
+      background: radial-gradient(
+        circle at 36% 30%,
+        #ff8a80 0%,
+        #e53935 40%,
+        #b71c1c 80%,
+        #7f0000 100%
+      );
       box-shadow:
         0 4px 10px rgba(183, 28, 28, 0.6),
         inset 0 2px 4px rgba(255, 255, 255, 0.4),
