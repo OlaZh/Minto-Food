@@ -552,7 +552,8 @@ async function loadBookRecipes() {
           id,
           name_ua,
           image,
-          kcal
+          kcal,
+          notes
         )
       `,
       )
@@ -589,8 +590,18 @@ function renderBookRecipes(recipes) {
         ? `<img src="${recipe.image}" alt="${escapeHTML(recipe.name_ua)}" loading="lazy">`
         : `<div class="cookbook-recipe-card__placeholder">🍽️</div>`;
 
+      const stickyNote = recipe.notes?.trim()
+        ? `<div class="recipe-sticky-note" role="note" aria-label="Моя нотатка">
+            <div class="recipe-sticky-note__pin"></div>
+            <div class="recipe-sticky-note__body">
+              <p class="recipe-sticky-note__text">${escapeHTML(recipe.notes.trim())}</p>
+            </div>
+          </div>`
+        : '';
+
       return `
         <article class="cookbook-recipe-card" data-recipe-id="${recipe.id}">
+          ${stickyNote}
           <div class="cookbook-recipe-card__image">
             ${imageHtml}
             ${kcalBadge}
@@ -609,9 +620,22 @@ function renderBookRecipes(recipes) {
     })
     .join('');
 
+  bookRecipes.querySelectorAll('.recipe-sticky-note').forEach((note) => {
+    note.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const isExpanded = note.classList.toggle('is-expanded');
+      if (isExpanded) {
+        document.querySelectorAll('.recipe-sticky-note.is-expanded').forEach((other) => {
+          if (other !== note) other.classList.remove('is-expanded');
+        });
+      }
+    });
+  });
+
   bookRecipes.querySelectorAll('.cookbook-recipe-card').forEach((card) => {
     card.addEventListener('click', (e) => {
       if (e.target.closest('.cookbook-recipe-card__remove')) return;
+      if (e.target.closest('.recipe-sticky-note')) return;
       const id = card.dataset.recipeId;
       window.location.href = `recipes.html?recipe=${id}&from=cookbook`;
     });
