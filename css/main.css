@@ -10232,17 +10232,15 @@ textarea:-webkit-autofill:focus {
 /* Progress Ring Card */
 .shop-progress-card {
   padding: var(--space-lg) var(--space-md);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-sm);
 }
 @media (max-width: 900px) {
   .shop-progress-card {
     display: none;
   }
-}
-.shop-progress-card {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--space-sm);
 }
 .shop-progress-card__label {
   font-size: 11px;
