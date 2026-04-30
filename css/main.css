@@ -4069,6 +4069,34 @@ textarea:-webkit-autofill:focus {
   gap: 10px;
   margin-top: 20px;
 }
+.edit-book-modal__actions button {
+  flex: 1;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.edit-book-modal__actions .btn-secondary {
+  background: transparent;
+  border: 1px solid var(--color-border);
+  color: var(--color-text-primary);
+}
+.edit-book-modal__actions .btn-secondary:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+.edit-book-modal__actions .btn-save {
+  background: var(--color-accent);
+  color: #fff;
+  border: none;
+}
+.edit-book-modal__actions .btn-save:hover {
+  background: var(--color-accent-hover);
+  transform: translateY(-1px);
+}
 .edit-book-modal .form-group {
   display: flex;
   flex-direction: column;
