@@ -126,8 +126,10 @@ function initIconPicker() {
 }
 
 function setupEventListeners() {
-  // Додати книгу
-  addBookBtn?.addEventListener('click', () => openModal(newBookModal));
+  // Додати книгу (обидві кнопки — десктопна і мобільна)
+  document.querySelectorAll('.js-add-book-btn').forEach(btn =>
+    btn.addEventListener('click', () => openModal(newBookModal))
+  );
 
   // Закрити модалки
   closeBookModal?.addEventListener('click', () => closeModal(bookModal));
