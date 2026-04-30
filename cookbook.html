@@ -129,12 +129,6 @@
 
           <div class="cookbook-page__header">
             <h1 class="cookbook-page__title">Книга рецептів</h1>
-            <button class="cookbook-page__add-btn" id="addBookBtn">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-              </svg>
-              Нова книга
-            </button>
           </div>
 
           <div class="cookbook-layout">
@@ -143,10 +137,14 @@
             </section>
 
             <aside class="cookbook-sidebar">
+              <button class="cookbook-page__add-btn" id="addBookBtn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                </svg>
+                Нова книга
+              </button>
               <h2 class="cookbook-sidebar__title">Нещодавно переглянуті</h2>
-              <div class="cookbook-recent" id="recentRecipes">
-                <p class="cookbook-recent__empty">Рецепти ще не додані до книг</p>
-              </div>
+              <div class="cookbook-recent" id="recentRecipes"></div>
             </aside>
           </div>
 

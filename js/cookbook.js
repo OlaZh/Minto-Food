@@ -906,7 +906,10 @@ async function loadRecentRecipes() {
       return true;
     }).slice(0, 8);
 
-    if (!unique.length) return;
+    if (!unique.length) {
+      container.innerHTML = '';
+      return;
+    }
 
     container.innerHTML = unique.map(item => {
       const r = item.recipes;
