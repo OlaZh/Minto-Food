@@ -401,7 +401,7 @@ textarea:-webkit-autofill:focus {
   --focus-ring: 0 0 0 3px rgba(111, 207, 186, 0.35);
 }
 
-.btn-danger, .week-nav-btn, .recipe-section__show-all, .day-week-nav__arrow, .new-recipes-drawer__close, #cancel-preview, .shop-action-btn, .product-card__btn, .week-action-btn, .btn-new-recipes, .day-quick-btn, .api-result-card__content .api-add-btn, .recipe-card__btn, .smart-import__btn, .btn-save-mini, .btn-upload, .btn-add-recipe, .btn-secondary, .button--secondary, .shop-newlist__create-btn, .shop-wishlist__btn, .shop-add-form__btn, .preview-form__footer .btn-save, .btn-confirm, .btn-primary, .button--primary {
+.btn-danger, .week-nav-btn, .recipe-section__show-all, .day-week-nav__arrow, .new-recipes-drawer__close, #cancel-preview, .shop-action-btn, .cookbook-page__add-btn, .product-card__btn, .week-action-btn, .btn-new-recipes, .day-quick-btn, .api-result-card__content .api-add-btn, .recipe-card__btn, .smart-import__btn, .btn-save-mini, .btn-upload, .btn-add-recipe, .btn-secondary, .button--secondary, .shop-newlist__create-btn, .shop-wishlist__btn, .shop-add-form__btn, .preview-form__footer .btn-save, .btn-confirm, .btn-primary, .button--primary {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -420,11 +420,11 @@ textarea:-webkit-autofill:focus {
   text-decoration: none;
   transition: background-color var(--duration-base) var(--ease-out), border-color var(--duration-base) var(--ease-out), transform var(--duration-fast) var(--ease-out), box-shadow var(--duration-base) var(--ease-out);
 }
-.btn-danger:focus-visible, .week-nav-btn:focus-visible, .recipe-section__show-all:focus-visible, .day-week-nav__arrow:focus-visible, .new-recipes-drawer__close:focus-visible, #cancel-preview:focus-visible, .shop-action-btn:focus-visible, .product-card__btn:focus-visible, .week-action-btn:focus-visible, .btn-new-recipes:focus-visible, .day-quick-btn:focus-visible, .api-result-card__content .api-add-btn:focus-visible, .recipe-card__btn:focus-visible, .smart-import__btn:focus-visible, .btn-save-mini:focus-visible, .btn-upload:focus-visible, .btn-add-recipe:focus-visible, .btn-secondary:focus-visible, .button--secondary:focus-visible, .shop-newlist__create-btn:focus-visible, .shop-wishlist__btn:focus-visible, .shop-add-form__btn:focus-visible, .preview-form__footer .btn-save:focus-visible, .btn-confirm:focus-visible, .btn-primary:focus-visible, .button--primary:focus-visible {
+.btn-danger:focus-visible, .week-nav-btn:focus-visible, .recipe-section__show-all:focus-visible, .day-week-nav__arrow:focus-visible, .new-recipes-drawer__close:focus-visible, #cancel-preview:focus-visible, .shop-action-btn:focus-visible, .cookbook-page__add-btn:focus-visible, .product-card__btn:focus-visible, .week-action-btn:focus-visible, .btn-new-recipes:focus-visible, .day-quick-btn:focus-visible, .api-result-card__content .api-add-btn:focus-visible, .recipe-card__btn:focus-visible, .smart-import__btn:focus-visible, .btn-save-mini:focus-visible, .btn-upload:focus-visible, .btn-add-recipe:focus-visible, .btn-secondary:focus-visible, .button--secondary:focus-visible, .shop-newlist__create-btn:focus-visible, .shop-wishlist__btn:focus-visible, .shop-add-form__btn:focus-visible, .preview-form__footer .btn-save:focus-visible, .btn-confirm:focus-visible, .btn-primary:focus-visible, .button--primary:focus-visible {
   outline: none;
   box-shadow: var(--focus-ring);
 }
-.btn-danger:disabled, .week-nav-btn:disabled, .recipe-section__show-all:disabled, .day-week-nav__arrow:disabled, .new-recipes-drawer__close:disabled, #cancel-preview:disabled, .shop-action-btn:disabled, .product-card__btn:disabled, .week-action-btn:disabled, .btn-new-recipes:disabled, .day-quick-btn:disabled, .api-result-card__content .api-add-btn:disabled, .recipe-card__btn:disabled, .smart-import__btn:disabled, .btn-save-mini:disabled, .btn-upload:disabled, .btn-add-recipe:disabled, .btn-secondary:disabled, .button--secondary:disabled, .shop-newlist__create-btn:disabled, .shop-wishlist__btn:disabled, .shop-add-form__btn:disabled, .preview-form__footer .btn-save:disabled, .btn-confirm:disabled, .btn-primary:disabled, .button--primary:disabled {
+.btn-danger:disabled, .week-nav-btn:disabled, .recipe-section__show-all:disabled, .day-week-nav__arrow:disabled, .new-recipes-drawer__close:disabled, #cancel-preview:disabled, .shop-action-btn:disabled, .cookbook-page__add-btn:disabled, .product-card__btn:disabled, .week-action-btn:disabled, .btn-new-recipes:disabled, .day-quick-btn:disabled, .api-result-card__content .api-add-btn:disabled, .recipe-card__btn:disabled, .smart-import__btn:disabled, .btn-save-mini:disabled, .btn-upload:disabled, .btn-add-recipe:disabled, .btn-secondary:disabled, .button--secondary:disabled, .shop-newlist__create-btn:disabled, .shop-wishlist__btn:disabled, .shop-add-form__btn:disabled, .preview-form__footer .btn-save:disabled, .btn-confirm:disabled, .btn-primary:disabled, .button--primary:disabled {
   opacity: 0.5;
   cursor: not-allowed;
   pointer-events: none;
@@ -445,17 +445,17 @@ textarea:-webkit-autofill:focus {
   box-shadow: var(--shadow-1);
 }
 
-.shop-action-btn, .product-card__btn, .week-action-btn, .btn-new-recipes, .day-quick-btn, .api-result-card__content .api-add-btn, .recipe-card__btn, .smart-import__btn, .btn-save-mini, .btn-upload, .btn-add-recipe, .btn-secondary, .button--secondary {
+.shop-action-btn, .cookbook-page__add-btn, .product-card__btn, .week-action-btn, .btn-new-recipes, .day-quick-btn, .api-result-card__content .api-add-btn, .recipe-card__btn, .smart-import__btn, .btn-save-mini, .btn-upload, .btn-add-recipe, .btn-secondary, .button--secondary {
   background: transparent;
   color: var(--color-text-primary);
   border-color: var(--color-border);
 }
-.shop-action-btn:hover:not(:disabled), .product-card__btn:hover:not(:disabled), .week-action-btn:hover:not(:disabled), .btn-new-recipes:hover:not(:disabled), .day-quick-btn:hover:not(:disabled), .api-result-card__content .api-add-btn:hover:not(:disabled), .recipe-card__btn:hover:not(:disabled), .smart-import__btn:hover:not(:disabled), .btn-save-mini:hover:not(:disabled), .btn-upload:hover:not(:disabled), .btn-add-recipe:hover:not(:disabled), .btn-secondary:hover:not(:disabled), .button--secondary:hover:not(:disabled) {
+.shop-action-btn:hover:not(:disabled), .cookbook-page__add-btn:hover:not(:disabled), .product-card__btn:hover:not(:disabled), .week-action-btn:hover:not(:disabled), .btn-new-recipes:hover:not(:disabled), .day-quick-btn:hover:not(:disabled), .api-result-card__content .api-add-btn:hover:not(:disabled), .recipe-card__btn:hover:not(:disabled), .smart-import__btn:hover:not(:disabled), .btn-save-mini:hover:not(:disabled), .btn-upload:hover:not(:disabled), .btn-add-recipe:hover:not(:disabled), .btn-secondary:hover:not(:disabled), .button--secondary:hover:not(:disabled) {
   background: var(--color-bg-hover);
   border-color: var(--color-accent);
   color: var(--color-accent);
 }
-.shop-action-btn:active:not(:disabled), .product-card__btn:active:not(:disabled), .week-action-btn:active:not(:disabled), .btn-new-recipes:active:not(:disabled), .day-quick-btn:active:not(:disabled), .api-result-card__content .api-add-btn:active:not(:disabled), .recipe-card__btn:active:not(:disabled), .smart-import__btn:active:not(:disabled), .btn-save-mini:active:not(:disabled), .btn-upload:active:not(:disabled), .btn-add-recipe:active:not(:disabled), .btn-secondary:active:not(:disabled), .button--secondary:active:not(:disabled) {
+.shop-action-btn:active:not(:disabled), .cookbook-page__add-btn:active:not(:disabled), .product-card__btn:active:not(:disabled), .week-action-btn:active:not(:disabled), .btn-new-recipes:active:not(:disabled), .day-quick-btn:active:not(:disabled), .api-result-card__content .api-add-btn:active:not(:disabled), .recipe-card__btn:active:not(:disabled), .smart-import__btn:active:not(:disabled), .btn-save-mini:active:not(:disabled), .btn-upload:active:not(:disabled), .btn-add-recipe:active:not(:disabled), .btn-secondary:active:not(:disabled), .button--secondary:active:not(:disabled) {
   transform: translateY(1px);
 }
 
@@ -9281,89 +9281,159 @@ textarea:-webkit-autofill:focus {
    ============================================================ */
 /* ================= PAGE LAYOUT ================= */
 .cookbook-page {
-  padding: 48px 0;
+  padding: 40px 0 60px;
   min-height: 100vh;
 }
-.cookbook-page__intro {
+.cookbook-page__header {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  text-align: center;
-  gap: 14px;
-  margin-bottom: 48px;
-  padding: 52px 32px;
-  border-radius: 28px;
-  background: radial-gradient(ellipse at 85% 10%, rgba(111, 207, 186, 0.14) 0%, transparent 55%), radial-gradient(ellipse at 15% 90%, rgba(111, 207, 186, 0.09) 0%, transparent 50%), var(--color-surface);
-  border: 1px solid var(--color-border);
-  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.5);
-  position: relative;
-  overflow: hidden;
-}
-.cookbook-page__intro::after {
-  content: "📚";
-  position: absolute;
-  right: 48px;
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: 88px;
-  opacity: 0.08;
-  pointer-events: none;
-  user-select: none;
+  justify-content: space-between;
+  margin-bottom: 28px;
 }
 .cookbook-page__title {
-  font-size: 40px;
+  font-size: 26px;
   font-weight: 800;
-  letter-spacing: -0.5px;
-  line-height: 1.1;
+  letter-spacing: -0.3px;
   color: var(--color-text-primary);
+  margin: 0;
 }
-.cookbook-page__subtitle {
-  font-size: 16px;
-  color: var(--color-text-secondary);
-  max-width: 380px;
-  line-height: 1.65;
-}
-
-/* ================= BOOKS SECTION ================= */
-.cookbook-books__header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 24px;
-}
-.cookbook-books__title {
-  font-size: 20px;
-  font-weight: 700;
-  color: var(--color-text-primary);
-  letter-spacing: -0.2px;
-}
-.cookbook-books__add-btn {
+.cookbook-page__add-btn {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 10px 22px;
-  background: var(--color-accent);
-  color: var(--color-text-inverse);
-  border: none;
-  border-radius: 14px;
+  padding: 9px 18px;
   font-size: 14px;
   font-weight: 600;
-  cursor: pointer;
-  transition: all 0.25s ease;
-  box-shadow: 0 4px 14px rgba(111, 207, 186, 0.35);
+  border-radius: 12px;
 }
-.cookbook-books__add-btn:hover {
-  background: var(--color-accent-hover);
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(111, 207, 186, 0.45);
-}
-.cookbook-books__add-btn svg {
+.cookbook-page__add-btn svg {
   stroke: currentColor;
+  flex-shrink: 0;
 }
+
+/* ================= TWO-COLUMN LAYOUT ================= */
+.cookbook-layout {
+  display: grid;
+  grid-template-columns: 1fr 268px;
+  gap: 24px;
+  align-items: start;
+}
+@media (max-width: 900px) {
+  .cookbook-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.cookbook-main {
+  min-width: 0;
+}
+
+/* ================= BOOKS GRID ================= */
 .cookbook-books__grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+}
+@media (max-width: 1100px) {
+  .cookbook-books__grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (max-width: 600px) {
+  .cookbook-books__grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ================= RIGHT SIDEBAR ================= */
+.cookbook-sidebar {
+  position: sticky;
+  top: var(--space-lg);
+}
+@media (max-width: 900px) {
+  .cookbook-sidebar {
+    position: static;
+  }
+}
+.cookbook-sidebar__title {
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--color-text-secondary);
+  margin: 0 0 12px;
+}
+
+.cookbook-recent {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.cookbook-recent__empty {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  text-align: center;
+  padding: 24px 16px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+}
+
+.cookbook-recent-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  text-decoration: none;
+  transition: border-color var(--duration-fast) var(--ease-out), transform var(--duration-fast) var(--ease-out);
+}
+.cookbook-recent-item:hover {
+  border-color: var(--color-accent);
+  transform: translateX(3px);
+}
+.cookbook-recent-item__img {
+  width: 42px;
+  height: 42px;
+  border-radius: 8px;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: var(--color-bg-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--color-border);
+}
+.cookbook-recent-item__img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.cookbook-recent-item__placeholder {
+  font-size: 20px;
+}
+.cookbook-recent-item__info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.cookbook-recent-item__name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.3;
+}
+.cookbook-recent-item__kcal {
+  font-size: 11px;
+  color: var(--color-text-secondary);
+  font-weight: 500;
 }
 
 /* ================= BOOK CARD (PREMIUM) ================= */
@@ -9595,45 +9665,16 @@ textarea:-webkit-autofill:focus {
   padding: 28px 60px 0 28px;
 }
 .cookbook-modal__header {
-  padding: 28px 28px 0;
-  background: linear-gradient(180deg, var(--color-accent-soft) 0%, transparent 100%);
+  padding: 24px 28px 20px;
   border-bottom: 1px solid var(--color-border);
   flex-shrink: 0;
 }
 .cookbook-modal__title {
-  font-size: 22px;
+  font-size: 20px;
   font-weight: 800;
   color: var(--color-text-primary);
-  margin-bottom: 20px;
+  margin: 0;
   padding-right: 48px;
-}
-.cookbook-modal__tabs {
-  display: flex;
-  gap: 4px;
-}
-.cookbook-modal__tab {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 12px 20px;
-  background: transparent;
-  border: none;
-  border-bottom: 3px solid transparent;
-  color: var(--color-text-secondary);
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-.cookbook-modal__tab svg {
-  stroke: currentColor;
-}
-.cookbook-modal__tab:hover {
-  color: var(--color-text-primary);
-}
-.cookbook-modal__tab--active {
-  color: var(--color-accent);
-  border-bottom-color: var(--color-accent);
 }
 .cookbook-modal__content {
   display: none;

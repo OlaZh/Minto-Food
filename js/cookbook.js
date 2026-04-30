@@ -67,16 +67,6 @@ const bookModalTitle = document.getElementById('bookModalTitle');
 const bookRecipes = document.getElementById('bookRecipes');
 const bookNotebook = document.getElementById('bookNotebook');
 
-// Вкладки
-const tabs = document.querySelectorAll('.cookbook-modal__tab');
-const tabContents = document.querySelectorAll('.cookbook-modal__content');
-
-// Блокнот
-const notebookEmpty = document.getElementById('notebookEmpty');
-const notebookContent = document.getElementById('notebookContent');
-const createNotebookBtn = document.getElementById('createNotebookBtn');
-const addNoteBtn = document.getElementById('addNoteBtn');
-const notesList = document.getElementById('notesList');
 
 // Модалка нової книги
 const newBookModal = document.getElementById('newBookModal');
@@ -125,6 +115,7 @@ async function init() {
   createCoverPickerModal();
 
   await loadBooks();
+  loadRecentRecipes();
   setupEventListeners();
   initIconPicker();
 }
@@ -141,7 +132,6 @@ function setupEventListeners() {
   // Закрити модалки
   closeBookModal?.addEventListener('click', () => closeModal(bookModal));
   closeNewBookModal?.addEventListener('click', () => closeModal(newBookModal));
-  closeNewNoteModal?.addEventListener('click', () => closeModal(newNoteModal));
 
   // Закрити по кліку на overlay
   bookModal?.addEventListener('click', (e) => {
@@ -149,14 +139,6 @@ function setupEventListeners() {
   });
   newBookModal?.addEventListener('click', (e) => {
     if (e.target === newBookModal) closeModal(newBookModal);
-  });
-  newNoteModal?.addEventListener('click', (e) => {
-    if (e.target === newNoteModal) closeModal(newNoteModal);
-  });
-
-  // Вкладки
-  tabs.forEach((tab) => {
-    tab.addEventListener('click', () => switchTab(tab.dataset.tab));
   });
 
   // Вибір іконки
@@ -173,15 +155,6 @@ function setupEventListeners() {
 
   // Форма нової книги
   newBookForm?.addEventListener('submit', handleCreateBook);
-
-  // Створити блокнот
-  createNotebookBtn?.addEventListener('click', handleCreateNotebook);
-
-  // Додати нотатку
-  addNoteBtn?.addEventListener('click', () => openModal(newNoteModal));
-
-  // Форма нової нотатки
-  newNoteForm?.addEventListener('submit', handleCreateNote);
 }
 
 // =====================================
@@ -569,11 +542,7 @@ async function openBook(book) {
   currentBookId = book.id;
   bookModalTitle.textContent = book.name;
 
-  // Скидаємо на вкладку рецептів
-  switchTab('recipes');
-
-  // Завантажуємо дані
-  await Promise.all([loadBookRecipes(), loadNotebook()]);
+  await loadBookRecipes();
 
   openModal(bookModal);
 }
@@ -901,6 +870,62 @@ async function deleteNote(noteId) {
       }
     },
   });
+}
+
+// =====================================
+// НЕЩОДАВНО ПЕРЕГЛЯНУТІ
+// =====================================
+
+async function loadRecentRecipes() {
+  const container = document.getElementById('recentRecipes');
+  if (!container) return;
+
+  try {
+    const { data: books } = await supabase
+      .from('cookbooks')
+      .select('id')
+      .eq('user_id', currentUser.id);
+
+    if (!books?.length) return;
+
+    const bookIds = books.map(b => b.id);
+
+    const { data, error } = await supabase
+      .from('cookbook_recipes')
+      .select('created_at, recipes ( id, name_ua, image, kcal )')
+      .in('cookbook_id', bookIds)
+      .order('created_at', { ascending: false })
+      .limit(20);
+
+    if (error) throw error;
+
+    const seen = new Set();
+    const unique = (data || []).filter(item => {
+      if (!item.recipes || seen.has(item.recipes.id)) return false;
+      seen.add(item.recipes.id);
+      return true;
+    }).slice(0, 8);
+
+    if (!unique.length) return;
+
+    container.innerHTML = unique.map(item => {
+      const r = item.recipes;
+      const imgHtml = r.image
+        ? `<img src="${escapeHTML(r.image)}" alt="${escapeHTML(r.name_ua)}" loading="lazy">`
+        : `<div class="cookbook-recent-item__placeholder">🍽️</div>`;
+      return `
+        <a class="cookbook-recent-item" href="recipes.html?recipe=${r.id}&from=cookbook">
+          <div class="cookbook-recent-item__img">${imgHtml}</div>
+          <div class="cookbook-recent-item__info">
+            <span class="cookbook-recent-item__name">${escapeHTML(r.name_ua)}</span>
+            ${r.kcal ? `<span class="cookbook-recent-item__kcal">${Math.round(r.kcal)} ккал</span>` : ''}
+          </div>
+        </a>
+      `;
+    }).join('');
+  } catch (err) {
+    console.error('Error loading recent recipes:', err);
+  }
 }
 
 // =====================================
