@@ -10232,6 +10232,13 @@ textarea:-webkit-autofill:focus {
 /* Progress Ring Card */
 .shop-progress-card {
   padding: var(--space-lg) var(--space-md);
+}
+@media (max-width: 900px) {
+  .shop-progress-card {
+    display: none;
+  }
+}
+.shop-progress-card {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -10400,6 +10407,12 @@ textarea:-webkit-autofill:focus {
   border-radius: 999px;
   margin-bottom: var(--space-lg);
   overflow: hidden;
+}
+@media (max-width: 900px) {
+  .shop-main__progress-bar {
+    height: 7px;
+    margin-bottom: var(--space-md);
+  }
 }
 .shop-main__progress-fill {
   height: 100%;

@@ -54,6 +54,10 @@
 .shop-progress-card {
   @extend %premium-card;
   padding: var(--space-lg) var(--space-md);
+
+  @media (max-width: 900px) {
+    display: none;
+  }
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -246,6 +250,11 @@
     border-radius: 999px;
     margin-bottom: var(--space-lg);
     overflow: hidden;
+
+    @media (max-width: 900px) {
+      height: 7px;
+      margin-bottom: var(--space-md);
+    }
   }
 
   &__progress-fill {

@@ -416,7 +416,7 @@ async function addPanelItem(name, qty, unit, listId, container, formLi, note = n
       user_id: currentUser.id,
       name, amount: qty || null, unit: unit || null,
       note: note || null,
-      category: 'Інше', is_checked: false,
+      category: guessCategory(name), is_checked: false,
     }])
     .select().single();
 
@@ -466,7 +466,7 @@ async function copyToActiveList(item) {
     .insert([{
       list_id: mainListId, user_id: currentUser.id,
       name: item.name, amount: item.amount || null,
-      unit: item.unit || null, category: item.category || 'Інше',
+      unit: item.unit || null, category: item.category || guessCategory(item.name),
       is_checked: false,
     }])
     .select().single();
@@ -593,7 +593,7 @@ async function addItem(name, amount, unit) {
     .insert([{
       list_id: mainListId, user_id: currentUser.id,
       name, amount: amount || null, unit: unit || null,
-      category: 'Інше', is_checked: false,
+      category: guessCategory(name), is_checked: false,
     }])
     .select().single();
 
@@ -1028,6 +1028,223 @@ function bindEvents() {
 /* ============================================================
    УТИЛІТИ
    ============================================================ */
+
+const CATEGORY_RULES = [
+  {
+    name: 'Овочі та фрукти',
+    words: [
+      // UA
+      'помідор', 'томат', 'огірок', 'морква', 'цибуля', 'часник', 'картопл', 'капуст',
+      'перець', 'баклажан', 'кабачок', 'гарбуз', 'буряк', 'редиск', 'салат', 'шпинат',
+      'петрушк', 'кріп', 'селера', 'броколі', 'цвітна', 'зелень', 'зелений',
+      'яблук', 'груш', 'банан', 'апельсин', 'мандарин', 'лимон', 'грейпфрут', 'виноград',
+      'полуниц', 'черешн', 'вишн', 'слив', 'персик', 'абрикос', 'нектарин',
+      'кавун', 'диня', 'ківі', 'манго', 'ананас', 'авокадо', 'гриб', 'шампіньон',
+      // EN
+      'tomato', 'cucumber', 'carrot', 'onion', 'garlic', 'potato', 'cabbage',
+      'pepper', 'eggplant', 'zucchini', 'pumpkin', 'beetroot', 'radish', 'lettuce',
+      'spinach', 'parsley', 'dill', 'celery', 'broccoli', 'cauliflower', 'mushroom',
+      'apple', 'pear', 'banana', 'orange', 'tangerine', 'lemon', 'grapefruit', 'grape',
+      'strawberry', 'cherry', 'plum', 'peach', 'apricot', 'nectarine',
+      'watermelon', 'melon', 'kiwi', 'mango', 'pineapple', 'avocado',
+      // PL
+      'pomidor', 'ogórek', 'marchew', 'cebula', 'czosnek', 'ziemniak', 'kapusta',
+      'papryka', 'bakłażan', 'cukinia', 'dynia', 'burak', 'rzodkiew', 'sałata',
+      'szpinak', 'pietruszka', 'koper', 'seler', 'brokuł', 'kalafior', 'grzyb', 'pieczarka',
+      'jabłko', 'gruszka', 'banan', 'pomarańcza', 'mandarynka', 'cytryna', 'winogrono',
+      'truskawka', 'czereśnia', 'wiśnia', 'śliwka', 'brzoskwinia', 'morela', 'nektaryna',
+      'arbuz', 'melon', 'kiwi', 'mango', 'ananas', 'awokado',
+    ],
+  },
+  {
+    name: 'М\'ясо та риба',
+    words: [
+      // UA
+      'курк', 'курич', 'свинин', 'яловичин', 'баранин', 'індич', 'качк', 'кролик',
+      'фарш', 'стейк', 'відбивн', 'котлет', 'шашлик', 'печінк', 'нирк',
+      'ковбас', 'сосиск', 'шинка', 'бекон', 'буженин', 'карбонад', 'паштет',
+      'риба', 'лосось', 'сьомга', 'тунець', 'оселедець', 'скумбрія', 'мінтай',
+      'карп', 'судак', 'форель', 'креветк', 'кальмар', 'краб', 'мідії', 'кета',
+      // EN
+      'chicken', 'pork', 'beef', 'lamb', 'turkey', 'duck', 'rabbit',
+      'mince', 'minced', 'steak', 'chop', 'cutlet', 'liver', 'kidney',
+      'sausage', 'ham', 'bacon', 'salami', 'pepperoni', 'pate',
+      'fish', 'salmon', 'tuna', 'herring', 'mackerel', 'cod', 'trout',
+      'carp', 'shrimp', 'prawn', 'squid', 'crab', 'mussel',
+      // PL
+      'kurczak', 'wieprzowina', 'wołowina', 'baranina', 'indyk', 'kaczka', 'królik',
+      'mielone', 'stek', 'kotlet', 'wątróbka',
+      'kiełbas', 'szynka', 'boczek', 'pasztet', 'kabanos',
+      'ryba', 'łosoś', 'tuńczyk', 'śledź', 'makrela', 'dorsz', 'pstrąg',
+      'karp', 'krewetk', 'kalmary', 'małże',
+    ],
+  },
+  {
+    name: 'Молочні продукти',
+    words: [
+      // UA
+      'молоко', 'кефір', 'йогурт', 'сметан', 'вершк', 'ряжанк', 'простокваш',
+      'сир', 'творог', 'творожок', 'рикотт', 'моцарел', 'пармезан', 'бринз',
+      'яйц', 'яйко',
+      // EN
+      'milk', 'kefir', 'yogurt', 'yoghurt', 'sour cream', 'cream', 'buttermilk',
+      'cheese', 'cottage cheese', 'ricotta', 'mozzarella', 'parmesan', 'cheddar',
+      'butter', 'egg', 'eggs',
+      // PL
+      'mleko', 'kefir', 'jogurt', 'śmietana', 'śmietank', 'maślanka',
+      'ser', 'twaróg', 'ricotta', 'mozzarella', 'parmezan',
+      'masło', 'jajk', 'jajc',
+    ],
+  },
+  {
+    name: 'Хліб та випічка',
+    words: [
+      // UA
+      'хліб', 'батон', 'булочк', 'багет', 'піта', 'лаваш', 'круасан', 'рогалик',
+      'торт', 'тістечк', 'кекс', 'мафін', 'пиріг', 'пиріжок', 'рулет', 'штрудель',
+      // EN
+      'bread', 'loaf', 'bun', 'baguette', 'pita', 'croissant', 'roll',
+      'cake', 'pastry', 'muffin', 'pie', 'strudel', 'bagel', 'toast',
+      // PL
+      'chleb', 'bułka', 'bagietka', 'pita', 'croissant', 'rogal',
+      'tort', 'ciasto', 'muffin', 'pączek', 'drożdżówk',
+    ],
+  },
+  {
+    name: 'Крупи та макарони',
+    words: [
+      // UA
+      'рис', 'гречк', 'вівсянк', 'вівсяні', 'манк', 'пшоно', 'перловк', 'булгур',
+      'кускус', 'полента', 'крупа', 'пластівц',
+      'макарон', 'спагет', 'феттучін', 'пенне', 'лазань', 'лапш',
+      'борошно', 'крохмал',
+      // EN
+      'rice', 'buckwheat', 'oat', 'oatmeal', 'semolina', 'millet', 'barley', 'bulgur',
+      'couscous', 'polenta', 'cereal', 'flakes', 'groat',
+      'pasta', 'spaghetti', 'fettuccine', 'penne', 'lasagna', 'noodle',
+      'flour', 'starch',
+      // PL
+      'ryż', 'kasza', 'gryczana', 'owsian', 'płatki', 'manna', 'proso', 'bulgur',
+      'kuskus', 'polenta',
+      'makaron', 'spaghetti', 'penne', 'lasagne',
+      'mąka', 'skrobia',
+    ],
+  },
+  {
+    name: 'Консерви та соуси',
+    words: [
+      // UA
+      'консерв', 'тушонк', 'кетчуп', 'майонез', 'гірчиц', 'соус', 'томатна паст',
+      'аджик', 'хрін', 'оцет', 'соєвий',
+      'оливк', 'корнішон', 'квасол', 'нут', 'сочевиц', 'боби',
+      // EN
+      'canned', 'tinned', 'ketchup', 'mayonnaise', 'mustard', 'sauce', 'tomato paste',
+      'adjika', 'horseradish', 'vinegar', 'soy sauce',
+      'olive', 'gherkin', 'pickle', 'bean', 'chickpea', 'lentil',
+      // PL
+      'konserw', 'ketchup', 'majonez', 'musztarda', 'sos', 'passata', 'koncentrat',
+      'chrzan', 'ocet', 'oliwki', 'korniszon', 'fasola', 'ciecierzyca', 'soczewica',
+    ],
+  },
+  {
+    name: 'Напої',
+    words: [
+      // UA
+      'вода', 'мінеральна', 'сік', 'нектар', 'компот', 'морс', 'лимонад', 'кола',
+      'спрайт', 'фанта', 'пепсі', 'енергетик',
+      'чай', 'кава', 'какао', 'цикорій',
+      'пиво', 'вино', 'шампанськ', 'коньяк', 'горілк', 'ром', 'віскі',
+      // EN
+      'water', 'mineral', 'juice', 'nectar', 'lemonade', 'cola', 'sprite', 'fanta',
+      'pepsi', 'energy drink', 'tea', 'coffee', 'cocoa',
+      'beer', 'wine', 'champagne', 'cognac', 'vodka', 'rum', 'whisky', 'whiskey',
+      // PL
+      'woda', 'mineralna', 'sok', 'nektar', 'lemoniada', 'cola', 'napój', 'energetyk',
+      'herbata', 'kawa', 'kakao',
+      'piwo', 'wino', 'szampan', 'koniak', 'wódka', 'rum', 'whisky',
+    ],
+  },
+  {
+    name: 'Заморожені продукти',
+    words: [
+      // UA
+      'замороже', 'пельмен', 'вареник', 'млинц', 'налисник', 'морозив',
+      // EN
+      'frozen', 'ice cream', 'gelato', 'sorbet', 'dumpling',
+      // PL
+      'mrożon', 'lody', 'pierogi mrożone', 'kopytka',
+    ],
+  },
+  {
+    name: 'Солодощі та снеки',
+    words: [
+      // UA
+      'цукерк', 'шоколад', 'мармелад', 'зефір', 'халва', 'карамель', 'льодяник',
+      'чіпс', 'сухарик', 'поп-корн', 'попкорн', 'крекер', 'вафл',
+      'горіх', 'мигдаль', 'фундук', 'кешью', 'арахіс', 'фісташк', 'насіння',
+      'мед', 'варення', 'джем', 'повидло', 'нутелл', 'цукор',
+      // EN
+      'candy', 'chocolate', 'marshmallow', 'caramel', 'lollipop', 'halva',
+      'chip', 'crisp', 'popcorn', 'cracker', 'wafer', 'waffle',
+      'nut', 'almond', 'hazelnut', 'cashew', 'peanut', 'pistachio', 'seed',
+      'honey', 'jam', 'jelly', 'nutella', 'sugar',
+      // PL
+      'cukierek', 'czekolada', 'żelki', 'pianka', 'karmel', 'lizak',
+      'chipsy', 'chrupki', 'popcorn', 'krakersy', 'wafelek',
+      'orzech', 'migdał', 'orzechy', 'pestki', 'słonecznik',
+      'miód', 'dżem', 'marmolada', 'nutella', 'cukier',
+    ],
+  },
+  {
+    name: 'Спеції та олія',
+    words: [
+      // UA
+      'сіль', 'паприк', 'куркум', 'кориц', 'ванілін', 'ваніль', 'мускатн',
+      'кардамон', 'лавров', 'приправ', 'спеці', 'базилік', 'орегано', 'розмарин',
+      'олія', 'соняшников',
+      // EN
+      'salt', 'paprika', 'turmeric', 'cinnamon', 'vanilla', 'nutmeg',
+      'cardamom', 'bay leaf', 'spice', 'seasoning', 'basil', 'oregano', 'rosemary',
+      'thyme', 'cumin', 'ginger', 'clove',
+      'oil', 'olive oil', 'sunflower oil', 'coconut oil',
+      // PL
+      'sól', 'papryka', 'kurkuma', 'cynamon', 'wanilia', 'gałka muszkatołowa',
+      'kardamon', 'liść laurowy', 'przyprawa', 'zioła', 'bazylia', 'oregano', 'rozmaryn',
+      'tymianek', 'kminek', 'imbir', 'goździki',
+      'olej', 'oliwa',
+    ],
+  },
+  {
+    name: 'Гігієна та побутова хімія',
+    words: [
+      // UA
+      'мило', 'шампунь', 'гель для душ', 'дезодорант',
+      'зубна паст', 'зубна щітк', 'ополіскув',
+      'туалетний папір', 'серветк', 'ватн', 'тампон', 'прокладк', 'підгузн',
+      'пральн', 'порошок для', 'гель для прання', 'миючий', 'губк',
+      // EN
+      'soap', 'shampoo', 'shower gel', 'deodorant', 'conditioner',
+      'toothpaste', 'toothbrush', 'mouthwash', 'floss',
+      'toilet paper', 'tissue', 'cotton', 'tampon', 'pad', 'diaper', 'nappy',
+      'detergent', 'washing powder', 'fabric softener', 'dishwasher', 'sponge',
+      'bleach', 'cleaner', 'disinfect',
+      // PL
+      'mydło', 'szampon', 'żel pod prysznic', 'dezodorant', 'odżywka',
+      'pasta do zębów', 'szczoteczka', 'płyn do płukania',
+      'papier toaletowy', 'chusteczk', 'wacik', 'tampon', 'podpaska', 'pieluch',
+      'proszek do prania', 'płyn do prania', 'płukacz', 'gąbka', 'ścierka',
+      'wybielacz', 'płyn do naczyń', 'tabletki do zmywark',
+    ],
+  },
+];
+
+function guessCategory(name) {
+  const lower = name.toLowerCase();
+  for (const rule of CATEGORY_RULES) {
+    if (rule.words.some(w => lower.includes(w))) return rule.name;
+  }
+  return 'Інше';
+}
 
 function escapeHTML(str) {
   if (!str) return '';
