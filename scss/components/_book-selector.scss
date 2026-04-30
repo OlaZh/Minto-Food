@@ -554,4 +554,37 @@
     gap: 10px;
     margin-top: 20px;
   }
+
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 16px;
+
+    label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--color-text-secondary);
+    }
+
+    input[type='text'] {
+      width: 100%;
+      padding: 10px 14px;
+      background: var(--color-bg);
+      border: 1px solid var(--color-border);
+      border-radius: 8px;
+      color: var(--color-text-primary);
+      font-family: inherit;
+      font-size: 14px;
+      outline: none;
+      transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
+
+      &:focus {
+        border-color: var(--color-accent);
+        box-shadow: 0 0 0 3px rgba(46, 204, 113, 0.12);
+      }
+    }
+  }
 }
