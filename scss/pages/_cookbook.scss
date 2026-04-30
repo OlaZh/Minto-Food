@@ -300,41 +300,30 @@
     width: 30px;
     height: 30px;
     border-radius: 8px;
-    background: rgba(255, 255, 255, 0.88);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
+    background: transparent;
     border: none;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
     transition: all 0.15s ease;
-    color: #3a3a3a;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+    color: rgba(255, 255, 255, 0.9);
 
     svg {
-      width: 14px;
-      height: 14px;
+      width: 16px;
+      height: 16px;
       stroke: currentColor;
+      filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.5));
     }
 
     &:hover {
-      background: #fff;
-      transform: scale(1.12);
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+      color: #fff;
+      transform: scale(1.2);
     }
 
     &--danger:hover {
-      color: #e74c3c;
+      color: #ff6b6b;
     }
-  }
-
-  &__edit-btn {
-    width: auto;
-    padding: 0 10px;
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.02em;
   }
 
   /* Інформаційна частина */
@@ -379,7 +368,7 @@
     background: var(--color-bg-primary);
     border: 1px solid var(--color-border);
     padding: 3px 10px;
-    border-radius: 20px;
+    border-radius: 8px;
     line-height: 1.5;
   }
 

@@ -539,6 +539,23 @@
   max-height: 90vh;
   overflow-y: auto;
 
+  &::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: var(--color-border);
+    border-radius: 999px;
+
+    &:hover {
+      background: var(--color-accent);
+    }
+  }
+
   &__header {
     text-align: center;
     margin-bottom: 20px;
