@@ -89,39 +89,60 @@ let statisticsCharts = {
 // WEIGHT CHART
 // =====================================
 
-function initWeightChart() {
-  const canvas = document.getElementById('weightChartCanvas');
-  if (!canvas) return;
+// =====================================
+// WEIGHT — SUPABASE HELPERS
+// =====================================
 
-  let history = getWeightHistory();
+async function saveWeightToSupabase(userId, weight) {
+  const date = new Date().toISOString().slice(0, 10);
+  const { error } = await supabase
+    .from('weight_records')
+    .upsert({ user_id: userId, date, weight }, { onConflict: 'user_id,date' });
+  if (error) console.warn('weight_records upsert:', error.message);
+  return !error;
+}
 
-  history = history
-    .map((i) => ({
-      date: i.date,
-      weight: parseFloat(String(i.weight).replace(',', '.')),
-    }))
-    .filter((i) => !isNaN(i.weight));
+async function loadWeightFromSupabase(userId) {
+  const { data, error } = await supabase
+    .from('weight_records')
+    .select('date, weight')
+    .eq('user_id', userId)
+    .order('date', { ascending: true });
+  if (error) {
+    console.warn('weight_records fetch:', error.message);
+    return null;
+  }
+  return data || [];
+}
 
-  localStorage.setItem(WEIGHT_HISTORY_KEY, JSON.stringify(history));
+function buildWeightChart(canvasId, history, chartRef) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas) return null;
 
-  const labels = history.map((i) => i.date);
-  const weights = history.map((i) => i.weight);
+  if (chartRef) chartRef.destroy();
 
-  if (weightChart) weightChart.destroy();
+  const labels = history.map((r) => {
+    const [y, m, d] = r.date.split('-');
+    return `${d}.${m}`;
+  });
+  const weights = history.map((r) => Number(r.weight));
 
-  weightChart = new Chart(canvas, {
+  return new Chart(canvas, {
     type: 'line',
     data: {
       labels,
       datasets: [
         {
           data: weights,
-          borderColor: '#6fcfba',
-          backgroundColor: 'rgba(111, 207, 186, 0.15)',
-          borderWidth: 3,
+          borderColor: '#4ab584',
+          backgroundColor: 'rgba(74,181,132,0.12)',
+          borderWidth: 2.5,
           fill: true,
           tension: 0.4,
           pointRadius: 5,
+          pointBackgroundColor: '#4ab584',
+          pointBorderColor: '#fff',
+          pointBorderWidth: 2,
         },
       ],
     },
@@ -130,168 +151,394 @@ function initWeightChart() {
       maintainAspectRatio: false,
       plugins: { legend: { display: false } },
       scales: {
-        y: { ticks: { callback: (v) => v + ' кг' } },
-        x: { grid: { display: false } },
-      },
-    },
-  });
-}
-
-function initWeightChart2() {
-  const canvas = document.getElementById('weightChartCanvas2');
-  if (!canvas) return;
-
-  let history = getWeightHistory();
-
-  history = history
-    .map((i) => ({
-      date: i.date,
-      weight: parseFloat(String(i.weight).replace(',', '.')),
-    }))
-    .filter((i) => !isNaN(i.weight));
-
-  const labels = history.map((i) => i.date);
-  const weights = history.map((i) => i.weight);
-
-  if (weightChart2) weightChart2.destroy();
-
-  weightChart2 = new Chart(canvas, {
-    type: 'line',
-    data: {
-      labels,
-      datasets: [
-        {
-          data: weights,
-          borderColor: '#6fcfba',
-          backgroundColor: 'rgba(111, 207, 186, 0.15)',
-          borderWidth: 3,
-          fill: true,
-          tension: 0.4,
-          pointRadius: 5,
+        y: {
+          ticks: { callback: (v) => v + ' кг', color: '#9ca3af' },
+          grid: { color: 'rgba(156,163,175,0.15)' },
         },
-      ],
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
-      scales: {
-        y: { ticks: { callback: (v) => v + ' кг' } },
-        x: { grid: { display: false } },
+        x: {
+          ticks: { color: '#9ca3af' },
+          grid: { display: false },
+        },
       },
     },
   });
 }
 
-function recordNewWeight() {
+async function initWeightChart() {
+  const user = await getCurrentUser();
+  if (!user) return;
+
+  const history = await loadWeightFromSupabase(user.id);
+  if (history === null) return;
+
+  weightChart = buildWeightChart('weightChartCanvas', history, weightChart);
+}
+
+async function initWeightChart2() {
+  const user = await getCurrentUser();
+  if (!user) return;
+
+  const history = await loadWeightFromSupabase(user.id);
+  if (history === null) return;
+
+  weightChart2 = buildWeightChart('weightChartCanvas2', history, weightChart2);
+  generateWeightProgress(history);
+}
+
+async function recordNewWeight() {
   if (!weightNowInput || !weightNowInput.value) return;
 
   const weight = parseFloat(weightNowInput.value.replace(',', '.'));
-  if (isNaN(weight)) return alert('Введіть коректну вагу');
+  if (isNaN(weight) || weight < 20 || weight > 400) {
+    showToast('Введіть коректну вагу', 'error');
+    return;
+  }
 
-  addWeightRecord(weight);
+  const user = await getCurrentUser();
+  if (!user) {
+    showToast('Увійдіть в акаунт', 'error');
+    return;
+  }
+
+  const ok = await saveWeightToSupabase(user.id, weight);
+  if (!ok) {
+    showToast('Помилка збереження', 'error');
+    return;
+  }
+
   weightNowInput.value = '';
+  showToast(`Вага ${weight} кг збережена ✓`);
 
-  initWeightChart();
+  await initWeightChart();
+}
+
+function generateWeightProgress(history) {
+  const progressContainer = document.getElementById('weightProgressContent');
+  if (!progressContainer || history.length === 0) return;
+
+  const latest = history[history.length - 1]?.weight;
+  const targetEl = document.getElementById('targetWeight2');
+  const target = targetEl ? parseFloat(targetEl.value) : null;
+
+  if (!latest) return;
+
+  let html = `
+    <div class="progress-status progress-status--success">
+      <span style="font-size:1.8rem">⚖️</span>
+      <div>
+        <div style="font-weight:700;font-size:1.1rem;color:var(--color-text-primary)">${latest} кг</div>
+        <div style="font-size:12px;color:var(--color-text-secondary)">Останній запис</div>
+      </div>
+    </div>`;
+
+  if (target && latest) {
+    const diff = Math.abs(latest - target).toFixed(1);
+    const pct = Math.min(
+      100,
+      Math.round((1 - Math.abs(latest - target) / Math.max(Math.abs(latest), 1)) * 100),
+    );
+    html += `
+      <div>
+        <div class="progress-header">
+          <span>Ціль: <strong>${target} кг</strong></span>
+          <span class="progress-percent">${pct}%</span>
+        </div>
+        <div class="progress-bar-container">
+          <div class="progress-bar" style="width:${pct}%"></div>
+        </div>
+        <div class="progress-footer">
+          <span>Зараз: <strong>${latest} кг</strong></span>
+          <span>Залишилось: <strong>${diff} кг</strong></span>
+        </div>
+      </div>`;
+  }
+
+  progressContainer.innerHTML = html;
 }
 
 // =====================================
 // STATISTICS CHARTS
 // =====================================
 
-function initStatisticsCharts() {
-
+async function initStatisticsCharts() {
   Object.values(statisticsCharts).forEach((chart) => {
     if (chart) chart.destroy();
   });
 
-  const balanceCanvas = document.getElementById('balancePieChart');
-  const kbjuCanvas = document.getElementById('kbjuLineChart');
-  const usefulnessCanvas = document.getElementById('usefulnessBarChart');
-  const lastWeekCanvas = document.getElementById('lastWeekChart');
-  const thisWeekCanvas = document.getElementById('thisWeekChart');
+  const user = await getCurrentUser();
+  if (!user) return;
 
-  if (balanceCanvas) {
-    statisticsCharts.balancePieChart = new Chart(balanceCanvas, {
-      type: 'pie',
-      data: {
-        labels: ['Білки', 'Жири', 'Вуглеводи'],
-        datasets: [{ data: [30, 30, 40], backgroundColor: ['#6fcfba', '#f2994a', '#56ccf2'] }],
-      },
-      options: { responsive: true, maintainAspectRatio: true },
-    });
+  // Діапазон: сьогодні - 13 днів (2 тижні)
+  const today = new Date();
+  const fmt = (d) => d.toISOString().slice(0, 10);
+  const dateFrom = fmt(new Date(today.getFullYear(), today.getMonth(), today.getDate() - 13));
+  const dateTo = fmt(today);
+
+  const { data: meals } = await supabase
+    .from('meals')
+    .select('date, meal_type, kcal, protein, fat, carbs, name')
+    .eq('user_id', user.id)
+    .gte('date', dateFrom)
+    .lte('date', dateTo)
+    .order('date', { ascending: true });
+
+  const rows = meals || [];
+
+  // ─── Розбивка по тижнях ──────────────────────────────────
+  const thisWeekStart = fmt(new Date(today.getFullYear(), today.getMonth(), today.getDate() - 6));
+  const thisWeek = rows.filter((r) => r.date >= thisWeekStart);
+  const lastWeek = rows.filter((r) => r.date < thisWeekStart);
+
+  // ─── Підсумок макро ──────────────────────────────────────
+  function sumMacros(list) {
+    return list.reduce(
+      (a, r) => ({
+        kcal: a.kcal + (Number(r.kcal) || 0),
+        protein: a.protein + (Number(r.protein) || 0),
+        fat: a.fat + (Number(r.fat) || 0),
+        carbs: a.carbs + (Number(r.carbs) || 0),
+      }),
+      { kcal: 0, protein: 0, fat: 0, carbs: 0 },
+    );
   }
 
+  const thisTotals = sumMacros(thisWeek);
+  const lastTotals = sumMacros(lastWeek);
+
+  // ─── Калорії по днях (останні 7 днів) ────────────────────
+  const dayLabels = [];
+  const dayKcal = [];
+  const DAY_UA = ['Нд', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'];
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(today.getFullYear(), today.getMonth(), today.getDate() - i);
+    dayLabels.push(DAY_UA[d.getDay()]);
+    const dateStr = fmt(d);
+    const dayTotal = rows
+      .filter((r) => r.date === dateStr)
+      .reduce((s, r) => s + (Number(r.kcal) || 0), 0);
+    dayKcal.push(Math.round(dayTotal));
+  }
+
+  // ─── Прийоми їжі по типах (цей тиждень) ─────────────────
+  const mealTypeLabels = {
+    breakfast: 'Сніданок',
+    lunch: 'Обід',
+    dinner: 'Вечеря',
+    snack: 'Перекус',
+  };
+  const mealTypeCounts = { breakfast: 0, lunch: 0, dinner: 0, snack: 0 };
+  thisWeek.forEach((r) => {
+    if (r.meal_type in mealTypeCounts) mealTypeCounts[r.meal_type]++;
+  });
+
+  // ─── Топи тижня ──────────────────────────────────────────
+  const nameCounts = {};
+  thisWeek.forEach((r) => {
+    if (r.name) nameCounts[r.name] = (nameCounts[r.name] || 0) + 1;
+  });
+  const topCooked = Object.entries(nameCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || '—';
+  const topCaloric =
+    thisWeek.reduce((best, r) => (Number(r.kcal) > Number(best?.kcal || 0) ? r : best), null)
+      ?.name || '—';
+  const topHealthy =
+    thisWeek
+      .filter((r) => r.kcal > 0)
+      .reduce((best, r) => {
+        const ratio = Number(r.protein) / Number(r.kcal);
+        return ratio > (best.ratio || 0) ? { name: r.name, ratio } : best;
+      }, {})?.name || '—';
+
+  const setEl = (id, val) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = val;
+  };
+  setEl('topCooked', topCooked);
+  setEl('topCaloric', topCaloric);
+  setEl('topHealthy', topHealthy);
+
+  // ─── Рекомендації ────────────────────────────────────────
+  const tipsList = document.getElementById('statsTipsList');
+  if (tipsList && thisWeek.length > 0) {
+    const tips = [];
+    const { protein: tp, fat: tf, carbs: tc, kcal: tk } = thisTotals;
+    const total = tp + tf + tc;
+    if (total > 0) {
+      const protPct = tp / total;
+      const fatPct = tf / total;
+      if (protPct < 0.2) tips.push('Додай більше білкових страв — їх частка менше 20%');
+      if (fatPct > 0.4) tips.push('Жири займають понад 40% — спробуй легші вечері');
+      if (protPct >= 0.25 && fatPct <= 0.35) tips.push('Чудовий баланс БЖВ цього тижня 🌿');
+    }
+    const avgKcal = tk / 7;
+    if (avgKcal > 0 && avgKcal < 1200)
+      tips.push('Середня калорійність дуже низька — стеж за нормою');
+    if (mealTypeCounts.breakfast < 3)
+      tips.push('Сніданок — найважливіший прийом: цього тижня лише ' + mealTypeCounts.breakfast);
+    if (tips.length === 0) tips.push('Все виглядає збалансовано, продовжуй у тому ж дусі 🎯');
+    tipsList.innerHTML = tips.map((t) => `<li>${t}</li>`).join('');
+  } else if (tipsList) {
+    tipsList.innerHTML = "<li>Залоговані страви за останні 7 днів — з'являться рекомендації</li>";
+  }
+
+  // ─── Кольори ─────────────────────────────────────────────
+  const C = {
+    green: '#4ab584',
+    orange: '#f2994a',
+    blue: '#56ccf2',
+    greenBg: 'rgba(74,181,132,0.1)',
+  };
+  const noDataMsg = (canvas) => {
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#888';
+    ctx.font = '14px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('Немає даних', canvas.width / 2, canvas.height / 2);
+  };
+
+  const chartDefaults = {
+    responsive: true,
+    maintainAspectRatio: true,
+    plugins: { legend: { labels: { color: '#9ca3af', font: { size: 12 } } } },
+  };
+
+  // ─── 1. Баланс макро (цей тиждень) ───────────────────────
+  const balanceCanvas = document.getElementById('balancePieChart');
+  if (balanceCanvas) {
+    const { protein: p, fat: f, carbs: c } = thisTotals;
+    if (p + f + c > 0) {
+      statisticsCharts.balancePieChart = new Chart(balanceCanvas, {
+        type: 'pie',
+        data: {
+          labels: ['Білки', 'Жири', 'Вуглеводи'],
+          datasets: [
+            {
+              data: [Math.round(p), Math.round(f), Math.round(c)],
+              backgroundColor: [C.green, C.orange, C.blue],
+            },
+          ],
+        },
+        options: { ...chartDefaults },
+      });
+    } else {
+      noDataMsg(balanceCanvas);
+    }
+  }
+
+  // ─── 2. Динаміка калорій (7 днів) ────────────────────────
+  const kbjuCanvas = document.getElementById('kbjuLineChart');
   if (kbjuCanvas) {
     statisticsCharts.kbjuLineChart = new Chart(kbjuCanvas, {
       type: 'line',
       data: {
-        labels: ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Нд'],
+        labels: dayLabels,
         datasets: [
           {
             label: 'Калорії',
-            data: [1800, 1700, 2000, 1900, 1750, 2100, 1950],
-            borderColor: '#6fcfba',
-            backgroundColor: 'rgba(111, 207, 186, 0.1)',
+            data: dayKcal,
+            borderColor: C.green,
+            backgroundColor: C.greenBg,
             tension: 0.4,
             fill: true,
             borderWidth: 2,
+            pointRadius: 4,
+            pointBackgroundColor: C.green,
           },
         ],
       },
       options: {
-        responsive: true,
-        maintainAspectRatio: true,
-        plugins: { legend: { display: true } },
+        ...chartDefaults,
+        scales: {
+          x: { ticks: { color: '#9ca3af' }, grid: { color: 'rgba(156,163,175,0.1)' } },
+          y: {
+            ticks: { color: '#9ca3af' },
+            grid: { color: 'rgba(156,163,175,0.1)' },
+            beginAtZero: true,
+          },
+        },
       },
     });
   }
 
+  // ─── 3. Прийоми їжі по типах ─────────────────────────────
+  const usefulnessCanvas = document.getElementById('usefulnessBarChart');
   if (usefulnessCanvas) {
-    statisticsCharts.usefulnessBarChart = new Chart(usefulnessCanvas, {
-      type: 'bar',
-      data: {
-        labels: ['Легкі', 'Середні', 'Важкі'],
-        datasets: [{ label: 'Кількість', data: [12, 8, 4], backgroundColor: '#6fcfba' }],
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: true,
-        plugins: { legend: { display: false } },
-      },
-    });
+    const counts = Object.values(mealTypeCounts);
+    if (counts.some((v) => v > 0)) {
+      statisticsCharts.usefulnessBarChart = new Chart(usefulnessCanvas, {
+        type: 'bar',
+        data: {
+          labels: Object.values(mealTypeLabels),
+          datasets: [
+            {
+              label: 'Разів',
+              data: counts,
+              backgroundColor: [C.green, C.blue, C.orange, '#a78bfa'],
+            },
+          ],
+        },
+        options: {
+          ...chartDefaults,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { ticks: { color: '#9ca3af' }, grid: { display: false } },
+            y: {
+              ticks: { color: '#9ca3af', stepSize: 1 },
+              grid: { color: 'rgba(156,163,175,0.1)' },
+              beginAtZero: true,
+            },
+          },
+        },
+      });
+    } else {
+      noDataMsg(usefulnessCanvas);
+    }
   }
 
+  // ─── 4. Минулий тиждень ───────────────────────────────────
+  const lastWeekCanvas = document.getElementById('lastWeekChart');
   if (lastWeekCanvas) {
-    statisticsCharts.lastWeekChart = new Chart(lastWeekCanvas, {
-      type: 'doughnut',
-      data: {
-        labels: ['Білки', 'Жири', 'Вуглеводи'],
-        datasets: [{ data: [25, 35, 40], backgroundColor: ['#6fcfba', '#f2994a', '#56ccf2'] }],
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: true,
-        plugins: { legend: { display: true } },
-      },
-    });
+    const { protein: p, fat: f, carbs: c } = lastTotals;
+    if (p + f + c > 0) {
+      statisticsCharts.lastWeekChart = new Chart(lastWeekCanvas, {
+        type: 'doughnut',
+        data: {
+          labels: ['Білки', 'Жири', 'Вуглеводи'],
+          datasets: [
+            {
+              data: [Math.round(p), Math.round(f), Math.round(c)],
+              backgroundColor: [C.green, C.orange, C.blue],
+            },
+          ],
+        },
+        options: { ...chartDefaults },
+      });
+    } else {
+      noDataMsg(lastWeekCanvas);
+    }
   }
 
+  // ─── 5. Цей тиждень ──────────────────────────────────────
+  const thisWeekCanvas = document.getElementById('thisWeekChart');
   if (thisWeekCanvas) {
-    statisticsCharts.thisWeekChart = new Chart(thisWeekCanvas, {
-      type: 'doughnut',
-      data: {
-        labels: ['Білки', 'Жири', 'Вуглеводи'],
-        datasets: [{ data: [30, 30, 40], backgroundColor: ['#6fcfba', '#f2994a', '#56ccf2'] }],
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: true,
-        plugins: { legend: { display: true } },
-      },
-    });
+    const { protein: p, fat: f, carbs: c } = thisTotals;
+    if (p + f + c > 0) {
+      statisticsCharts.thisWeekChart = new Chart(thisWeekCanvas, {
+        type: 'doughnut',
+        data: {
+          labels: ['Білки', 'Жири', 'Вуглеводи'],
+          datasets: [
+            {
+              data: [Math.round(p), Math.round(f), Math.round(c)],
+              backgroundColor: [C.green, C.orange, C.blue],
+            },
+          ],
+        },
+        options: { ...chartDefaults },
+      });
+    } else {
+      noDataMsg(thisWeekCanvas);
+    }
   }
-
 }
 
 // =====================================
@@ -596,10 +843,10 @@ function syncWeightInputs() {
 
   const saveBtn2 = document.getElementById('saveWeightBtn2');
   if (saveBtn2) {
-    saveBtn2.addEventListener('click', () => {
+    saveBtn2.addEventListener('click', async () => {
       if (currentWeight2 && currentWeight1) currentWeight1.value = currentWeight2.value;
-      recordNewWeight();
-      initWeightChart2();
+      await recordNewWeight();
+      await initWeightChart2();
       generateWeightAdvice();
     });
   }
@@ -1045,20 +1292,21 @@ function initProfileTabs() {
 function initSettings(user) {
   // Email / name display
   const emailEl = document.getElementById('settingsEmailDisplay');
-  const nameEl  = document.getElementById('settingsNameDisplay');
+  const nameEl = document.getElementById('settingsNameDisplay');
   if (emailEl && user?.email) emailEl.textContent = user.email;
   if (nameEl && user?.user_metadata?.full_name) nameEl.textContent = user.user_metadata.full_name;
 
   // Theme buttons
   function syncThemeBtns() {
-    const current = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
-    document.querySelectorAll('.settings-theme-btn').forEach(btn => {
+    const current =
+      document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
+    document.querySelectorAll('.settings-theme-btn').forEach((btn) => {
       btn.classList.toggle('active', btn.dataset.themeSet === current);
     });
   }
   syncThemeBtns();
 
-  document.querySelectorAll('.settings-theme-btn').forEach(btn => {
+  document.querySelectorAll('.settings-theme-btn').forEach((btn) => {
     btn.addEventListener('click', () => {
       const theme = btn.dataset.themeSet;
       if (theme === 'dark') {
@@ -1076,13 +1324,13 @@ function initSettings(user) {
   const langSwitcher = document.getElementById('langSwitcher');
   function syncLangBtns() {
     const current = langSwitcher?.value || localStorage.getItem('lang') || 'ua';
-    document.querySelectorAll('.settings-lang-btn').forEach(btn => {
+    document.querySelectorAll('.settings-lang-btn').forEach((btn) => {
       btn.classList.toggle('active', btn.dataset.lang === current);
     });
   }
   syncLangBtns();
 
-  document.querySelectorAll('.settings-lang-btn').forEach(btn => {
+  document.querySelectorAll('.settings-lang-btn').forEach((btn) => {
     btn.addEventListener('click', () => {
       if (langSwitcher) {
         langSwitcher.value = btn.dataset.lang;
@@ -1094,10 +1342,10 @@ function initSettings(user) {
 
   // Unit buttons (UI only — no backend yet)
   const savedUnit = localStorage.getItem('units') || 'metric';
-  document.querySelectorAll('.settings-unit-btn').forEach(btn => {
+  document.querySelectorAll('.settings-unit-btn').forEach((btn) => {
     btn.classList.toggle('active', btn.dataset.unit === savedUnit);
     btn.addEventListener('click', () => {
-      document.querySelectorAll('.settings-unit-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.settings-unit-btn').forEach((b) => b.classList.remove('active'));
       btn.classList.add('active');
       localStorage.setItem('units', btn.dataset.unit);
     });
@@ -1122,7 +1370,8 @@ function initSettings(user) {
 // =====================================
 
 function getDayWord(n) {
-  const l2 = n % 100, l1 = n % 10;
+  const l2 = n % 100,
+    l1 = n % 10;
   if (l2 >= 11 && l2 <= 14) return 'днів';
   if (l1 === 1) return 'день';
   if (l1 >= 2 && l1 <= 4) return 'дні';
