@@ -526,7 +526,10 @@ function buildActiveItem(item) {
       <input type="checkbox" class="shop-item__checkbox" ${item.is_checked ? 'checked' : ''} aria-label="Куплено">
       <span class="shop-item__custom-check"></span>
     </label>
-    <span class="shop-item__name">${escapeHTML(item.name)}</span>
+    <div class="shop-item__info">
+      <span class="shop-item__name">${escapeHTML(item.name)}</span>
+      ${item.note ? `<span class="shop-item__note">${escapeHTML(item.note)}</span>` : ''}
+    </div>
     ${amountText ? `<span class="shop-item__amount">${escapeHTML(amountText)}</span>` : ''}
     <div class="shop-item__actions">
       <button class="shop-item__btn shop-item__btn--edit" aria-label="Редагувати">
