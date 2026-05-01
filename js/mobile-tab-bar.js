@@ -6,12 +6,13 @@
 (() => {
   // Мапа: частина URL → data-tab значення
   const PAGE_MAP = [
-    { match: 'week-menu',     tab: 'week'     },
-    { match: 'recipes',       tab: 'recipes'  },
-    { match: 'product-guide', tab: 'more'     },
-    { match: 'cookbook',      tab: 'more'     },
-    { match: 'profile',       tab: 'more'     },
-    { match: 'index',         tab: 'day'      },
+    { match: 'week-menu', tab: 'week' },
+    { match: 'recipes', tab: 'recipes' },
+    { match: 'shopping-list', tab: 'shopping' },
+    { match: 'product-guide', tab: 'more' },
+    { match: 'cookbook', tab: 'more' },
+    { match: 'profile', tab: 'more' },
+    { match: 'index', tab: 'day' },
   ];
 
   function getActiveTab() {
@@ -31,11 +32,11 @@
   };
 
   const TABS = [
-    { tab: 'day',      href: 'index.html',       label: 'День'           },
-    { tab: 'week',     href: 'week-menu.html',   label: 'Тиждень'        },
-    { tab: 'recipes',  href: 'recipes.html',     label: 'Рецепти'        },
-    { tab: 'shopping', href: '#',                label: 'Список покупок' },
-    { tab: 'more',     href: null,               label: 'Ще'             },
+    { tab: 'day', href: 'index.html', label: 'День' },
+    { tab: 'week', href: 'week-menu.html', label: 'Тиждень' },
+    { tab: 'recipes', href: 'recipes.html', label: 'Рецепти' },
+    { tab: 'shopping', href: 'shopping-list.html', label: 'Список покупок' },
+    { tab: 'more', href: null, label: 'Ще' },
   ];
 
   const SHEET_LINKS = [
@@ -77,9 +78,11 @@
   }
 
   function buildBottomSheet() {
-    const links = SHEET_LINKS.map(({ href, label, icon }) => `
+    const links = SHEET_LINKS.map(
+      ({ href, label, icon }) => `
       <a href="${href}" class="bottom-sheet__link">${icon}${label}</a>
-    `).join('');
+    `,
+    ).join('');
 
     return `
       <div class="bottom-sheet" id="more-sheet" aria-hidden="true">
