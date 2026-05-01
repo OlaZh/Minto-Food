@@ -200,46 +200,48 @@
 /* ================= КАРТКИ ================= */
 
 .profile-card {
-  background-color: var(--color-bg-secondary);
+  background: linear-gradient(180deg, var(--color-surface) 0%, var(--color-bg-secondary) 100%);
   border: 1px solid var(--color-border);
-  border-radius: 24px;
-  padding: 32px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
+  border-radius: 20px;
+  padding: 26px;
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
   width: 100%;
   box-sizing: border-box;
 
   @media (max-width: 600px) {
-    padding: 20px;
+    padding: 18px;
   }
 
   &__title {
-    font-family: var(--font-heading);
-    font-size: 22px;
+    font-size: 16px;
     font-weight: 700;
+    letter-spacing: 0.1px;
     color: var(--color-text-primary);
-    margin: 0 0 24px;
+    margin: 0 0 18px;
   }
 }
 
 /* Компактна картка */
 .profile-card--compact {
-  padding: 24px;
+  padding: 22px;
   flex: 1;
 
   .profile-card__title {
-    margin-bottom: 16px;
-    font-size: 20px;
+    margin-bottom: 14px;
+    font-size: 15px;
   }
 
   .profile-macros {
-    gap: 12px;
+    gap: 8px;
   }
 
   .profile-macros__item {
-    padding: 14px;
+    padding: 12px 14px;
 
     .macro-value {
-      font-size: 18px;
+      font-size: 17px;
     }
   }
 }
@@ -260,8 +262,8 @@
 .profile-form__field {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  margin-bottom: 24px;
+  gap: 6px;
+  margin-bottom: 18px;
   position: relative;
 
   &:last-child {
@@ -270,26 +272,31 @@
 }
 
 .profile-form__label {
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
   color: var(--color-text-secondary);
-  margin-left: 4px;
+  margin-left: 2px;
 }
 
 .profile-form__input {
   width: 100%;
-  padding: 14px 18px;
-  border-radius: 14px;
+  padding: 11px 14px;
+  border-radius: 12px;
   border: 1px solid var(--color-border);
   background: var(--color-bg-primary);
   color: var(--color-text-primary);
-  font-size: 16px;
-  transition: all 0.3s;
+  font-size: 15px;
+  font-family: inherit;
+  transition:
+    border-color 0.18s ease,
+    box-shadow 0.18s ease;
   box-sizing: border-box;
 
   &:hover {
-    transform: translateY(-2px);
     border-color: var(--color-accent);
+    transform: translateY(-2px);
   }
 
   &:focus {
@@ -310,14 +317,17 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 14px 18px;
+    padding: 11px 14px;
     background: var(--color-bg-primary);
     border: 1px solid var(--color-border);
-    border-radius: 14px;
+    border-radius: 12px;
     cursor: pointer;
     font-size: 15px;
+    font-family: inherit;
     color: var(--color-text-primary);
-    transition: all 0.3s;
+    transition:
+      border-color 0.18s ease,
+      box-shadow 0.18s ease;
     box-sizing: border-box;
 
     &:hover {
@@ -326,12 +336,13 @@
     }
 
     .arrow {
-      width: 8px;
-      height: 8px;
+      width: 7px;
+      height: 7px;
       border-right: 2px solid var(--color-accent);
       border-bottom: 2px solid var(--color-accent);
       transform: rotate(45deg);
-      transition: transform 0.3s;
+      transition: transform 0.25s ease;
+      flex-shrink: 0;
     }
   }
 
@@ -402,36 +413,36 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 24px;
+  padding: 16px 18px;
   background: var(--color-accent-soft);
-  border: 1px dashed var(--color-accent);
-  border-radius: 20px;
-  margin-bottom: 24px;
+  border: 1px solid rgba(var(--accent-rgb), 0.3);
+  border-radius: 14px;
+  margin-bottom: 18px;
 
   &__label {
-    font-weight: 700;
-    font-size: 18px;
+    font-weight: 600;
+    font-size: 15px;
     color: var(--color-text-primary);
   }
 
   &__value {
-    font-size: 32px;
+    font-size: 28px;
     font-weight: 800;
     color: var(--color-accent);
+    line-height: 1;
   }
 }
 
-/* Компактніший результат калорій */
 .profile-result--small {
-  padding: 16px 20px;
-  margin-bottom: 16px;
+  padding: 14px 16px;
+  margin-bottom: 14px;
 
   .profile-result__label {
-    font-size: 16px;
+    font-size: 14px;
   }
 
   .profile-result__value {
-    font-size: 26px;
+    font-size: 24px;
   }
 }
 
@@ -440,37 +451,28 @@
 .profile-macros {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 16px;
+  gap: 8px;
 
   &__item {
-    padding: 20px;
-    background: var(--color-surface);
+    padding: 14px;
+    background: var(--color-bg-secondary);
     border: 1px solid var(--color-border);
-    color: var(--color-text-secondary);
-    box-shadow: 0 10px 20px rgba(111, 207, 186, 0.3);
-    border-radius: 16px;
+    border-radius: 12px;
     text-align: center;
     box-sizing: border-box;
-    transition: all 0.3s ease;
-
-    &:hover {
-      color: var(--color-text-primary);
-      border-color: var(--color-accent);
-      transform: translateY(-2px);
-      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.05);
-    }
 
     .macro-label {
       display: block;
-      font-size: 12px;
-      font-weight: 700;
+      font-size: 11px;
+      font-weight: 600;
       text-transform: uppercase;
+      letter-spacing: 0.3px;
       color: var(--color-text-secondary);
-      margin-bottom: 6px;
+      margin-bottom: 5px;
     }
 
     .macro-value {
-      font-size: 20px;
+      font-size: 18px;
       font-weight: 800;
       color: var(--color-text-primary);
     }
@@ -546,40 +548,56 @@
 
 /* ================= ІМТ ================= */
 
+.bmi-analysis__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+
+  &__number,
+  .bmi-analysis__number {
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--color-accent);
+  }
+}
+
 .bmi-visual-scale {
-  height: 12px;
-  background: linear-gradient(to right, #3498db, #2ecc71, #f1c40f, #e67e22, #e74c3c);
+  height: 10px;
+  background: linear-gradient(to right, #3b82f6, #22c55e, #eab308, #f97316, #ef4444);
   border-radius: 20px;
   position: relative;
-  margin: 25px 0 15px;
+  margin: 16px 0 12px;
 
   &__pointer {
     position: absolute;
-    top: -6px;
-    width: 24px;
-    height: 24px;
-    background: #fff;
-    border: 4px solid var(--color-text-primary);
+    top: -7px;
+    width: 22px;
+    height: 22px;
+    background: var(--color-surface);
+    border: 3px solid var(--color-text-primary);
     border-radius: 50%;
     transform: translateX(-50%);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
     transition: left 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   }
 }
 
 .bmi-analysis__status {
   text-align: center;
-  font-weight: 700;
-  color: var(--color-text-primary);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
 }
 
 .bmi-advice-text {
-  margin-top: 15px;
-  font-size: 14px;
+  margin-top: 12px;
+  font-size: 13px;
   line-height: 1.5;
   color: var(--color-text-secondary);
-  padding: 12px;
+  padding: 10px 12px;
   background: var(--color-bg-primary);
-  border-left: 4px solid var(--color-accent);
+  border-left: 3px solid var(--color-accent);
   border-radius: 8px;
 
   strong {
@@ -592,37 +610,51 @@
 
 .weight-tracker-input {
   display: flex;
-  gap: 12px;
-  margin-top: 10px;
+  gap: 10px;
+  margin-top: 8px;
   box-sizing: border-box;
 
   input {
     flex: 1;
-    padding: 14px;
+    padding: 11px 14px;
     border-radius: 12px;
     border: 1px solid var(--color-border);
     background: var(--color-bg-primary);
     color: var(--color-text-primary);
+    font-size: 15px;
+    font-family: inherit;
     box-sizing: border-box;
+    transition: border-color 0.18s ease;
+
+    &:focus {
+      outline: none;
+      border-color: var(--color-accent);
+      box-shadow: 0 0 0 3px var(--color-accent-soft);
+    }
   }
 
   button {
-    padding: 0 20px;
-    border-radius: 16px;
-    border: 1px solid var(--color-accent);
-    background: var(--color-surface);
-    color: var(--color-text-secondary);
-    box-shadow: 0 10px 20px rgba(111, 207, 186, 0.3);
+    padding: 0 18px;
+    border-radius: 12px;
+    border: none;
+    background: var(--color-accent);
+    color: #fff;
+    font-size: 14px;
     font-weight: 700;
+    font-family: inherit;
     cursor: pointer;
     white-space: nowrap;
-    transition: all 0.3s ease;
+    transition:
+      transform 0.15s ease,
+      background 0.15s ease;
 
     &:hover {
-      color: var(--color-text-primary);
-      border-color: var(--color-accent);
-      transform: translateY(-2px);
-      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.05);
+      background: var(--color-accent-hover);
+      transform: translateY(-1px);
+    }
+
+    &:active {
+      transform: translateY(0);
     }
   }
 }
@@ -641,22 +673,30 @@
 
   &__btn {
     width: 100%;
-    padding: 18px;
-    border-radius: 16px;
-    border: 1px solid var(--color-accent);
-    background: var(--color-surface);
-    color: var(--color-text-secondary);
-    font-size: 17px;
-    font-weight: 800;
+    padding: 13px;
+    border-radius: 12px;
+    border: none;
+    background: var(--color-accent);
+    color: #fff;
+    font-size: 15px;
+    font-weight: 700;
+    font-family: inherit;
     cursor: pointer;
-    box-shadow: 0 10px 20px rgba(111, 207, 186, 0.3);
-    transition: all 0.3s ease;
+    box-shadow:
+      0 8px 20px rgba(0, 0, 0, 0.18),
+      inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    transition:
+      transform 0.15s ease,
+      box-shadow 0.15s ease;
     box-sizing: border-box;
 
     &:hover {
-      color: var(--color-text-primary);
-      transform: translateY(-2px);
-      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.05);
+      transform: translateY(-1px);
+      background: var(--color-accent-hover);
+    }
+
+    &:active {
+      transform: translateY(0);
     }
   }
 }
