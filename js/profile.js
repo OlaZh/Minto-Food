@@ -1044,6 +1044,33 @@ function initProfileTabs() {
 // INIT
 // =====================================
 
+function getDayWord(n) {
+  const l2 = n % 100, l1 = n % 10;
+  if (l2 >= 11 && l2 <= 14) return 'днів';
+  if (l1 === 1) return 'день';
+  if (l1 >= 2 && l1 <= 4) return 'дні';
+  return 'днів';
+}
+
+async function loadProfileStreak(userId) {
+  const currentEl = document.getElementById('profileCurrentStreak');
+  const longestEl = document.getElementById('profileLongestStreak');
+  const wordEl = document.getElementById('profileStreakWord');
+  if (!currentEl) return;
+
+  try {
+    const { data } = await supabase.rpc('get_current_streak', { p_user_id: userId });
+    const s = data?.[0];
+    if (s) {
+      currentEl.textContent = s.current_streak;
+      if (wordEl) wordEl.textContent = getDayWord(s.current_streak) + ' поспіль';
+      if (longestEl) longestEl.textContent = s.longest_streak;
+    }
+  } catch {
+    // silent fail
+  }
+}
+
 async function initProfile() {
   const user = await initAuth(async (event, user) => {
     if (event === 'SIGNED_IN') {
@@ -1082,6 +1109,7 @@ async function initProfile() {
 
   initSelectsGlobalListener();
   await loadProfileFromSupabase();
+  await loadProfileStreak(user.id);
 
   initWeightChart();
   initProfileTabs();

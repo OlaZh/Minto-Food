@@ -6018,7 +6018,6 @@ textarea:-webkit-autofill:focus {
 }
 .profile-form__input:hover {
   border-color: var(--color-accent);
-  transform: translateY(-2px);
 }
 .profile-form__input:focus {
   outline: none;
@@ -6049,7 +6048,6 @@ textarea:-webkit-autofill:focus {
 }
 .custom-select__trigger:hover {
   border-color: var(--color-accent);
-  transform: translateY(-2px);
 }
 .custom-select__trigger .arrow {
   width: 7px;
@@ -6512,6 +6510,49 @@ textarea:-webkit-autofill:focus {
   background: rgba(239, 68, 68, 0.06);
 }
 
+/* ================= STREAK В САЙДБАРІ ================= */
+.profile-streak {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--color-border);
+}
+.profile-streak__row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+.profile-streak__fire {
+  font-size: 1.6rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+.profile-streak__counts {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.profile-streak__current {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--color-accent);
+  line-height: 1;
+}
+.profile-streak__label {
+  font-size: 11px;
+  color: var(--color-text-secondary);
+  font-weight: 500;
+}
+.profile-streak__best {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  padding-left: 2px;
+}
+.profile-streak__best strong {
+  color: var(--color-text-primary);
+  font-weight: 700;
+}
+
 /* ================= CONTENT ================= */
 .profile-content {
   display: flex;
@@ -6750,13 +6791,6 @@ textarea:-webkit-autofill:focus {
   border-radius: 8px;
   font-size: 0.9rem;
   border: 1px solid var(--color-border);
-  box-shadow: 0 10px 20px rgba(46, 204, 113, 0.12);
-}
-.activity-preview-mini:hover {
-  color: var(--color-text-primary);
-  border-color: var(--color-accent-soft);
-  transform: translateY(-2px);
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.05);
 }
 .activity-preview-mini.active {
   color: var(--color-text-primary);
@@ -6780,17 +6814,17 @@ textarea:-webkit-autofill:focus {
 .activity-btn-add {
   padding: 10px 20px;
   background: var(--color-accent);
+  color: #fff;
   border: none;
   border-radius: 8px;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.2s, transform 0.1s;
+  transition: background 0.2s;
   white-space: nowrap;
-  box-shadow: 0 10px 20px rgba(46, 204, 113, 0.12);
 }
 .activity-btn-add:hover {
-  border-color: var(--color-accent-soft);
-  transform: translateY(-1px);
+  background: var(--color-accent-hover, var(--color-accent));
+  filter: brightness(1.07);
 }
 
 /* Компактна картка "Сьогодні" */
@@ -6819,17 +6853,14 @@ textarea:-webkit-autofill:focus {
   gap: 4px;
   padding: 15px 10px;
   text-align: center;
-  box-shadow: 0 10px 20px rgba(46, 204, 113, 0.12);
   border-radius: 16px;
   border: 1px solid var(--color-border);
-  cursor: pointer;
   flex: 1;
   min-width: 80px;
+  transition: border-color 0.2s;
 }
 .activity-stat-mini:hover {
-  transform: translateY(-2px);
   border-color: var(--color-accent);
-  transition: all 0.3s ease;
 }
 .activity-stat-mini:focus {
   outline: none;
@@ -6871,9 +6902,7 @@ textarea:-webkit-autofill:focus {
   justify-content: center;
 }
 .activity-balance-mini:hover {
-  transform: translateY(-2px);
   border-color: var(--color-accent);
-  transition: all 0.3s ease;
 }
 .activity-balance-mini:focus {
   outline: none;
@@ -6969,27 +6998,24 @@ textarea:-webkit-autofill:focus {
 }
 
 .period-btn {
-  padding: 16px 20px;
+  padding: 7px 14px;
   border: 1px solid var(--color-border);
   background: transparent;
   color: var(--color-text-secondary);
-  border-radius: 16px;
-  font-size: 1rem;
+  border-radius: 20px;
+  font-size: 13px;
   font-weight: 600;
+  font-family: inherit;
   cursor: pointer;
-  transition: all 0.2s;
-  flex: none;
-  box-shadow: 0 10px 20px rgba(46, 204, 113, 0.12);
+  transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease;
 }
 .period-btn:hover {
+  border-color: var(--color-accent);
   color: var(--color-text-primary);
-  border-color: var(--color-accent-soft);
-  transform: translateY(-2px);
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.05);
 }
 .period-btn.active {
-  color: var(--color-text-primary);
-  font-weight: 600;
+  background: var(--color-accent-soft);
+  color: var(--color-accent);
   border-color: var(--color-accent);
 }
 
@@ -7049,14 +7075,12 @@ textarea:-webkit-autofill:focus {
   color: var(--color-text-secondary);
   background: var(--color-surface);
   border-radius: 10px;
-  box-shadow: 0 10px 20px rgba(46, 204, 113, 0.12);
   border: 1px solid var(--color-border);
   flex-shrink: 0;
-  transition: all 0.2s ease;
+  transition: border-color 0.2s;
 }
 .activity-item:hover {
   border-color: var(--color-accent);
-  transform: translateY(-2px);
 }
 .activity-item:hover .activity-item__delete {
   opacity: 1;
@@ -7191,6 +7215,104 @@ textarea:-webkit-autofill:focus {
   }
   .activity-item {
     width: 100%;
+  }
+}
+/* ===============================================================
+   MOBILE: PROFILE LAYOUT (≤1000px)
+   =============================================================== */
+@media (max-width: 1000px) {
+  .profile-layout {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+  /* Sidebar → горизонтальний таб-бар */
+  .profile-sidebar {
+    position: static;
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+    border-top: none;
+    border-bottom: 1px solid var(--color-border);
+    padding: 12px 16px;
+    flex-direction: row;
+    overflow-x: auto;
+    overflow-y: hidden;
+    gap: 6px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    box-shadow: none;
+  }
+  .profile-sidebar::-webkit-scrollbar {
+    display: none;
+  }
+  /* Хедер (аватар + ім'я) ховаємо всередині таб-бару — там немає місця */
+  .profile-sidebar .profile-header {
+    display: none;
+  }
+  /* Сайдбар айтеми → компактні пігулки */
+  .profile-sidebar__item {
+    flex-shrink: 0;
+    padding: 8px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    white-space: nowrap;
+    border: 1px solid transparent;
+  }
+  .profile-sidebar__item:hover {
+    background: var(--color-bg-secondary);
+    border-color: var(--color-border);
+  }
+  .profile-sidebar__item.active {
+    background: var(--color-accent-soft);
+    color: var(--color-accent);
+    border-color: var(--color-accent);
+  }
+  .profile-sidebar__item.active::after {
+    display: none;
+  }
+  /* Streak і sign-out ховаємо в таб-барі — вони не помістяться */
+  .profile-streak,
+  .profile-signout-btn {
+    display: none;
+  }
+  .profile-container {
+    padding-top: 0;
+  }
+  .profile-main {
+    padding: 20px 0 0;
+  }
+}
+@media (max-width: 600px) {
+  .profile-top-row {
+    margin-bottom: 20px;
+  }
+  .profile-card {
+    border-radius: 16px;
+    padding: 16px;
+  }
+  .profile-card--compact {
+    padding: 16px;
+  }
+  .profile-form__row {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+@media (max-width: 480px) {
+  .profile-container {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+  .profile-form__row {
+    grid-template-columns: 1fr;
+  }
+  .activity-top-row {
+    grid-template-columns: 1fr;
+  }
+  .activity-stat-mini__value {
+    font-size: 1.4rem;
+  }
+  .bmi-visual-scale {
+    height: 8px;
   }
 }
 /* ================= WEEK MENU ================= */
