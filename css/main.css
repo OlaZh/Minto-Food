@@ -6369,7 +6369,6 @@ textarea:-webkit-autofill:focus {
 
 /* ================= СТАТИСТИКА ================= */
 .profile-statistics {
-  margin-top: 40px;
   display: flex;
   flex-direction: column;
   gap: 32px;
@@ -7217,6 +7216,200 @@ textarea:-webkit-autofill:focus {
     width: 100%;
   }
 }
+/* ===============================================================
+   НАЛАШТУВАННЯ
+   =============================================================== */
+.settings-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+@media (max-width: 900px) {
+  .settings-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.settings-card--danger {
+  border-color: rgba(239, 68, 68, 0.3);
+  background: linear-gradient(180deg, var(--color-surface) 0%, rgba(239, 68, 68, 0.04) 100%);
+}
+
+.settings-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--color-border);
+}
+.settings-row--last {
+  border-bottom: none;
+}
+.settings-row__label {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.settings-row__title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+.settings-row__sub {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+/* Кнопки теми / мови / одиниць */
+.settings-theme-btns,
+.settings-lang-btns,
+.settings-unit-btns {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.settings-theme-btn,
+.settings-lang-btn,
+.settings-unit-btn {
+  padding: 6px 12px;
+  border: 1px solid var(--color-border);
+  background: transparent;
+  color: var(--color-text-secondary);
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease;
+  white-space: nowrap;
+}
+.settings-theme-btn:hover,
+.settings-lang-btn:hover,
+.settings-unit-btn:hover {
+  border-color: var(--color-accent);
+  color: var(--color-text-primary);
+}
+.settings-theme-btn.active,
+.settings-lang-btn.active,
+.settings-unit-btn.active {
+  background: var(--color-accent-soft);
+  color: var(--color-accent);
+  border-color: var(--color-accent);
+}
+
+/* Кнопка "Змінити" */
+.settings-edit-btn {
+  padding: 6px 14px;
+  border: 1px solid var(--color-border);
+  background: transparent;
+  color: var(--color-text-secondary);
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: border-color 0.18s ease, color 0.18s ease;
+}
+.settings-edit-btn:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
+/* Кнопки дій акаунту */
+.settings-actions {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--color-border);
+}
+
+.settings-action-btn {
+  width: 100%;
+  padding: 10px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: inherit;
+  color: var(--color-text-secondary);
+  background: transparent;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: border-color 0.18s ease, color 0.18s ease, background 0.18s ease;
+}
+.settings-action-btn:hover {
+  border-color: #ef4444;
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.06);
+}
+
+/* Тогл */
+.settings-toggle {
+  position: relative;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+.settings-toggle input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.settings-toggle__track {
+  display: block;
+  width: 44px;
+  height: 24px;
+  background: var(--color-border);
+  border-radius: 12px;
+  transition: background 0.2s ease;
+  position: relative;
+}
+.settings-toggle__track::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+input:checked + .settings-toggle__track {
+  background: var(--color-accent);
+}
+input:checked + .settings-toggle__track::after {
+  transform: translateX(20px);
+}
+
+/* Небезпечна зона */
+.settings-danger__text {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+  margin: 0 0 16px;
+}
+
+.settings-delete-btn {
+  padding: 10px 20px;
+  background: transparent;
+  border: 1px solid #ef4444;
+  color: #ef4444;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.18s ease, color 0.18s ease;
+}
+.settings-delete-btn:hover {
+  background: #ef4444;
+  color: #fff;
+}
+
 /* ===============================================================
    MOBILE: PROFILE LAYOUT (≤1000px)
    =============================================================== */

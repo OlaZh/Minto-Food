@@ -44,7 +44,9 @@
               >
             </li>
             <li>
-              <a href="shopping-list.html" class="header__nav-link" data-i18n="navShoppingList">Список покупок</a>
+              <a href="shopping-list.html" class="header__nav-link" data-i18n="navShoppingList"
+                >Список покупок</a
+              >
             </li>
             <li>
               <a href="cookbook.html" class="header__nav-link" data-i18n="cookbook"
@@ -784,7 +786,7 @@
           </section>
 
           <!-- =============================================
-       TAB 5: НАЛАШТУВАННЯ (placeholder)
+       TAB 5: НАЛАШТУВАННЯ
        ============================================= -->
           <section
             id="settingsSection"
@@ -792,9 +794,110 @@
             data-profile-section="settings"
             role="tabpanel"
             hidden>
-            <div class="profile-card">
-              <h2 class="profile-card__title">⚙️ Налаштування</h2>
-              <p style="color: var(--color-text-secondary)">Розділ в розробці...</p>
+            <div class="settings-grid">
+              <!-- ЗАГАЛЬНІ -->
+              <div class="profile-card">
+                <h2 class="profile-card__title">🌐 Загальні</h2>
+
+                <div class="settings-row">
+                  <div class="settings-row__label">
+                    <span class="settings-row__title">Тема</span>
+                    <span class="settings-row__sub">Вигляд інтерфейсу</span>
+                  </div>
+                  <div class="settings-theme-btns">
+                    <button class="settings-theme-btn" data-theme-set="light" id="setThemeLight">
+                      ☀️ Світла
+                    </button>
+                    <button class="settings-theme-btn" data-theme-set="dark" id="setThemeDark">
+                      🌙 Темна
+                    </button>
+                  </div>
+                </div>
+
+                <div class="settings-row">
+                  <div class="settings-row__label">
+                    <span class="settings-row__title">Мова</span>
+                    <span class="settings-row__sub">Мова інтерфейсу</span>
+                  </div>
+                  <div class="settings-lang-btns">
+                    <button class="settings-lang-btn" data-lang="ua">🇺🇦 UA</button>
+                    <button class="settings-lang-btn" data-lang="pl">🇵🇱 PL</button>
+                    <button class="settings-lang-btn" data-lang="en">🇬🇧 EN</button>
+                  </div>
+                </div>
+
+                <div class="settings-row settings-row--last">
+                  <div class="settings-row__label">
+                    <span class="settings-row__title">Одиниці виміру</span>
+                    <span class="settings-row__sub">Метрична або американська система</span>
+                  </div>
+                  <div class="settings-unit-btns">
+                    <button class="settings-unit-btn active" data-unit="metric">кг / см</button>
+                    <button class="settings-unit-btn" data-unit="imperial">lbs / ft</button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- АКАУНТ -->
+              <div class="profile-card">
+                <h2 class="profile-card__title">👤 Акаунт</h2>
+
+                <div class="settings-row">
+                  <div class="settings-row__label">
+                    <span class="settings-row__title">Email</span>
+                    <span class="settings-row__sub" id="settingsEmailDisplay">—</span>
+                  </div>
+                </div>
+
+                <div class="settings-row settings-row--last">
+                  <div class="settings-row__label">
+                    <span class="settings-row__title">Ім'я</span>
+                    <span class="settings-row__sub" id="settingsNameDisplay">—</span>
+                  </div>
+                  <button class="settings-edit-btn" id="settingsEditName">Змінити</button>
+                </div>
+
+                <div class="settings-actions">
+                  <button class="settings-action-btn" id="settingsSignOut">Вийти з акаунту</button>
+                </div>
+              </div>
+
+              <!-- СПОВІЩЕННЯ -->
+              <div class="profile-card">
+                <h2 class="profile-card__title">🔔 Сповіщення</h2>
+
+                <div class="settings-row">
+                  <div class="settings-row__label">
+                    <span class="settings-row__title">Нагадування про їжу</span>
+                    <span class="settings-row__sub">Сніданок, обід, вечеря</span>
+                  </div>
+                  <label class="settings-toggle">
+                    <input type="checkbox" id="toggleMealReminders" />
+                    <span class="settings-toggle__track"></span>
+                  </label>
+                </div>
+
+                <div class="settings-row settings-row--last">
+                  <div class="settings-row__label">
+                    <span class="settings-row__title">Нагадування про воду</span>
+                    <span class="settings-row__sub">Кожні 2 години</span>
+                  </div>
+                  <label class="settings-toggle">
+                    <input type="checkbox" id="toggleWaterReminders" />
+                    <span class="settings-toggle__track"></span>
+                  </label>
+                </div>
+              </div>
+
+              <!-- НЕБЕЗПЕЧНА ЗОНА -->
+              <div class="profile-card settings-card--danger">
+                <h2 class="profile-card__title">⚠️ Небезпечна зона</h2>
+                <p class="settings-danger__text">
+                  Видалення акаунту є незворотною дією. Всі ваші дані, рецепти та меню будуть
+                  видалені назавжди.
+                </p>
+                <button class="settings-delete-btn" id="deleteAccountBtn">Видалити акаунт</button>
+              </div>
             </div>
           </section>
         </main>

@@ -987,10 +987,8 @@ function initProfileTabs() {
   sections.forEach((section, index) => {
     if (index === 0) {
       section.removeAttribute('hidden');
-      section.style.display = 'block';
     } else {
       section.setAttribute('hidden', '');
-      section.style.display = 'none';
     }
   });
 
@@ -1013,10 +1011,8 @@ function initProfileTabs() {
         const isActive = section.dataset.profileSection === tab;
         if (isActive) {
           section.removeAttribute('hidden');
-          section.style.display = 'block';
         } else {
           section.setAttribute('hidden', '');
-          section.style.display = 'none';
         }
       });
 
@@ -1038,6 +1034,85 @@ function initProfileTabs() {
   });
 
   syncWeightInputs();
+}
+
+// =====================================
+// SETTINGS TAB
+// =====================================
+
+function initSettings(user) {
+  // Email / name display
+  const emailEl = document.getElementById('settingsEmailDisplay');
+  const nameEl  = document.getElementById('settingsNameDisplay');
+  if (emailEl && user?.email) emailEl.textContent = user.email;
+  if (nameEl && user?.user_metadata?.full_name) nameEl.textContent = user.user_metadata.full_name;
+
+  // Theme buttons
+  function syncThemeBtns() {
+    const current = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
+    document.querySelectorAll('.settings-theme-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.themeSet === current);
+    });
+  }
+  syncThemeBtns();
+
+  document.querySelectorAll('.settings-theme-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const theme = btn.dataset.themeSet;
+      if (theme === 'dark') {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        localStorage.setItem('theme', 'dark');
+      } else {
+        document.documentElement.removeAttribute('data-theme');
+        localStorage.setItem('theme', 'light');
+      }
+      syncThemeBtns();
+    });
+  });
+
+  // Language buttons
+  const langSwitcher = document.getElementById('langSwitcher');
+  function syncLangBtns() {
+    const current = langSwitcher?.value || localStorage.getItem('lang') || 'ua';
+    document.querySelectorAll('.settings-lang-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.lang === current);
+    });
+  }
+  syncLangBtns();
+
+  document.querySelectorAll('.settings-lang-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (langSwitcher) {
+        langSwitcher.value = btn.dataset.lang;
+        langSwitcher.dispatchEvent(new Event('change'));
+      }
+      syncLangBtns();
+    });
+  });
+
+  // Unit buttons (UI only — no backend yet)
+  const savedUnit = localStorage.getItem('units') || 'metric';
+  document.querySelectorAll('.settings-unit-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.unit === savedUnit);
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.settings-unit-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      localStorage.setItem('units', btn.dataset.unit);
+    });
+  });
+
+  // Sign out from settings
+  document.getElementById('settingsSignOut')?.addEventListener('click', async () => {
+    await signOut();
+    window.location.href = 'index.html';
+  });
+
+  // Delete account (confirmation only — no backend yet)
+  document.getElementById('deleteAccountBtn')?.addEventListener('click', () => {
+    if (confirm('Видалити акаунт назавжди? Цю дію неможливо скасувати.')) {
+      showToast('Функція видалення акаунту незабаром буде доступна', 'info');
+    }
+  });
 }
 
 // =====================================
@@ -1113,6 +1188,7 @@ async function initProfile() {
 
   initWeightChart();
   initProfileTabs();
+  initSettings(user);
 }
 
 // =====================================
