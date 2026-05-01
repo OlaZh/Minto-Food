@@ -984,12 +984,18 @@ function initProfileTabs() {
     return;
   }
 
+  function showSection(section) {
+    section.removeAttribute('hidden');
+    section.style.display = '';
+  }
+  function hideSection(section) {
+    section.setAttribute('hidden', '');
+    section.style.display = 'none';
+  }
+
   sections.forEach((section, index) => {
-    if (index === 0) {
-      section.removeAttribute('hidden');
-    } else {
-      section.setAttribute('hidden', '');
-    }
+    if (index === 0) showSection(section);
+    else hideSection(section);
   });
 
   buttons[0]?.classList.add('active');
@@ -1008,12 +1014,8 @@ function initProfileTabs() {
       const tab = btn.dataset.tab;
 
       sections.forEach((section) => {
-        const isActive = section.dataset.profileSection === tab;
-        if (isActive) {
-          section.removeAttribute('hidden');
-        } else {
-          section.setAttribute('hidden', '');
-        }
+        if (section.dataset.profileSection === tab) showSection(section);
+        else hideSection(section);
       });
 
       if (tab === 'weightControl') {
