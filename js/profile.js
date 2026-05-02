@@ -136,6 +136,7 @@ function buildWeightChart(canvasId, history, chartRef) {
       background: 'transparent',
       fontFamily: 'inherit',
       animations: { enabled: true, speed: 500, easing: 'easeinout' },
+      dropShadow: { enabled: true, top: 5, left: 0, blur: 10, opacity: 0.2, color: '#4ab584' },
     },
     fill: {
       type: 'gradient',
@@ -382,7 +383,7 @@ async function initStatisticsCharts() {
   }
 
   const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-  const COLORS = ['#4ab584', '#f2994a', '#56ccf2', '#a78bfa'];
+  const COLORS = ['#6fcfba', '#f5a623', '#7b9cda', '#a78bfa'];
   const LABELS = ['Білки', 'Жири', 'Вуглеводи'];
   const APEX_GRID = { borderColor: 'rgba(156,163,175,0.12)', strokeDashArray: 3 };
   const APEX_TEXT = { colors: '#9ca3af', fontSize: '11px' };
@@ -405,24 +406,36 @@ async function initStatisticsCharts() {
       plotOptions: {
         pie: {
           donut: {
-            size: '62%',
+            size: '52%',
             labels: {
               show: true,
+              name: { show: true, offsetY: -8, fontSize: '12px', color: '#9ca3af' },
+              value: {
+                show: true,
+                offsetY: 6,
+                fontSize: '22px',
+                fontWeight: '700',
+                color: '#4ab584',
+                formatter: (v, opts) => {
+                  const total = opts.w.globals.seriesTotals.reduce((a, b) => a + b, 0);
+                  return total > 0 ? Math.round((v / total) * 100) + '%' : '0%';
+                },
+              },
               total: {
                 show: true,
-                label: 'Всього',
+                label: 'БЖВ',
                 color: '#9ca3af',
+                fontSize: '12px',
                 formatter: (w) =>
                   Math.round(w.globals.seriesTotals.reduce((a, b) => a + b, 0)) + ' г',
               },
-              value: { color: '#4ab584', fontWeight: '700' },
             },
           },
         },
       },
       stroke: { width: 0 },
       dataLabels: { enabled: false },
-      legend: { position: 'bottom', labels: { colors: '#9ca3af' } },
+      legend: { show: false },
       tooltip: { y: { formatter: (v) => v + ' г' } },
       noData: { text: 'Немає даних', style: { color: '#9ca3af', fontSize: '14px' } },
     });
@@ -441,6 +454,7 @@ async function initStatisticsCharts() {
         background: 'transparent',
         fontFamily: 'inherit',
         animations: { speed: 500 },
+        dropShadow: { enabled: true, top: 6, left: 0, blur: 12, opacity: 0.2, color: '#4ab584' },
       },
       fill: {
         type: 'gradient',
@@ -476,8 +490,13 @@ async function initStatisticsCharts() {
         background: 'transparent',
         fontFamily: 'inherit',
         animations: { speed: 500 },
+        dropShadow: { enabled: true, top: 4, blur: 8, opacity: 0.12 },
       },
       plotOptions: { bar: { borderRadius: 8, distributed: true, columnWidth: '55%' } },
+      fill: {
+        type: 'gradient',
+        gradient: { shade: 'light', type: 'vertical', shadeIntensity: 0.15, opacityFrom: 1, opacityTo: 0.72, stops: [0, 100] },
+      },
       colors: COLORS,
       dataLabels: { enabled: false },
       xaxis: {
@@ -516,8 +535,37 @@ async function initStatisticsCharts() {
       colors: COLORS,
       stroke: { width: 0 },
       dataLabels: { enabled: false },
-      legend: { position: 'bottom', labels: { colors: '#9ca3af' }, fontSize: '11px' },
-      plotOptions: { pie: { donut: { size: '60%' } } },
+      legend: { show: false },
+      plotOptions: {
+        pie: {
+          donut: {
+            size: '52%',
+            labels: {
+              show: true,
+              name: { show: true, offsetY: -6, fontSize: '11px', color: '#9ca3af' },
+              value: {
+                show: true,
+                offsetY: 4,
+                fontSize: '18px',
+                fontWeight: '700',
+                color: '#6fcfba',
+                formatter: (v, opts) => {
+                  const total = opts.w.globals.seriesTotals.reduce((a, b) => a + b, 0);
+                  return total > 0 ? Math.round((v / total) * 100) + '%' : '0%';
+                },
+              },
+              total: {
+                show: true,
+                label: 'БЖВ',
+                color: '#9ca3af',
+                fontSize: '10px',
+                formatter: (w) =>
+                  Math.round(w.globals.seriesTotals.reduce((a, b) => a + b, 0)) + ' г',
+              },
+            },
+          },
+        },
+      },
       tooltip: { y: { formatter: (v) => v + ' г' } },
       noData: { text: 'Немає даних', style: { color: '#9ca3af', fontSize: '14px' } },
     });
@@ -541,8 +589,37 @@ async function initStatisticsCharts() {
       colors: COLORS,
       stroke: { width: 0 },
       dataLabels: { enabled: false },
-      legend: { position: 'bottom', labels: { colors: '#9ca3af' }, fontSize: '11px' },
-      plotOptions: { pie: { donut: { size: '60%' } } },
+      legend: { show: false },
+      plotOptions: {
+        pie: {
+          donut: {
+            size: '52%',
+            labels: {
+              show: true,
+              name: { show: true, offsetY: -6, fontSize: '11px', color: '#9ca3af' },
+              value: {
+                show: true,
+                offsetY: 4,
+                fontSize: '18px',
+                fontWeight: '700',
+                color: '#6fcfba',
+                formatter: (v, opts) => {
+                  const total = opts.w.globals.seriesTotals.reduce((a, b) => a + b, 0);
+                  return total > 0 ? Math.round((v / total) * 100) + '%' : '0%';
+                },
+              },
+              total: {
+                show: true,
+                label: 'БЖВ',
+                color: '#9ca3af',
+                fontSize: '10px',
+                formatter: (w) =>
+                  Math.round(w.globals.seriesTotals.reduce((a, b) => a + b, 0)) + ' г',
+              },
+            },
+          },
+        },
+      },
       tooltip: { y: { formatter: (v) => v + ' г' } },
       noData: { text: 'Немає даних', style: { color: '#9ca3af', fontSize: '14px' } },
     });
@@ -1179,8 +1256,13 @@ function initActivityChart() {
       background: 'transparent',
       fontFamily: 'inherit',
       animations: { enabled: true, speed: 400 },
+      dropShadow: { enabled: true, top: 4, blur: 8, opacity: 0.12 },
     },
     plotOptions: { bar: { borderRadius: 5, columnWidth: '70%' } },
+    fill: {
+      type: 'gradient',
+      gradient: { shade: 'light', type: 'vertical', shadeIntensity: 0.12, opacityFrom: 1, opacityTo: 0.75, stops: [0, 100] },
+    },
     colors: ['#4ab584'],
     dataLabels: { enabled: false },
     xaxis: {
