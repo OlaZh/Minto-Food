@@ -15,7 +15,7 @@
     </script>
 
     <link rel="stylesheet" href="./css/main.css" />
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
   </head>
 
   <body class="page">
@@ -438,7 +438,7 @@
                 <section class="profile-card" aria-labelledby="weightGraphTitleMain">
                   <h2 id="weightGraphTitleMain" class="profile-card__title">Динаміка ваги</h2>
                   <div class="weight-chart-box">
-                    <canvas id="weightChartCanvas"></canvas>
+                    <div id="weightChartCanvas"></div>
                   </div>
                 </section>
               </div>
@@ -494,7 +494,7 @@
                 <section class="profile-card" aria-labelledby="weightGraphTitle2">
                   <h2 id="weightGraphTitle2" class="profile-card__title">Динаміка ваги</h2>
                   <div class="weight-chart-box">
-                    <canvas id="weightChartCanvas2"></canvas>
+                    <div id="weightChartCanvas2"></div>
                   </div>
                 </section>
 
@@ -710,7 +710,7 @@
             <section class="profile-card activity-card--chart" aria-labelledby="activityChartTitle">
               <h2 id="activityChartTitle" class="profile-card__title">📈 Динаміка за місяць</h2>
               <div class="activity-chart-box activity-chart-box--full">
-                <canvas id="activityChartCanvas"></canvas>
+                <div id="activityChartCanvas"></div>
               </div>
             </section>
           </section>
@@ -731,14 +731,14 @@
                 <h3 id="balanceTitle" class="profile-card__title" data-i18n="statsBalanceTitle">
                   Баланс страв
                 </h3>
-                <canvas id="balancePieChart"></canvas>
+                <div id="balancePieChart"></div>
               </div>
 
               <div class="profile-card" aria-labelledby="kbjuTitle">
                 <h3 id="kbjuTitle" class="profile-card__title" data-i18n="statsKbjuTitle">
                   Динаміка КБЖУ
                 </h3>
-                <canvas id="kbjuLineChart"></canvas>
+                <div id="kbjuLineChart"></div>
               </div>
 
               <div class="profile-card" aria-labelledby="usefulnessTitle">
@@ -748,7 +748,7 @@
                   data-i18n="statsUsefulnessTitle">
                   Корисність страв
                 </h3>
-                <canvas id="usefulnessBarChart"></canvas>
+                <div id="usefulnessBarChart"></div>
               </div>
 
               <div class="profile-card" aria-labelledby="compareTitle">
@@ -756,8 +756,8 @@
                   Порівняння тижнів
                 </h3>
                 <div class="profile-compare">
-                  <canvas id="lastWeekChart"></canvas>
-                  <canvas id="thisWeekChart"></canvas>
+                  <div id="lastWeekChart"></div>
+                  <div id="thisWeekChart"></div>
                 </div>
               </div>
 

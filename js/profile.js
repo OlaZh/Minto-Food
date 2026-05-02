@@ -116,52 +116,53 @@ async function loadWeightFromSupabase(userId) {
 }
 
 function buildWeightChart(canvasId, history, chartRef) {
-  const canvas = document.getElementById(canvasId);
-  if (!canvas) return null;
-
+  const container = document.getElementById(canvasId);
+  if (!container) return null;
   if (chartRef) chartRef.destroy();
 
   const labels = history.map((r) => {
-    const [y, m, d] = r.date.split('-');
+    const [, m, d] = r.date.split('-');
     return `${d}.${m}`;
   });
   const weights = history.map((r) => Number(r.weight));
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
 
-  return new Chart(canvas, {
-    type: 'line',
-    data: {
-      labels,
-      datasets: [
-        {
-          data: weights,
-          borderColor: '#4ab584',
-          backgroundColor: 'rgba(74,181,132,0.12)',
-          borderWidth: 2.5,
-          fill: true,
-          tension: 0.4,
-          pointRadius: 5,
-          pointBackgroundColor: '#4ab584',
-          pointBorderColor: '#fff',
-          pointBorderWidth: 2,
-        },
-      ],
+  const chart = new ApexCharts(container, {
+    series: [{ name: 'Вага', data: weights }],
+    chart: {
+      type: 'area',
+      height: 220,
+      toolbar: { show: false },
+      background: 'transparent',
+      fontFamily: 'inherit',
+      animations: { enabled: true, speed: 500, easing: 'easeinout' },
     },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
-      scales: {
-        y: {
-          ticks: { callback: (v) => v + ' кг', color: '#9ca3af' },
-          grid: { color: 'rgba(156,163,175,0.15)' },
-        },
-        x: {
-          ticks: { color: '#9ca3af' },
-          grid: { display: false },
-        },
+    fill: {
+      type: 'gradient',
+      gradient: { shadeIntensity: 1, opacityFrom: 0.4, opacityTo: 0.02, stops: [0, 100] },
+    },
+    stroke: { curve: 'smooth', width: 2.5, colors: ['#4ab584'] },
+    colors: ['#4ab584'],
+    dataLabels: { enabled: false },
+    xaxis: {
+      categories: labels,
+      axisBorder: { show: false },
+      axisTicks: { show: false },
+      labels: { style: { colors: '#9ca3af', fontSize: '11px' } },
+    },
+    yaxis: {
+      labels: {
+        formatter: (v) => v + ' кг',
+        style: { colors: '#9ca3af', fontSize: '11px' },
       },
     },
+    grid: { borderColor: 'rgba(156,163,175,0.12)', strokeDashArray: 3 },
+    markers: { size: 4, colors: ['#4ab584'], strokeColors: '#fff', strokeWidth: 2 },
+    tooltip: { theme: isDark ? 'dark' : 'light', y: { formatter: (v) => v + ' кг' } },
+    noData: { text: 'Немає даних', style: { color: '#9ca3af', fontSize: '14px' } },
   });
+  chart.render();
+  return chart;
 }
 
 async function initWeightChart() {
@@ -380,164 +381,172 @@ async function initStatisticsCharts() {
     tipsList.innerHTML = "<li>Залоговані страви за останні 7 днів — з'являться рекомендації</li>";
   }
 
-  // ─── Кольори ─────────────────────────────────────────────
-  const C = {
-    green: '#4ab584',
-    orange: '#f2994a',
-    blue: '#56ccf2',
-    greenBg: 'rgba(74,181,132,0.1)',
-  };
-  const noDataMsg = (canvas) => {
-    const ctx = canvas.getContext('2d');
-    ctx.fillStyle = '#888';
-    ctx.font = '14px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText('Немає даних', canvas.width / 2, canvas.height / 2);
-  };
-
-  const chartDefaults = {
-    responsive: true,
-    maintainAspectRatio: true,
-    plugins: { legend: { labels: { color: '#9ca3af', font: { size: 12 } } } },
-  };
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  const COLORS = ['#4ab584', '#f2994a', '#56ccf2', '#a78bfa'];
+  const LABELS = ['Білки', 'Жири', 'Вуглеводи'];
+  const APEX_GRID = { borderColor: 'rgba(156,163,175,0.12)', strokeDashArray: 3 };
+  const APEX_TEXT = { colors: '#9ca3af', fontSize: '11px' };
 
   // ─── 1. Баланс макро (цей тиждень) ───────────────────────
-  const balanceCanvas = document.getElementById('balancePieChart');
-  if (balanceCanvas) {
+  const balanceEl = document.getElementById('balancePieChart');
+  if (balanceEl) {
     const { protein: p, fat: f, carbs: c } = thisTotals;
-    if (p + f + c > 0) {
-      statisticsCharts.balancePieChart = new Chart(balanceCanvas, {
-        type: 'pie',
-        data: {
-          labels: ['Білки', 'Жири', 'Вуглеводи'],
-          datasets: [
-            {
-              data: [Math.round(p), Math.round(f), Math.round(c)],
-              backgroundColor: [C.green, C.orange, C.blue],
+    statisticsCharts.balancePieChart = new ApexCharts(balanceEl, {
+      series: p + f + c > 0 ? [Math.round(p), Math.round(f), Math.round(c)] : [],
+      chart: {
+        type: 'donut',
+        height: 280,
+        toolbar: { show: false },
+        background: 'transparent',
+        animations: { speed: 500 },
+      },
+      labels: LABELS,
+      colors: COLORS,
+      plotOptions: {
+        pie: {
+          donut: {
+            size: '62%',
+            labels: {
+              show: true,
+              total: {
+                show: true,
+                label: 'Всього',
+                color: '#9ca3af',
+                formatter: (w) =>
+                  Math.round(w.globals.seriesTotals.reduce((a, b) => a + b, 0)) + ' г',
+              },
+              value: { color: '#4ab584', fontWeight: '700' },
             },
-          ],
+          },
         },
-        options: { ...chartDefaults },
-      });
-    } else {
-      noDataMsg(balanceCanvas);
-    }
+      },
+      stroke: { width: 0 },
+      dataLabels: { enabled: false },
+      legend: { position: 'bottom', labels: { colors: '#9ca3af' } },
+      tooltip: { y: { formatter: (v) => v + ' г' } },
+      noData: { text: 'Немає даних', style: { color: '#9ca3af', fontSize: '14px' } },
+    });
+    statisticsCharts.balancePieChart.render();
   }
 
   // ─── 2. Динаміка калорій (7 днів) ────────────────────────
-  const kbjuCanvas = document.getElementById('kbjuLineChart');
-  if (kbjuCanvas) {
-    statisticsCharts.kbjuLineChart = new Chart(kbjuCanvas, {
-      type: 'line',
-      data: {
-        labels: dayLabels,
-        datasets: [
-          {
-            label: 'Калорії',
-            data: dayKcal,
-            borderColor: C.green,
-            backgroundColor: C.greenBg,
-            tension: 0.4,
-            fill: true,
-            borderWidth: 2,
-            pointRadius: 4,
-            pointBackgroundColor: C.green,
-          },
-        ],
+  const kbjuEl = document.getElementById('kbjuLineChart');
+  if (kbjuEl) {
+    statisticsCharts.kbjuLineChart = new ApexCharts(kbjuEl, {
+      series: [{ name: 'Калорії', data: dayKcal }],
+      chart: {
+        type: 'area',
+        height: 280,
+        toolbar: { show: false },
+        background: 'transparent',
+        fontFamily: 'inherit',
+        animations: { speed: 500 },
       },
-      options: {
-        ...chartDefaults,
-        scales: {
-          x: { ticks: { color: '#9ca3af' }, grid: { color: 'rgba(156,163,175,0.1)' } },
-          y: {
-            ticks: { color: '#9ca3af' },
-            grid: { color: 'rgba(156,163,175,0.1)' },
-            beginAtZero: true,
-          },
-        },
+      fill: {
+        type: 'gradient',
+        gradient: { shadeIntensity: 1, opacityFrom: 0.35, opacityTo: 0.02 },
       },
+      stroke: { curve: 'smooth', width: 2.5, colors: ['#4ab584'] },
+      colors: ['#4ab584'],
+      dataLabels: { enabled: false },
+      xaxis: {
+        categories: dayLabels,
+        axisBorder: { show: false },
+        axisTicks: { show: false },
+        labels: { style: APEX_TEXT },
+      },
+      yaxis: { min: 0, labels: { formatter: (v) => Math.round(v), style: APEX_TEXT } },
+      grid: APEX_GRID,
+      markers: { size: 4, colors: ['#4ab584'], strokeColors: '#fff', strokeWidth: 2 },
+      tooltip: { theme: isDark ? 'dark' : 'light', y: { formatter: (v) => v + ' ккал' } },
     });
+    statisticsCharts.kbjuLineChart.render();
   }
 
   // ─── 3. Прийоми їжі по типах ─────────────────────────────
-  const usefulnessCanvas = document.getElementById('usefulnessBarChart');
-  if (usefulnessCanvas) {
+  const usefulnessEl = document.getElementById('usefulnessBarChart');
+  if (usefulnessEl) {
     const counts = Object.values(mealTypeCounts);
-    if (counts.some((v) => v > 0)) {
-      statisticsCharts.usefulnessBarChart = new Chart(usefulnessCanvas, {
+    statisticsCharts.usefulnessBarChart = new ApexCharts(usefulnessEl, {
+      series: [{ name: 'Разів', data: counts }],
+      chart: {
         type: 'bar',
-        data: {
-          labels: Object.values(mealTypeLabels),
-          datasets: [
-            {
-              label: 'Разів',
-              data: counts,
-              backgroundColor: [C.green, C.blue, C.orange, '#a78bfa'],
-            },
-          ],
-        },
-        options: {
-          ...chartDefaults,
-          plugins: { legend: { display: false } },
-          scales: {
-            x: { ticks: { color: '#9ca3af' }, grid: { display: false } },
-            y: {
-              ticks: { color: '#9ca3af', stepSize: 1 },
-              grid: { color: 'rgba(156,163,175,0.1)' },
-              beginAtZero: true,
-            },
-          },
-        },
-      });
-    } else {
-      noDataMsg(usefulnessCanvas);
-    }
+        height: 280,
+        toolbar: { show: false },
+        background: 'transparent',
+        fontFamily: 'inherit',
+        animations: { speed: 500 },
+      },
+      plotOptions: { bar: { borderRadius: 8, distributed: true, columnWidth: '55%' } },
+      colors: COLORS,
+      dataLabels: { enabled: false },
+      xaxis: {
+        categories: Object.values(mealTypeLabels),
+        axisBorder: { show: false },
+        axisTicks: { show: false },
+        labels: { style: APEX_TEXT },
+      },
+      yaxis: {
+        min: 0,
+        tickAmount: Math.max(1, Math.max(...counts)),
+        labels: { formatter: (v) => Math.round(v), style: APEX_TEXT },
+      },
+      grid: APEX_GRID,
+      legend: { show: false },
+      tooltip: { y: { formatter: (v) => v + ' разів' } },
+      noData: { text: 'Немає даних', style: { color: '#9ca3af', fontSize: '14px' } },
+    });
+    statisticsCharts.usefulnessBarChart.render();
   }
 
   // ─── 4. Минулий тиждень ───────────────────────────────────
-  const lastWeekCanvas = document.getElementById('lastWeekChart');
-  if (lastWeekCanvas) {
+  const lastWeekEl = document.getElementById('lastWeekChart');
+  if (lastWeekEl) {
     const { protein: p, fat: f, carbs: c } = lastTotals;
-    if (p + f + c > 0) {
-      statisticsCharts.lastWeekChart = new Chart(lastWeekCanvas, {
-        type: 'doughnut',
-        data: {
-          labels: ['Білки', 'Жири', 'Вуглеводи'],
-          datasets: [
-            {
-              data: [Math.round(p), Math.round(f), Math.round(c)],
-              backgroundColor: [C.green, C.orange, C.blue],
-            },
-          ],
-        },
-        options: { ...chartDefaults },
-      });
-    } else {
-      noDataMsg(lastWeekCanvas);
-    }
+    statisticsCharts.lastWeekChart = new ApexCharts(lastWeekEl, {
+      series: p + f + c > 0 ? [Math.round(p), Math.round(f), Math.round(c)] : [],
+      chart: {
+        type: 'donut',
+        height: 200,
+        toolbar: { show: false },
+        background: 'transparent',
+        animations: { speed: 500 },
+      },
+      labels: LABELS,
+      colors: COLORS,
+      stroke: { width: 0 },
+      dataLabels: { enabled: false },
+      legend: { position: 'bottom', labels: { colors: '#9ca3af' }, fontSize: '11px' },
+      plotOptions: { pie: { donut: { size: '60%' } } },
+      tooltip: { y: { formatter: (v) => v + ' г' } },
+      noData: { text: 'Немає даних', style: { color: '#9ca3af', fontSize: '14px' } },
+    });
+    statisticsCharts.lastWeekChart.render();
   }
 
   // ─── 5. Цей тиждень ──────────────────────────────────────
-  const thisWeekCanvas = document.getElementById('thisWeekChart');
-  if (thisWeekCanvas) {
+  const thisWeekEl = document.getElementById('thisWeekChart');
+  if (thisWeekEl) {
     const { protein: p, fat: f, carbs: c } = thisTotals;
-    if (p + f + c > 0) {
-      statisticsCharts.thisWeekChart = new Chart(thisWeekCanvas, {
-        type: 'doughnut',
-        data: {
-          labels: ['Білки', 'Жири', 'Вуглеводи'],
-          datasets: [
-            {
-              data: [Math.round(p), Math.round(f), Math.round(c)],
-              backgroundColor: [C.green, C.orange, C.blue],
-            },
-          ],
-        },
-        options: { ...chartDefaults },
-      });
-    } else {
-      noDataMsg(thisWeekCanvas);
-    }
+    statisticsCharts.thisWeekChart = new ApexCharts(thisWeekEl, {
+      series: p + f + c > 0 ? [Math.round(p), Math.round(f), Math.round(c)] : [],
+      chart: {
+        type: 'donut',
+        height: 200,
+        toolbar: { show: false },
+        background: 'transparent',
+        animations: { speed: 500 },
+      },
+      labels: LABELS,
+      colors: COLORS,
+      stroke: { width: 0 },
+      dataLabels: { enabled: false },
+      legend: { position: 'bottom', labels: { colors: '#9ca3af' }, fontSize: '11px' },
+      plotOptions: { pie: { donut: { size: '60%' } } },
+      tooltip: { y: { formatter: (v) => v + ' г' } },
+      noData: { text: 'Немає даних', style: { color: '#9ca3af', fontSize: '14px' } },
+    });
+    statisticsCharts.thisWeekChart.render();
   }
 }
 
@@ -1135,11 +1144,9 @@ function renderActivityHistory(period) {
   container.innerHTML = html;
 }
 
-// Замінити функцію initActivityChart() в profile.js на цю:
-
 function initActivityChart() {
-  const canvas = document.getElementById('activityChartCanvas');
-  if (!canvas) return;
+  const container = document.getElementById('activityChartCanvas');
+  if (!container) return;
 
   const history = getActivityHistory();
   const now = new Date();
@@ -1147,7 +1154,6 @@ function initActivityChart() {
   const days = [];
   const caloriesData = [];
 
-  // 30 днів замість 14
   for (let i = 29; i >= 0; i--) {
     const date = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
     const dateStr = date.toDateString();
@@ -1162,61 +1168,40 @@ function initActivityChart() {
 
   if (activityChart) activityChart.destroy();
 
-  activityChart = new Chart(canvas, {
-    type: 'bar',
-    data: {
-      labels: days,
-      datasets: [
-        {
-          label: 'Спалено ккал',
-          data: caloriesData,
-          backgroundColor: 'rgba(111, 207, 186, 0.6)',
-          borderColor: '#6fcfba',
-          borderWidth: 1,
-          borderRadius: 4,
-          barThickness: 'flex',
-          maxBarThickness: 20,
-        },
-      ],
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+
+  activityChart = new ApexCharts(container, {
+    series: [{ name: 'Спалено ккал', data: caloriesData }],
+    chart: {
+      type: 'bar',
+      height: 280,
+      toolbar: { show: false },
+      background: 'transparent',
+      fontFamily: 'inherit',
+      animations: { enabled: true, speed: 400 },
     },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: { display: false },
-        tooltip: {
-          callbacks: {
-            title: function (context) {
-              return context[0].label;
-            },
-            label: function (context) {
-              return context.raw + ' ккал';
-            },
-          },
-        },
-      },
-      scales: {
-        y: {
-          beginAtZero: true,
-          ticks: {
-            callback: (v) => v + ' ккал',
-            maxTicksLimit: 5,
-          },
-          grid: {
-            color: 'rgba(0, 0, 0, 0.05)',
-          },
-        },
-        x: {
-          grid: { display: false },
-          ticks: {
-            maxRotation: 45,
-            minRotation: 45,
-            font: { size: 10 },
-          },
-        },
+    plotOptions: { bar: { borderRadius: 5, columnWidth: '70%' } },
+    colors: ['#4ab584'],
+    dataLabels: { enabled: false },
+    xaxis: {
+      categories: days,
+      labels: { rotate: -45, style: { colors: '#9ca3af', fontSize: '9px' } },
+      axisBorder: { show: false },
+      axisTicks: { show: false },
+    },
+    yaxis: {
+      min: 0,
+      labels: {
+        formatter: (v) => Math.round(v) + ' ккал',
+        style: { colors: '#9ca3af', fontSize: '10px' },
       },
     },
+    grid: { borderColor: 'rgba(156,163,175,0.12)', strokeDashArray: 3 },
+    legend: { show: false },
+    tooltip: { theme: isDark ? 'dark' : 'light', y: { formatter: (v) => v + ' ккал' } },
+    noData: { text: 'Немає активностей', style: { color: '#9ca3af', fontSize: '14px' } },
   });
+  activityChart.render();
 }
 // =====================================
 // PROFILE TABS
