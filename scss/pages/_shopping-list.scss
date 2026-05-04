@@ -271,6 +271,10 @@
 .shop-category {
   margin-bottom: var(--space-md);
 
+  @media (max-width: 768px) {
+    margin-bottom: 10px;
+  }
+
   &__title {
     font-size: 11px;
     font-weight: 700;
@@ -280,6 +284,11 @@
     margin: 0 0 var(--space-xs);
     padding-bottom: var(--space-xs);
     border-bottom: 1px solid var(--color-border);
+
+    @media (max-width: 768px) {
+      margin-bottom: 4px;
+      padding-bottom: 4px;
+    }
   }
 
   &__list {
@@ -289,6 +298,10 @@
     list-style: none;
     padding: 0;
     margin: 0;
+
+    @media (max-width: 768px) {
+      gap: 3px;
+    }
   }
 }
 
@@ -402,6 +415,8 @@
   }
 
   @media (max-width: 768px) {
+    padding: 8px 10px;
+
     &__actions {
       opacity: 1;
     }
