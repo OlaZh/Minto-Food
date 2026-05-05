@@ -385,6 +385,18 @@
   background: var(--color-progress-track);
   border-radius: 99px;
   overflow: hidden;
+  position: relative;
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: var(--target, 30%);
+    width: 1.5px;
+    background: rgba(0, 0, 0, 0.28);
+    z-index: 2;
+  }
 }
 
 .balance-bar__fill {
@@ -411,6 +423,32 @@
   font-size: 11px;
   color: var(--color-text-secondary);
   flex-shrink: 0;
+}
+
+.balance-bar__pct--over {
+  color: var(--color-danger, #e05252);
+  font-weight: 700;
+}
+
+@keyframes balance-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.38;
+  }
+}
+
+.balance-bar__fill--over {
+  animation: balance-pulse 1.4s ease-in-out infinite;
+}
+
+.summary-empty {
+  font-size: 18px;
+  font-weight: 300;
+  color: var(--color-text-secondary);
+  opacity: 0.5;
 }
 
 /* ================= МОДАЛЬНЕ ВІКНО ТИЖНЕВОГО МЕНЮ ================= */

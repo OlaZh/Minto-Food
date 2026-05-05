@@ -266,38 +266,44 @@ document.addEventListener('DOMContentLoaded', async () => {
       { kcal: 0, protein: 0, fat: 0, carbs: 0 },
     );
 
-    // Збалансованість — відсоток кожного макроса від загальних калорій з БЖВ
+    // Баланс БЖВ: норма 30% білків / 30% жирів / 40% вуглеводів
     const totalMacroKcal = total.protein * 4 + total.fat * 9 + total.carbs * 4;
 
-    const proteinPct =
-      totalMacroKcal > 0 ? Math.round(((total.protein * 4) / totalMacroKcal) * 100) : 0;
-    const fatPct = totalMacroKcal > 0 ? Math.round(((total.fat * 9) / totalMacroKcal) * 100) : 0;
-    const carbsPct =
-      totalMacroKcal > 0 ? Math.round(((total.carbs * 4) / totalMacroKcal) * 100) : 0;
+    if (totalMacroKcal === 0) {
+      summaryCell.innerHTML = '<span class="summary-empty">—</span>';
+      return;
+    }
+
+    const proteinPct = Math.round(((total.protein * 4) / totalMacroKcal) * 100);
+    const fatPct = Math.round(((total.fat * 9) / totalMacroKcal) * 100);
+    const carbsPct = Math.round(((total.carbs * 4) / totalMacroKcal) * 100);
+
+    const overProtein = proteinPct > 30;
+    const overFat = fatPct > 30;
+    const overCarbs = carbsPct > 40;
 
     summaryCell.innerHTML = `
-      <span class="summary-kcal">${total.kcal} ккал</span>
       <div class="summary-balance">
-        <div class="balance-bar" title="Білки ${proteinPct}%">
+        <div class="balance-bar" title="Білки: ${proteinPct}% (норма 30%)">
           <div class="balance-bar__label">Б</div>
-          <div class="balance-bar__track">
-            <div class="balance-bar__fill balance-bar__fill--protein" style="width: ${proteinPct}%"></div>
+          <div class="balance-bar__track" style="--target: 30%">
+            <div class="balance-bar__fill balance-bar__fill--protein${overProtein ? ' balance-bar__fill--over' : ''}" style="width: ${proteinPct}%"></div>
           </div>
-          <div class="balance-bar__pct">${proteinPct}%</div>
+          <div class="balance-bar__pct${overProtein ? ' balance-bar__pct--over' : ''}">${proteinPct}%</div>
         </div>
-        <div class="balance-bar" title="Жири ${fatPct}%">
+        <div class="balance-bar" title="Жири: ${fatPct}% (норма 30%)">
           <div class="balance-bar__label">Ж</div>
-          <div class="balance-bar__track">
-            <div class="balance-bar__fill balance-bar__fill--fat" style="width: ${fatPct}%"></div>
+          <div class="balance-bar__track" style="--target: 30%">
+            <div class="balance-bar__fill balance-bar__fill--fat${overFat ? ' balance-bar__fill--over' : ''}" style="width: ${fatPct}%"></div>
           </div>
-          <div class="balance-bar__pct">${fatPct}%</div>
+          <div class="balance-bar__pct${overFat ? ' balance-bar__pct--over' : ''}">${fatPct}%</div>
         </div>
-        <div class="balance-bar" title="Вуглеводи ${carbsPct}%">
+        <div class="balance-bar" title="Вуглеводи: ${carbsPct}% (норма 40%)">
           <div class="balance-bar__label">В</div>
-          <div class="balance-bar__track">
-            <div class="balance-bar__fill balance-bar__fill--carbs" style="width: ${carbsPct}%"></div>
+          <div class="balance-bar__track" style="--target: 40%">
+            <div class="balance-bar__fill balance-bar__fill--carbs${overCarbs ? ' balance-bar__fill--over' : ''}" style="width: ${carbsPct}%"></div>
           </div>
-          <div class="balance-bar__pct">${carbsPct}%</div>
+          <div class="balance-bar__pct${overCarbs ? ' balance-bar__pct--over' : ''}">${carbsPct}%</div>
         </div>
       </div>
     `;
