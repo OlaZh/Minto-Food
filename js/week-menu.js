@@ -273,7 +273,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (totalMacroKcal === 0) {
       summaryCell.innerHTML = `
         <div class="summary-balance summary-balance--empty">
-          <p class="summary-balance__hint">Додай страви щоб побачити баланс</p>
           <div class="balance-bar"><div class="balance-bar__label">Б</div>
             <div class="balance-bar__track" style="--target: 30%"><div class="balance-bar__fill" style="width: 0%"></div></div>
             <div class="balance-bar__pct">—</div>
@@ -1156,7 +1155,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         summaryEl.innerHTML = `
           <div class="summary-balance summary-balance--empty">
             <span class="week-mobile__summary-label">Баланс БЖВ</span>
-            <p class="summary-balance__hint">Додай страви щоб побачити баланс</p>
             <div class="balance-bar"><div class="balance-bar__label">Б</div>
               <div class="balance-bar__track" style="--target: 30%"><div class="balance-bar__fill" style="width: 0%"></div></div>
               <div class="balance-bar__pct">—</div>
