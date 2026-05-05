@@ -551,9 +551,15 @@ function buildActiveItem(item) {
     </div>
   `;
 
-  li.querySelector('.shop-item__checkbox').addEventListener('change', e => toggleItem(item.id, e.target.checked));
-  li.querySelector('.shop-item__btn--edit').addEventListener('click', e => { e.preventDefault(); openEditModal(item, null); });
-  li.querySelector('.shop-item__btn--delete').addEventListener('click', e => { e.preventDefault(); deleteItem(item.id); });
+  li.querySelector('.shop-item__check-label').addEventListener('click', e => {
+    e.preventDefault(); // блокуємо авто-перемикання браузером (не надійне на iOS з width:0 чекбоксом)
+    const cb = li.querySelector('.shop-item__checkbox');
+    const next = !cb.checked;
+    cb.checked = next;
+    toggleItem(item.id, next);
+  });
+  li.querySelector('.shop-item__btn--edit').addEventListener('click', e => { e.stopPropagation(); openEditModal(item, null); });
+  li.querySelector('.shop-item__btn--delete').addEventListener('click', e => { e.stopPropagation(); deleteItem(item.id); });
 
   return li;
 }
