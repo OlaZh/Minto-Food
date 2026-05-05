@@ -6,6 +6,7 @@ export const i18n = {
     lunch: 'Обід',
     snack2: 'Перекус 2',
     dinner: 'Вечеря',
+    balance: 'Баланс',
     // Меню на день
     kcal: 'ккал',
     protein: 'Б',
@@ -45,6 +46,7 @@ export const i18n = {
     lunch: 'Obiad',
     snack2: 'Przekąska 2',
     dinner: 'Kolacja',
+    balance: 'Bilans',
     // Меню на день
     kcal: 'kcal',
     protein: 'B',
@@ -84,6 +86,7 @@ export const i18n = {
     lunch: 'Lunch',
     snack2: 'Snack 2',
     dinner: 'Dinner',
+    balance: 'Balance',
     // Меню на день
     kcal: 'kcal',
     protein: 'P',

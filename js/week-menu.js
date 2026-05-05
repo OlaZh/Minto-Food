@@ -266,11 +266,28 @@ document.addEventListener('DOMContentLoaded', async () => {
       { kcal: 0, protein: 0, fat: 0, carbs: 0 },
     );
 
-    // Баланс БЖВ: норма 30% білків / 30% жирів / 40% вуглеводів
+    // Баланс БЖВ: норма 30% / 30% / 40% з допуском ±3%
+    const TOLERANCE = 3;
     const totalMacroKcal = total.protein * 4 + total.fat * 9 + total.carbs * 4;
 
     if (totalMacroKcal === 0) {
-      summaryCell.innerHTML = '<span class="summary-empty">—</span>';
+      summaryCell.innerHTML = `
+        <div class="summary-balance summary-balance--empty">
+          <p class="summary-balance__hint">Додай страви щоб побачити баланс</p>
+          <div class="balance-bar"><div class="balance-bar__label">Б</div>
+            <div class="balance-bar__track" style="--target: 30%"><div class="balance-bar__fill" style="width: 0%"></div></div>
+            <div class="balance-bar__pct">—</div>
+          </div>
+          <div class="balance-bar"><div class="balance-bar__label">Ж</div>
+            <div class="balance-bar__track" style="--target: 30%"><div class="balance-bar__fill" style="width: 0%"></div></div>
+            <div class="balance-bar__pct">—</div>
+          </div>
+          <div class="balance-bar"><div class="balance-bar__label">В</div>
+            <div class="balance-bar__track" style="--target: 40%"><div class="balance-bar__fill" style="width: 0%"></div></div>
+            <div class="balance-bar__pct">—</div>
+          </div>
+        </div>
+      `;
       return;
     }
 
@@ -278,33 +295,31 @@ document.addEventListener('DOMContentLoaded', async () => {
     const fatPct = Math.round(((total.fat * 9) / totalMacroKcal) * 100);
     const carbsPct = Math.round(((total.carbs * 4) / totalMacroKcal) * 100);
 
-    const overProtein = proteinPct > 30;
-    const overFat = fatPct > 30;
-    const overCarbs = carbsPct > 40;
+    const getStatus = (actual, ideal) => {
+      const diff = actual - ideal;
+      if (Math.abs(diff) <= TOLERANCE) return 'ok';
+      return diff > 0 ? 'over' : 'under';
+    };
+
+    const proteinStatus = getStatus(proteinPct, 30);
+    const fatStatus = getStatus(fatPct, 30);
+    const carbsStatus = getStatus(carbsPct, 40);
+
+    const renderBar = (label, pct, target, status, type) => `
+      <div class="balance-bar" data-status="${status}">
+        <div class="balance-bar__label">${label}</div>
+        <div class="balance-bar__track" style="--target: ${target}%">
+          <div class="balance-bar__fill balance-bar__fill--${type}" style="width: ${pct}%"></div>
+        </div>
+        <div class="balance-bar__pct">${pct}%</div>
+      </div>
+    `;
 
     summaryCell.innerHTML = `
       <div class="summary-balance">
-        <div class="balance-bar" title="Білки: ${proteinPct}% (норма 30%)">
-          <div class="balance-bar__label">Б</div>
-          <div class="balance-bar__track" style="--target: 30%">
-            <div class="balance-bar__fill balance-bar__fill--protein${overProtein ? ' balance-bar__fill--over' : ''}" style="width: ${proteinPct}%"></div>
-          </div>
-          <div class="balance-bar__pct${overProtein ? ' balance-bar__pct--over' : ''}">${proteinPct}%</div>
-        </div>
-        <div class="balance-bar" title="Жири: ${fatPct}% (норма 30%)">
-          <div class="balance-bar__label">Ж</div>
-          <div class="balance-bar__track" style="--target: 30%">
-            <div class="balance-bar__fill balance-bar__fill--fat${overFat ? ' balance-bar__fill--over' : ''}" style="width: ${fatPct}%"></div>
-          </div>
-          <div class="balance-bar__pct${overFat ? ' balance-bar__pct--over' : ''}">${fatPct}%</div>
-        </div>
-        <div class="balance-bar" title="Вуглеводи: ${carbsPct}% (норма 40%)">
-          <div class="balance-bar__label">В</div>
-          <div class="balance-bar__track" style="--target: 40%">
-            <div class="balance-bar__fill balance-bar__fill--carbs${overCarbs ? ' balance-bar__fill--over' : ''}" style="width: ${carbsPct}%"></div>
-          </div>
-          <div class="balance-bar__pct${overCarbs ? ' balance-bar__pct--over' : ''}">${carbsPct}%</div>
-        </div>
+        ${renderBar('Б', proteinPct, 30, proteinStatus, 'protein')}
+        ${renderBar('Ж', fatPct, 30, fatStatus, 'fat')}
+        ${renderBar('В', carbsPct, 40, carbsStatus, 'carbs')}
       </div>
     `;
   }
@@ -550,11 +565,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       ? `name_ua.ilike.%${query}%,name_en.ilike.%${query}%,name_pl.ilike.%${query}%`
       : null;
 
-    const sharedQuery = supabase
-      .from('recipes')
-      .select('*')
-      .eq('status', 'published')
-      .limit(50);
+    const sharedQuery = supabase.from('recipes').select('*').eq('status', 'published').limit(50);
 
     const [sharedResponse, savedLinksResponse] = await Promise.all([
       searchFilter ? sharedQuery.or(searchFilter) : sharedQuery,
@@ -939,14 +950,24 @@ document.addEventListener('DOMContentLoaded', async () => {
     mobileView.appendChild(pillsEl);
 
     let swipeStartX = 0;
-    mobileView.addEventListener('touchstart', (e) => { swipeStartX = e.touches[0].clientX; }, { passive: true });
-    mobileView.addEventListener('touchend', (e) => {
-      const dx = e.changedTouches[0].clientX - swipeStartX;
-      if (Math.abs(dx) > 60) {
-        currentWeekStart = addDays(currentWeekStart, dx < 0 ? 7 : -7);
-        loadWeekFromSupabase();
-      }
-    }, { passive: true });
+    mobileView.addEventListener(
+      'touchstart',
+      (e) => {
+        swipeStartX = e.touches[0].clientX;
+      },
+      { passive: true },
+    );
+    mobileView.addEventListener(
+      'touchend',
+      (e) => {
+        const dx = e.changedTouches[0].clientX - swipeStartX;
+        if (Math.abs(dx) > 60) {
+          currentWeekStart = addDays(currentWeekStart, dx < 0 ? 7 : -7);
+          loadWeekFromSupabase();
+        }
+      },
+      { passive: true },
+    );
 
     // ── ТУЛБАР ───────────────────────────────────────────────────────────────
     const toolbarEl = document.createElement('div');
@@ -967,12 +988,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     const weekViewEl = document.createElement('div');
     weekViewEl.className = 'week-mobile__week-view';
     weekViewEl.hidden = true;
-    weekViewEl.innerHTML = '<p class="week-mobile__week-placeholder">Вигляд цілого тижня — скоро</p>';
+    weekViewEl.innerHTML =
+      '<p class="week-mobile__week-placeholder">Вигляд цілого тижня — скоро</p>';
     mobileView.appendChild(weekViewEl);
 
     toolbarEl.querySelectorAll('.week-mobile__toggle-btn').forEach((btn) => {
       btn.addEventListener('click', () => {
-        toolbarEl.querySelectorAll('.week-mobile__toggle-btn').forEach((b) => b.classList.remove('week-mobile__toggle-btn--active'));
+        toolbarEl
+          .querySelectorAll('.week-mobile__toggle-btn')
+          .forEach((b) => b.classList.remove('week-mobile__toggle-btn--active'));
         btn.classList.add('week-mobile__toggle-btn--active');
         const isDay = btn.dataset.view === 'day';
         dayViewEl.hidden = !isDay;
@@ -1018,9 +1042,18 @@ document.addEventListener('DOMContentLoaded', async () => {
         e.stopPropagation();
         dropdown.hidden = !dropdown.hidden;
       });
-      mealsCard.querySelector('.js-mob-copy').addEventListener('click', () => { copyWeekBtn?.click(); dropdown.hidden = true; });
-      mealsCard.querySelector('.js-mob-paste').addEventListener('click', () => { pasteWeekBtn?.click(); dropdown.hidden = true; });
-      mealsCard.querySelector('.js-mob-clear').addEventListener('click', () => { clearWeekBtn?.click(); dropdown.hidden = true; });
+      mealsCard.querySelector('.js-mob-copy').addEventListener('click', () => {
+        copyWeekBtn?.click();
+        dropdown.hidden = true;
+      });
+      mealsCard.querySelector('.js-mob-paste').addEventListener('click', () => {
+        pasteWeekBtn?.click();
+        dropdown.hidden = true;
+      });
+      mealsCard.querySelector('.js-mob-clear').addEventListener('click', () => {
+        clearWeekBtn?.click();
+        dropdown.hidden = true;
+      });
       mealsCard.querySelector('.js-mob-shopping').addEventListener('click', () => {
         document.getElementById('weekToShoppingBtn')?.click();
         dropdown.hidden = true;
@@ -1047,7 +1080,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         addBtn.className = 'week-mobile__acc-add';
         addBtn.dataset.day = day;
         addBtn.dataset.meal = mealType;
-        addBtn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>';
+        addBtn.innerHTML =
+          '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>';
 
         const infoText = count > 0 ? count + ' ' + countWord + ' · ' + kcal + ' ккал' : '';
         accHeader.innerHTML = `
@@ -1109,18 +1143,75 @@ document.addEventListener('DOMContentLoaded', async () => {
           fat: acc.fat + (Number(it.fat) || 0),
           carbs: acc.carbs + (Number(it.carbs) || 0),
         }),
-        { kcal: 0, protein: 0, fat: 0, carbs: 0 }
+        { kcal: 0, protein: 0, fat: 0, carbs: 0 },
       );
 
       const summaryEl = document.createElement('div');
       summaryEl.className = 'week-mobile__day-summary';
-      summaryEl.innerHTML = `
-        <span class="week-mobile__summary-label">Разом за день</span>
-        <span class="week-mobile__summary-value">${total.kcal} ккал · Б ${total.protein} · Ж ${total.fat} · В ${total.carbs}</span>
-      `;
+
+      const TOLERANCE = 3;
+      const totalMacroKcal = total.protein * 4 + total.fat * 9 + total.carbs * 4;
+
+      if (totalMacroKcal === 0) {
+        summaryEl.innerHTML = `
+          <div class="summary-balance summary-balance--empty">
+            <span class="week-mobile__summary-label">Баланс БЖВ</span>
+            <p class="summary-balance__hint">Додай страви щоб побачити баланс</p>
+            <div class="balance-bar"><div class="balance-bar__label">Б</div>
+              <div class="balance-bar__track" style="--target: 30%"><div class="balance-bar__fill" style="width: 0%"></div></div>
+              <div class="balance-bar__pct">—</div>
+            </div>
+            <div class="balance-bar"><div class="balance-bar__label">Ж</div>
+              <div class="balance-bar__track" style="--target: 30%"><div class="balance-bar__fill" style="width: 0%"></div></div>
+              <div class="balance-bar__pct">—</div>
+            </div>
+            <div class="balance-bar"><div class="balance-bar__label">В</div>
+              <div class="balance-bar__track" style="--target: 40%"><div class="balance-bar__fill" style="width: 0%"></div></div>
+              <div class="balance-bar__pct">—</div>
+            </div>
+          </div>
+        `;
+      } else {
+        const proteinPct = Math.round(((total.protein * 4) / totalMacroKcal) * 100);
+        const fatPct = Math.round(((total.fat * 9) / totalMacroKcal) * 100);
+        const carbsPct = Math.round(((total.carbs * 4) / totalMacroKcal) * 100);
+
+        const getStatus = (actual, ideal) => {
+          const diff = actual - ideal;
+          if (Math.abs(diff) <= TOLERANCE) return 'ok';
+          return diff > 0 ? 'over' : 'under';
+        };
+
+        summaryEl.innerHTML = `
+          <span class="week-mobile__summary-label">Баланс БЖВ</span>
+          <div class="summary-balance">
+            <div class="balance-bar" data-status="${getStatus(proteinPct, 30)}">
+              <div class="balance-bar__label">Б</div>
+              <div class="balance-bar__track" style="--target: 30%">
+                <div class="balance-bar__fill balance-bar__fill--protein" style="width: ${proteinPct}%"></div>
+              </div>
+              <div class="balance-bar__pct">${proteinPct}%</div>
+            </div>
+            <div class="balance-bar" data-status="${getStatus(fatPct, 30)}">
+              <div class="balance-bar__label">Ж</div>
+              <div class="balance-bar__track" style="--target: 30%">
+                <div class="balance-bar__fill balance-bar__fill--fat" style="width: ${fatPct}%"></div>
+              </div>
+              <div class="balance-bar__pct">${fatPct}%</div>
+            </div>
+            <div class="balance-bar" data-status="${getStatus(carbsPct, 40)}">
+              <div class="balance-bar__label">В</div>
+              <div class="balance-bar__track" style="--target: 40%">
+                <div class="balance-bar__fill balance-bar__fill--carbs" style="width: ${carbsPct}%"></div>
+              </div>
+              <div class="balance-bar__pct">${carbsPct}%</div>
+            </div>
+          </div>
+        `;
+      }
+
       dayViewEl.appendChild(summaryEl);
     }
-
 
     function renderWeekView() {
       weekViewEl.innerHTML = '';
@@ -1136,7 +1227,9 @@ document.addEventListener('DOMContentLoaded', async () => {
       // Заголовки днів
       dayInfo.forEach(({ abbr, date }, i) => {
         const header = document.createElement('div');
-        header.className = 'mob-week-grid__day-header' + (i === activeDayIdx ? ' mob-week-grid__day-header--active' : '');
+        header.className =
+          'mob-week-grid__day-header' +
+          (i === activeDayIdx ? ' mob-week-grid__day-header--active' : '');
         header.innerHTML = `<span class="mob-week-grid__day-abbr">${abbr}</span><span class="mob-week-grid__day-num">${date.getDate()}</span>`;
         grid.appendChild(header);
       });
@@ -1154,7 +1247,8 @@ document.addEventListener('DOMContentLoaded', async () => {
           const kcal = items.reduce((s, it) => s + (Number(it.kcal) || 0), 0);
 
           const cell = document.createElement('div');
-          cell.className = 'mob-week-grid__cell' + (count > 0 ? ' mob-week-grid__cell--filled' : '');
+          cell.className =
+            'mob-week-grid__cell' + (count > 0 ? ' mob-week-grid__cell--filled' : '');
 
           if (count > 0) {
             const maxDots = Math.min(count, 4);
@@ -1191,9 +1285,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         const total = allItems.reduce((s, it) => s + (Number(it.kcal) || 0), 0);
         const cell = document.createElement('div');
         cell.className = 'mob-week-grid__total-cell';
-        cell.innerHTML = total > 0
-          ? `<b>${total}</b><span>ккал</span>`
-          : '<span class="mob-week-grid__empty">—</span>';
+        cell.innerHTML =
+          total > 0
+            ? `<b>${total}</b><span>ккал</span>`
+            : '<span class="mob-week-grid__empty">—</span>';
         grid.appendChild(cell);
       });
 
