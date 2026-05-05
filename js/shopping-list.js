@@ -551,8 +551,24 @@ function buildActiveItem(item) {
     </div>
   `;
 
+  // Touch: iOS не завжди стріляє click через label з дочірніми блоками (div)
+  let _startY = 0;
+  li.addEventListener('touchstart', e => {
+    _startY = e.touches[0].clientY;
+  }, { passive: true });
+  li.addEventListener('touchend', e => {
+    if (e.target.closest('.shop-item__actions')) return;
+    if (Math.abs(e.changedTouches[0].clientY - _startY) > 8) return; // скрол — ігноруємо
+    e.preventDefault(); // блокуємо ghost-click
+    const cb = li.querySelector('.shop-item__checkbox');
+    const next = !cb.checked;
+    cb.checked = next;
+    toggleItem(item.id, next);
+  }, { passive: false });
+
+  // Click: для десктопу (після touchend з preventDefault ghost-click не прийде)
   li.querySelector('.shop-item__check-label').addEventListener('click', e => {
-    e.preventDefault(); // блокуємо авто-перемикання браузером (не надійне на iOS з width:0 чекбоксом)
+    e.preventDefault();
     const cb = li.querySelector('.shop-item__checkbox');
     const next = !cb.checked;
     cb.checked = next;
