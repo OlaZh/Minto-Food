@@ -7590,7 +7590,7 @@ input:checked + .settings-toggle__track::after {
 /* ================= WEEK MENU ================= */
 .week-menu {
   width: 100%;
-  padding-top: var(--space-md);
+  padding-top: 8px;
 }
 
 /* ================= ЗАГОЛОВОК ================= */
@@ -7598,7 +7598,7 @@ input:checked + .settings-toggle__track::after {
   display: flex;
   align-items: center;
   gap: var(--space-xs);
-  margin-bottom: var(--space-md);
+  margin-bottom: 8px;
 }
 
 .week-nav-btn {
@@ -7651,15 +7651,15 @@ input:checked + .settings-toggle__track::after {
 /* ================= GRID ================= */
 .week-grid {
   display: grid;
-  grid-auto-rows: minmax(60px, auto);
-  gap: 8px;
-  margin-top: 16px;
+  grid-auto-rows: minmax(46px, auto);
+  gap: 5px;
+  margin-top: 6px;
 }
 
 .week-grid__row {
   display: grid;
-  grid-template-columns: 140px minmax(160px, 1fr) minmax(160px, 1fr) minmax(160px, 1fr) minmax(160px, 1fr) minmax(160px, 1fr) 220px;
-  gap: 8px;
+  grid-template-columns: 90px minmax(120px, 1fr) minmax(120px, 1fr) minmax(120px, 1fr) minmax(120px, 1fr) minmax(120px, 1fr) 180px;
+  gap: 5px;
 }
 
 /* ================= CELLS ================= */
@@ -7668,7 +7668,7 @@ input:checked + .settings-toggle__track::after {
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
-  padding: 10px 12px;
+  padding: 6px 8px;
   box-sizing: border-box;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.35);
   transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
@@ -7697,7 +7697,7 @@ input:checked + .settings-toggle__track::after {
   align-items: center;
   justify-content: center;
   text-align: center;
-  gap: 6px;
+  gap: 3px;
 }
 
 .summary-kcal {
@@ -7744,7 +7744,7 @@ input:checked + .settings-toggle__track::after {
 }
 
 .week-grid__day-date {
-  font-size: 18px;
+  font-size: 15px;
   font-weight: 700;
   color: var(--color-text-primary);
   line-height: 1;
@@ -7775,7 +7775,7 @@ input:checked + .settings-toggle__track::after {
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  gap: 8px;
+  gap: 4px;
 }
 .meal-cell.week-grid__cell.drag-over, .meal-cell.drag-over {
   border-color: var(--color-accent);
@@ -7786,8 +7786,8 @@ input:checked + .settings-toggle__track::after {
 .meal-cell__list {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  min-height: 28px;
+  gap: 3px;
+  min-height: 18px;
 }
 
 /* ================= ЕЛЕМЕНТ СТРАВИ В КЛІТИНЦІ ================= */
@@ -7795,9 +7795,9 @@ input:checked + .settings-toggle__track::after {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 6px;
-  padding: 6px 8px;
-  border-radius: 8px;
+  gap: 4px;
+  padding: 3px 6px;
+  border-radius: 6px;
   background: var(--color-bg-primary);
   border: 1px solid var(--color-border);
   font-size: 12px;
@@ -7853,10 +7853,10 @@ input:checked + .settings-toggle__track::after {
 /* ================= КНОПКА ДОДАВАННЯ ================= */
 .meal-cell__add {
   position: absolute;
-  bottom: 8px;
-  right: 8px;
-  width: 24px;
-  height: 24px;
+  bottom: 4px;
+  right: 4px;
+  width: 20px;
+  height: 20px;
   border-radius: 6px;
   border: 1px dashed var(--color-border);
   background: transparent;
@@ -7900,7 +7900,7 @@ input:checked + .settings-toggle__track::after {
   width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px;
 }
 
 .balance-bar {
