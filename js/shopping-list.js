@@ -551,8 +551,28 @@ function buildActiveItem(item) {
     </div>
   `;
 
-  li.querySelector('.shop-item__checkbox').addEventListener('change', e => {
-    toggleItem(item.id, e.target.checked);
+  // touch-події завжди спливають на iOS — на відміну від click через div всередині label
+  let _startY = 0;
+  li.addEventListener('touchstart', e => {
+    _startY = e.touches[0].clientY;
+  }, { passive: true });
+  li.addEventListener('touchend', e => {
+    if (e.target.closest('.shop-item__actions')) return;
+    if (Math.abs(e.changedTouches[0].clientY - _startY) > 8) return;
+    e.preventDefault();
+    const cb = li.querySelector('.shop-item__checkbox');
+    const next = !cb.checked;
+    cb.checked = next;
+    toggleItem(item.id, next);
+  }, { passive: false });
+
+  // десктоп — click на label, ghost-click після touchend вже заблоковано
+  li.querySelector('.shop-item__check-label').addEventListener('click', e => {
+    e.preventDefault();
+    const cb = li.querySelector('.shop-item__checkbox');
+    const next = !cb.checked;
+    cb.checked = next;
+    toggleItem(item.id, next);
   });
   li.querySelector('.shop-item__btn--edit').addEventListener('click', e => { e.stopPropagation(); openEditModal(item, null); });
   li.querySelector('.shop-item__btn--delete').addEventListener('click', e => { e.stopPropagation(); deleteItem(item.id); });
