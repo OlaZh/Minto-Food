@@ -4,6 +4,7 @@ import { openAuthModal } from './auth.js';
 import { supabase } from './supabaseClient.js';
 import { showToast, escapeHTML } from './utils.js';
 import { showConfirmModal } from './ui-components.js';
+import { lockScroll, unlockScroll } from './scroll-lock.js';
 
 // =====================================
 // ІКОНКИ КНИГ (SVG)
@@ -176,11 +177,11 @@ function setupEventListeners() {
 
 function openModal(modal) {
   modal?.classList.add('is-active'); // ✅
-  document.body.style.overflow = 'hidden';
+  lockScroll(`cookbook:${modal?.id || 'modal'}`);
 }
 function closeModal(modal) {
   modal?.classList.remove('is-active'); // ✅
-  document.body.style.overflow = '';
+  unlockScroll(`cookbook:${modal?.id || 'modal'}`);
 }
 
 function switchTab(tabName) {

@@ -2,6 +2,8 @@
 // UI COMPONENTS — спільні UI компоненти
 // =====================================
 
+import { lockScroll, unlockScroll } from './scroll-lock.js';
+
 // =====================================
 // CUSTOM SELECT
 // =====================================
@@ -183,7 +185,7 @@ export function openModal(modalId) {
 
   modal.classList.add('active', 'is-active');
   modal.hidden = false;
-  document.body.style.overflow = 'hidden';
+  lockScroll(`modal:${modalId}`);
 }
 
 /**
@@ -196,7 +198,7 @@ export function closeModal(modalId) {
 
   modal.classList.remove('active', 'is-active');
   modal.hidden = true;
-  document.body.style.overflow = '';
+  unlockScroll(`modal:${modalId}`);
 }
 
 /**

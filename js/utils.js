@@ -1,3 +1,5 @@
+import { getLang } from './storage.js';
+
 // =============================================================
 // UTILS.JS — Спільні утиліти для MintoFood
 // =============================================================
@@ -323,7 +325,7 @@ export function isNotEmpty(value) {
  * @returns {string} - Код мови (ua, en, pl)
  */
 export function getCurrentLang() {
-  return localStorage.getItem('lang') || 'ua';
+  return getLang();
 }
 
 /**

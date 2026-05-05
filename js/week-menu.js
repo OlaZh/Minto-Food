@@ -1,20 +1,21 @@
 ﻿import { supabase } from './supabaseClient.js';
 import { i18n } from './i18n.js';
 import { initRecipeModal, openRecipeModal } from './recipe-modal.js';
-import { openRecipeView } from './add-recipe.js';
 import { initAuth, requireAuth } from './auth.js';
 import { showToast, getLocalDateString } from './utils.js';
+import { getLang, setLang, saveWeekShoppingList, setItem, getItem } from './storage.js';
+import { getRecipeDisplayName } from './recipe-utils.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
   // ================== МОВА ==================
-  let lang = localStorage.getItem('lang') || 'ua';
+  let lang = getLang();
 
   const langSwitcher = document.getElementById('langSwitcher');
   if (langSwitcher) {
     langSwitcher.value = lang;
     langSwitcher.addEventListener('change', () => {
       lang = langSwitcher.value;
-      localStorage.setItem('lang', lang);
+      setLang(lang);
       renderAllCells();
       updateWeekLabel();
     });
@@ -34,16 +35,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   function getRecipeName(recipe) {
-    let name =
-      (lang === 'pl' && recipe.name_pl) ||
-      (lang === 'en' && recipe.name_en) ||
-      recipe.name_ua ||
-      recipe.name_en ||
-      recipe.name_pl ||
-      recipe.name ||
-      '';
-
-    return cleanName(name);
+    return cleanName(getRecipeDisplayName(recipe, lang));
   }
 
   // ================== СТАН ==================
@@ -221,7 +213,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       li.querySelector('.meal-cell__item-name').addEventListener('click', (e) => {
         e.stopPropagation();
         if (item.recipe_id) {
-          openRecipeView(item.recipe_id);
+          window.location.href = `recipes.html?recipe=${item.recipe_id}&from=week-menu`;
         }
       });
 
@@ -489,12 +481,14 @@ document.addEventListener('DOMContentLoaded', async () => {
       const createBtn = addModal.querySelector('#weekCreateRecipeBtn');
       if (createBtn) {
         createBtn.onclick = () => {
+          const targetDay = activeDay;
+          const targetMealType = activeMealType;
           closeAddModal();
           openRecipeModal((savedRecipe) => {
-            openAddModal(activeDay, activeMealType);
+            openAddModal(targetDay, targetMealType);
             const searchEl = addModal?.querySelector('#weekUnifiedSearch');
             if (searchEl && savedRecipe) {
-              const name = savedRecipe.name_ua || '';
+              const name = getRecipeDisplayName(savedRecipe, lang);
               searchEl.value = name;
               searchAllRecipes(name);
             }
@@ -546,58 +540,72 @@ document.addEventListener('DOMContentLoaded', async () => {
       data: { user },
     } = await supabase.auth.getUser();
 
-    // Будуємо запит
-    let dbQuery = supabase.from('recipes').select('*');
+    const searchFilter = query
+      ? `name_ua.ilike.%${query}%,name_en.ilike.%${query}%,name_pl.ilike.%${query}%`
+      : null;
 
-    if (query) {
-      dbQuery = dbQuery.or(
-        `name_ua.ilike.%${query}%,name_en.ilike.%${query}%,name_pl.ilike.%${query}%`,
-      );
-    }
+    const sharedQuery = supabase
+      .from('recipes')
+      .select('*')
+      .eq('status', 'published')
+      .limit(50);
 
-    // Показуємо: опубліковані (спільна база) + власні рецепти користувача
-    if (user) {
-      dbQuery = dbQuery.or(`status.eq.published,user_id.eq.${user.id}`);
-    } else {
-      dbQuery = dbQuery.eq('status', 'published');
-    }
+    const [sharedResponse, savedLinksResponse] = await Promise.all([
+      searchFilter ? sharedQuery.or(searchFilter) : sharedQuery,
+      user
+        ? supabase
+            .from('cookbook_recipes')
+            .select('recipe_id, cookbooks!inner(user_id)')
+            .eq('cookbooks.user_id', user.id)
+        : Promise.resolve({ data: [], error: null }),
+    ]);
 
-    dbQuery = dbQuery.limit(50);
-
-    const { data, error } = await dbQuery;
-
-    if (error) {
+    if (sharedResponse.error || savedLinksResponse.error) {
       resultsEl.innerHTML = '<p class="week-modal__error">Помилка завантаження</p>';
       return;
     }
 
-    const recipes = data || [];
+    const savedRecipeIds = [
+      ...new Set((savedLinksResponse.data || []).map((entry) => entry.recipe_id).filter(Boolean)),
+    ];
 
-    if (recipes.length === 0) {
+    let savedRecipes = [];
+    if (savedRecipeIds.length > 0) {
+      let savedQuery = supabase.from('recipes').select('*').in('id', savedRecipeIds).limit(50);
+      if (searchFilter) {
+        savedQuery = savedQuery.or(searchFilter);
+      }
+
+      const { data: savedData, error: savedError } = await savedQuery;
+      if (savedError) {
+        resultsEl.innerHTML = '<p class="week-modal__error">Помилка завантаження</p>';
+        return;
+      }
+
+      savedRecipes = savedData || [];
+    }
+
+    const sharedRecipes = (sharedResponse.data || []).filter(
+      (recipe) => !savedRecipeIds.includes(recipe.id),
+    );
+
+    if (savedRecipes.length === 0 && sharedRecipes.length === 0) {
       renderEmptyState(resultsEl, query);
       return;
     }
 
-    // Розділяємо на "мої" і "спільна база"
-    const myRecipes = user ? recipes.filter((r) => r.user_id === user.id) : [];
-    const sharedRecipes = recipes.filter(
-      (r) => r.status === 'published' && (!user || r.user_id !== user.id),
-    );
-
     resultsEl.innerHTML = '';
 
-    // Мої рецепти
-    if (myRecipes.length > 0) {
+    if (savedRecipes.length > 0) {
       const section = document.createElement('div');
       section.className = 'week-modal__section';
-      section.innerHTML = '<p class="week-modal__section-title">📚 Мої рецепти</p>';
-      myRecipes.forEach((recipe) => {
+      section.innerHTML = '<p class="week-modal__section-title">📚 Мої книги</p>';
+      savedRecipes.forEach((recipe) => {
         section.appendChild(createRecipeResultItem(recipe));
       });
       resultsEl.appendChild(section);
     }
 
-    // Спільна база
     if (sharedRecipes.length > 0) {
       const section = document.createElement('div');
       section.className = 'week-modal__section';
@@ -749,8 +757,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const shoppingList = Object.values(grouped);
 
-    // Зберігаємо в localStorage тимчасово (до реалізації сторінки списку покупок)
-    localStorage.setItem('week_shopping_list', JSON.stringify(shoppingList));
+    saveWeekShoppingList(shoppingList);
 
     showToast(`Список покупок сформовано: ${shoppingList.length} продуктів ✓`);
   }
@@ -763,20 +770,20 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (copyWeekBtn) {
     copyWeekBtn.addEventListener('click', () => {
       const snapshot = JSON.parse(JSON.stringify(weekMealsState));
-      localStorage.setItem('copied_week', JSON.stringify(snapshot));
+      setItem('copied_week', snapshot);
       showToast('Тиждень скопійовано! ✓');
     });
   }
 
   if (pasteWeekBtn) {
     pasteWeekBtn.addEventListener('click', async () => {
-      const saved = localStorage.getItem('copied_week');
+      const saved = getItem('copied_week');
       if (!saved) {
         showToast('Немає скопійованого тижня', 'info');
         return;
       }
 
-      const copiedState = JSON.parse(saved);
+      const copiedState = typeof saved === 'string' ? JSON.parse(saved) : saved;
       const weekStartStr = getLocalDateString(currentWeekStart);
 
       const {

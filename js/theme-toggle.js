@@ -1,24 +1,30 @@
+import { getTheme, setTheme } from './storage.js';
+
 document.addEventListener('DOMContentLoaded', () => {
   const themeToggle = document.querySelector('.theme-toggle');
   const root = document.documentElement;
 
+  if (getTheme() === 'dark') {
+    root.setAttribute('data-theme', 'dark');
+  } else {
+    root.removeAttribute('data-theme');
+  }
+
   if (!themeToggle) return;
 
   themeToggle.addEventListener('click', () => {
-    // 🟢 вмикаємо анімацію ТІЛЬКИ при кліку
     root.classList.add('theme-transition');
 
-    const isDark = root.getAttribute('data-theme') === 'dark';
+    const nextTheme = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
 
-    if (isDark) {
-      root.removeAttribute('data-theme');
-      localStorage.removeItem('theme');
-    } else {
+    if (nextTheme === 'dark') {
       root.setAttribute('data-theme', 'dark');
-      localStorage.setItem('theme', 'dark');
+    } else {
+      root.removeAttribute('data-theme');
     }
 
-    // 🟢 прибираємо клас після перемальовки
+    setTheme(nextTheme);
+
     requestAnimationFrame(() => {
       root.classList.remove('theme-transition');
     });

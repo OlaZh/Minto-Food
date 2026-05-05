@@ -12,6 +12,8 @@ import {
   setLanguage,
 } from './recipe-ingredients.js';
 import { showToast, toBase64, setInputVal } from './utils.js';
+import { getLang } from './storage.js';
+import { lockScroll, unlockScroll } from './scroll-lock.js';
 import {
   initBookSelector,
   getBooks,
@@ -263,7 +265,8 @@ export async function initRecipeModal() {
   initVisibilityToggle();
 
   // Ініціалізація конструктора інгредієнтів
-  const lang = localStorage.getItem('lang') || 'ua';
+  const lang = getLang();
+  setLanguage(lang);
   initIngredientBuilder(
     '#rm-ingredients-builder',
     (ingredients, totals) => {
@@ -333,14 +336,14 @@ export async function openRecipeModal(onSaved = null) {
 
   if (recipeModalInstance) {
     recipeModalInstance.classList.add('is-active');
-    document.body.style.overflow = 'hidden';
+    lockScroll('recipe-create-modal');
   }
 }
 
 export function closeRecipeModal() {
   if (recipeModalInstance) {
     recipeModalInstance.classList.remove('is-active');
-    document.body.style.overflow = '';
+    unlockScroll('recipe-create-modal');
   }
   onRecipeSavedCallback = null;
   resetRecipeForm();
@@ -379,7 +382,8 @@ async function showRecipeForm(data = null) {
   if (previewForm) previewForm.style.display = 'block';
 
   // Реініціалізуємо конструктор інгредієнтів при показі форми
-  const lang = localStorage.getItem('lang') || 'ua';
+  const lang = getLang();
+  setLanguage(lang);
   initIngredientBuilder(
     '#rm-ingredients-builder',
     (ingredients, totals) => {

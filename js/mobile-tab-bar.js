@@ -1,10 +1,6 @@
-// ============================================================
-//  MOBILE TAB BAR — інжектується на всі сторінки
-//  Активна вкладка визначається автоматично по URL
-// ============================================================
+import { lockScroll, unlockScroll } from './scroll-lock.js';
 
 (() => {
-  // Мапа: частина URL → data-tab значення
   const PAGE_MAP = [
     { match: 'week-menu', tab: 'week' },
     { match: 'recipes', tab: 'recipes' },
@@ -20,7 +16,7 @@
     for (const { match, tab } of PAGE_MAP) {
       if (path.includes(match)) return tab;
     }
-    return 'day'; // index.html або корінь
+    return 'day';
   }
 
   const ICONS = {
@@ -99,7 +95,6 @@
   function init() {
     const activeTab = getActiveTab();
 
-    // Вставляємо таб-бар
     document.body.insertAdjacentHTML('beforeend', buildTabBar(activeTab));
     document.body.insertAdjacentHTML('beforeend', buildBottomSheet());
 
@@ -110,14 +105,14 @@
       sheet.classList.add('is-open');
       sheet.removeAttribute('aria-hidden');
       moreBtn?.setAttribute('aria-expanded', 'true');
-      document.body.style.overflow = 'hidden';
+      lockScroll('mobile-tab-bar');
     }
 
     function closeSheet() {
       sheet.classList.remove('is-open');
       sheet.setAttribute('aria-hidden', 'true');
       moreBtn?.setAttribute('aria-expanded', 'false');
-      document.body.style.overflow = '';
+      unlockScroll('mobile-tab-bar');
     }
 
     moreBtn?.addEventListener('click', () => {

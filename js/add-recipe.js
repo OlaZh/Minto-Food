@@ -1,6 +1,10 @@
 import { supabase } from './supabaseClient.js';
 import { initAuth } from './auth.js';
 import { showToast, toBase64, parseNumber, setInputVal } from './utils.js';
+import { getLang } from './storage.js';
+import { getRecipeDisplayName } from './recipe-utils.js';
+import { lockScroll, unlockScroll } from './scroll-lock.js';
+import { initRecipeModal, openRecipeModal } from './recipe-modal.js';
 import {
   initBookSelector,
   quickSaveToDefault,
@@ -80,10 +84,7 @@ const updateStarsUI = (rating) => {
 };
 
 function getRecipeName(recipe) {
-  const lang = localStorage.getItem('lang') || 'ua';
-  if (lang === 'pl' && recipe.name_pl) return recipe.name_pl;
-  if (lang === 'en' && recipe.name_en) return recipe.name_en;
-  return recipe.name_ua || recipe.name_en || recipe.name_pl || '';
+  return getRecipeDisplayName(recipe, getLang());
 }
 
 function isOwnRecipe(recipe) {
@@ -419,7 +420,7 @@ export async function openRecipeView(recipeId) {
         .eq('recipe_id', recipeId);
 
       if (productRecipes && productRecipes.length > 0) {
-        const lang = localStorage.getItem('lang') || 'ua';
+        const lang = getLang();
         productRecipes.forEach((pr) => {
           const productName =
             lang === 'pl'
@@ -462,7 +463,7 @@ export async function openRecipeView(recipeId) {
 
   if (viewModal) {
     viewModal.classList.add('is-active');
-    document.body.style.overflow = 'hidden';
+    lockScroll('recipe-view-modal');
   }
 }
 
@@ -628,7 +629,7 @@ if (confirmYesBtn) {
         showToast('Рецепт видалено', 'info');
         if (viewModal) {
           viewModal.classList.remove('is-active');
-          document.body.style.overflow = '';
+          unlockScroll('recipe-view-modal');
         }
         loadAndDisplayRecipes();
       }
@@ -656,7 +657,7 @@ const closeModal = () => {
     const fileNameDisplay = document.getElementById('file-name');
     if (fileNameDisplay) fileNameDisplay.textContent = 'Файл не вибрано';
 
-    document.body.style.overflow = '';
+    unlockScroll('add-recipe-modal');
     setTimeout(() => {
       if (previewForm) previewForm.style.display = 'none';
       if (optionsView) {
@@ -671,7 +672,7 @@ const closeModal = () => {
 const closeViewModal = () => {
   if (viewModal) {
     viewModal.classList.remove('is-active');
-    document.body.style.overflow = '';
+    unlockScroll('recipe-view-modal');
     currentViewingId = null;
 
     const from = new URLSearchParams(window.location.search).get('from');
@@ -904,20 +905,6 @@ async function searchRecipesFromApi() {
   btn.disabled = true;
   resultsContainer.innerHTML = '';
 
-  const SPOON_KEY = 'YOUR_SPOON_KEY';
-
-  async function fetchSpoon() {
-    try {
-      const resp = await fetch(
-        `https://api.spoonacular.com/recipes/complexSearch?query=${encodeURIComponent(query)}&number=10&addRecipeInformation=true&apiKey=${SPOON_KEY}`,
-      );
-      const data = await resp.json();
-      return data.results || [];
-    } catch {
-      return [];
-    }
-  }
-
   async function fetchMealDB() {
     try {
       const resp = await fetch(
@@ -930,30 +917,17 @@ async function searchRecipesFromApi() {
     }
   }
 
-  const [spoon, mealdb] = await Promise.all([fetchSpoon(), fetchMealDB()]);
+  const mealdb = await fetchMealDB();
 
-  let results = [];
-
-  if (spoon.length > 0) {
-    results = spoon.map((r) => ({
-      title: r.title,
-      image: r.image,
-      ingredients: (r.extendedIngredients || []).map((i) => i.original).join('\n'),
-      steps: (r.analyzedInstructions?.[0]?.steps || [])
-        .map((s, i) => `${i + 1}. ${s.step}`)
-        .join('\n'),
-    }));
-  } else if (mealdb.length > 0) {
-    results = mealdb.map((m) => ({
-      title: m.strMeal,
-      image: m.strMealThumb,
-      ingredients: Object.keys(m)
-        .filter((k) => k.startsWith('strIngredient') && m[k])
-        .map((k, i) => `${m[k]} ${m[`strMeasure${i + 1}`] || ''}`)
-        .join('\n'),
-      steps: m.strInstructions || '',
-    }));
-  }
+  const results = mealdb.map((m) => ({
+    title: m.strMeal,
+    image: m.strMealThumb,
+    ingredients: Object.keys(m)
+      .filter((k) => k.startsWith('strIngredient') && m[k])
+      .map((k, i) => `${m[k]} ${m[`strMeasure${i + 1}`] || ''}`)
+      .join('\n'),
+    steps: m.strInstructions || '',
+  }));
 
   if (results.length === 0) {
     resultsContainer.innerHTML = `<p style="padding:20px; text-align:center;">Нічого не знайдено.</p>`;
@@ -1241,7 +1215,7 @@ function openNewRecipesDrawer() {
   const panel = drawer.querySelector('.new-recipes-drawer__panel');
   drawer.classList.add('is-open');
   panel?.removeAttribute('inert');
-  document.body.style.overflow = 'hidden';
+  lockScroll('new-recipes-drawer');
   loadNewRecipes();
 }
 
@@ -1251,12 +1225,13 @@ function closeNewRecipesDrawer() {
   const panel = drawer.querySelector('.new-recipes-drawer__panel');
   drawer.classList.remove('is-open');
   panel?.setAttribute('inert', '');
-  document.body.style.overflow = '';
+  unlockScroll('new-recipes-drawer');
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
   await initAuth();
   await initBookSelector();
+  await initRecipeModal();
   loadAndDisplayRecipes();
   initAiUpload();
 
@@ -1300,8 +1275,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 if (addBtn) {
   addBtn.addEventListener('click', () => {
-    modal.classList.add('is-active');
-    document.body.style.overflow = 'hidden';
+    openRecipeModal(async () => {
+      await loadAndDisplayRecipes();
+    });
   });
 }
 

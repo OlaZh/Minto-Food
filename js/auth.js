@@ -5,6 +5,8 @@
 
 import { supabase } from './supabaseClient.js';
 import { showToast } from './utils.js';
+import { lockScroll, unlockScroll } from './scroll-lock.js';
+import { getLang } from './storage.js';
 
 // =============================================================
 // СТАН
@@ -178,7 +180,7 @@ export async function signOut() {
 // =============================================================
 
 function updateAuthUI() {
-  const lang = localStorage.getItem('lang') || 'ua';
+  const lang = getLang();
   const texts = {
     ua: { signIn: 'Увійти', signOut: 'Вийти' },
     pl: { signIn: 'Zaloguj się', signOut: 'Wyloguj się' },
@@ -404,7 +406,7 @@ export function openAuthModal(tab = 'login') {
   if (modal) {
     modal.hidden = false;
     switchAuthTab(tab);
-    document.body.style.overflow = 'hidden';
+    lockScroll('auth-modal');
   }
 }
 
@@ -412,7 +414,7 @@ export function closeAuthModal() {
   const modal = document.getElementById('auth-modal');
   if (modal) {
     modal.hidden = true;
-    document.body.style.overflow = '';
+    unlockScroll('auth-modal');
   }
 }
 

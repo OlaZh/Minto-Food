@@ -11,6 +11,8 @@ import {
   getActivityHistory,
   saveActivity,
   deleteActivity as deleteActivityFromStorage,
+  setTheme,
+  getLang,
 } from './storage.js';
 import { initCustomSelect, setSelectValue, initSelectsGlobalListener } from './ui-components.js';
 
@@ -1378,10 +1380,10 @@ function initSettings(user) {
       const theme = btn.dataset.themeSet;
       if (theme === 'dark') {
         document.documentElement.setAttribute('data-theme', 'dark');
-        localStorage.setItem('theme', 'dark');
+        setTheme('dark');
       } else {
         document.documentElement.removeAttribute('data-theme');
-        localStorage.setItem('theme', 'light');
+        setTheme('light');
       }
       syncThemeBtns();
     });
@@ -1390,7 +1392,7 @@ function initSettings(user) {
   // Language buttons
   const langSwitcher = document.getElementById('langSwitcher');
   function syncLangBtns() {
-    const current = langSwitcher?.value || localStorage.getItem('lang') || 'ua';
+    const current = langSwitcher?.value || getLang();
     document.querySelectorAll('.settings-lang-btn').forEach((btn) => {
       btn.classList.toggle('active', btn.dataset.lang === current);
     });

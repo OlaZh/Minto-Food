@@ -4,6 +4,7 @@
 
 import { supabase } from './supabaseClient.js';
 import { showToast, escapeHTML } from './utils.js';
+import { lockScroll, unlockScroll } from './scroll-lock.js';
 
 // =============================================================
 // СТАН
@@ -325,13 +326,13 @@ export async function openBookSelector(recipeId, onSelect = null) {
   renderBooksList(false);
 
   selectorModal.classList.add('is-active');
-  document.body.style.overflow = 'hidden';
+  lockScroll('book-selector-modal');
 }
 
 function closeBookSelector() {
   if (selectorModal) {
     selectorModal.classList.remove('is-active');
-    document.body.style.overflow = '';
+    unlockScroll('book-selector-modal');
     onSelectCallback = null;
   }
 }
@@ -563,13 +564,13 @@ export function openReportModal(recipeId, recipeName = '') {
   };
 
   modal.classList.add('is-active');
-  document.body.style.overflow = 'hidden';
+  lockScroll('report-modal');
 }
 
 function closeReportModal() {
   const modal = document.getElementById('report-recipe-modal');
   if (modal) {
     modal.classList.remove('is-active');
-    document.body.style.overflow = '';
+    unlockScroll('report-modal');
   }
 }

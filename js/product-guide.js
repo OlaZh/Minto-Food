@@ -4,21 +4,13 @@
 
 import { supabase } from './supabaseClient.js';
 import { initAuth } from './auth.js';
+import { escapeHTML } from './utils.js';
 
 let products = [];
 
 /* ============================================================
    2. ДОПОМІЖНІ ФУНКЦІЇ
    ============================================================ */
-
-function escapeHTML(str) {
-  if (!str) return '';
-  return str
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;');
-}
 
 function normalizeIdArray(value) {
   if (!value) return [];

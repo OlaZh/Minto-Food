@@ -6,6 +6,7 @@
    ============================================================ */
 
 import { supabase } from './supabaseClient.js';
+import { escapeHTML } from './utils.js';
 
 const token = new URLSearchParams(location.search).get('token');
 
@@ -129,11 +130,4 @@ function render(newIds) {
 function showError() {
   loadingEl.hidden = true;
   errorEl.hidden   = false;
-}
-
-function escapeHTML(str) {
-  return String(str || '')
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;');
 }

@@ -1,6 +1,4 @@
-// ============================================================
-//  LANG SWITCHER UI — кастомний dropdown замість пігулок
-// ============================================================
+import { getLang, setLang } from './storage.js';
 
 (() => {
   const LABELS = { ua: 'UA', pl: 'PL', en: 'EN' };
@@ -14,10 +12,9 @@
 
     select.style.cssText = 'position:absolute;opacity:0;width:0;height:0;pointer-events:none';
 
-    const currentLang = localStorage.getItem('lang') || select.value || 'ua';
+    const currentLang = getLang() || select.value || 'ua';
     select.value = currentLang;
 
-    // Будуємо dropdown
     const dropdown = document.createElement('div');
     dropdown.className = 'lang-dropdown';
 
@@ -37,12 +34,14 @@
       const li = document.createElement('li');
       li.setAttribute('role', 'option');
       li.setAttribute('aria-selected', code === currentLang ? 'true' : 'false');
+
       const opt = document.createElement('button');
       opt.type = 'button';
       opt.className = 'lang-dropdown__option' + (code === currentLang ? ' is-active' : '');
       opt.dataset.lang = code;
       opt.textContent = label;
-      opt.addEventListener('click', () => select_lang(code));
+      opt.addEventListener('click', () => selectLang(code));
+
       li.appendChild(opt);
       menu.appendChild(li);
     });
@@ -51,49 +50,49 @@
     dropdown.appendChild(menu);
     wrapper.appendChild(dropdown);
 
-    function select_lang(code) {
-      select.value = code;
-      select.dispatchEvent(new Event('change'));
-      localStorage.setItem('lang', code);
-      btn.querySelector('.lang-dropdown__current').textContent = LABELS[code];
-      menu.querySelectorAll('.lang-dropdown__option').forEach((o) => {
-        o.classList.toggle('is-active', o.dataset.lang === code);
-        o.closest('[role=option]').setAttribute('aria-selected', o.dataset.lang === code ? 'true' : 'false');
-      });
-      close_menu();
-    }
-
-    function open_menu() {
-      menu.hidden = false;
-      btn.setAttribute('aria-expanded', 'true');
-      btn.classList.add('is-open');
-    }
-
-    function close_menu() {
+    function closeMenu() {
       menu.hidden = true;
       btn.setAttribute('aria-expanded', 'false');
       btn.classList.remove('is-open');
     }
 
+    function openMenu() {
+      menu.hidden = false;
+      btn.setAttribute('aria-expanded', 'true');
+      btn.classList.add('is-open');
+    }
+
+    function syncUi(code) {
+      btn.querySelector('.lang-dropdown__current').textContent = LABELS[code] || code.toUpperCase();
+      menu.querySelectorAll('.lang-dropdown__option').forEach((option) => {
+        const isActive = option.dataset.lang === code;
+        option.classList.toggle('is-active', isActive);
+        option.closest('[role=option]')?.setAttribute('aria-selected', isActive ? 'true' : 'false');
+      });
+    }
+
+    function selectLang(code) {
+      select.value = code;
+      setLang(code);
+      select.dispatchEvent(new Event('change'));
+      syncUi(code);
+      closeMenu();
+    }
+
     btn.addEventListener('click', (e) => {
       e.stopPropagation();
-      menu.hidden ? open_menu() : close_menu();
+      menu.hidden ? openMenu() : closeMenu();
     });
 
-    document.addEventListener('click', () => close_menu());
+    document.addEventListener('click', closeMenu);
     menu.addEventListener('click', (e) => e.stopPropagation());
 
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') close_menu();
+      if (e.key === 'Escape') closeMenu();
     });
 
-    // Синхронізація якщо select змінюється програмно
     select.addEventListener('change', () => {
-      const code = select.value;
-      btn.querySelector('.lang-dropdown__current').textContent = LABELS[code] || code.toUpperCase();
-      menu.querySelectorAll('.lang-dropdown__option').forEach((o) =>
-        o.classList.toggle('is-active', o.dataset.lang === code)
-      );
+      syncUi(select.value);
     });
   }
 

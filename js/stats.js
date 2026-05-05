@@ -1,7 +1,3 @@
-// ===============================
-// STATS — DAILY PROGRESS (CALORIES, MACROS & WATER)
-// ===============================
-
 import {
   getWaterNorm,
   getDailyCaloriesNorm,
@@ -10,7 +6,6 @@ import {
   getCarbsNorm,
 } from './storage.js';
 
-// Calories & Macros UI Elements
 const kcalCurrentEl = document.getElementById('kcalCurrent');
 const kcalCircleEl = document.getElementById('kcalCircle');
 const kcalNormLabelEl = document.getElementById('kcalNormLabel');
@@ -23,33 +18,25 @@ const pCurrentEl = document.getElementById('pCurrent');
 const fCurrentEl = document.getElementById('fCurrent');
 const cCurrentEl = document.getElementById('cCurrent');
 
-// Mobile water strip
 const currentWaterMobileEl = document.getElementById('currentWaterMobile');
-const waterNormMobileEl    = document.getElementById('waterNormMobile');
+const waterNormMobileEl = document.getElementById('waterNormMobile');
 
-// Mobile compact strip
 const kcalCurrentMobileEl = document.getElementById('kcalCurrentMobile');
-const kcalNormMobileEl    = document.getElementById('kcalNormMobile');
-const kcalCircleMobileEl  = document.getElementById('kcalCircleMobile');
-const pCurrentMobileEl    = document.getElementById('pCurrentMobile');
-const fCurrentMobileEl    = document.getElementById('fCurrentMobile');
-const cCurrentMobileEl    = document.getElementById('cCurrentMobile');
+const kcalNormMobileEl = document.getElementById('kcalNormMobile');
+const kcalCircleMobileEl = document.getElementById('kcalCircleMobile');
+const pCurrentMobileEl = document.getElementById('pCurrentMobile');
+const fCurrentMobileEl = document.getElementById('fCurrentMobile');
+const cCurrentMobileEl = document.getElementById('cCurrentMobile');
 
-// Progress bars (new layout)
 const goalBarEl = document.getElementById('goalBar');
 const goalValueEl = document.getElementById('goalValue');
 const pBarEl = document.getElementById('pBar');
 const fBarEl = document.getElementById('fBar');
 const cBarEl = document.getElementById('cBar');
 
-// Water UI Elements
 const waterValueEl = document.getElementById('currentWaterText');
 const waterNormEl = document.getElementById('waterNormText');
 const waterFillEl = document.getElementById('waterFill');
-
-// ===============================
-// CIRCULAR HELPERS (Твій робочий код)
-// ===============================
 
 function applyCircleState(circleEl, stateClass) {
   if (!circleEl) return;
@@ -83,10 +70,6 @@ function setCirclePercent(circleEl, current, max) {
   circleEl.style.strokeDasharray = `${percent}, 100`;
 }
 
-// ===============================
-// UPDATE STATS (CALORIES & MACROS)
-// ===============================
-
 export function updateStats(consumed) {
   const dailyCaloriesNorm = getDailyCaloriesNorm();
   const proteinNorm = getProteinNorm();
@@ -104,7 +87,6 @@ export function updateStats(consumed) {
 
   setCirclePercent(kcalCircleEl, kcal, dailyCaloriesNorm);
 
-  // Goal bar
   if (goalBarEl) {
     const goalPct = dailyCaloriesNorm ? Math.min((kcal / dailyCaloriesNorm) * 100, 100) : 0;
     goalBarEl.style.width = `${goalPct}%`;
@@ -118,7 +100,6 @@ export function updateStats(consumed) {
   setCirclePercent(fCircleEl, fat, fatNorm);
   setCirclePercent(cCircleEl, carbs, carbsNorm);
 
-  // Mobile compact strip
   if (kcalCurrentMobileEl) kcalCurrentMobileEl.textContent = Math.round(kcal);
   if (kcalNormMobileEl) kcalNormMobileEl.textContent = `з ${dailyCaloriesNorm} ккал`;
   if (pCurrentMobileEl) pCurrentMobileEl.textContent = Math.round(protein);
@@ -126,33 +107,26 @@ export function updateStats(consumed) {
   if (cCurrentMobileEl) cCurrentMobileEl.textContent = Math.round(carbs);
   setCirclePercent(kcalCircleMobileEl, kcal, dailyCaloriesNorm);
 
-  // Macro progress bars
-  if (pBarEl)
+  if (pBarEl) {
     pBarEl.style.width = `${proteinNorm ? Math.min((protein / proteinNorm) * 100, 100) : 0}%`;
-  if (fBarEl) fBarEl.style.width = `${fatNorm ? Math.min((fat / fatNorm) * 100, 100) : 0}%`;
-  if (cBarEl) cBarEl.style.width = `${carbsNorm ? Math.min((carbs / carbsNorm) * 100, 100) : 0}%`;
+  }
+  if (fBarEl) {
+    fBarEl.style.width = `${fatNorm ? Math.min((fat / fatNorm) * 100, 100) : 0}%`;
+  }
+  if (cBarEl) {
+    cBarEl.style.width = `${carbsNorm ? Math.min((carbs / carbsNorm) * 100, 100) : 0}%`;
+  }
 }
 
-// ===============================
-// WATER TRACKER LOGIC
-// ===============================
-
-let currentWaterMl = 0;
-
-// Експортована функція — приймає літри (викликається з meals.js через Supabase)
-// Якщо викликається зсередини без аргументу — бере currentWaterMl
 export function updateWaterUI(currentLiters) {
   const waterNorm = getWaterNorm();
-
-  const liters = currentLiters !== undefined ? currentLiters : currentWaterMl / 1000;
-
+  const liters = Number(currentLiters) || 0;
   const visualPercent = Math.min((liters / waterNorm) * 100, 100);
 
   if (waterFillEl) {
     waterFillEl.style.setProperty('--level', `${visualPercent}%`);
   }
 
-  // СТАЛО:
   if (waterValueEl) {
     waterValueEl.textContent = liters.toFixed(2);
     waterValueEl.style.opacity = liters > 0 ? '1' : '0.5';
@@ -165,43 +139,6 @@ export function updateWaterUI(currentLiters) {
   if (waterNormMobileEl) waterNormMobileEl.textContent = `${waterNorm.toFixed(1)} л`;
 }
 
-export function addWater(ml) {
-  currentWaterMl += ml;
-  localStorage.setItem('waterTodayMl', currentWaterMl);
-  updateWaterUI();
-}
-
-export function resetWater() {
-  currentWaterMl = 0;
-  localStorage.setItem('waterTodayMl', 0);
-  updateWaterUI();
-}
-
-function initWaterTracker() {
-  const saved = localStorage.getItem('waterTodayMl');
-  currentWaterMl = saved ? parseInt(saved, 10) : 0;
-
-  // Використовуємо надійне слухання кліків
-  document.addEventListener('click', (e) => {
-    const btn = e.target.closest('.water-btn');
-    if (btn) {
-      const amount = parseFloat(btn.dataset.amount);
-      if (!isNaN(amount)) {
-        addWater(amount * 1000);
-      }
-    }
-  });
-
-  const resetBtn = document.getElementById('resetWater');
-  if (resetBtn) {
-    resetBtn.addEventListener('click', (e) => {
-      e.preventDefault();
-      resetWater();
-    });
-  }
-
-  updateWaterUI();
-}
-
-// Запуск при завантаженні
-document.addEventListener('DOMContentLoaded', initWaterTracker);
+document.addEventListener('DOMContentLoaded', () => {
+  updateWaterUI(0);
+});

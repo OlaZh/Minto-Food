@@ -4,6 +4,7 @@ import { supabase } from './supabaseClient.js';
 import { initAuth, requireAuth } from './auth.js';
 import { initBarcodeScanner, closeScanner } from './barcode-scanner.js';
 import { getLocalDateString, showToast } from './utils.js';
+import { getDailyCaloriesNorm, getLang, setLang, getItem, setItem } from './storage.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
   let currentSelectedDate = getLocalDateString();
@@ -17,14 +18,14 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 
   // ================== LANGUAGE ==================
-  let lang = localStorage.getItem('lang') || 'ua';
+  let lang = getLang();
 
   const langSwitcher = document.getElementById('langSwitcher');
   if (langSwitcher) {
     langSwitcher.value = lang;
     langSwitcher.addEventListener('change', () => {
       lang = langSwitcher.value;
-      localStorage.setItem('lang', lang);
+      setLang(lang);
       renderAllMeals();
       renderSummary();
     });
@@ -43,7 +44,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     dinner: [],
   };
 
-  const STORAGE_KEY = 'mealsState';
   let activeMealKey = null;
   let selectedFood = null;
   let editingIndex = null;
@@ -52,7 +52,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const dayDateDisplay = document.getElementById('dayDate');
 
   // ================== DAILY NORM ==================
-  const dailyNorm = Number(localStorage.getItem('dailyCaloriesNorm')) || 0;
+  const dailyNorm = getDailyCaloriesNorm();
 
   // ================== SUPABASE LOGIC ==================
 
@@ -164,10 +164,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // --- КІНЕЦЬ ЛОГІКИ ВОДИ ---
 
-  function saveMealsToStorage() {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(mealsState));
-  }
-
   async function clearDay() {
     if (!requireAuth()) return;
 
@@ -191,7 +187,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         renderMeal(mealKey);
       });
       renderSummary();
-      saveMealsToStorage();
     }
   }
 
@@ -202,20 +197,20 @@ document.addEventListener('DOMContentLoaded', async () => {
       showToast('Немає страв для копіювання', 'info');
       return;
     }
-    localStorage.setItem('copied_day', JSON.stringify(snapshot));
+    setItem('copied_day', snapshot);
     showToast('День скопійовано ✓');
   }
 
   async function pasteDay() {
     if (!requireAuth()) return;
 
-    const saved = localStorage.getItem('copied_day');
+    const saved = getItem('copied_day');
     if (!saved) {
       showToast('Немає скопійованого дня', 'info');
       return;
     }
 
-    const copiedMeals = JSON.parse(saved);
+    const copiedMeals = typeof saved === 'string' ? JSON.parse(saved) : saved;
 
     const {
       data: { user },
@@ -370,7 +365,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       if (!error) {
         mealsState[mealKey].splice(index, 1);
-        saveMealsToStorage();
         renderMeal(mealKey);
         renderSummary();
       }
