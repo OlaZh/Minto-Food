@@ -523,16 +523,17 @@ function buildActiveItem(item) {
     ? `${item.amount}${item.unit ? ' ' + item.unit : ''}`
     : '';
 
+  const cbId = `shop-cb-${item.id}`;
   li.innerHTML = `
-    <label class="shop-item__check-label">
-      <input type="checkbox" class="shop-item__checkbox" ${item.is_checked ? 'checked' : ''} aria-label="Куплено">
+    <label class="shop-item__check-label" for="${cbId}" style="flex:1;min-width:0;gap:var(--space-sm)">
+      <input type="checkbox" class="shop-item__checkbox" id="${cbId}" ${item.is_checked ? 'checked' : ''} aria-label="Куплено">
       <span class="shop-item__custom-check"></span>
+      <div class="shop-item__info">
+        <span class="shop-item__name">${escapeHTML(item.name)}</span>
+        ${item.note ? `<span class="shop-item__note">${escapeHTML(item.note)}</span>` : ''}
+      </div>
+      ${amountText ? `<span class="shop-item__amount">${escapeHTML(amountText)}</span>` : ''}
     </label>
-    <div class="shop-item__info">
-      <span class="shop-item__name">${escapeHTML(item.name)}</span>
-      ${item.note ? `<span class="shop-item__note">${escapeHTML(item.note)}</span>` : ''}
-    </div>
-    ${amountText ? `<span class="shop-item__amount">${escapeHTML(amountText)}</span>` : ''}
     <div class="shop-item__actions">
       <button class="shop-item__btn shop-item__btn--edit" aria-label="Редагувати">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -551,21 +552,8 @@ function buildActiveItem(item) {
   `;
 
   li.querySelector('.shop-item__checkbox').addEventListener('change', e => toggleItem(item.id, e.target.checked));
-  li.querySelector('.shop-item__btn--edit').addEventListener('click', () => openEditModal(item, null));
-  li.querySelector('.shop-item__btn--delete').addEventListener('click', () => deleteItem(item.id));
-
-  // Тап на весь рядок = чекбокс (працює на Android і iOS)
-  let touchMoved = false;
-  li.addEventListener('touchstart', () => { touchMoved = false; }, { passive: true });
-  li.addEventListener('touchmove',  () => { touchMoved = true;  }, { passive: true });
-  li.addEventListener('click', e => {
-    if (e.target.closest('.shop-item__actions')) return;
-    if (e.target.closest('.shop-item__check-label')) return;
-    if (touchMoved) { touchMoved = false; return; }
-    const cb = li.querySelector('.shop-item__checkbox');
-    cb.checked = !cb.checked;
-    toggleItem(item.id, cb.checked);
-  });
+  li.querySelector('.shop-item__btn--edit').addEventListener('click', e => { e.preventDefault(); openEditModal(item, null); });
+  li.querySelector('.shop-item__btn--delete').addEventListener('click', e => { e.preventDefault(); deleteItem(item.id); });
 
   return li;
 }
