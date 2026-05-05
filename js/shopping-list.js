@@ -554,24 +554,18 @@ function buildActiveItem(item) {
   li.querySelector('.shop-item__btn--edit').addEventListener('click', () => openEditModal(item, null));
   li.querySelector('.shop-item__btn--delete').addEventListener('click', () => deleteItem(item.id));
 
-  // Тап на весь рядок = чекбокс (тільки мобільний, тільки якщо палець не рухався)
-  let touchStartX = 0, touchStartY = 0;
-  li.addEventListener('touchstart', e => {
-    touchStartX = e.touches[0].clientX;
-    touchStartY = e.touches[0].clientY;
-  }, { passive: true });
-  li.addEventListener('touchend', e => {
+  // Тап на весь рядок = чекбокс (працює на Android і iOS)
+  let touchMoved = false;
+  li.addEventListener('touchstart', () => { touchMoved = false; }, { passive: true });
+  li.addEventListener('touchmove',  () => { touchMoved = true;  }, { passive: true });
+  li.addEventListener('click', e => {
     if (e.target.closest('.shop-item__actions')) return;
     if (e.target.closest('.shop-item__check-label')) return;
-    const dx = Math.abs(e.changedTouches[0].clientX - touchStartX);
-    const dy = Math.abs(e.changedTouches[0].clientY - touchStartY);
-    if (dx < 10 && dy < 10) {
-      e.preventDefault();
-      const cb = li.querySelector('.shop-item__checkbox');
-      cb.checked = !cb.checked;
-      toggleItem(item.id, cb.checked);
-    }
-  }, { passive: false });
+    if (touchMoved) { touchMoved = false; return; }
+    const cb = li.querySelector('.shop-item__checkbox');
+    cb.checked = !cb.checked;
+    toggleItem(item.id, cb.checked);
+  });
 
   return li;
 }
