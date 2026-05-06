@@ -60,7 +60,25 @@ const subGroups = document.querySelectorAll('.subfilter-group');
    4. ЗАВАНТАЖЕННЯ ДАНИХ
    ============================================================ */
 
+function showProductSkeletons(count = 12) {
+  if (!productList) return;
+  productList.innerHTML = Array.from({ length: count }, () => `
+    <div class="skeleton-card">
+      <div class="skeleton-card__image"></div>
+      <div class="skeleton-card__content">
+        <div class="skeleton-card__title"></div>
+        <div class="skeleton-card__subtitle"></div>
+        <div class="skeleton-card__footer">
+          <div class="skeleton-card__badge"></div>
+          <div class="skeleton-card__btn"></div>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
 async function loadProducts() {
+  showProductSkeletons();
   try {
     const { data, error } = await supabase
       .from('products')
@@ -73,7 +91,10 @@ async function loadProducts() {
     renderProducts(products);
   } catch (err) {
     console.error('Помилка Supabase:', err.message);
-    if (productList) productList.innerHTML = `<p style="color:red">Помилка завантаження даних</p>`;
+    if (productList) productList.innerHTML = `
+      <div class="no-results">
+        ⚠️ Помилка завантаження — перевірте з'єднання
+      </div>`;
   }
 }
 
@@ -89,7 +110,9 @@ function renderProducts(items) {
   if (!items || items.length === 0) {
     productList.innerHTML = `
       <div class="no-results">
-        🌿 Продуктів не знайдено
+        <div class="no-results__icon">🌿</div>
+        <p class="no-results__title">Продуктів не знайдено</p>
+        <p class="no-results__text">Спробуйте змінити фільтри або пошуковий запит</p>
       </div>
     `;
     return;
@@ -97,7 +120,7 @@ function renderProducts(items) {
 
   items.forEach((product) => {
     const card = document.createElement('div');
-    card.className = 'product-card';
+    card.className = 'product-card content-fade-in';
 
     const imgSrc =
       typeof product.image === 'string' && product.image.trim() !== '' && product.image !== 'NULL'

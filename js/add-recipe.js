@@ -96,7 +96,27 @@ function isOwnRecipe(recipe) {
 // 4. ЗАВАНТАЖЕННЯ ТА ВІДОБРАЖЕННЯ РЕЦЕПТІВ З SUPABASE
 // =============================================================
 
+function showRecipeSkeletons(count = 10) {
+  const grid = document.getElementById('community-grid');
+  if (!grid) return;
+  grid.innerHTML = Array.from({ length: count }, () => `
+    <div class="skeleton-card">
+      <div class="skeleton-card__image"></div>
+      <div class="skeleton-card__content">
+        <div class="skeleton-card__title"></div>
+        <div class="skeleton-card__subtitle"></div>
+        <div class="skeleton-card__footer">
+          <div class="skeleton-card__badge"></div>
+          <div class="skeleton-card__btn"></div>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
 async function loadAndDisplayRecipes() {
+  showRecipeSkeletons();
+
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -113,6 +133,13 @@ async function loadAndDisplayRecipes() {
 
   if (error) {
     console.error('Помилка завантаження рецептів:', error);
+    const grid = document.getElementById('community-grid');
+    if (grid) grid.innerHTML = `
+      <div class="recipe-empty-state">
+        <div class="recipe-empty-state__icon">⚠️</div>
+        <p class="recipe-empty-state__title">Не вдалося завантажити рецепти</p>
+        <p class="recipe-empty-state__text">Перевірте з'єднання та спробуйте ще раз</p>
+      </div>`;
     return;
   }
 
@@ -146,7 +173,7 @@ function buildRecipeCard(recipe, savedRecipeIds) {
   const isOwn = isOwnRecipe(recipe);
 
   const card = document.createElement('div');
-  card.className = 'recipe-card';
+  card.className = 'recipe-card content-fade-in';
   card.dataset.id = recipe.id;
 
   card.innerHTML = `

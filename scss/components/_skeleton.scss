@@ -1,0 +1,166 @@
+/* ===============================
+   SKELETON LOADERS
+   =============================== */
+
+@keyframes content-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.content-fade-in {
+  animation: content-fade-in 0.3s ease forwards;
+}
+
+@keyframes skeleton-shimmer {
+  0% {
+    background-position: -600px 0;
+  }
+  100% {
+    background-position: 600px 0;
+  }
+}
+
+%skeleton-base {
+  background: linear-gradient(
+    90deg,
+    var(--color-bg-secondary) 25%,
+    var(--color-surface) 50%,
+    var(--color-bg-secondary) 75%
+  );
+  background-size: 1200px 100%;
+  animation: skeleton-shimmer 1.6s infinite linear;
+  border-radius: 8px;
+}
+
+/* ===== RECIPE / PRODUCT CARD SKELETON ===== */
+
+.skeleton-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+  overflow: hidden;
+  pointer-events: none;
+
+  &__image {
+    @extend %skeleton-base;
+    height: 200px;
+    border-radius: 0;
+  }
+
+  &__content {
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  &__title {
+    @extend %skeleton-base;
+    height: 17px;
+    width: 72%;
+    border-radius: 6px;
+  }
+
+  &__subtitle {
+    @extend %skeleton-base;
+    height: 13px;
+    width: 50%;
+    border-radius: 5px;
+  }
+
+  &__footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 4px;
+  }
+
+  &__badge {
+    @extend %skeleton-base;
+    height: 13px;
+    width: 56px;
+    border-radius: 5px;
+  }
+
+  &__btn {
+    @extend %skeleton-base;
+    height: 30px;
+    width: 96px;
+    border-radius: 8px;
+  }
+}
+
+/* ===== BOOK CARD SKELETON ===== */
+
+.skeleton-book {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  pointer-events: none;
+
+  &__cover {
+    @extend %skeleton-base;
+    aspect-ratio: 3 / 4;
+    border-radius: 12px;
+  }
+
+  &__title {
+    @extend %skeleton-base;
+    height: 16px;
+    width: 78%;
+    border-radius: 5px;
+  }
+
+  &__sub {
+    @extend %skeleton-base;
+    height: 13px;
+    width: 52%;
+    border-radius: 5px;
+  }
+}
+
+/* ===== LIST ITEM SKELETON (shopping, meals) ===== */
+
+.skeleton-list-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--color-border);
+  pointer-events: none;
+
+  &__icon {
+    @extend %skeleton-base;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  &__text {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+  }
+
+  &__name {
+    @extend %skeleton-base;
+    height: 14px;
+    width: 58%;
+    border-radius: 5px;
+  }
+
+  &__sub {
+    @extend %skeleton-base;
+    height: 12px;
+    width: 38%;
+    border-radius: 4px;
+  }
+}

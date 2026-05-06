@@ -201,7 +201,24 @@ function switchTab(tabName) {
 // КНИГИ
 // =====================================
 
+function showBookSkeletons(count = 4) {
+  if (!booksGrid) return;
+  const existing = booksGrid.querySelectorAll('.cookbook-book, .skeleton-book');
+  existing.forEach((el) => el.remove());
+  Array.from({ length: count }, () => {
+    const el = document.createElement('div');
+    el.className = 'skeleton-book';
+    el.innerHTML = `
+      <div class="skeleton-book__cover"></div>
+      <div class="skeleton-book__title"></div>
+      <div class="skeleton-book__sub"></div>
+    `;
+    booksGrid.appendChild(el);
+  });
+}
+
 async function loadBooks() {
+  showBookSkeletons();
   try {
     const { data: books, error } = await supabase
       .from('cookbooks')
@@ -215,12 +232,14 @@ async function loadBooks() {
     await renderBooks(books || []);
   } catch (err) {
     console.error('Error loading books:', err);
+    const existing = booksGrid?.querySelectorAll('.skeleton-book');
+    existing?.forEach((el) => el.remove());
   }
 }
 
 async function renderBooks(books) {
-  // Видаляємо старі книги
-  const existingBooks = booksGrid.querySelectorAll('.cookbook-book');
+  // Видаляємо скелетони і старі книги
+  const existingBooks = booksGrid.querySelectorAll('.cookbook-book, .skeleton-book');
   existingBooks.forEach((el) => el.remove());
 
   // Додаємо книги

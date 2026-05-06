@@ -176,46 +176,146 @@ export async function signOut() {
 }
 
 // =============================================================
-// ОНОВЛЕННЯ UI — ім'я і кнопка в хедері
+// ОНОВЛЕННЯ UI — аватар і кнопка в хедері
 // =============================================================
 
 function updateAuthUI() {
-  const lang = getLang();
-  const texts = {
-    ua: { signIn: 'Увійти', signOut: 'Вийти' },
-    pl: { signIn: 'Zaloguj się', signOut: 'Wyloguj się' },
-    en: { signIn: 'Sign in', signOut: 'Sign out' },
-  };
-  const t = texts[lang] || texts.ua;
-
   const authBtnEl = document.getElementById('headerAuthBtn');
   if (!authBtnEl) return;
 
   if (currentUser) {
-    const name =
+    const fullName =
       currentUser.user_metadata?.full_name ||
       currentUser.user_metadata?.name ||
       currentUser.email?.split('@')[0] ||
       'Профіль';
+    const firstName = fullName.split(' ')[0];
+    const initials = fullName
+      .split(' ')
+      .map((w) => w[0])
+      .slice(0, 2)
+      .join('')
+      .toUpperCase();
+    const avatarUrl =
+      currentUser.user_metadata?.avatar_url || currentUser.user_metadata?.picture;
 
-    authBtnEl.textContent = name;
-    authBtnEl.href = 'profile.html';
-    authBtnEl.onclick = null;
+    // Ensure wrapper exists
+    let wrap = document.getElementById('headerUserArea');
+    if (!wrap) {
+      wrap = document.createElement('div');
+      wrap.id = 'headerUserArea';
+      wrap.className = 'header__user-area';
+      authBtnEl.parentNode.insertBefore(wrap, authBtnEl);
+      wrap.appendChild(authBtnEl);
+    }
 
-    // Ховаємо кнопку виходу з хедера якщо є
-    const signOutBtn = document.getElementById('headerSignOutBtn');
-    if (signOutBtn) signOutBtn.style.display = 'none';
+    authBtnEl.className = 'header__avatar-btn';
+    authBtnEl.removeAttribute('data-i18n');
+    authBtnEl.href = '#';
+    authBtnEl.innerHTML = `
+      <div class="header__avatar"${!avatarUrl ? ` data-initials="${initials}"` : ''}>
+        ${avatarUrl ? `<img src="${avatarUrl}" alt="${firstName}" class="header__avatar-img">` : ''}
+      </div>
+      <span class="header__avatar-name">${firstName}</span>
+      <svg class="header__avatar-chevron" width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+        <path d="M2 4l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    `;
+    authBtnEl.onclick = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      toggleUserDropdown();
+    };
+
+    ensureUserDropdown(wrap);
   } else {
-    authBtnEl.textContent = t.signIn;
+    const lang = getLang();
+    const texts = { ua: 'Увійти', pl: 'Zaloguj się', en: 'Sign in' };
+
+    // Remove wrapper if exists, restore authBtnEl to parent
+    const wrap = document.getElementById('headerUserArea');
+    if (wrap) {
+      wrap.parentNode.insertBefore(authBtnEl, wrap);
+      wrap.remove();
+    }
+
+    document.getElementById('headerUserDropdown')?.remove();
+
+    authBtnEl.className = 'header__profile-name';
+    authBtnEl.innerHTML = texts[lang] || texts.ua;
+    authBtnEl.removeAttribute('data-i18n');
     authBtnEl.href = '#';
     authBtnEl.onclick = (e) => {
       e.preventDefault();
       openAuthModal();
     };
+  }
+}
 
-    // Ховаємо кнопку виходу якщо є
-    const signOutBtn = document.getElementById('headerSignOutBtn');
-    if (signOutBtn) signOutBtn.style.display = 'none';
+// =============================================================
+// DROPDOWN АВАТАРА
+// =============================================================
+
+function ensureUserDropdown(wrap) {
+  if (document.getElementById('headerUserDropdown')) return;
+
+  const dropdown = document.createElement('div');
+  dropdown.id = 'headerUserDropdown';
+  dropdown.className = 'header__user-dropdown';
+  dropdown.setAttribute('hidden', '');
+  dropdown.innerHTML = `
+    <a href="profile.html" class="header__user-dropdown-item">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+        <circle cx="12" cy="7" r="4"/>
+      </svg>
+      Мій профіль
+    </a>
+    <div class="header__user-dropdown-divider"></div>
+    <button type="button" class="header__user-dropdown-item header__user-dropdown-item--danger" id="headerSignOutDropdownBtn">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+        <polyline points="16 17 21 12 16 7"/>
+        <line x1="21" y1="12" x2="9" y2="12"/>
+      </svg>
+      Вийти
+    </button>
+  `;
+
+  wrap.appendChild(dropdown);
+
+  document.getElementById('headerSignOutDropdownBtn')?.addEventListener('click', async () => {
+    closeUserDropdown();
+    await signOut();
+  });
+
+  document.addEventListener('click', (e) => {
+    const avatarBtn = document.getElementById('headerAuthBtn');
+    if (!avatarBtn?.contains(e.target) && !dropdown.contains(e.target)) {
+      closeUserDropdown();
+    }
+  });
+}
+
+function toggleUserDropdown() {
+  const dropdown = document.getElementById('headerUserDropdown');
+  if (!dropdown) return;
+  dropdown.hidden ? openUserDropdown() : closeUserDropdown();
+}
+
+function openUserDropdown() {
+  const dropdown = document.getElementById('headerUserDropdown');
+  if (dropdown) {
+    dropdown.hidden = false;
+    document.getElementById('headerAuthBtn')?.classList.add('is-open');
+  }
+}
+
+function closeUserDropdown() {
+  const dropdown = document.getElementById('headerUserDropdown');
+  if (dropdown) {
+    dropdown.hidden = true;
+    document.getElementById('headerAuthBtn')?.classList.remove('is-open');
   }
 }
 
