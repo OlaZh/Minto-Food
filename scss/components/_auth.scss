@@ -189,6 +189,35 @@
         border-color: var(--color-accent);
       }
     }
+
+    &__password-wrap {
+      position: relative;
+
+      input {
+        width: 100%;
+        padding-right: 42px;
+        box-sizing: border-box;
+      }
+    }
+
+    &__eye {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--color-text-secondary);
+      padding: 4px;
+      line-height: 0;
+      transition: color 0.2s;
+
+      &:hover,
+      &--active {
+        color: var(--color-accent);
+      }
+    }
   }
 }
 

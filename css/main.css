@@ -3735,6 +3735,30 @@ textarea:-webkit-autofill:focus {
   outline: none;
   border-color: var(--color-accent);
 }
+.auth-modal__form .form-group__password-wrap {
+  position: relative;
+}
+.auth-modal__form .form-group__password-wrap input {
+  width: 100%;
+  padding-right: 42px;
+  box-sizing: border-box;
+}
+.auth-modal__form .form-group__eye {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-text-secondary);
+  padding: 4px;
+  line-height: 0;
+  transition: color 0.2s;
+}
+.auth-modal__form .form-group__eye:hover, .auth-modal__form .form-group__eye--active {
+  color: var(--color-accent);
+}
 
 /* ================= ПОМИЛКА / УСПІХ ================= */
 .auth-modal__error {
@@ -13308,3 +13332,5 @@ input:checked + .settings-toggle__track::after {
   font-size: 0.75rem;
   color: var(--color-text-secondary);
 }
+
+/*# sourceMappingURL=main.css.map */

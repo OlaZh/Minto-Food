@@ -394,7 +394,12 @@ function createAuthModalHTML() {
             </div>
             <div class="form-group">
               <label>Пароль</label>
-              <input type="password" id="loginPassword" placeholder="••••••••" required />
+              <div class="form-group__password-wrap">
+                <input type="password" id="loginPassword" placeholder="••••••••" required />
+                <button type="button" class="form-group__eye" data-target="loginPassword" aria-label="Показати пароль">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                </button>
+              </div>
             </div>
             <p class="auth-modal__error" id="loginError" hidden></p>
             <button type="submit" class="auth-modal__submit">Увійти</button>
@@ -433,7 +438,12 @@ function createAuthModalHTML() {
             </div>
             <div class="form-group">
               <label>Пароль</label>
-              <input type="password" id="registerPassword" placeholder="Мінімум 6 символів" required />
+              <div class="form-group__password-wrap">
+                <input type="password" id="registerPassword" placeholder="Мінімум 6 символів" required />
+                <button type="button" class="form-group__eye" data-target="registerPassword" aria-label="Показати пароль">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                </button>
+              </div>
             </div>
             <p class="auth-modal__error" id="registerError" hidden></p>
             <p class="auth-modal__success" id="registerSuccess" hidden></p>
@@ -470,6 +480,17 @@ function initAuthModal() {
   // Google логін
   document.getElementById('authGoogleBtn')?.addEventListener('click', signInWithGoogle);
   document.getElementById('authGoogleBtnReg')?.addEventListener('click', signInWithGoogle);
+
+  // Показати/сховати пароль
+  modal.querySelectorAll('.form-group__eye').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const input = document.getElementById(btn.dataset.target);
+      if (!input) return;
+      const isHidden = input.type === 'password';
+      input.type = isHidden ? 'text' : 'password';
+      btn.classList.toggle('form-group__eye--active', isHidden);
+    });
+  });
 
   // Форма логіну
   document.getElementById('loginForm')?.addEventListener('submit', async (e) => {
