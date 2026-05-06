@@ -524,16 +524,19 @@ function buildActiveItem(item) {
     : '';
 
   const cbId = `shop-cb-${item.id}`;
+  // ВАЖЛИВО: <label> містить ТІЛЬКИ чекбокс + його візуал.
+  // info/amount винесені на рівень <li>, бо <div> всередині <label> — невалідний HTML
+  // і ламає поведінку на iOS Safari.
   li.innerHTML = `
-    <label class="shop-item__check-label" for="${cbId}" style="flex:1;min-width:0;gap:var(--space-sm)">
+    <label class="shop-item__check-label" for="${cbId}">
       <input type="checkbox" class="shop-item__checkbox" id="${cbId}" ${item.is_checked ? 'checked' : ''} aria-label="Куплено">
       <span class="shop-item__custom-check"></span>
-      <div class="shop-item__info">
-        <span class="shop-item__name">${escapeHTML(item.name)}</span>
-        ${item.note ? `<span class="shop-item__note">${escapeHTML(item.note)}</span>` : ''}
-      </div>
-      ${amountText ? `<span class="shop-item__amount">${escapeHTML(amountText)}</span>` : ''}
     </label>
+    <div class="shop-item__info">
+      <span class="shop-item__name">${escapeHTML(item.name)}</span>
+      ${item.note ? `<span class="shop-item__note">${escapeHTML(item.note)}</span>` : ''}
+    </div>
+    ${amountText ? `<span class="shop-item__amount">${escapeHTML(amountText)}</span>` : ''}
     <div class="shop-item__actions">
       <button class="shop-item__btn shop-item__btn--edit" aria-label="Редагувати">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -551,31 +554,31 @@ function buildActiveItem(item) {
     </div>
   `;
 
-  // touch-події завжди спливають на iOS — на відміну від click через div всередині label
-  let _startY = 0;
-  li.addEventListener('touchstart', e => {
-    _startY = e.touches[0].clientY;
-  }, { passive: true });
-  li.addEventListener('touchend', e => {
+  // Один click handler на весь <li>. Без touch-подій, без ghost-кліків.
+  // cursor:pointer на .shop-item (CSS) робить ВСІ діти "клікабельними" для iOS,
+  // тому click event тепер файриться при тапі на будь-яке місце рядка.
+  li.addEventListener('click', e => {
     if (e.target.closest('.shop-item__actions')) return;
-    if (Math.abs(e.changedTouches[0].clientY - _startY) > 8) return;
-    e.preventDefault();
-    const cb = li.querySelector('.shop-item__checkbox');
-    const next = !cb.checked;
-    cb.checked = next;
-    toggleItem(item.id, next);
-  }, { passive: false });
 
-  // десктоп — click на label, ghost-click після touchend вже заблоковано
-  li.querySelector('.shop-item__check-label').addEventListener('click', e => {
-    e.preventDefault();
     const cb = li.querySelector('.shop-item__checkbox');
-    const next = !cb.checked;
-    cb.checked = next;
-    toggleItem(item.id, next);
+
+    // Якщо клік був по label/input/custom-check — браузер уже перемкнув чекбокс.
+    // Якщо по info/name/note/amount — перемикаємо вручну.
+    const clickedLabel = e.target.closest('.shop-item__check-label');
+    if (!clickedLabel) {
+      cb.checked = !cb.checked;
+    }
+    toggleItem(item.id, cb.checked);
   });
-  li.querySelector('.shop-item__btn--edit').addEventListener('click', e => { e.stopPropagation(); openEditModal(item, null); });
-  li.querySelector('.shop-item__btn--delete').addEventListener('click', e => { e.stopPropagation(); deleteItem(item.id); });
+
+  li.querySelector('.shop-item__btn--edit').addEventListener('click', e => {
+    e.stopPropagation();
+    openEditModal(item, null);
+  });
+  li.querySelector('.shop-item__btn--delete').addEventListener('click', e => {
+    e.stopPropagation();
+    deleteItem(item.id);
+  });
 
   return li;
 }
