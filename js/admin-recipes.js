@@ -40,7 +40,7 @@ export async function loadRecipes() {
   let query = supabase
     .from('recipes')
     .select(`
-      id, name_ua, name_en, photo_url, status, created_at, user_id,
+      id, name_ua, name_en, image_url, status, created_at, user_id,
       author:profiles!recipes_user_id_fkey (id, full_name, email, is_banned)
     `)
     .eq('status', 'published');
@@ -93,8 +93,8 @@ function _buildRow(recipe, isSpam) {
 
   const name   = recipe.name_ua || recipe.name_en || 'Без назви';
   const author = recipe.author;
-  const thumb  = recipe.photo_url
-    ? `<img class="admin-recipe-row__thumb" src="${recipe.photo_url}" alt="" loading="lazy">`
+  const thumb  = recipe.image_url
+    ? `<img class="admin-recipe-row__thumb" src="${recipe.image_url}" alt="" loading="lazy">`
     : `<div class="admin-recipe-row__thumb"></div>`;
 
   row.innerHTML = `
@@ -152,8 +152,8 @@ async function _delete(recipe) {
 
 function _openDrawer(recipe) {
   const name  = recipe.name_ua || recipe.name_en || 'Без назви';
-  const thumb = recipe.photo_url
-    ? `<img src="${recipe.photo_url}" alt="${name}" style="width:100%;border-radius:8px;margin-bottom:16px">`
+  const thumb = recipe.image_url
+    ? `<img src="${recipe.image_url}" alt="${name}" style="width:100%;border-radius:8px;margin-bottom:16px">`
     : '';
   openDrawer(name, `
     ${thumb}

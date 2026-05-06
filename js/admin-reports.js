@@ -46,7 +46,7 @@ export async function loadReports() {
 
   let query = supabase
     .from('recipe_reports')
-    .select('id, reason, comment, created_at, status, recipe_id, reporter_id, recipe:recipes (id, name_ua, name_en, photo_url, status, user_id)');
+    .select('id, reason, comment, created_at, status, recipe_id, reporter_id, recipe:recipes (id, name_ua, name_en, image_url, status, user_id)');
 
   if (_filters.status) query = query.eq('status', _filters.status);
   if (_filters.type)   query = query.eq('reason', _filters.type);
@@ -120,8 +120,8 @@ function _buildCard(report, grouped) {
   const recipe    = report.recipe;
   const reporter  = report.reporter;
   const author    = recipe?.author;
-  const thumb     = recipe?.photo_url
-    ? `<img class="admin-report-card__recipe-thumb" src="${recipe.photo_url}" alt="" loading="lazy">`
+  const thumb     = recipe?.image_url
+    ? `<img class="admin-report-card__recipe-thumb" src="${recipe.image_url}" alt="" loading="lazy">`
     : `<div class="admin-report-card__recipe-thumb"></div>`;
   const name = recipe?.name_ua || recipe?.name_en || 'Без назви';
 
@@ -272,8 +272,8 @@ async function _bulkAction(status) {
 
 function _openRecipeDrawer(recipe) {
   const name  = recipe.name_ua || recipe.name_en || 'Без назви';
-  const thumb = recipe.photo_url
-    ? `<img src="${recipe.photo_url}" alt="${name}" style="width:100%;border-radius:8px;margin-bottom:16px">`
+  const thumb = recipe.image_url
+    ? `<img src="${recipe.image_url}" alt="${name}" style="width:100%;border-radius:8px;margin-bottom:16px">`
     : '';
   openDrawer(name, `
     ${thumb}
