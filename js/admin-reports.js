@@ -46,7 +46,7 @@ export async function loadReports() {
 
   let query = supabase
     .from('recipe_reports')
-    .select('id, reason, comment, created_at, status, recipe_id, reporter_id, recipe:recipes (id, name_ua, name_en, image, status, user_id)');
+    .select('id, reason, admin_notes, created_at, status, recipe_id, reporter_id, recipe:recipes (id, name_ua, name_en, image, status, user_id)');
 
   if (_filters.status) query = query.eq('status', _filters.status);
   if (_filters.type)   query = query.eq('reason', _filters.type);
@@ -76,7 +76,7 @@ export async function loadReports() {
   if (allIds.length) {
     const { data: profiles } = await supabase
       .from('profiles')
-      .select('id, full_name, email, is_banned')
+      .select('id, full_name, is_banned')
       .in('id', allIds);
     profilesMap = Object.fromEntries((profiles || []).map(p => [p.id, p]));
   }
@@ -134,11 +134,11 @@ function _buildCard(report, grouped) {
           <div class="admin-report-card__recipe-name">${name}</div>
           <div class="admin-report-card__meta">
             ${typePillHTML(report.reason)}
-            <span>Автор: <b>${author?.full_name || author?.email || '—'}</b>${author?.is_banned ? ' 🚫' : ''}</span>
-            <span>Скаржник: ${reporter?.full_name || reporter?.email || '—'}</span>
+            <span>Автор: <b>${author?.full_name || '—'}</b>${author?.is_banned ? ' 🚫' : ''}</span>
+            <span>Скаржник: ${reporter?.full_name || '—'}</span>
             <span>${formatDate(report.created_at)}</span>
           </div>
-          ${report.comment ? `<div class="admin-report-card__comment">"${report.comment}"</div>` : ''}
+          ${report.admin_notes ? `<div class="admin-report-card__comment">"${report.admin_notes}"</div>` : ''}
         </div>
       </div>
     </div>
@@ -206,7 +206,7 @@ async function _handleAction(action, report) {
     if (!recipeAuthor) return;
     const ok = await confirm(
       'Забанити користувача',
-      `Акаунт "${recipeAuthor.full_name || recipeAuthor.email}" буде заблоковано. Усі його опубліковані рецепти стануть draft. Усі pending скарги на нього будуть auto-resolved.`,
+      `Акаунт "${recipeAuthor.full_name || '—'}" буде заблоковано. Усі його опубліковані рецепти стануть draft. Усі pending скарги на нього будуть auto-resolved.`,
       'Забанити'
     );
     if (!ok) return;

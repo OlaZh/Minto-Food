@@ -31,7 +31,7 @@ export async function loadUsers() {
 
   let query = supabase
     .from('profiles')
-    .select('id, full_name, email, is_admin, is_banned, created_at')
+    .select('id, full_name, is_admin, is_banned, created_at')
     .order('created_at', { ascending: false })
     .limit(50);
 
@@ -74,7 +74,7 @@ function _buildRow(user, recipeCount) {
   row.className = 'admin-user-row' + (user.is_banned ? ' admin-user-row--banned' : '');
   row.dataset.id = user.id;
 
-  const name = user.full_name || user.email || user.id.slice(0, 8);
+  const name = user.full_name || user.id.slice(0, 8);
 
   row.innerHTML = `
     <div class="admin-user-row__info">
@@ -84,7 +84,7 @@ function _buildRow(user, recipeCount) {
         ${user.is_banned ? '<span style="font-size:.7rem;background:#ef4444;color:#fff;border-radius:4px;padding:1px 5px;margin-left:4px">BANNED</span>' : ''}
       </div>
       <div class="admin-user-row__meta">
-        <span>${user.email || '—'}</span>
+        <span>${user.full_name || user.id.slice(0, 8)}</span>
         <span>Рецептів: ${recipeCount}</span>
         <span>З ${formatDate(user.created_at)}</span>
       </div>
@@ -111,7 +111,7 @@ function _buildRow(user, recipeCount) {
 }
 
 async function _ban(user, row) {
-  const name = user.full_name || user.email || 'користувача';
+  const name = user.full_name || user.id.slice(0, 8) || 'користувача';
   const ok = await confirm(
     'Забанити',
     `Акаунт "${name}" буде заблоковано. Всі published рецепти стануть draft.`,
@@ -129,7 +129,7 @@ async function _ban(user, row) {
 }
 
 async function _unban(user, row) {
-  const ok = await confirm('Розбан', `Розблокувати "${user.full_name || user.email}"?`);
+  const ok = await confirm('Розбан', `Розблокувати "${user.full_name || user.id.slice(0, 8)}"?`);
   if (!ok) return;
   await supabase.from('profiles').update({ is_banned: false }).eq('id', user.id);
   await logAction('profiles', user.id, 'unban');
@@ -141,7 +141,7 @@ async function _toggleAdmin(user, row) {
   const action = newVal ? 'надати' : 'зняти';
   const ok = await confirm(
     `${newVal ? 'Надати' : 'Зняти'} права адміна`,
-    `${action} права адміна для "${user.full_name || user.email}"?`
+    `${action} права адміна для "${user.full_name || user.id.slice(0, 8)}"?`
   );
   if (!ok) return;
   await supabase.from('profiles').update({ is_admin: newVal }).eq('id', user.id);
@@ -152,7 +152,7 @@ async function _toggleAdmin(user, row) {
 async function _deleteUser(user, row) {
   const ok = await confirm(
     'Видалити акаунт',
-    `Акаунт "${user.full_name || user.email}" та всі пов'язані дані будуть видалені. Цю дію не можна скасувати.`,
+    `Акаунт "${user.full_name || user.id.slice(0, 8)}" та всі пов'язані дані будуть видалені. Цю дію не можна скасувати.`,
     'Видалити'
   );
   if (!ok) return;

@@ -39,10 +39,7 @@ export async function loadRecipes() {
 
   let query = supabase
     .from('recipes')
-    .select(`
-      id, name_ua, name_en, image, status, created_at, user_id,
-      author:profiles!recipes_user_id_fkey (id, full_name, email, is_banned)
-    `)
+    .select('id, name_ua, name_en, image, status, created_at, user_id')
     .eq('status', 'published');
 
   if (_filters.days !== '0') {
@@ -70,17 +67,30 @@ export async function loadRecipes() {
     return;
   }
 
-  // Підраховуємо рецепти автора за день (spam detection)
+  // Batch-завантаження авторів
+  const authorIds = [...new Set(data.map(r => r.user_id).filter(Boolean))];
+  let authorsMap = {};
+  if (authorIds.length) {
+    const { data: profiles } = await supabase
+      .from('profiles')
+      .select('id, full_name, is_banned')
+      .in('id', authorIds);
+    authorsMap = Object.fromEntries((profiles || []).map(p => [p.id, p]));
+  }
+
+  const enriched = data.map(r => ({ ...r, author: authorsMap[r.user_id] || null }));
+
+  // Spam detection — >10 рецептів за день від одного автора
   const authorDayCount = {};
   const today = new Date(); today.setHours(0, 0, 0, 0);
-  data.forEach((r) => {
+  enriched.forEach((r) => {
     if (new Date(r.created_at) >= today) {
       authorDayCount[r.user_id] = (authorDayCount[r.user_id] || 0) + 1;
     }
   });
 
   listEl.innerHTML = '';
-  data.forEach((recipe) => {
+  enriched.forEach((recipe) => {
     const isSpam = (authorDayCount[recipe.user_id] || 0) > 10;
     listEl.appendChild(_buildRow(recipe, isSpam));
   });
@@ -102,7 +112,7 @@ function _buildRow(recipe, isSpam) {
     <div class="admin-recipe-row__info">
       <div class="admin-recipe-row__name">${name}</div>
       <div class="admin-recipe-row__meta">
-        <span class="admin-recipe-row__author">${author?.full_name || author?.email || '—'}${isSpam ? ' ⚠️ >10 за день' : ''}</span>
+        <span class="admin-recipe-row__author">${author?.full_name || '—'}${isSpam ? ' ⚠️ >10 за день' : ''}</span>
         <span>${formatDate(recipe.created_at)}</span>
         ${recipe.status !== 'published' ? `<span style="color:var(--color-text-muted)">(${recipe.status})</span>` : ''}
       </div>

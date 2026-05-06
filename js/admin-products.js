@@ -35,7 +35,7 @@ export async function loadProducts() {
 
   let query = supabase
     .from('products')
-    .select('id, name_ua, name_en, category, kcal, protein, fat, carbs, created_at, user_id')
+    .select('id, name_ua, name_en, category_id, kcal, protein, fat, carbs, created_at, user_id')
     .not('user_id', 'is', null);
 
   if (_filters.search) {
@@ -80,7 +80,7 @@ function _buildRow(product) {
       <div class="admin-product-row__meta">
         ${kcal}
         ${product.protein != null ? ` · Б:${product.protein}г Ж:${product.fat}г В:${product.carbs}г` : ''}
-        <span style="color:var(--color-text-muted)">${product.category || ''}</span>
+        <span style="color:var(--color-text-muted)">${product.category_id || ''}</span>
         · ${formatDate(product.created_at)}
       </div>
     </div>
