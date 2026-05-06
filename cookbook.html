@@ -43,7 +43,9 @@
               >
             </li>
             <li>
-              <a href="shopping-list.html" class="header__nav-link" data-i18n="navShoppingList">Список покупок</a>
+              <a href="shopping-list.html" class="header__nav-link" data-i18n="navShoppingList"
+                >Список покупок</a
+              >
             </li>
             <li>
               <a
@@ -126,15 +128,26 @@
     <main>
       <div class="container">
         <div class="cookbook-page">
-
-          <div class="cookbook-page__header">
-            <h1 class="cookbook-page__title">Книга рецептів</h1>
-            <button class="cookbook-page__add-btn cookbook-page__add-btn--mobile js-add-book-btn">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-              </svg>
-              Нова книга
-            </button>
+          <div class="page-header">
+            <h1 class="page-header__title">Книга рецептів</h1>
+            <div class="page-header__actions page-header__actions--right">
+              <button class="cookbook-page__add-btn cookbook-page__add-btn--mobile js-add-book-btn">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round">
+                  <line x1="12" y1="5" x2="12" y2="19" />
+                  <line x1="5" y1="12" x2="19" y2="12" />
+                </svg>
+                Нова книга
+              </button>
+            </div>
           </div>
 
           <div class="cookbook-layout">
@@ -143,9 +156,21 @@
             </section>
 
             <aside class="cookbook-sidebar">
-              <button class="cookbook-page__add-btn cookbook-page__add-btn--sidebar js-add-book-btn" id="addBookBtn">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                  <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+              <button
+                class="cookbook-page__add-btn cookbook-page__add-btn--sidebar js-add-book-btn"
+                id="addBookBtn">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round">
+                  <line x1="12" y1="5" x2="12" y2="19" />
+                  <line x1="5" y1="12" x2="19" y2="12" />
                 </svg>
                 Нова книга
               </button>
@@ -153,7 +178,6 @@
               <div class="cookbook-recent" id="recentRecipes"></div>
             </aside>
           </div>
-
         </div>
       </div>
     </main>
@@ -183,7 +207,9 @@
 
         <div class="cookbook-modal__content cookbook-modal__content--active">
           <div class="cookbook-recipes" id="bookRecipes">
-            <p class="cookbook-recipes__empty">Тут поки немає рецептів. Додай їх зі сторінки "Рецепти"!</p>
+            <p class="cookbook-recipes__empty">
+              Тут поки немає рецептів. Додай їх зі сторінки "Рецепти"!
+            </p>
           </div>
         </div>
       </div>
