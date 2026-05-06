@@ -13,6 +13,7 @@ import {
   deleteActivity as deleteActivityFromStorage,
   setTheme,
   getLang,
+  setLang,
 } from './storage.js';
 import { initCustomSelect, setSelectValue, initSelectsGlobalListener } from './ui-components.js';
 
@@ -1390,9 +1391,8 @@ function initSettings(user) {
   });
 
   // Language buttons
-  const langSwitcher = document.getElementById('langSwitcher');
   function syncLangBtns() {
-    const current = langSwitcher?.value || getLang();
+    const current = getLang();
     document.querySelectorAll('.settings-lang-btn').forEach((btn) => {
       btn.classList.toggle('active', btn.dataset.lang === current);
     });
@@ -1401,10 +1401,7 @@ function initSettings(user) {
 
   document.querySelectorAll('.settings-lang-btn').forEach((btn) => {
     btn.addEventListener('click', () => {
-      if (langSwitcher) {
-        langSwitcher.value = btn.dataset.lang;
-        langSwitcher.dispatchEvent(new Event('change'));
-      }
+      setLang(btn.dataset.lang);
       syncLangBtns();
     });
   });
