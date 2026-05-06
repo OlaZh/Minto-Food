@@ -793,11 +793,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
-  function openCreateProductModal(prefillName = '') {
+  let _pendingBarcode = null;
+
+  function openCreateProductModal(prefillName = '', barcode = null) {
     if (!createProductModal) return;
 
-    // Скидаємо флаг при відкритті
     kcalManuallyEdited = false;
+    _pendingBarcode = barcode;
 
     cpNameInput.value = prefillName;
     cpKcalInput.value = '';
@@ -812,6 +814,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   function closeCreateProductModal() {
     if (!createProductModal) return;
     createProductModal.hidden = true;
+    _pendingBarcode = null;
   }
 
   async function saveCustomProduct() {
@@ -832,36 +835,44 @@ document.addEventListener('DOMContentLoaded', async () => {
       data: { user },
     } = await supabase.auth.getUser();
 
-    const { data, error } = await supabase
-      .from('products')
-      .insert([
-        {
-          name_ua: name,
-          kcal,
-          protein,
-          fat,
-          carbs,
-          user_id: user.id,
-          is_verified: false,
-        },
-      ])
-      .select()
-      .single();
+    let savedProduct;
 
-    if (error) {
-      console.error('Помилка збереження:', error);
-      alert(lang === 'ua' ? 'Помилка збереження' : 'Save error');
-      return;
+    if (_pendingBarcode) {
+      // Barcode-originated manual entry → save to scanned_products (no moderation needed)
+      const { data, error } = await supabase
+        .from('scanned_products')
+        .upsert([{ barcode: _pendingBarcode, name_ua: name, kcal, protein, fat, carbs, source: 'manual' }], {
+          onConflict: 'barcode',
+        })
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Помилка збереження:', error);
+        alert(lang === 'ua' ? 'Помилка збереження' : 'Save error');
+        return;
+      }
+      savedProduct = { ...data, name: data.name_ua };
+    } else {
+      // Regular manual product creation → save to products (goes through moderation)
+      const { data, error } = await supabase
+        .from('products')
+        .insert([{ name_ua: name, kcal, protein, fat, carbs, user_id: user.id, is_verified: false }])
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Помилка збереження:', error);
+        alert(lang === 'ua' ? 'Помилка збереження' : 'Save error');
+        return;
+      }
+      savedProduct = { ...data, name: data.name_ua };
     }
 
-    // Автоматично вибираємо створений продукт
-    selectedFood = {
-      ...data,
-      name: data.name_ua,
-      source: 'product',
-    };
+    _pendingBarcode = null;
 
-    nameInput.value = data.name_ua;
+    selectedFood = { ...savedProduct, source: 'product' };
+    nameInput.value = savedProduct.name;
     resultsList.innerHTML = '';
 
     closeCreateProductModal();
@@ -1070,8 +1081,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     weightInput.focus();
   });
 
-  document.addEventListener('scanner:manualEntry', () => {
-    openCreateProductModal();
+  document.addEventListener('scanner:manualEntry', (e) => {
+    openCreateProductModal('', e.detail?.barcode || null);
   });
   // Експорт для sidebar-days.js
   window.mealsAPI = {

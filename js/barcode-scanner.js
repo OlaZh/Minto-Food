@@ -436,7 +436,7 @@ async function handleBarcodeScan(barcode) {
       statusEl.className = 'scanner-modal__status scanner-modal__status--error';
       statusEl.querySelector('.scanner-modal__manual-cta').addEventListener('click', () => {
         closeScanner();
-        document.dispatchEvent(new CustomEvent('scanner:manualEntry'));
+        document.dispatchEvent(new CustomEvent('scanner:manualEntry', { detail: { barcode } }));
       });
     }
   } catch (error) {
