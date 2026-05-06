@@ -46,14 +46,7 @@ export async function loadReports() {
 
   let query = supabase
     .from('recipe_reports')
-    .select(`
-      id, reason, comment, created_at, status,
-      recipe:recipes (
-        id, name_ua, name_en, photo_url, status, user_id,
-        author:profiles!recipes_user_id_fkey (id, full_name, email, is_banned)
-      ),
-      reporter:profiles!recipe_reports_reporter_id_fkey (id, full_name, email)
-    `);
+    .select('id, reason, comment, created_at, status, recipe_id, reporter_id, recipe:recipes (id, name_ua, name_en, photo_url, status, user_id)');
 
   if (_filters.status) query = query.eq('status', _filters.status);
   if (_filters.type)   query = query.eq('reason', _filters.type);
@@ -74,8 +67,29 @@ export async function loadReports() {
     return;
   }
 
+  // Збираємо унікальні id для batch-завантаження profiles
+  const authorIds   = [...new Set(data.map(r => r.recipe?.user_id).filter(Boolean))];
+  const reporterIds = [...new Set(data.map(r => r.reporter_id).filter(Boolean))];
+  const allIds      = [...new Set([...authorIds, ...reporterIds])];
+
+  let profilesMap = {};
+  if (allIds.length) {
+    const { data: profiles } = await supabase
+      .from('profiles')
+      .select('id, full_name, email, is_banned')
+      .in('id', allIds);
+    profilesMap = Object.fromEntries((profiles || []).map(p => [p.id, p]));
+  }
+
+  // Збагачуємо дані
+  const enriched = data.map(r => ({
+    ...r,
+    recipe: r.recipe ? { ...r.recipe, author: profilesMap[r.recipe.user_id] || null } : null,
+    reporter: profilesMap[r.reporter_id] || null,
+  }));
+
   // Групуємо по recipe_id — якщо кілька скарг на один рецепт
-  const byRecipe = _groupByRecipe(data);
+  const byRecipe = _groupByRecipe(enriched);
 
   listEl.innerHTML = '';
   _bulk.clear();
