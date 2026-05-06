@@ -3,18 +3,25 @@
 // ============================================================
 
 import { supabase } from './supabaseClient.js';
-import { isAdmin } from './auth.js';
 
 // ---- Admin guard ----
 
 export async function requireAdmin() {
-  const { data: { session } } = await supabase.auth.getSession();
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
   if (!session) {
     window.location.href = 'index.html';
     return false;
   }
-  const admin = await isAdmin();
-  if (!admin) {
+
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('is_admin')
+    .eq('id', session.user.id)
+    .single();
+
+  if (error || !data?.is_admin) {
     window.location.href = 'index.html';
     return false;
   }
@@ -90,11 +97,13 @@ export class BulkSelect {
     });
   }
 
-  get selected() { return [...this._selected]; }
+  get selected() {
+    return [...this._selected];
+  }
 
   clear() {
     this._selected.clear();
-    this._listEl?.querySelectorAll('input[type=checkbox]').forEach(cb => (cb.checked = false));
+    this._listEl?.querySelectorAll('input[type=checkbox]').forEach((cb) => (cb.checked = false));
     this._update();
   }
 
@@ -108,14 +117,16 @@ export class BulkSelect {
 // ---- Action logger ----
 
 export async function logAction(targetTable, targetId, actionType, payload = null) {
-  const { data: { session } } = await supabase.auth.getSession();
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
   if (!session) return;
 
   await supabase.from('admin_actions').insert({
-    admin_id:     session.user.id,
+    admin_id: session.user.id,
     target_table: targetTable,
-    target_id:    String(targetId),
-    action_type:  actionType,
+    target_id: String(targetId),
+    action_type: actionType,
     payload,
   });
 }
@@ -125,18 +136,21 @@ export async function logAction(targetTable, targetId, actionType, payload = nul
 export function formatDate(iso) {
   if (!iso) return '—';
   return new Date(iso).toLocaleString('uk-UA', {
-    day: '2-digit', month: '2-digit', year: 'numeric',
-    hour: '2-digit', minute: '2-digit',
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
   });
 }
 
 export function reportTypeLabel(type) {
   const map = {
-    copyright:     'Авторські права',
-    spam:          'Спам',
+    copyright: 'Авторські права',
+    spam: 'Спам',
     inappropriate: 'Неприйнятний',
-    incorrect:     'Некоректно',
-    other:         'Інше',
+    incorrect: 'Некоректно',
+    other: 'Інше',
   };
   return map[type] || type;
 }
