@@ -2,120 +2,306 @@
 <html lang="uk">
   <head>
     <meta charset="UTF-8" />
-    <title>Швидка чистка фото 🧹</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <style>
-      body {
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        background: #1a1a1a;
-        color: white;
-        padding: 20px;
-      }
-      .grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-        gap: 15px;
-      }
-      .card {
-        background: #2a2a2a;
-        padding: 10px;
-        border-radius: 12px;
-        text-align: center;
-        transition: 0.2s;
-        position: relative;
-      }
-      .card img {
-        width: 100%;
-        height: 120px;
-        object-fit: cover;
-        border-radius: 8px;
-        cursor: pointer;
-        border: 3px solid transparent;
-      }
-      .card img:hover {
-        border-color: #ff4d4d;
-        transform: scale(1.02);
-      }
-      .card.deleted {
-        opacity: 0.2;
-        filter: grayscale(1);
-        transform: scale(0.9);
-      }
-      .name {
-        font-size: 11px;
-        margin-top: 8px;
-        height: 32px;
-        overflow: hidden;
-        line-height: 1.2;
-      }
-      .counter {
-        margin-bottom: 20px;
-        font-size: 1.2em;
-        color: #00d4ff;
-      }
-      .instruction {
-        color: #aaa;
-        margin-bottom: 20px;
-      }
-    </style>
-  </head>
-  <body>
-    <h1>Майстер Модерації 📸</h1>
-    <p class="instruction">
-      Просто клікай на "Айранів", "Песиків" та інший треш — вони миттєво стануть NULL у базі.
-    </p>
-    <div id="stat" class="counter">Завантаження бази...</div>
-
-    <div id="grid" class="grid"></div>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Адмінка — Minto</title>
 
     <script>
-      // Встав сюди свої дані з Supabase
-      const SUPABASE_URL = 'https://xpaibteyntflrixmigfx.supabase.co';
-      const SUPABASE_KEY = 'sb_publishable_5aziCmaq0rxAJ24MznPycw_eY5iVZxZ';
-      const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-      async function loadProducts() {
-        const { data, error } = await supabaseClient
-          .from('products')
-          .select('id, name_ua, image')
-          .not('image', 'is', null) // Показуємо тільки ті, де є фото
-          .order('id', { ascending: false });
-
-        if (error) {
-          console.error(error);
-          return;
-        }
-
-        const container = document.getElementById('grid');
-        document.getElementById('stat').innerText = `Знайдено продуктів з фото: ${data.length}`;
-
-        container.innerHTML = '';
-        data.forEach((p) => {
-          const div = document.createElement('div');
-          div.className = 'card';
-          div.innerHTML = `
-                    <img src="${p.image}" onclick="removeImg(${p.id}, this)" title="Клік для видалення">
-                    <div class="name">${p.name_ua}</div>
-                `;
-          container.appendChild(div);
-        });
-      }
-
-      async function removeImg(id, imgElement) {
-        const { error } = await supabaseClient
-          .from('products')
-          .update({ image: null })
-          .eq('id', id);
-
-        if (!error) {
-          imgElement.parentElement.classList.add('deleted');
-          console.log(`Продукт ${id} очищено`);
-        } else {
-          alert('Помилка при видаленні!');
-        }
-      }
-
-      loadProducts();
+      (function () {
+        const theme = localStorage.getItem('theme');
+        if (theme === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+      })();
     </script>
+
+    <link rel="stylesheet" href="./css/main.css" />
+  </head>
+
+  <body class="page admin-page">
+
+    <!-- MOBILE BLOCK -->
+    <div class="admin-mobile-block" id="adminMobileBlock" hidden>
+      <div class="admin-mobile-block__inner">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+          <rect x="5" y="2" width="14" height="20" rx="2"/>
+          <line x1="12" y1="18" x2="12" y2="18.01"/>
+        </svg>
+        <h2>Адмінка доступна тільки на десктопі</h2>
+        <p>Будь ласка, відкрийте цю сторінку на пристрої з шириною екрану ≥ 1024px.</p>
+        <a href="index.html" class="btn btn--primary">На головну</a>
+      </div>
+    </div>
+
+    <!-- DESKTOP LAYOUT -->
+    <div class="admin-layout" id="adminLayout">
+
+      <!-- SIDEBAR -->
+      <aside class="admin-sidebar">
+        <div class="admin-sidebar__logo">
+          <a href="index.html">
+            <img src="img/logo.svg" alt="Minto" />
+          </a>
+          <span class="admin-sidebar__badge">Admin</span>
+        </div>
+
+        <nav class="admin-sidebar__nav">
+          <button class="admin-sidebar__item admin-sidebar__item--active" data-section="reports">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+              <line x1="12" y1="9" x2="12" y2="13"/>
+              <line x1="12" y1="17" x2="12.01" y2="17"/>
+            </svg>
+            <span>Скарги</span>
+            <span class="admin-sidebar__count" id="sidebarReportsCount" hidden></span>
+          </button>
+
+          <button class="admin-sidebar__item" data-section="recipes">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M3 2h4l2 7H3L3 2z"/>
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v5"/>
+              <circle cx="16" cy="16" r="5"/>
+              <line x1="16" y1="13" x2="16" y2="19"/>
+              <line x1="13" y1="16" x2="19" y2="16"/>
+            </svg>
+            <span>Рецепти</span>
+            <span class="admin-sidebar__count" id="sidebarRecipesCount" hidden></span>
+          </button>
+
+          <button class="admin-sidebar__item" data-section="products">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/>
+              <line x1="7" y1="7" x2="7.01" y2="7"/>
+            </svg>
+            <span>Продукти</span>
+            <span class="admin-sidebar__count" id="sidebarProductsCount" hidden></span>
+          </button>
+
+          <button class="admin-sidebar__item" data-section="users">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+              <circle cx="9" cy="7" r="4"/>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+            </svg>
+            <span>Юзери</span>
+          </button>
+        </nav>
+
+        <div class="admin-sidebar__footer">
+          <button class="theme-toggle" type="button" aria-label="Змінити тему">
+            <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
+              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+              <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
+              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+            </svg>
+            <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+            </svg>
+          </button>
+          <a href="index.html" class="admin-sidebar__back-link">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <line x1="19" y1="12" x2="5" y2="12"/>
+              <polyline points="12 19 5 12 12 5"/>
+            </svg>
+            На сайт
+          </a>
+        </div>
+      </aside>
+
+      <!-- MAIN CONTENT -->
+      <div class="admin-main">
+
+        <!-- TOP STATS BAR -->
+        <div class="admin-stats-bar" id="adminStatsBar">
+          <div class="admin-stats-bar__pill admin-stats-bar__pill--reports" id="statReports">
+            <span class="admin-stats-bar__pill-label">Скарги</span>
+            <span class="admin-stats-bar__pill-value" id="statReportsVal">—</span>
+          </div>
+          <div class="admin-stats-bar__pill" id="statRecipesToday">
+            <span class="admin-stats-bar__pill-label">Нові рецепти сьогодні</span>
+            <span class="admin-stats-bar__pill-value" id="statRecipesTodayVal">—</span>
+          </div>
+          <div class="admin-stats-bar__pill" id="statActiveUsers">
+            <span class="admin-stats-bar__pill-label">Активних юзерів (7д)</span>
+            <span class="admin-stats-bar__pill-value" id="statActiveUsersVal">—</span>
+          </div>
+          <div class="admin-stats-bar__pill" id="statUserProducts">
+            <span class="admin-stats-bar__pill-label">Продуктів на модерації</span>
+            <span class="admin-stats-bar__pill-value" id="statUserProductsVal">—</span>
+          </div>
+        </div>
+
+        <!-- SECTION: REPORTS -->
+        <section class="admin-section" id="sectionReports">
+          <div class="admin-section__header">
+            <h1 class="admin-section__title">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                <line x1="12" y1="9" x2="12" y2="13"/>
+                <line x1="12" y1="17" x2="12.01" y2="17"/>
+              </svg>
+              Скарги на рецепти
+            </h1>
+            <div class="admin-section__controls">
+              <div class="admin-filters" id="reportsFilters">
+                <select class="admin-select" id="filterReportType">
+                  <option value="">Всі типи</option>
+                  <option value="copyright">Авторські права</option>
+                  <option value="spam">Спам</option>
+                  <option value="inappropriate">Неприйнятний контент</option>
+                  <option value="incorrect">Некоректна інформація</option>
+                  <option value="other">Інше</option>
+                </select>
+                <select class="admin-select" id="filterReportStatus">
+                  <option value="pending">Очікують</option>
+                  <option value="resolved">Вирішені</option>
+                  <option value="dismissed">Відхилені</option>
+                  <option value="">Всі</option>
+                </select>
+                <select class="admin-select" id="filterReportSort">
+                  <option value="date_desc">Нові спочатку</option>
+                  <option value="date_asc">Старі спочатку</option>
+                  <option value="type">За типом</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- BULK ACTIONS -->
+          <div class="admin-bulk" id="reportsBulk" hidden>
+            <span class="admin-bulk__count" id="reportsBulkCount">0 вибрано</span>
+            <button class="btn btn--sm btn--outline" id="bulkDismiss">Відхилити вибрані</button>
+            <button class="btn btn--sm btn--outline" id="bulkResolve">Вирішити вибрані</button>
+            <button class="btn btn--sm btn--ghost" id="bulkClear">Скасувати</button>
+          </div>
+
+          <!-- REPORTS LIST -->
+          <div class="admin-list" id="reportsList">
+            <!-- скелетон / картки рендеряться з JS -->
+            <div class="admin-skeleton-list">
+              <div class="admin-skeleton-card"></div>
+              <div class="admin-skeleton-card"></div>
+              <div class="admin-skeleton-card"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- SECTION: RECIPES -->
+        <section class="admin-section admin-section--hidden" id="sectionRecipes">
+          <div class="admin-section__header">
+            <h1 class="admin-section__title">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M3 2h4l2 7H3L3 2z"/>
+              </svg>
+              Нові рецепти
+            </h1>
+            <div class="admin-section__controls">
+              <input type="search" class="admin-search" id="searchRecipes" placeholder="Пошук по назві або інгредієнтах…" />
+              <div class="admin-filters">
+                <select class="admin-select" id="filterRecipesDays">
+                  <option value="7">За 7 днів</option>
+                  <option value="14">За 14 днів</option>
+                  <option value="30">За 30 днів</option>
+                  <option value="0">Всі</option>
+                </select>
+                <select class="admin-select" id="filterRecipesSort">
+                  <option value="date_desc">Нові спочатку</option>
+                  <option value="date_asc">Старі спочатку</option>
+                  <option value="author">За автором</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="admin-list" id="recipesList">
+            <div class="admin-skeleton-list">
+              <div class="admin-skeleton-card"></div>
+              <div class="admin-skeleton-card"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- SECTION: PRODUCTS -->
+        <section class="admin-section admin-section--hidden" id="sectionProducts">
+          <div class="admin-section__header">
+            <h1 class="admin-section__title">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/>
+                <line x1="7" y1="7" x2="7.01" y2="7"/>
+              </svg>
+              Юзерські продукти
+            </h1>
+            <div class="admin-section__controls">
+              <input type="search" class="admin-search" id="searchProducts" placeholder="Пошук продукту…" />
+              <div class="admin-filters">
+                <select class="admin-select" id="filterProductsSort">
+                  <option value="date_desc">Нові спочатку</option>
+                  <option value="name">За назвою</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="admin-list" id="productsList">
+            <div class="admin-skeleton-list">
+              <div class="admin-skeleton-card"></div>
+              <div class="admin-skeleton-card"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- SECTION: USERS -->
+        <section class="admin-section admin-section--hidden" id="sectionUsers">
+          <div class="admin-section__header">
+            <h1 class="admin-section__title">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                <circle cx="9" cy="7" r="4"/>
+              </svg>
+              Користувачі
+            </h1>
+            <div class="admin-section__controls">
+              <input type="search" class="admin-search" id="searchUsers" placeholder="Пошук по email або імені…" />
+            </div>
+          </div>
+          <div class="admin-list" id="usersList">
+            <div class="admin-skeleton-list">
+              <div class="admin-skeleton-card"></div>
+              <div class="admin-skeleton-card"></div>
+            </div>
+          </div>
+        </section>
+
+      </div><!-- /admin-main -->
+
+    </div><!-- /admin-layout -->
+
+    <!-- RECIPE PREVIEW DRAWER -->
+    <div class="admin-drawer" id="adminDrawer" hidden>
+      <div class="admin-drawer__overlay" id="adminDrawerOverlay"></div>
+      <div class="admin-drawer__panel">
+        <div class="admin-drawer__header">
+          <h2 class="admin-drawer__title" id="adminDrawerTitle">Перегляд рецепту</h2>
+          <button class="admin-drawer__close" id="adminDrawerClose" aria-label="Закрити">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
+        </div>
+        <div class="admin-drawer__body" id="adminDrawerBody"></div>
+      </div>
+    </div>
+
+    <!-- CONFIRMATION MODAL -->
+    <div class="admin-confirm-modal" id="adminConfirmModal" hidden>
+      <div class="admin-confirm-modal__overlay" id="adminConfirmOverlay"></div>
+      <div class="admin-confirm-modal__window">
+        <h3 class="admin-confirm-modal__title" id="adminConfirmTitle">Підтвердіть дію</h3>
+        <p class="admin-confirm-modal__text" id="adminConfirmText"></p>
+        <div class="admin-confirm-modal__actions">
+          <button class="btn btn--ghost" id="adminConfirmCancel">Скасувати</button>
+          <button class="btn btn--danger" id="adminConfirmOk">Підтвердити</button>
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="./js/admin.js"></script>
   </body>
 </html>

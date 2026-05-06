@@ -13,9 +13,10 @@ import { getLang } from './storage.js';
 // =============================================================
 
 let currentUser = null;
-
-// Callback який викликається при зміні стану авторизації
 let onAuthChangeCallback = null;
+
+// isAdmin кеш на сесію — null = не перевірено, true/false = відомо
+let _isAdminCache = null;
 
 // =============================================================
 // ІНІЦІАЛІЗАЦІЯ — викликати на кожній сторінці
@@ -60,6 +61,7 @@ export async function initAuth(onAuthChange = null) {
     }
 
     if (event === 'SIGNED_OUT') {
+      _isAdminCache = null;
       showToast('Ви вийшли з акаунту');
     }
   });
@@ -88,6 +90,24 @@ export function getCurrentUser() {
 
 export function isLoggedIn() {
   return currentUser !== null;
+}
+
+// =============================================================
+// ПЕРЕВІРКА РОЛІ АДМІНА
+// =============================================================
+
+export async function isAdmin() {
+  if (!currentUser) return false;
+  if (_isAdminCache !== null) return _isAdminCache;
+
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('is_admin')
+    .eq('id', currentUser.id)
+    .single();
+
+  _isAdminCache = !error && data?.is_admin === true;
+  return _isAdminCache;
 }
 
 // =============================================================
@@ -271,6 +291,12 @@ function ensureUserDropdown(wrap) {
       </svg>
       Мій профіль
     </a>
+    <a href="admin.html" class="header__user-dropdown-item header__user-dropdown-item--admin" id="headerAdminLink" hidden>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+      </svg>
+      Адмінка
+    </a>
     <div class="header__user-dropdown-divider"></div>
     <button type="button" class="header__user-dropdown-item header__user-dropdown-item--danger" id="headerSignOutDropdownBtn">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -283,6 +309,11 @@ function ensureUserDropdown(wrap) {
   `;
 
   wrap.appendChild(dropdown);
+
+  isAdmin().then((admin) => {
+    const adminLink = document.getElementById('headerAdminLink');
+    if (adminLink) adminLink.hidden = !admin;
+  });
 
   document.getElementById('headerSignOutDropdownBtn')?.addEventListener('click', async () => {
     closeUserDropdown();
