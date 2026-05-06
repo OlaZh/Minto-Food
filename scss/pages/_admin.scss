@@ -691,6 +691,8 @@
   align-items: center;
   justify-content: center;
 
+  &[hidden] { display: none; }
+
   &__overlay {
     position: absolute;
     inset: 0;

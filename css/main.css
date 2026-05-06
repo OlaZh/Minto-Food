@@ -13244,6 +13244,9 @@ input:checked + .settings-toggle__track::after {
   align-items: center;
   justify-content: center;
 }
+.admin-confirm-modal[hidden] {
+  display: none;
+}
 .admin-confirm-modal__overlay {
   position: absolute;
   inset: 0;
