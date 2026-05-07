@@ -63,11 +63,11 @@
     &--right { right: 0; }
   }
 
-  @media (max-width: 480px) {
-    padding: 16px 0 8px;
+  @media (max-width: 768px) {
+    padding: 14px 48px 8px;
 
     &__title {
-      font-size: 22px;
+      font-size: 20px;
     }
   }
 }

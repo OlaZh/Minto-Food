@@ -569,12 +569,12 @@ textarea:-webkit-autofill:focus {
 .page-header__actions--right {
   right: 0;
 }
-@media (max-width: 480px) {
+@media (max-width: 768px) {
   .page-header {
-    padding: 16px 0 8px;
+    padding: 14px 48px 8px;
   }
   .page-header__title {
-    font-size: 22px;
+    font-size: 20px;
   }
 }
 
@@ -5030,14 +5030,27 @@ textarea:-webkit-autofill:focus {
 }
 @media (max-width: 768px) {
   .day-week-nav {
-    gap: 6px;
+    gap: 4px;
+  }
+  .day-week-nav__arrow {
+    display: none;
+  }
+  .day-week-nav__pills {
+    overflow-x: visible;
+    padding: 0;
+    justify-content: space-between;
   }
   .day-week-nav__pill {
-    min-width: 56px;
+    flex: 1;
+    min-width: 0;
+    width: auto;
     height: 44px;
-    padding: 0 10px;
+    padding: 0 2px;
     flex-direction: column;
     gap: 2px;
+  }
+  .day-week-nav__pill-abbr {
+    font-size: 10px;
   }
   .day-week-nav__pill-num {
     font-size: 13px;
@@ -5832,27 +5845,27 @@ textarea:-webkit-autofill:focus {
 @media (max-width: 768px) {
   .day-week-nav {
     flex-wrap: nowrap;
-    gap: 6px;
+    gap: 4px;
     padding: var(--space-sm) 0 var(--space-md);
   }
   .day-week-nav__arrow {
-    order: 0;
-    flex-shrink: 0;
+    display: none;
   }
   .day-week-nav__pills {
     order: 0;
     flex: 1;
     width: auto;
-    overflow-x: auto;
+    overflow-x: visible;
     overflow-y: hidden;
-    justify-content: flex-start;
+    justify-content: space-between;
     padding: 0;
   }
   .day-week-nav__pill {
-    flex: 0 0 auto;
-    width: 52px;
-    min-height: 48px;
-    padding: 6px 4px;
+    flex: 1;
+    min-width: 0;
+    width: auto;
+    min-height: 44px;
+    padding: 5px 2px;
     flex-direction: column;
     gap: 2px;
   }
@@ -6176,18 +6189,16 @@ textarea:-webkit-autofill:focus {
   .recipe-page__title {
     font-size: 18px;
   }
-  .recipe-page__intro {
-    gap: var(--space-sm);
-  }
-  .recipe-page__intro .btn-new-recipes span,
-  .recipe-page__intro .btn-add-recipe span {
+  .page-header__actions .btn-new-recipes span,
+  .page-header__actions .btn-add-recipe span {
     display: none;
   }
-  .recipe-page__intro .btn-new-recipes,
-  .recipe-page__intro .btn-add-recipe {
-    padding: var(--space-sm);
-    min-width: 40px;
-    width: 40px;
+  .page-header__actions .btn-new-recipes,
+  .page-header__actions .btn-add-recipe {
+    padding: 8px;
+    width: 36px;
+    height: 36px;
+    min-width: 0;
     justify-content: center;
   }
   .recipe-grid {
@@ -10284,6 +10295,17 @@ input:checked + .settings-toggle__track::after {
 @media (max-width: 600px) {
   .cookbook-page__add-btn--mobile {
     display: flex;
+  }
+}
+@media (max-width: 768px) {
+  .cookbook-page__add-btn--mobile {
+    padding: 8px;
+    width: 36px;
+    height: 36px;
+    min-width: 0;
+  }
+  .cookbook-page__add-btn--mobile span {
+    display: none;
   }
 }
 

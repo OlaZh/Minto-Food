@@ -133,6 +133,27 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // Свайп для зміни тижня (мобільний)
+  const pillsEl = document.querySelector('.day-week-nav__pills');
+  if (pillsEl) {
+    let swipeStartX = 0;
+    let swipeStartY = 0;
+    pillsEl.addEventListener('touchstart', e => {
+      swipeStartX = e.touches[0].clientX;
+      swipeStartY = e.touches[0].clientY;
+    }, { passive: true });
+    pillsEl.addEventListener('touchend', e => {
+      const dx = e.changedTouches[0].clientX - swipeStartX;
+      const dy = e.changedTouches[0].clientY - swipeStartY;
+      if (Math.abs(dx) < 40 || Math.abs(dy) > Math.abs(dx)) return;
+      weekOffset += dx < 0 ? 1 : -1;
+      updateWeekLabel();
+      updatePillDates();
+      const activeBtn = document.querySelector('.sidebar__day-btn[aria-current="true"]');
+      if (activeBtn) selectDay(activeBtn, dayMapping[activeBtn.dataset.day]);
+    }, { passive: true });
+  }
+
   // Ініціалізація
   updateWeekLabel();
   updatePillDates();

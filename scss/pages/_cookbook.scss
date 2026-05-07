@@ -55,6 +55,17 @@
     @media (max-width: 600px) {
       display: flex;
     }
+
+    @media (max-width: 768px) {
+      padding: 8px;
+      width: 36px;
+      height: 36px;
+      min-width: 0;
+
+      span {
+        display: none;
+      }
+    }
   }
 }
 

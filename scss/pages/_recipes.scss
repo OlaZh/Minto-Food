@@ -285,22 +285,22 @@
       font-size: 18px;
     }
 
-    // Кнопки хедера — тільки іконки на мобільному
-    &__intro {
-      gap: var(--space-sm);
+  }
 
-      .btn-new-recipes span,
-      .btn-add-recipe span {
-        display: none;
-      }
+  // Кнопки хедера рецептів — тільки іконки на мобільному
+  .page-header__actions {
+    .btn-new-recipes span,
+    .btn-add-recipe span {
+      display: none;
+    }
 
-      .btn-new-recipes,
-      .btn-add-recipe {
-        padding: var(--space-sm);
-        min-width: 40px;
-        width: 40px;
-        justify-content: center;
-      }
+    .btn-new-recipes,
+    .btn-add-recipe {
+      padding: 8px;
+      width: 36px;
+      height: 36px;
+      min-width: 0;
+      justify-content: center;
     }
   }
 
