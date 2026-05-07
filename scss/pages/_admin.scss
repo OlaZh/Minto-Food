@@ -124,6 +124,16 @@
 
 // ---- Mobile layout overrides ----
 @media (max-width: 1023px) {
+  // Ховаємо сайдбар і скидаємо grid — незалежно від JS-класу
+  .admin-layout {
+    display: block;
+
+    .admin-sidebar { display: none; }
+
+    .admin-main { min-height: auto; }
+  }
+
+  // JS додає цей клас — лишаємо для сумісності
   .admin-layout--mobile {
     display: block;
 

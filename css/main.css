@@ -12769,6 +12769,15 @@ input:checked + .settings-toggle__track::after {
 }
 
 @media (max-width: 1023px) {
+  .admin-layout {
+    display: block;
+  }
+  .admin-layout .admin-sidebar {
+    display: none;
+  }
+  .admin-layout .admin-main {
+    min-height: auto;
+  }
   .admin-layout--mobile {
     display: block;
   }
