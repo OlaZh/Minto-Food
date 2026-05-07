@@ -4,13 +4,14 @@
 
 import { supabase } from './supabaseClient.js';
 import {
-  confirm, openDrawer, logAction, clearStatsCache,
-  formatDate, typePillHTML, emptyState, skeletonList, BulkSelect,
+  confirm, confirmWithReason, withUndo, openDrawer, logAction, clearStatsCache,
+  formatDate, typePillHTML, parseReason, emptyState, skeletonList, BulkSelect,
 } from './admin-utils.js';
 import { loadStats } from './admin-stats.js';
 
 let _bulk = null;
-let _filters = { type: '', status: 'pending', sort: 'date_desc' };
+let _filters = { type: '', status: 'pending', sort: 'date_desc', dateFrom: '', dateTo: '' };
+let _realtimeChannel = null;
 
 export async function initReports() {
   _bulk = new BulkSelect({
@@ -32,11 +33,33 @@ export async function initReports() {
     loadReports();
   });
 
+  document.getElementById('filterReportDateFrom')?.addEventListener('change', (e) => {
+    _filters.dateFrom = e.target.value;
+    loadReports();
+  });
+  document.getElementById('filterReportDateTo')?.addEventListener('change', (e) => {
+    _filters.dateTo = e.target.value;
+    loadReports();
+  });
+
   document.getElementById('bulkDismiss')?.addEventListener('click', () => _bulkAction('dismissed'));
   document.getElementById('bulkResolve')?.addEventListener('click', () => _bulkAction('resolved'));
   document.getElementById('bulkClear')?.addEventListener('click', () => _bulk.clear());
 
   await loadReports();
+  _subscribeRealtime();
+}
+
+function _subscribeRealtime() {
+  if (_realtimeChannel) return;
+  _realtimeChannel = supabase
+    .channel('admin-reports-watch')
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'recipe_reports' }, () => {
+      clearStatsCache();
+      loadStats();
+      loadReports();
+    })
+    .subscribe();
 }
 
 export async function loadReports() {
@@ -46,10 +69,12 @@ export async function loadReports() {
 
   let query = supabase
     .from('recipe_reports')
-    .select('id, reason, admin_notes, created_at, status, recipe_id, reporter_id, recipe:recipes (id, name_ua, name_en, image, status, user_id)');
+    .select('id, reason, admin_notes, created_at, status, recipe_id, reporter_id, recipe:recipes (id, name_ua, name_en, image, status, user_id, kcal, protein, fat, carbs, steps, category)');
 
-  if (_filters.status) query = query.eq('status', _filters.status);
-  if (_filters.type)   query = query.eq('reason', _filters.type);
+  if (_filters.status)   query = query.eq('status', _filters.status);
+  if (_filters.type)     query = query.ilike('reason', `${_filters.type}%`);
+  if (_filters.dateFrom) query = query.gte('created_at', _filters.dateFrom);
+  if (_filters.dateTo)   query = query.lte('created_at', _filters.dateTo + 'T23:59:59');
 
   if (_filters.sort === 'date_asc')  query = query.order('created_at', { ascending: true });
   else if (_filters.sort === 'type') query = query.order('reason');
@@ -124,6 +149,7 @@ function _buildCard(report, grouped) {
     ? `<img class="admin-report-card__recipe-thumb" src="${recipe.image}" alt="" loading="lazy">`
     : `<div class="admin-report-card__recipe-thumb"></div>`;
   const name = recipe?.name_ua || recipe?.name_en || 'Без назви';
+  const { comment: reportComment } = parseReason(report.reason);
 
   card.innerHTML = `
     <input type="checkbox" class="admin-report-card__checkbox" aria-label="Вибрати скаргу">
@@ -138,6 +164,7 @@ function _buildCard(report, grouped) {
             <span>Скаржник: ${reporter?.full_name || '—'}</span>
             <span>${formatDate(report.created_at)}</span>
           </div>
+          ${reportComment ? `<div class="admin-report-card__reporter-comment">💬 ${reportComment}</div>` : ''}
           ${report.admin_notes ? `<div class="admin-report-card__comment">"${report.admin_notes}"</div>` : ''}
         </div>
       </div>
@@ -182,41 +209,53 @@ async function _handleAction(action, report) {
   if (action === 'dismiss') {
     const ok = await confirm('Відхилити скаргу', `Скаргу на "${name}" буде відхилено. Рецепт залишається опублікованим.`);
     if (!ok) return;
-    await _resolveReport(report.id, 'dismissed');
-    await logAction('recipe_reports', report.id, 'dismiss');
+    await withUndo(`Скаргу на "${name}" відхилено`, async () => {
+      await _resolveReport(report.id, 'dismissed');
+      await logAction('recipe_reports', report.id, 'dismiss');
+      clearStatsCache(); await loadStats(); await loadReports();
+    });
+    return;
   }
 
   if (action === 'resolve') {
-    const ok = await confirm('Прибрати рецепт з публіки', `Рецепт "${name}" буде переведено в draft. Скаргу буде вирішено.`);
-    if (!ok) return;
-    await supabase.from('recipes').update({ status: 'draft' }).eq('id', recipe.id);
-    await _resolveReport(report.id, 'resolved');
-    await logAction('recipes', recipe.id, 'set_draft', { from: 'admin_report' });
+    const result = await confirmWithReason('Прибрати рецепт з публіки', `Рецепт "${name}" буде переведено в draft.`, 'Прибрати');
+    if (!result) return;
+    await withUndo(`Рецепт "${name}" переведено в draft`, async () => {
+      await supabase.from('recipes').update({ status: 'draft' }).eq('id', recipe.id);
+      await _resolveReport(report.id, 'resolved');
+      await logAction('recipes', recipe.id, 'set_draft', { from: 'admin_report', ...result });
+      clearStatsCache(); await loadStats(); await loadReports();
+    });
+    return;
   }
 
   if (action === 'delete') {
-    const ok = await confirm('Видалити рецепт', `Рецепт "${name}" та всі пов'язані скарги будуть видалені назавжди. Цю дію не можна скасувати.`, 'Видалити');
-    if (!ok) return;
-    await supabase.from('recipes').delete().eq('id', recipe.id);
-    await logAction('recipes', recipe.id, 'delete', { reason: 'admin_moderation' });
+    const result = await confirmWithReason('Видалити рецепт', `Рецепт "${name}" буде видалено назавжди.`, 'Видалити');
+    if (!result) return;
+    await withUndo(`Рецепт "${name}" видалено`, async () => {
+      await supabase.from('recipes').delete().eq('id', recipe.id);
+      await logAction('recipes', recipe.id, 'delete', { reason: result.reason, comment: result.comment });
+      clearStatsCache(); await loadStats(); await loadReports();
+    });
+    return;
   }
 
   if (action === 'ban') {
     const recipeAuthor = report.recipe?.author;
     if (!recipeAuthor) return;
-    const ok = await confirm(
+    const result = await confirmWithReason(
       'Забанити користувача',
-      `Акаунт "${recipeAuthor.full_name || '—'}" буде заблоковано. Усі його опубліковані рецепти стануть draft. Усі pending скарги на нього будуть auto-resolved.`,
+      `Акаунт "${recipeAuthor.full_name || '—'}" буде заблоковано. Усі його рецепти стануть draft.`,
       'Забанити'
     );
-    if (!ok) return;
-    await _banUser(recipeAuthor.id);
-    await logAction('profiles', recipeAuthor.id, 'ban', { reason: 'admin_moderation' });
+    if (!result) return;
+    await withUndo(`Юзера "${recipeAuthor.full_name || '—'}" забанено`, async () => {
+      await _banUser(recipeAuthor.id);
+      await logAction('profiles', recipeAuthor.id, 'ban', { reason: result.reason, comment: result.comment });
+      clearStatsCache(); await loadStats(); await loadReports();
+    });
+    return;
   }
-
-  clearStatsCache();
-  await loadStats();
-  await loadReports();
 }
 
 async function _resolveReport(reportId, status) {
@@ -270,15 +309,66 @@ async function _bulkAction(status) {
   await loadReports();
 }
 
-function _openRecipeDrawer(recipe) {
+async function _openRecipeDrawer(recipe) {
   const name  = recipe.name_ua || recipe.name_en || 'Без назви';
   const thumb = recipe.image
     ? `<img src="${recipe.image}" alt="${name}" style="width:100%;border-radius:8px;margin-bottom:16px">`
+    : `<div style="width:100%;height:160px;background:var(--color-bg-secondary);border-radius:8px;margin-bottom:16px;display:flex;align-items:center;justify-content:center;color:var(--color-text-muted);font-size:13px">Без фото</div>`;
+
+  const kcalBlock = (recipe.kcal != null)
+    ? `<div style="display:flex;gap:16px;margin:12px 0;padding:10px 14px;background:var(--color-bg-secondary);border-radius:8px;font-size:13px">
+        <span><b>${recipe.kcal}</b> ккал</span>
+        <span>Б: <b>${recipe.protein ?? '—'}</b>г</span>
+        <span>Ж: <b>${recipe.fat ?? '—'}</b>г</span>
+        <span>В: <b>${recipe.carbs ?? '—'}</b>г</span>
+      </div>`
     : '';
+
+  // Підгружаємо інгредієнти
+  let ingredientsBlock = '';
+  const { data: ingRows } = await supabase
+    .from('product_recipe')
+    .select('amount, unit, ingredient:products(name_ua, name_en)')
+    .eq('recipe_id', recipe.id);
+
+  if (ingRows?.length) {
+    const items = ingRows.map(r => {
+      const ingName = r.ingredient?.name_ua || r.ingredient?.name_en || '—';
+      return `<li style="padding:2px 0">${ingName} — ${r.amount}${r.unit || 'г'}</li>`;
+    }).join('');
+    ingredientsBlock = `<p style="margin:12px 0 4px"><b>Інгредієнти:</b></p><ul style="margin:0;padding-left:18px;font-size:13px;line-height:1.7">${items}</ul>`;
+  }
+
+  const stepsBlock = recipe.steps
+    ? `<p style="margin:12px 0 4px"><b>Приготування:</b></p><p style="font-size:13px;line-height:1.7;white-space:pre-wrap">${recipe.steps}</p>`
+    : '';
+
+  // Mini-history автора
+  let authorHistoryBlock = '';
+  if (recipe.user_id) {
+    const [{ count: recipeCount }, { count: reportCount }, { data: actionRows }] = await Promise.all([
+      supabase.from('recipes').select('*', { count: 'exact', head: true }).eq('user_id', recipe.user_id),
+      supabase.from('recipe_reports').select('*', { count: 'exact', head: true }).eq('recipe_id', recipe.id),
+      supabase.from('admin_actions').select('created_at').eq('target_id', recipe.user_id).eq('action_type', 'ban').order('created_at', { ascending: false }).limit(3),
+    ]);
+    const banHistory = actionRows?.length
+      ? `<span style="color:#ef4444">🚫 Банів: ${actionRows.length}</span>`
+      : '<span style="color:var(--color-text-muted)">Банів не було</span>';
+    authorHistoryBlock = `
+      <div style="background:var(--color-bg-secondary);border-radius:8px;padding:10px 14px;margin:10px 0;font-size:12px;display:flex;gap:16px;flex-wrap:wrap">
+        <span>📄 Рецептів: <b>${recipeCount ?? '—'}</b></span>
+        <span>🚩 Скарг на цей рецепт: <b>${reportCount ?? '—'}</b></span>
+        ${banHistory}
+      </div>`;
+  }
+
   openDrawer(name, `
     ${thumb}
-    <p><b>ID:</b> ${recipe.id}</p>
-    <p><b>Статус:</b> ${recipe.status}</p>
-    <p><b>Назва:</b> ${recipe.name_ua || '—'} / ${recipe.name_en || '—'}</p>
+    <a href="recipes.html?recipe=${recipe.id}" target="_blank" class="btn btn--sm btn--ghost" style="margin-bottom:8px;display:inline-flex">👁 Відкрити як користувач</a>
+    ${kcalBlock}
+    <p style="font-size:12px;color:var(--color-text-muted)">ID: ${recipe.id} · Статус: ${recipe.status}${recipe.category ? ` · ${recipe.category}` : ''}</p>
+    ${authorHistoryBlock}
+    ${ingredientsBlock}
+    ${stepsBlock}
   `);
 }

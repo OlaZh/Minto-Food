@@ -220,125 +220,143 @@
 
 ---
 
-### 🗄 Інфраструктура БД (фундамент)
+### 🗄 Інфраструктура БД
 
-- [ ] Колонка `is_admin BOOLEAN DEFAULT false` в `profiles`
-- [ ] Колонка `is_banned BOOLEAN DEFAULT false` в `profiles`
-- [ ] Колонка `status TEXT DEFAULT 'pending'` в `recipe_reports` (`pending` / `resolved` / `dismissed`)
-- [ ] Колонка `resolved_by UUID REFERENCES auth.users(id)` в `recipe_reports`
-- [ ] Колонка `resolved_at TIMESTAMPTZ` в `recipe_reports`
-- [ ] Таблиця `admin_actions` для аудиту (хто-що-коли-навіщо) — опційно, але дуже бажано для глобального продукту
-- [ ] Встановити `is_admin = true` для власного user_id вручну через SQL
+- [x] ✅ Колонка `is_admin BOOLEAN DEFAULT false` в `profiles`
+- [x] ✅ Колонка `is_banned BOOLEAN DEFAULT false` в `profiles`
+- [x] ✅ Колонка `status TEXT DEFAULT 'pending'` в `recipe_reports`
+- [x] ✅ Колонка `resolved_by UUID` в `recipe_reports`
+- [x] ✅ Колонка `resolved_at TIMESTAMPTZ` в `recipe_reports`
+- [x] ✅ Таблиця `admin_actions`
+- [x] ✅ `is_admin = true` встановлено для адмін-акаунту
 
 ### 🔒 RLS-політики
 
-- [ ] `recipe_reports`: SELECT / UPDATE / DELETE для `is_admin = true`
-- [ ] `recipes`: UPDATE (status, content) / DELETE для адмінів — додатково до існуючих політик власника
-- [ ] `products`: UPDATE / DELETE для адмінів (модерація юзерських продуктів)
-- [ ] `profiles`: SELECT всіх юзерів / UPDATE `is_banned` та `is_admin` для адмінів
-- [ ] Тест: звичайний юзер НЕ має доступу до жодної admin-операції (через REST і через Postman)
-- [ ] Тест: anon ключ не дає доступу навіть з `is_admin=true` (бо `auth.uid()` = NULL)
+- [x] ✅ `recipe_reports`: SELECT / UPDATE / DELETE для адмінів
+- [x] ✅ `recipes`: UPDATE / DELETE для адмінів
+- [x] ✅ `products`: UPDATE / DELETE для адмінів
+- [x] ✅ `profiles`: SELECT всіх / UPDATE для адмінів
+- [ ] Тест: звичайний юзер НЕ має доступу до admin-операцій
+- [ ] Тест: anon ключ не дає доступу
 
 ### 🚪 Routing & Auth
 
-- [ ] Створити `/admin.html` (skeleton)
-- [ ] У `js/auth.js` додати helper `async function isAdmin()` (читає `profiles.is_admin` для поточного юзера, кешує результат на сесію)
-- [ ] Захист сторінки: на завантаженні перевірка `isAdmin()` → якщо `false` → redirect на `index.html`
-- [ ] Лінк "Адмінка" в хедері (видимий тільки якщо `is_admin=true`)
-- [ ] Лінк "Адмінка" в мобільному меню "Ще" (видимий тільки для адмінів)
+- [x] ✅ `/admin.html` створено
+- [x] ✅ `isAdmin()` в `auth.js` з кешем на сесію
+- [x] ✅ `requireAdmin()` в `admin-utils.js` — redirect якщо не адмін
+- [x] ✅ Лінк "Адмінка" в хедері (hidden якщо не адмін)
+- [x] ✅ Лінк в мобільному меню "Ще" — видимий тільки для адміна
 
 ### 🎨 Layout
 
-- [ ] Sidebar з 4 вкладками: 🚩 Скарги / 🍳 Рецепти / 🥦 Продукти / 👥 Юзери
-- [ ] Кожна вкладка з лічильником-badge (невирішене / нове)
-- [ ] Top stats bar: 4 pills з ключовими метриками (постійно зверху)
-- [ ] Mobile (<1024px): "Адмінка доступна на десктопі" + лінк назад на index
-- [ ] SCSS-партіал `scss/pages/_admin.scss` (reuse форм-системи з ФАЗИ 0)
-- [ ] Color coding для типів скарг: `copyright` червоний, `spam` помаранчевий, `inappropriate` пурпурний, `incorrect` синій, `other` сірий
+- [x] ✅ Sidebar з 4 вкладками + badges
+- [x] ✅ Top stats bar: 4 pills
+- [x] ✅ Mobile block (<1024px)
+- [x] ✅ `scss/pages/_admin.scss`
+- [x] ✅ Color coding типів скарг (copyright/spam/inappropriate/incorrect/other)
 
-### 🚩 Секція 1: Скарги (СТАРТУЄМО ТУТ)
+### 🚩 Секція 1: Скарги
 
-- [ ] Список `recipe_reports WHERE status='pending'` + JOIN на `recipes` (превʼю/назва) і `profiles` (автор + reporter)
-- [ ] Сортування: за датою (нові зверху) / за типом / групування за `recipe_id` (якщо >1 скарга на 1 рецепт — згорнути в одну картку)
-- [ ] Фільтри: тип скарги, статус (pending/resolved/dismissed), діапазон дат
-- [ ] Card per report: превʼю рецепту + автор + тип (color-coded pill) + коментар reporter-а + дата
-- [ ] Дії per report:
-  - [ ] **Відхилити скаргу** → `status='dismissed'` + `resolved_by` + `resolved_at`
-  - [ ] **Прибрати з публіки** → `recipe.status='draft'` + report → `resolved`
-  - [ ] **Видалити рецепт** → DELETE recipe (cascade reports), confirmation модалка
-  - [ ] **Бан автора** → `profile.is_banned=true` + автоматичне auto-resolve усіх його pending reports + його опубліковані рецепти → `draft`
-- [ ] Bulk actions: чекбокси + "Відхилити всі вибрані" / "Вирішити всі вибрані"
-- [ ] Превʼю рецепту в правому drawer (reuse `recipe-modal.js` у read-only режимі)
-- [ ] Empty state: "Усе чисто 🌿" коли `pending = 0`
+- [x] ✅ Список `recipe_reports` з batch-завантаженням profiles
+- [x] ✅ Сортування: за датою / за типом
+- [x] ✅ Фільтри: тип скарги (виправлено ilike), статус
+- [x] ✅ Фільтр: діапазон дат (від/до)
+- [x] ✅ Групування по `recipe_id` (>1 скарга — grouped стиль)
+- [x] ✅ Картка: превʼю + автор + pill + коментар скаржника + дата
+- [x] ✅ Відхилити → `dismissed` + `resolved_by` + `resolved_at`
+- [x] ✅ Прибрати з публіки → `draft` + `resolved`
+- [x] ✅ Видалити рецепт → DELETE
+- [x] ✅ Бан автора → `is_banned` + рецепти в draft + auto-resolve pending reports
+- [x] ✅ Bulk actions (чекбокси + Відхилити/Вирішити вибрані)
+- [x] ✅ Drawer: фото, КБЖУ, інгредієнти, кроки, "Відкрити як користувач", mini-history автора
+- [x] ✅ Empty state "Усе чисто 🌿"
 
-### 🍳 Секція 2: Нові рецепти (proactive moderation)
+### 🍳 Секція 2: Нові рецепти
 
-- [ ] Список `recipes WHERE status='published'` за останні 7 днів (default, можна змінити)
-- [ ] Фільтри: категорія, мова (`name_ua`/`en`/`pl`), автор (search input), є фото / нема, є інгредієнти / нема
-- [ ] Сортування: за датою / за автором (групування) / за рейтингом
-- [ ] Quick actions per row:
-  - [ ] Перевести в `draft`
-  - [ ] Видалити (з confirmation)
-  - [ ] Edit (відкрити `recipe-modal` в режимі редагування)
-- [ ] Превʼю рецепту в drawer
-- [ ] Spam detection: підсвітити автора червоним якщо він створив >10 рецептів за день
-- [ ] Пошук по назві/інгредієнтах
+- [x] ✅ Список published рецептів з фільтром по днях
+- [x] ✅ Пошук по назві
+- [x] ✅ Сортування: за датою / за автором
+- [x] ✅ Фільтри: мова (UA/EN), є фото/нема
+- [x] ✅ Фільтр: категорія, є інгредієнти/нема
+- [x] ✅ Сортування за рейтингом
+- [x] ✅ Draft / Видалити
+- [x] ✅ Edit (inline edit drawer: name, category, КБЖУ)
+- [x] ✅ Drawer: фото, КБЖУ, інгредієнти, кроки, mini-history
+- [x] ✅ Spam detection (>10 рецептів за день — червоне підсвічування)
 
 ### 🥦 Секція 3: Юзерські продукти
 
-- [ ] Список `products WHERE user_id IS NOT NULL`
-- [ ] Виявлення дублів через `pg_trgm` similarity (RPC-функція `find_similar_products(name_ua)`)
-- [ ] Колонка "Схоже на" — autosuggest з існуючих загальних продуктів
-- [ ] Quick actions:
-  - [ ] **Схвалити** → `user_id = NULL` (продукт стає загальним)
-  - [ ] **Edit КБЖУ** inline (бо часто це саме помилка нутриції)
-  - [ ] **Видалити**
-  - [ ] **Обʼєднати з існуючим** → модалка пошуку, переносить usage у `product_recipe`/`meals` на target product, потім DELETE source
-- [ ] Фільтри: категорія, мова, є фото / нема
+- [x] ✅ Список `products WHERE user_id IS NOT NULL`
+- [x] ✅ Виявлення дублів через `pg_trgm` (RPC find_similar_products)
+- [x] ✅ "Схоже на" — autosuggest в drawer (поріг 25%)
+- [x] ✅ Схвалити → `user_id = NULL`
+- [x] ✅ Edit КБЖУ inline
+- [x] ✅ Видалити
+- [x] ✅ Обʼєднати з існуючим (RPC merge_product)
+- [x] ✅ Фільтр: є фото/нема
+- [x] ✅ Фільтри: категорія, мова
 
-### 👥 Секція 4: Користувачі (light)
+### 👥 Секція 4: Користувачі
 
-- [ ] Пошук за email/name з debounce 300ms
-- [ ] Таблиця: email, дата реєстрації, кількість рецептів (COUNT з `recipes`), `is_banned`, last_active (з `meals.created_at` MAX)
-- [ ] Дії: бан/розбан / видалити акаунт / toggle `is_admin`
-- [ ] Click row → детальна сторінка зі статистикою юзера (опційно, можна додати в наступному циклі)
+- [x] ✅ Пошук по full_name з debounce 300ms
+- [x] ✅ Пошук по full_name виправлено (email прибрано — колонки нема в profiles)
+- [x] ✅ full_name, дата реєстрації, кількість рецептів, `is_banned`
+- [x] ✅ last_active (з `meals.created_at` MAX)
+- [x] ✅ Бан / Розбан
+- [x] ✅ Видалити акаунт
+- [x] ✅ Toggle `is_admin`
+- [ ] ❌ Click row → детальна сторінка (опційно)
 
-### 📊 Top stats bar (видимий у всіх секціях)
+### 📊 Top stats bar
 
-- [ ] **Pill 1:** невирішених скарг (червоний фон якщо >0)
-- [ ] **Pill 2:** нових опублікованих рецептів сьогодні
-- [ ] **Pill 3:** активних юзерів за 7 днів (DISTINCT `user_id` з `meals`)
-- [ ] **Pill 4:** юзерських продуктів на модерації (`products WHERE user_id IS NOT NULL`)
-- [ ] COUNT-запити з кешем на 5 хв у `localStorage` (щоб не спамити Supabase при перемиканні вкладок)
+- [x] ✅ Pill 1: невирішених скарг (червоний фон якщо >0)
+- [x] ✅ Pill 2: нових рецептів сьогодні
+- [x] ✅ Pill 3: активних юзерів за 7 днів
+- [x] ✅ Pill 4: юзерських продуктів на модерації
+- [x] ✅ Кеш 5 хв у localStorage
 
 ### 🧱 JS-модулі
 
-- [ ] `js/admin.js` — головний контролер + routing між вкладками
-- [ ] `js/admin-reports.js` — секція 1
-- [ ] `js/admin-recipes.js` — секція 2
-- [ ] `js/admin-products.js` — секція 3
-- [ ] `js/admin-users.js` — секція 4
-- [ ] `js/admin-stats.js` — top stats bar
-- [ ] `js/admin-utils.js` — admin guard, confirmation модалка, bulk select helper, action logger
+- [x] ✅ `admin.js`, `admin-reports.js`, `admin-recipes.js`, `admin-products.js`, `admin-users.js`, `admin-stats.js`, `admin-utils.js`
 
 ### 🛡 Безпека
 
-- [ ] ВСІ admin-запити захищені RLS — не покладатися тільки на front-end `isAdmin()` перевірку
-- [ ] Confirmation модалка для всіх destructive дій (видалити, бан)
-- [ ] Логування destructive дій у `admin_actions` (target_table, target_id, action_type, payload, admin_id, created_at)
-- [ ] Тест penetration: відкрити `/admin.html` без авторизації / з не-admin акаунту → redirect
-- [ ] Тест: викликати admin RPC через Postman з anon key → 403
+- [x] ✅ RLS на всіх таблицях
+- [x] ✅ Confirmation + причина модерації для всіх destructive дій
+- [x] ✅ Логування в `admin_actions`
+- [ ] Тест penetration: відкрити без авторизації / з не-admin акаунту → redirect
+- [ ] Тест: anon ключ → 403
 
 ### ✅ QA
 
 - [ ] Тест світлої теми
 - [ ] Тест темної теми
-- [ ] Тест RLS: звичайний юзер не може робити admin-операції (через UI і через прямі API виклики)
-- [ ] Тест workflow: юзер скаржиться → скарга в адмінці → "Прибрати з публіки" → рецепт зникає з "Загальної бази"
-- [ ] Тест каскаду: видалення рецепту → автоматичне видалення повʼязаних reports
-- [ ] Тест бану: бан юзера → усі його published рецепти стають draft, нові скарги на нього auto-resolved
-- [ ] Тест bulk actions: атомарність (або всі, або жодна)
-- [ ] Тест empty states у всіх секціях
+- [ ] Тест workflow: скарга → "Прибрати з публіки" → рецепт зникає
+- [ ] Тест каскаду: видалення рецепту → видалення повʼязаних reports
+- [ ] Тест бану: рецепти → draft, pending reports → auto-resolved
+- [ ] Тест bulk actions
+- [ ] Тест empty states
+
+
+
+---
+
+## 🛡 ФАЗА 10.6: Адмінка — Розширені інструменти модерації
+
+> **Статус:** В роботі (травень 2026)
+
+### ⚡ Зараз — легко і одразу цінно
+
+- [ ] **"Переглянути як користувач"** — кнопка в drawer/картці рецепту, відкриває `/recipe/[id]` в новій вкладці
+- [ ] **Mini-history автора** — в drawer скарги/рецепту: кількість рецептів, кількість скарг, дата реєстрації, чи був бан раніше
+- [ ] **Причина модерації для адмін-дій** — при бані/видаленні вибрати категорію (NSFW / Spam / Scam / Hate speech / Copyright / Dangerous misinformation) + короткий коментар; зберігається в `admin_actions`
+- [ ] **Undo action** — 5-секундний toast з кнопкою "Скасувати" перед тим як реально виконати destructive дію (видалити, забанити)
+
+### 🔮 Наступна фаза — середня складність
+
+- [ ] **Shadow ban** — нове поле `is_shadow_banned` в `profiles`; нові рецепти такого юзера автоматично йдуть у `draft` замість `published`. Ідеально для спамерів і ботів — вони не знають що заблоковані
+- [ ] **Архів порушень (soft delete)** — замість `DELETE` додавати `deleted_at TIMESTAMPTZ`; видалений контент зберігається як evidence, видно в адмінці з фільтром "Архів"
+- [ ] **Auto-flagging розширений** — автопідсвічування підозрілих сигналів: багато посилань у тексті, капслок-спам, підозрілі слова (не блокувати — тільки "увага, перевір")
 
 ---
 

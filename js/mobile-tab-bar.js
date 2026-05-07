@@ -1,4 +1,5 @@
 import { lockScroll, unlockScroll } from './scroll-lock.js';
+import { isAdmin } from './auth.js';
 
 (() => {
   const PAGE_MAP = [
@@ -51,6 +52,12 @@ import { lockScroll, unlockScroll } from './scroll-lock.js';
       label: 'Профіль',
       icon: `<svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`,
     },
+    {
+      href: 'admin.html',
+      label: 'Адмінка',
+      icon: `<svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>`,
+      adminOnly: true,
+    },
   ];
 
   function buildTabBar(activeTab) {
@@ -75,8 +82,8 @@ import { lockScroll, unlockScroll } from './scroll-lock.js';
 
   function buildBottomSheet() {
     const links = SHEET_LINKS.map(
-      ({ href, label, icon }) => `
-      <a href="${href}" class="bottom-sheet__link">${icon}${label}</a>
+      ({ href, label, icon, adminOnly }) => `
+      <a href="${href}" class="bottom-sheet__link"${adminOnly ? ' id="mobileAdminLink" hidden' : ''}>${icon}${label}</a>
     `,
     ).join('');
 
@@ -123,6 +130,11 @@ import { lockScroll, unlockScroll } from './scroll-lock.js';
 
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') closeSheet();
+    });
+
+    isAdmin().then((admin) => {
+      const adminLink = document.getElementById('mobileAdminLink');
+      if (adminLink) adminLink.hidden = !admin;
     });
   }
 

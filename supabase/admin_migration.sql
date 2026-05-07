@@ -182,3 +182,71 @@ CREATE INDEX IF NOT EXISTS idx_recipe_reports_status ON recipe_reports(status);
 CREATE INDEX IF NOT EXISTS idx_admin_actions_admin_id ON admin_actions(admin_id);
 CREATE INDEX IF NOT EXISTS idx_admin_actions_created_at ON admin_actions(created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_profiles_is_admin ON profiles(is_admin) WHERE is_admin = true;
+
+-- ============================================================
+-- ФАЗА 10.5 Додаток: pre-moderation + caring rejection notes
+-- ============================================================
+
+-- Нотатка модератора яку бачить тільки автор рецепту
+ALTER TABLE recipes ADD COLUMN IF NOT EXISTS moderation_note TEXT;
+
+-- Статус 'pending' тепер валідний (якщо є CHECK constraint на status)
+-- Якщо немає constraint — нічого робити не треба
+
+-- ============================================================
+-- ФАЗА 10.5 Додаток: pg_trgm дублі продуктів + merge
+-- ============================================================
+
+-- Увімкнути розширення
+CREATE EXTENSION IF NOT EXISTS pg_trgm;
+
+-- Індекс для швидкого пошуку схожих назв
+CREATE INDEX IF NOT EXISTS idx_products_name_ua_trgm ON products USING gin(name_ua gin_trgm_ops);
+CREATE INDEX IF NOT EXISTS idx_products_name_en_trgm ON products USING gin(name_en gin_trgm_ops);
+
+-- Функція: знайти схожі (не-юзерські) продукти для заданого product_id
+-- Повертає: id, name_ua, name_en, kcal, similarity
+CREATE OR REPLACE FUNCTION find_similar_products(p_product_id INTEGER, p_threshold FLOAT DEFAULT 0.3)
+RETURNS TABLE(id INTEGER, name_ua TEXT, name_en TEXT, kcal NUMERIC, similarity FLOAT)
+LANGUAGE sql SECURITY DEFINER AS $$
+  SELECT
+    p.id,
+    p.name_ua,
+    p.name_en,
+    p.kcal,
+    GREATEST(
+      similarity(COALESCE(src.name_ua,''), COALESCE(p.name_ua,'')),
+      similarity(COALESCE(src.name_en,''), COALESCE(p.name_en,''))
+    ) AS similarity
+  FROM products p
+  CROSS JOIN (SELECT name_ua, name_en FROM products WHERE products.id = p_product_id) src
+  WHERE p.id <> p_product_id
+    AND p.user_id IS NULL
+    AND GREATEST(
+      similarity(COALESCE(src.name_ua,''), COALESCE(p.name_ua,'')),
+      similarity(COALESCE(src.name_en,''), COALESCE(p.name_en,''))
+    ) >= p_threshold
+  ORDER BY similarity DESC
+  LIMIT 10;
+$$;
+
+-- Функція: merge user product → target product
+-- Переносить посилання в product_recipe, потім видаляє юзерський продукт
+CREATE OR REPLACE FUNCTION merge_product(p_from_id INTEGER, p_to_id INTEGER)
+RETURNS VOID
+LANGUAGE plpgsql SECURITY DEFINER AS $$
+BEGIN
+  -- Перевірка: тільки адмін може виконувати merge
+  IF NOT EXISTS (
+    SELECT 1 FROM profiles WHERE id = auth.uid() AND is_admin = true
+  ) THEN
+    RAISE EXCEPTION 'Access denied';
+  END IF;
+
+  -- Переносимо посилання в рецептах
+  UPDATE product_recipe SET ingredient_id = p_to_id WHERE ingredient_id = p_from_id;
+
+  -- Видаляємо оригінальний юзерський продукт
+  DELETE FROM products WHERE id = p_from_id AND user_id IS NOT NULL;
+END;
+$$;

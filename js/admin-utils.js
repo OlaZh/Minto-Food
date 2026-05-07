@@ -62,6 +62,99 @@ function _closeConfirm(result) {
   }
 }
 
+// ---- Confirmation з причиною модерації ----
+
+const MOD_REASONS = [
+  { value: 'nsfw',                 label: 'NSFW' },
+  { value: 'spam',                 label: 'Spam' },
+  { value: 'scam',                 label: 'Scam' },
+  { value: 'hate_speech',          label: 'Hate speech' },
+  { value: 'copyright',            label: 'Copyright' },
+  { value: 'misinformation',       label: 'Dangerous misinformation' },
+  { value: 'inappropriate_content',label: 'Inappropriate content' },
+  { value: 'suspicious_links',     label: 'Suspicious links' },
+  { value: 'bot_activity',         label: 'Bot activity' },
+  { value: 'other',                label: 'Інше' },
+];
+
+export function confirmWithReason(title, text, okLabel = 'Підтвердити') {
+  return new Promise((resolve) => {
+    const options = MOD_REASONS.map(r =>
+      `<option value="${r.value}">${r.label}</option>`
+    ).join('');
+
+    const wrapper = document.createElement('div');
+    wrapper.id = 'adminReasonModal';
+    wrapper.style.cssText = 'position:fixed;inset:0;z-index:1100;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.45)';
+    wrapper.innerHTML = `
+      <div style="background:var(--color-bg-primary);border-radius:16px;padding:28px;width:400px;max-width:90vw;box-shadow:0 8px 32px rgba(0,0,0,.2)">
+        <h3 style="margin:0 0 8px;font-size:1rem">${title}</h3>
+        <p style="margin:0 0 16px;font-size:.875rem;color:var(--color-text-secondary)">${text}</p>
+        <label style="font-size:.8125rem;font-weight:600;display:block;margin-bottom:4px">Причина</label>
+        <select id="adminReasonSelect" style="width:100%;padding:8px 12px;border-radius:8px;border:1px solid var(--color-border);background:var(--color-surface);color:var(--color-text-primary);font-size:.875rem;margin-bottom:16px">
+          ${options}
+        </select>
+        <label style="font-size:.8125rem;font-weight:600;display:block;margin-bottom:4px">Коментар (необов'язково)</label>
+        <textarea id="adminReasonComment" rows="2" placeholder="Додаткові деталі..." style="width:100%;box-sizing:border-box;padding:8px 12px;border-radius:8px;border:1px solid var(--color-border);background:var(--color-surface);color:var(--color-text-primary);font-size:.875rem;resize:vertical;margin-bottom:20px"></textarea>
+        <div style="display:flex;gap:8px;justify-content:flex-end">
+          <button id="adminReasonCancel" class="btn btn--sm btn--ghost">Скасувати</button>
+          <button id="adminReasonOk" class="btn btn--sm btn--danger">${okLabel}</button>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(wrapper);
+
+    const close = (confirmed) => {
+      const reason = confirmed ? document.getElementById('adminReasonSelect')?.value : null;
+      const comment = confirmed ? document.getElementById('adminReasonComment')?.value.trim() : null;
+      wrapper.remove();
+      resolve(confirmed ? { reason, comment } : null);
+    };
+
+    wrapper.querySelector('#adminReasonOk').addEventListener('click', () => close(true));
+    wrapper.querySelector('#adminReasonCancel').addEventListener('click', () => close(false));
+    wrapper.addEventListener('click', (e) => { if (e.target === wrapper) close(false); });
+  });
+}
+
+// ---- Undo (відкладена дія) ----
+
+export function withUndo(label, action, delay = 5000) {
+  return new Promise((resolve) => {
+    let cancelled = false;
+    let timer = null;
+
+    const toast = document.createElement('div');
+    toast.className = 'admin-undo-toast';
+    toast.innerHTML = `
+      <span class="admin-undo-toast__text">${label}</span>
+      <div class="admin-undo-toast__bar"><div class="admin-undo-toast__fill"></div></div>
+      <button class="admin-undo-toast__btn">Скасувати</button>
+    `;
+    document.body.appendChild(toast);
+
+    const fill = toast.querySelector('.admin-undo-toast__fill');
+    fill.style.transition = `width ${delay}ms linear`;
+    requestAnimationFrame(() => { fill.style.width = '0%'; });
+
+    toast.querySelector('.admin-undo-toast__btn').addEventListener('click', () => {
+      cancelled = true;
+      clearTimeout(timer);
+      toast.remove();
+      resolve(false);
+    });
+
+    timer = setTimeout(async () => {
+      toast.remove();
+      if (!cancelled) {
+        await action();
+        resolve(true);
+      }
+    }, delay);
+  });
+}
+
 // ---- Drawer ----
 
 export function openDrawer(title, bodyHTML) {
@@ -146,16 +239,30 @@ export function formatDate(iso) {
 
 export function reportTypeLabel(type) {
   const map = {
-    copyright: 'Авторські права',
-    spam: 'Спам',
-    inappropriate: 'Неприйнятний',
-    incorrect: 'Некоректно',
-    other: 'Інше',
+    copyright:             'Авторські права',
+    spam:                  'Спам',
+    inappropriate:         'Неприйнятний',
+    incorrect:             'Некоректно',
+    nsfw:                  'NSFW',
+    scam:                  'Scam',
+    hate_speech:           'Hate speech',
+    misinformation:        'Misinformation',
+    inappropriate_content: 'Inappropriate',
+    suspicious_links:      'Suspicious links',
+    bot_activity:          'Bot activity',
+    other:                 'Інше',
   };
   return map[type] || type;
 }
 
-export function typePillHTML(type) {
+export function parseReason(raw = '') {
+  const colonIdx = raw.indexOf(': ');
+  if (colonIdx === -1) return { type: raw, comment: '' };
+  return { type: raw.slice(0, colonIdx), comment: raw.slice(colonIdx + 2) };
+}
+
+export function typePillHTML(raw = '') {
+  const { type } = parseReason(raw);
   return `<span class="admin-type-pill admin-type-pill--${type}">${reportTypeLabel(type)}</span>`;
 }
 

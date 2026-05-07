@@ -4,7 +4,7 @@
 
 import { supabase } from './supabaseClient.js';
 import {
-  confirm, logAction, clearStatsCache,
+  confirm, confirmWithReason, withUndo, logAction, clearStatsCache,
   formatDate, emptyState, skeletonList,
 } from './admin-utils.js';
 import { loadStats } from './admin-stats.js';
@@ -36,7 +36,7 @@ export async function loadUsers() {
     .limit(50);
 
   if (_query) {
-    query = query.or(`full_name.ilike.%${_query}%,email.ilike.%${_query}%`);
+    query = query.ilike('full_name', `%${_query}%`);
   }
 
   const { data, error } = await query;
@@ -51,25 +51,30 @@ export async function loadUsers() {
     return;
   }
 
-  // Отримуємо кількість рецептів для кожного
   const userIds = data.map(u => u.id);
-  const { data: recipeCounts } = await supabase
-    .from('recipes')
-    .select('user_id')
-    .in('user_id', userIds);
+
+  const [{ data: recipeCounts }, { data: mealRows }] = await Promise.all([
+    supabase.from('recipes').select('user_id').in('user_id', userIds),
+    supabase.from('meals').select('user_id, created_at').in('user_id', userIds).order('created_at', { ascending: false }),
+  ]);
 
   const countMap = {};
   recipeCounts?.forEach(r => {
     countMap[r.user_id] = (countMap[r.user_id] || 0) + 1;
   });
 
+  const lastActiveMap = {};
+  mealRows?.forEach(m => {
+    if (!lastActiveMap[m.user_id]) lastActiveMap[m.user_id] = m.created_at;
+  });
+
   listEl.innerHTML = '';
   data.forEach((user) => {
-    listEl.appendChild(_buildRow(user, countMap[user.id] || 0));
+    listEl.appendChild(_buildRow(user, countMap[user.id] || 0, lastActiveMap[user.id] || null));
   });
 }
 
-function _buildRow(user, recipeCount) {
+function _buildRow(user, recipeCount, lastActive) {
   const row = document.createElement('div');
   row.className = 'admin-user-row' + (user.is_banned ? ' admin-user-row--banned' : '');
   row.dataset.id = user.id;
@@ -84,9 +89,9 @@ function _buildRow(user, recipeCount) {
         ${user.is_banned ? '<span style="font-size:.7rem;background:#ef4444;color:#fff;border-radius:4px;padding:1px 5px;margin-left:4px">BANNED</span>' : ''}
       </div>
       <div class="admin-user-row__meta">
-        <span>${user.full_name || user.id.slice(0, 8)}</span>
         <span>Рецептів: ${recipeCount}</span>
         <span>З ${formatDate(user.created_at)}</span>
+        <span>Остання активність: ${lastActive ? formatDate(lastActive) : '—'}</span>
       </div>
     </div>
     <div class="admin-user-row__status"></div>
@@ -112,22 +117,19 @@ function _buildRow(user, recipeCount) {
 
 async function _ban(user, row) {
   const name = user.full_name || user.id.slice(0, 8) || 'користувача';
-  const ok = await confirm(
+  const result = await confirmWithReason(
     'Забанити',
     `Акаунт "${name}" буде заблоковано. Всі published рецепти стануть draft.`,
     'Забанити'
   );
-  if (!ok) return;
-
-  await supabase.from('profiles').update({ is_banned: true }).eq('id', user.id);
-  await supabase.from('recipes').update({ status: 'draft' }).eq('user_id', user.id).eq('status', 'published');
-  await logAction('profiles', user.id, 'ban');
-
-  clearStatsCache();
-  await loadStats();
-  await loadUsers();
+  if (!result) return;
+  await withUndo(`Юзера "${name}" забанено`, async () => {
+    await supabase.from('profiles').update({ is_banned: true }).eq('id', user.id);
+    await supabase.from('recipes').update({ status: 'draft' }).eq('user_id', user.id).eq('status', 'published');
+    await logAction('profiles', user.id, 'ban', { reason: result.reason, comment: result.comment });
+    clearStatsCache(); await loadStats(); await loadUsers();
+  });
 }
-
 async function _unban(user, row) {
   const ok = await confirm('Розбан', `Розблокувати "${user.full_name || user.id.slice(0, 8)}"?`);
   if (!ok) return;
@@ -150,16 +152,15 @@ async function _toggleAdmin(user, row) {
 }
 
 async function _deleteUser(user, row) {
-  const ok = await confirm(
+  const result = await confirmWithReason(
     'Видалити акаунт',
-    `Акаунт "${user.full_name || user.id.slice(0, 8)}" та всі пов'язані дані будуть видалені. Цю дію не можна скасувати.`,
+    `Акаунт "${user.full_name || user.id.slice(0, 8)}" та всі пов'язані дані будуть видалені назавжди.`,
     'Видалити'
   );
-  if (!ok) return;
-  // Видаляємо профіль (каскадне видалення auth.user — через Supabase service role або тригер)
-  await supabase.from('profiles').delete().eq('id', user.id);
-  await logAction('profiles', user.id, 'delete_account');
-  clearStatsCache();
-  await loadStats();
-  row.remove();
+  if (!result) return;
+  await withUndo(`Акаунт "${user.full_name || user.id.slice(0, 8)}" видалено`, async () => {
+    await supabase.from('profiles').delete().eq('id', user.id);
+    await logAction('profiles', user.id, 'delete_account', { reason: result.reason, comment: result.comment });
+    clearStatsCache(); await loadStats(); row.remove();
+  });
 }

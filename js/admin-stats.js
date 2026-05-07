@@ -25,8 +25,7 @@ export async function loadStats() {
     supabase
       .from('recipes')
       .select('id', { count: 'exact', head: true })
-      .eq('status', 'published')
-      .gte('created_at', today.toISOString()),
+      .eq('status', 'pending'),
 
     supabase
       .from('meals')
@@ -57,12 +56,18 @@ function renderStats(stats) {
   _setVal('statActiveUsersVal', stats.activeUsers);
   _setVal('statUserProductsVal', stats.userProducts);
 
-  const pill = document.getElementById('statReports');
-  if (pill) {
-    pill.classList.toggle('admin-stats-bar__pill--alert', stats.reports > 0);
+  const reportsPill = document.getElementById('statReports');
+  if (reportsPill) {
+    reportsPill.classList.toggle('admin-stats-bar__pill--alert', stats.reports > 0);
+  }
+
+  const recipesPill = document.getElementById('statRecipesToday');
+  if (recipesPill) {
+    recipesPill.classList.toggle('admin-stats-bar__pill--alert', stats.recipesToday > 0);
   }
 
   updateSidebarBadge('sidebarReportsCount', stats.reports);
+  updateSidebarBadge('sidebarRecipesCount', stats.recipesToday);
   updateSidebarBadge('sidebarProductsCount', stats.userProducts);
 }
 

@@ -14,7 +14,8 @@
       "Bash(grep -E \"#[0-9a-fA-F]{3,6}|rgba?\")",
       "Bash(git checkout *)",
       "Bash(where sass *)",
-      "Bash(where npx *)"
+      "Bash(where npx *)",
+      "Bash(node)"
     ]
   }
 }

@@ -4,17 +4,29 @@
 
 import { supabase } from './supabaseClient.js';
 import {
-  confirm, logAction, clearStatsCache,
+  confirm, openDrawer, closeDrawer, logAction, clearStatsCache,
   formatDate, emptyState, skeletonList,
 } from './admin-utils.js';
 import { loadStats, updateSidebarBadge } from './admin-stats.js';
 
-let _filters = { sort: 'date_desc', search: '' };
+let _filters = { sort: 'date_desc', search: '', photo: '', lang: '', category: '' };
 let _searchTimer = null;
 
 export async function initProducts() {
   document.getElementById('filterProductsSort')?.addEventListener('change', (e) => {
     _filters.sort = e.target.value;
+    loadProducts();
+  });
+  document.getElementById('filterProductsPhoto')?.addEventListener('change', (e) => {
+    _filters.photo = e.target.value;
+    loadProducts();
+  });
+  document.getElementById('filterProductsLang')?.addEventListener('change', (e) => {
+    _filters.lang = e.target.value;
+    loadProducts();
+  });
+  document.getElementById('filterProductsCategory')?.addEventListener('change', (e) => {
+    _filters.category = e.target.value;
     loadProducts();
   });
   document.getElementById('searchProducts')?.addEventListener('input', (e) => {
@@ -39,8 +51,13 @@ export async function loadProducts() {
     .not('user_id', 'is', null);
 
   if (_filters.search) {
-    query = query.ilike('name_ua', `%${_filters.search}%`);
+    query = query.or(`name_ua.ilike.%${_filters.search}%,name_en.ilike.%${_filters.search}%`);
   }
+  if (_filters.photo === 'yes') query = query.not('image_url', 'is', null);
+  if (_filters.photo === 'no')  query = query.is('image_url', null);
+  if (_filters.lang === 'ua')   query = query.not('name_ua', 'is', null);
+  if (_filters.lang === 'en')   query = query.is('name_ua', null).not('name_en', 'is', null);
+  if (_filters.category)        query = query.eq('category_id', _filters.category);
 
   if (_filters.sort === 'name') query = query.order('name_ua');
   else                          query = query.order('created_at', { ascending: false });
@@ -107,12 +124,14 @@ function _buildRow(product) {
     <div class="admin-product-row__actions">
       <button class="btn btn--sm btn--primary" data-action="approve" title="Схвалити (стає загальним)">Схвалити</button>
       <button class="btn btn--sm btn--outline" data-action="edit-kcal" title="Редагувати КБЖУ">КБЖУ</button>
+      <button class="btn btn--sm btn--ghost" data-action="find-dupes" title="Знайти схожі продукти">Схожі</button>
       <button class="btn btn--sm btn--danger" data-action="delete" title="Видалити">×</button>
     </div>
   `;
 
   row.querySelector('[data-action="approve"]')?.addEventListener('click', () => _approve(product, row));
   row.querySelector('[data-action="delete"]')?.addEventListener('click', () => _delete(product, row));
+  row.querySelector('[data-action="find-dupes"]')?.addEventListener('click', () => _findDupes(product, row));
 
   const editBtn  = row.querySelector('[data-action="edit-kcal"]');
   const kcalEdit = row.querySelector(`#kcalEdit_${product.id}`);
@@ -139,10 +158,31 @@ async function _approve(product, row) {
 
 async function _delete(product, row) {
   const name = product.name_ua || product.name_en || 'Без назви';
-  const ok = await confirm('Видалити продукт', `Продукт "${name}" буде видалено назавжди.`, 'Видалити');
+
+  // Перевіряємо скільки рецептів використовують цей продукт
+  const { count } = await supabase
+    .from('product_recipe')
+    .select('*', { count: 'exact', head: true })
+    .eq('ingredient_id', product.id);
+
+  const recipeWarning = count > 0
+    ? ` Інгредієнт буде прибраний з ${count} рецепт${count === 1 ? 'у' : 'ів'} користувача.`
+    : '';
+
+  const ok = await confirm(
+    'Видалити продукт',
+    `Продукт "${name}" буде видалено назавжди.${recipeWarning}`,
+    'Видалити'
+  );
   if (!ok) return;
+
+  // Спочатку видаляємо з product_recipe, щоб не зламати рецепти FK-ом
+  if (count > 0) {
+    await supabase.from('product_recipe').delete().eq('ingredient_id', product.id);
+  }
+
   await supabase.from('products').delete().eq('id', product.id);
-  await logAction('products', product.id, 'delete');
+  await logAction('products', product.id, 'delete', { recipes_affected: count });
   row.remove();
   clearStatsCache();
   await loadStats();
@@ -159,11 +199,78 @@ async function _saveKcal(product, row, kcalEdit, editBtn) {
   await supabase.from('products').update(update).eq('id', product.id);
   await logAction('products', product.id, 'edit_kcal', update);
 
-  // Оновлюємо мета-текст у рядку
   const metaEl = row.querySelector('.admin-product-row__meta');
   if (metaEl) {
     metaEl.innerHTML = `${update.kcal ?? '—'} ккал · Б:${update.protein ?? '—'}г Ж:${update.fat ?? '—'}г В:${update.carbs ?? '—'}г`;
   }
   kcalEdit.hidden = true;
   editBtn.hidden = false;
+}
+
+async function _findDupes(product, row) {
+  const name = product.name_ua || product.name_en || 'Без назви';
+  openDrawer(`Схожі на: ${name}`, `<p style="color:var(--color-text-muted);font-size:13px">Пошук…</p>`);
+
+  const { data, error } = await supabase.rpc('find_similar_products', {
+    p_product_id: product.id,
+    p_threshold: 0.25,
+  });
+
+  const drawerBody = document.getElementById('adminDrawerBody');
+  if (!drawerBody) return;
+
+  if (error) {
+    drawerBody.innerHTML = `<p style="color:var(--color-danger);font-size:13px">Помилка: ${error.message}</p>`;
+    return;
+  }
+
+  if (!data?.length) {
+    drawerBody.innerHTML = `<p style="color:var(--color-text-muted);font-size:13px">Схожих продуктів не знайдено (поріг 25%)</p>`;
+    return;
+  }
+
+  const items = data.map((sim) => {
+    const simName = sim.name_ua || sim.name_en || '—';
+    const pct = Math.round(sim.similarity * 100);
+    return `
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--color-border)">
+        <div>
+          <div style="font-size:14px;font-weight:500">${simName}</div>
+          <div style="font-size:12px;color:var(--color-text-muted)">${sim.kcal != null ? `${sim.kcal} ккал` : '—'} · Схожість: ${pct}%</div>
+        </div>
+        <button class="btn btn--sm btn--primary" data-merge-to="${sim.id}" data-merge-name="${simName}">Обʼєднати</button>
+      </div>`;
+  }).join('');
+
+  drawerBody.innerHTML = `
+    <p style="font-size:12px;color:var(--color-text-muted);margin-bottom:12px">
+      Юзерський продукт "<b>${name}</b>" буде замінено на обраний загальний продукт у всіх рецептах.
+    </p>
+    ${items}
+  `;
+
+  drawerBody.querySelectorAll('[data-merge-to]').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      const toId   = btn.dataset.mergeTo;
+      const toName = btn.dataset.mergeName;
+      const ok = await confirm('Обʼєднати продукти', `Замінити "${name}" → "${toName}" у всіх рецептах і видалити юзерський продукт?`, 'Обʼєднати');
+      if (!ok) return;
+
+      const { error: mergeErr } = await supabase.rpc('merge_product', {
+        p_from_id: product.id,
+        p_to_id: parseInt(toId, 10),
+      });
+
+      if (mergeErr) {
+        alert(`Помилка: ${mergeErr.message}`);
+        return;
+      }
+
+      await logAction('products', product.id, 'merge', { merged_into: toId, target_name: toName });
+      closeDrawer();
+      row.remove();
+      clearStatsCache();
+      await loadStats();
+    });
+  });
 }

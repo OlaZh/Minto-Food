@@ -117,7 +117,7 @@
             <span class="admin-stats-bar__pill-value" id="statReportsVal">—</span>
           </div>
           <div class="admin-stats-bar__pill" id="statRecipesToday">
-            <span class="admin-stats-bar__pill-label">Нові рецепти сьогодні</span>
+            <span class="admin-stats-bar__pill-label">Рецептів на модерації</span>
             <span class="admin-stats-bar__pill-value" id="statRecipesTodayVal">—</span>
           </div>
           <div class="admin-stats-bar__pill" id="statActiveUsers">
@@ -162,6 +162,8 @@
                   <option value="date_asc">Старі спочатку</option>
                   <option value="type">За типом</option>
                 </select>
+                <input type="date" class="admin-select" id="filterReportDateFrom" title="Від дати">
+                <input type="date" class="admin-select" id="filterReportDateTo" title="До дати">
               </div>
             </div>
           </div>
@@ -207,6 +209,34 @@
                   <option value="date_desc">Нові спочатку</option>
                   <option value="date_asc">Старі спочатку</option>
                   <option value="author">За автором</option>
+                  <option value="rating">За рейтингом</option>
+                </select>
+                <select class="admin-select" id="filterRecipesLang">
+                  <option value="">Всі мови</option>
+                  <option value="ua">UA</option>
+                  <option value="en">EN</option>
+                </select>
+                <select class="admin-select" id="filterRecipesPhoto">
+                  <option value="">Всі</option>
+                  <option value="yes">Є фото</option>
+                  <option value="no">Без фото</option>
+                </select>
+                <select class="admin-select" id="filterRecipesCategory">
+                  <option value="">Всі категорії</option>
+                  <option value="breakfast">Сніданок</option>
+                  <option value="lunch">Обід</option>
+                  <option value="dinner">Вечеря</option>
+                  <option value="snack">Перекус</option>
+                  <option value="dessert">Десерт</option>
+                  <option value="drinks">Напої</option>
+                  <option value="bakery">Випічка</option>
+                  <option value="fast">Швидкі⏳</option>
+                  <option value="no_power">Без світла⚡</option>
+                </select>
+                <select class="admin-select" id="filterRecipesIngredients">
+                  <option value="">Всі</option>
+                  <option value="yes">Є інгредієнти</option>
+                  <option value="no">Без інгредієнтів</option>
                 </select>
               </div>
             </div>
@@ -235,6 +265,28 @@
                 <select class="admin-select" id="filterProductsSort">
                   <option value="date_desc">Нові спочатку</option>
                   <option value="name">За назвою</option>
+                </select>
+                <select class="admin-select" id="filterProductsPhoto">
+                  <option value="">Всі</option>
+                  <option value="yes">Є фото</option>
+                  <option value="no">Без фото</option>
+                </select>
+                <select class="admin-select" id="filterProductsLang">
+                  <option value="">Всі мови</option>
+                  <option value="ua">Тільки UA</option>
+                  <option value="en">Тільки EN</option>
+                </select>
+                <select class="admin-select" id="filterProductsCategory">
+                  <option value="">Всі категорії</option>
+                  <option value="breakfast">Сніданок</option>
+                  <option value="lunch">Обід</option>
+                  <option value="dinner">Вечеря</option>
+                  <option value="snack">Перекус</option>
+                  <option value="dessert">Десерт</option>
+                  <option value="drinks">Напої</option>
+                  <option value="bakery">Випічка</option>
+                  <option value="fast">Швидкі</option>
+                  <option value="no_power">Без світла</option>
                 </select>
               </div>
             </div>

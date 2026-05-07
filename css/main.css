@@ -2146,6 +2146,27 @@ textarea:-webkit-autofill:focus {
   color: var(--color-text-secondary);
   letter-spacing: 0.3px;
 }
+.recipe-card__pending-badge {
+  display: inline-block;
+  margin: 4px 0 6px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(234, 179, 8, 0.15);
+  color: #a16207;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+}
+.recipe-card__mod-note {
+  margin: 6px 0 4px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: rgba(166, 214, 184, 0.18);
+  border-left: 3px solid var(--color-accent);
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--color-text-secondary);
+}
 .recipe-card__footer {
   display: flex;
   align-items: center;
@@ -12689,6 +12710,58 @@ input:checked + .settings-toggle__track::after {
     display: none !important;
   }
 }
+.admin-undo-toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2000;
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  min-width: 300px;
+}
+.admin-undo-toast__text {
+  flex: 1;
+  font-size: 0.875rem;
+  color: var(--color-text-primary);
+}
+.admin-undo-toast__bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--color-border);
+  border-radius: 0 0 12px 12px;
+  overflow: hidden;
+}
+.admin-undo-toast__fill {
+  height: 100%;
+  width: 100%;
+  background: var(--color-accent);
+  border-radius: 0 0 12px 12px;
+}
+.admin-undo-toast__btn {
+  background: none;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 4px 12px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  color: var(--color-text-primary);
+  white-space: nowrap;
+}
+.admin-undo-toast__btn:hover {
+  background: var(--color-bg-primary);
+}
+
 .admin-page {
   background: var(--color-bg-primary);
   min-height: 100dvh;
@@ -12885,19 +12958,25 @@ input:checked + .settings-toggle__track::after {
   flex-wrap: wrap;
 }
 
-.admin-select {
+.admin-select,
+.admin-input {
   padding: 7px var(--space-md);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   background: var(--color-bg-secondary);
   color: var(--color-text-primary);
   font: 500 0.875rem var(--font-ui);
-  cursor: pointer;
   transition: border-color 0.15s;
+  width: 100%;
 }
-.admin-select:focus {
+.admin-select:focus,
+.admin-input:focus {
   outline: none;
   border-color: var(--color-accent);
+}
+
+.admin-select {
+  cursor: pointer;
 }
 
 .admin-search {
@@ -12998,6 +13077,15 @@ input:checked + .settings-toggle__track::after {
   font-size: 0.8125rem;
   color: var(--color-text-secondary);
 }
+.admin-report-card__reporter-comment {
+  font-size: 0.875rem;
+  color: var(--color-text-primary);
+  background: var(--color-bg-primary);
+  border-left: 3px solid var(--color-accent);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  padding: var(--space-xs) var(--space-sm);
+  margin-top: 4px;
+}
 .admin-report-card__comment {
   font-size: 0.875rem;
   color: var(--color-text-primary);
@@ -13037,6 +13125,34 @@ input:checked + .settings-toggle__track::after {
 .admin-type-pill--incorrect {
   background: rgba(59, 130, 246, 0.12);
   color: #2563eb;
+}
+.admin-type-pill--nsfw {
+  background: rgba(239, 68, 68, 0.15);
+  color: #b91c1c;
+}
+.admin-type-pill--scam {
+  background: rgba(239, 68, 68, 0.12);
+  color: #dc2626;
+}
+.admin-type-pill--hate_speech {
+  background: rgba(127, 29, 29, 0.12);
+  color: #7f1d1d;
+}
+.admin-type-pill--misinformation {
+  background: rgba(234, 179, 8, 0.12);
+  color: #a16207;
+}
+.admin-type-pill--inappropriate_content {
+  background: rgba(168, 85, 247, 0.12);
+  color: #7e22ce;
+}
+.admin-type-pill--suspicious_links {
+  background: rgba(20, 184, 166, 0.12);
+  color: #0f766e;
+}
+.admin-type-pill--bot_activity {
+  background: rgba(99, 102, 241, 0.12);
+  color: #4338ca;
 }
 .admin-type-pill--other {
   background: var(--color-bg-primary);
@@ -13332,5 +13448,3 @@ input:checked + .settings-toggle__track::after {
   font-size: 0.75rem;
   color: var(--color-text-secondary);
 }
-
-/*# sourceMappingURL=main.css.map */

@@ -444,7 +444,8 @@ async function saveRecipe() {
   const totals = getTotals();
 
   // Визначаємо статус на основі toggle
-  const status = recipeVisibility === 'public' ? 'published' : 'draft';
+  // 'public' → 'pending' (чекає модерації), 'private' → 'draft'
+  const status = recipeVisibility === 'public' ? 'pending' : 'draft';
 
   const payload = {
     name_ua: document.getElementById('rm-name')?.value.trim(),
@@ -494,7 +495,7 @@ async function saveRecipe() {
     await saveRecipeToBooks(data.id, selectedBookIds);
   }
 
-  const visibilityText = status === 'published' ? 'Рецепт опубліковано!' : 'Рецепт збережено!';
+  const visibilityText = status === 'pending' ? 'Рецепт надіслано на модерацію!' : 'Рецепт збережено!';
   showToast(`${visibilityText} ✓`);
 
   closeRecipeModal();

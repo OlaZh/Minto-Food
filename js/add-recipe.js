@@ -194,6 +194,10 @@ function buildRecipeCard(recipe, savedRecipeIds) {
   </div>
   <div class="recipe-card__content">
     <h3 class="recipe-card__name">${name}</h3>
+    ${recipe.status === 'pending' ? '<div class="recipe-card__pending-badge">На модерації</div>' : ''}
+    ${isOwn && recipe.status === 'draft' && recipe.moderation_note
+      ? `<div class="recipe-card__mod-note">${recipe.moderation_note}</div>`
+      : ''}
     <div class="recipe-card__footer">
       <span class="recipe-card__kcal">${recipe.kcal || 0} ккал</span>
       <button class="recipe-card__btn js-view-recipe">Переглянути</button>

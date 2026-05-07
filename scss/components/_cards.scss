@@ -105,6 +105,29 @@
     letter-spacing: 0.3px;
   }
 
+  &__pending-badge {
+    display: inline-block;
+    margin: 4px 0 6px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: rgba(234, 179, 8, .15);
+    color: #a16207;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .03em;
+  }
+
+  &__mod-note {
+    margin: 6px 0 4px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    background: rgba(166, 214, 184, .18);
+    border-left: 3px solid var(--color-accent);
+    font-size: 12px;
+    line-height: 1.5;
+    color: var(--color-text-secondary);
+  }
+
   &__footer {
     display: flex;
     align-items: center;
