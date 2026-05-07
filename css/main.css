@@ -5847,7 +5847,7 @@ textarea:-webkit-autofill:focus {
   .day-week-nav {
     flex-wrap: nowrap;
     gap: 4px;
-    padding: var(--space-sm) 0 var(--space-md);
+    padding: 4px 0 var(--space-md);
   }
   .day-week-nav__arrow {
     display: none;
@@ -8981,6 +8981,9 @@ input:checked + .settings-toggle__track::after {
   .week-grid {
     display: none;
   }
+  .week-menu {
+    padding-top: 0;
+  }
   .week-mobile-view {
     display: flex;
     flex-direction: column;
@@ -9003,7 +9006,7 @@ input:checked + .settings-toggle__track::after {
   display: flex;
   flex-wrap: nowrap;
   gap: var(--space-xs);
-  padding: var(--space-sm) 0 0;
+  padding: 0;
 }
 
 .week-mobile__pill {
@@ -9706,6 +9709,13 @@ input:checked + .settings-toggle__track::after {
   align-items: center;
   gap: 8px;
   margin: 24px 0;
+}
+@media (max-width: 768px) {
+  .product-search {
+    margin-top: 0;
+  }
+}
+.product-search {
   padding: 8px 14px;
   border-radius: var(--radius-md);
   border: 1px solid var(--color-border);

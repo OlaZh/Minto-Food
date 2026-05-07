@@ -1103,6 +1103,10 @@
     display: none;
   }
 
+  .week-menu {
+    padding-top: 0;
+  }
+
   .week-mobile-view {
     display: flex;
     flex-direction: column;
@@ -1126,7 +1130,7 @@
   display: flex;
   flex-wrap: nowrap;
   gap: var(--space-xs);
-  padding: var(--space-sm) 0 0;
+  padding: 0;
 }
 
 .week-mobile__pill {
