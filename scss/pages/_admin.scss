@@ -188,41 +188,6 @@
 
   .admin-bulk { flex-wrap: wrap; gap: 6px; }
 
-  // Report card: actions під контентом
-  .admin-report-card {
-    grid-template-columns: 32px 1fr;
-
-    &__actions {
-      grid-column: 1 / -1;
-      flex-direction: row;
-      flex-wrap: wrap;
-    }
-  }
-
-  // Recipe row: actions під інфо
-  .admin-recipe-row {
-    grid-template-columns: 48px 1fr;
-
-    &__actions {
-      grid-column: 1 / -1;
-      flex-wrap: wrap;
-    }
-  }
-
-  // Product / User row: actions під інфо
-  .admin-product-row,
-  .admin-user-row {
-    grid-template-columns: 1fr;
-
-    &__actions {
-      flex-wrap: wrap;
-    }
-
-    &__status {
-      flex-wrap: wrap;
-    }
-  }
-
   // Selects — повна ширина на мобільному
   .admin-select {
     max-width: 100%;
@@ -710,6 +675,16 @@ input[type="date"].admin-select {
     gap: var(--space-xs);
     flex-shrink: 0;
   }
+
+  @media (max-width: 1023px) {
+    grid-template-columns: 32px 1fr;
+
+    &__actions {
+      grid-column: 1 / -1;
+      flex-direction: row;
+      flex-wrap: wrap;
+    }
+  }
 }
 
 // ---- Report type pills (color-coded) ----
@@ -789,6 +764,15 @@ input[type="date"].admin-select {
     display: flex;
     gap: var(--space-xs);
   }
+
+  @media (max-width: 1023px) {
+    grid-template-columns: 48px 1fr;
+
+    &__actions {
+      grid-column: 1 / -1;
+      flex-wrap: wrap;
+    }
+  }
 }
 
 // ---- Product row (section 3) ----
@@ -830,6 +814,12 @@ input[type="date"].admin-select {
   &__actions {
     display: flex;
     gap: var(--space-xs);
+  }
+
+  @media (max-width: 1023px) {
+    grid-template-columns: 1fr;
+
+    &__actions { flex-wrap: wrap; }
   }
 }
 

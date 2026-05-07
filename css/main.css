@@ -12836,33 +12836,6 @@ input:checked + .settings-toggle__track::after {
     flex-wrap: wrap;
     gap: 6px;
   }
-  .admin-report-card {
-    grid-template-columns: 32px 1fr;
-  }
-  .admin-report-card__actions {
-    grid-column: 1/-1;
-    flex-direction: row;
-    flex-wrap: wrap;
-  }
-  .admin-recipe-row {
-    grid-template-columns: 48px 1fr;
-  }
-  .admin-recipe-row__actions {
-    grid-column: 1/-1;
-    flex-wrap: wrap;
-  }
-  .admin-product-row,
-  .admin-user-row {
-    grid-template-columns: 1fr;
-  }
-  .admin-product-row__actions,
-  .admin-user-row__actions {
-    flex-wrap: wrap;
-  }
-  .admin-product-row__status,
-  .admin-user-row__status {
-    flex-wrap: wrap;
-  }
   .admin-select {
     max-width: 100%;
     flex: 1 1 140px;
@@ -13316,6 +13289,16 @@ input[type=date].admin-select {
   gap: var(--space-xs);
   flex-shrink: 0;
 }
+@media (max-width: 1023px) {
+  .admin-report-card {
+    grid-template-columns: 32px 1fr;
+  }
+  .admin-report-card__actions {
+    grid-column: 1/-1;
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+}
 
 .admin-type-pill {
   display: inline-flex;
@@ -13427,6 +13410,15 @@ input[type=date].admin-select {
   display: flex;
   gap: var(--space-xs);
 }
+@media (max-width: 1023px) {
+  .admin-recipe-row {
+    grid-template-columns: 48px 1fr;
+  }
+  .admin-recipe-row__actions {
+    grid-column: 1/-1;
+    flex-wrap: wrap;
+  }
+}
 
 .admin-product-row {
   background: var(--color-bg-secondary);
@@ -13463,6 +13455,14 @@ input[type=date].admin-select {
 .admin-product-row__actions {
   display: flex;
   gap: var(--space-xs);
+}
+@media (max-width: 1023px) {
+  .admin-product-row {
+    grid-template-columns: 1fr;
+  }
+  .admin-product-row__actions {
+    flex-wrap: wrap;
+  }
 }
 
 .admin-user-row {
