@@ -8,10 +8,11 @@ import { initReports, loadReports } from './admin-reports.js';
 import { initRecipes, loadRecipes } from './admin-recipes.js';
 import { initProducts, loadProducts } from './admin-products.js';
 import { initUsers, loadUsers } from './admin-users.js';
+import { initArchive } from './admin-archive.js';
 
-const SECTIONS = ['reports', 'recipes', 'products', 'users'];
+const SECTIONS = ['reports', 'recipes', 'products', 'users', 'archive'];
 let _activeSection = 'reports';
-let _initialized = { reports: false, recipes: false, products: false, users: false };
+let _initialized = { reports: false, recipes: false, products: false, users: false, archive: false };
 
 async function init() {
   // Мобільний block — показуємо якщо <1024px
@@ -74,6 +75,7 @@ async function initSection(name) {
     case 'recipes':  return initRecipes();
     case 'products': return initProducts();
     case 'users':    return initUsers();
+    case 'archive':  return initArchive();
   }
 }
 

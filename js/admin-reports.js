@@ -101,7 +101,7 @@ export async function loadReports() {
   if (allIds.length) {
     const { data: profiles } = await supabase
       .from('profiles')
-      .select('id, full_name, is_banned')
+      .select('id, full_name, is_banned, strikes, freeze_until')
       .in('id', allIds);
     profilesMap = Object.fromEntries((profiles || []).map(p => [p.id, p]));
   }
@@ -182,6 +182,13 @@ function _buildCard(report, grouped) {
         title="Рецепт видаляється назавжди">
         Видалити рецепт
       </button>
+      ${author && !author.is_banned
+        ? `<button class="btn btn--sm btn--outline" data-action="strike"
+            title="Видати страйк автору (зараз: ${author.strikes || 0})">
+            ⚡${author.strikes > 0 ? ` ${author.strikes}` : ''}
+           </button>`
+        : ''
+      }
       ${author?.is_banned
         ? `<button class="btn btn--sm btn--ghost" disabled title="Вже забанений">🚫 Вже бан</button>`
         : `<button class="btn btn--sm btn--danger" data-action="ban"
@@ -208,6 +215,8 @@ function _buildCard(report, grouped) {
     _handleAction('resolve', report));
   card.querySelector('[data-action="delete"]')?.addEventListener('click', () =>
     _handleAction('delete', report));
+  card.querySelector('[data-action="strike"]')?.addEventListener('click', () =>
+    _addStrikeFromReport(report));
   card.querySelector('[data-action="ban"]')?.addEventListener('click', () =>
     _handleAction('ban', report));
 
@@ -319,6 +328,43 @@ async function _bulkAction(status) {
   clearStatsCache();
   await loadStats();
   _bulk.clear();
+  await loadReports();
+}
+
+async function _addStrikeFromReport(report) {
+  const author = report.recipe?.author;
+  if (!author) return;
+
+  const name = author.full_name || '—';
+  const newStrikes = (author.strikes || 0) + 1;
+
+  const effects = newStrikes === 1
+    ? 'Перший страйк — попередження.'
+    : newStrikes === 2
+      ? 'Другий страйк — акаунт буде заморожений на 24 год.'
+      : 'Третій страйк — акаунт буде автоматично забанений.';
+
+  const ok = await confirm('Видати страйк', `${name}: ${effects}`, 'Видати страйк');
+  if (!ok) return;
+
+  const update = { strikes: newStrikes };
+  if (newStrikes === 2) {
+    update.freeze_until = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+  }
+  if (newStrikes >= 3) {
+    update.is_banned = true;
+    await supabase.from('recipes').update({ status: 'draft' })
+      .eq('user_id', author.id).eq('status', 'published');
+  }
+
+  await supabase.from('profiles').update(update).eq('id', author.id);
+  await logAction('profiles', author.id, 'strike', {
+    strikes: newStrikes,
+    auto_ban: newStrikes >= 3,
+    from: 'admin_reports',
+  });
+  clearStatsCache();
+  await loadStats();
   await loadReports();
 }
 

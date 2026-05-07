@@ -48,7 +48,8 @@ export async function loadProducts() {
   let query = supabase
     .from('products')
     .select('id, name_ua, name_en, category_id, kcal, protein, fat, carbs, created_at, user_id')
-    .not('user_id', 'is', null);
+    .not('user_id', 'is', null)
+    .is('deleted_at', null);
 
   if (_filters.search) {
     query = query.or(`name_ua.ilike.%${_filters.search}%,name_en.ilike.%${_filters.search}%`);
