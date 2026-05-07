@@ -250,3 +250,64 @@ BEGIN
   DELETE FROM products WHERE id = p_from_id AND user_id IS NOT NULL;
 END;
 $$;
+
+-- ============================================================
+-- ФАЗА 10.5 Додаток: Shadow ban, Strikes, Soft delete, Pending updates
+-- ============================================================
+
+-- Shadow ban + система страйків
+ALTER TABLE profiles
+  ADD COLUMN IF NOT EXISTS is_shadow_banned BOOLEAN NOT NULL DEFAULT false,
+  ADD COLUMN IF NOT EXISTS strikes          INTEGER NOT NULL DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS freeze_until     TIMESTAMPTZ;
+
+-- Soft delete для рецептів та продуктів (зберігаємо як evidence)
+ALTER TABLE recipes  ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMPTZ;
+ALTER TABLE products ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMPTZ;
+
+-- Прапорець "є підвислі зміни на модерацію" на рецепті
+ALTER TABLE recipes ADD COLUMN IF NOT EXISTS has_pending_update BOOLEAN NOT NULL DEFAULT false;
+
+-- Таблиця для staged updates (зміни опублікованих рецептів)
+CREATE TABLE IF NOT EXISTS recipe_pending_updates (
+  id            UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
+  recipe_id     UUID        NOT NULL REFERENCES recipes(id) ON DELETE CASCADE,
+  user_id       UUID        NOT NULL REFERENCES auth.users(id),
+  changes       JSONB       NOT NULL,
+  status        TEXT        NOT NULL DEFAULT 'pending'
+    CHECK (status IN ('pending', 'approved', 'rejected')),
+  moderation_note TEXT,
+  created_at    TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+-- RLS для recipe_pending_updates
+ALTER TABLE recipe_pending_updates ENABLE ROW LEVEL SECURITY;
+
+-- Автор бачить свої запити
+DROP POLICY IF EXISTS "owner_select_pending_updates" ON recipe_pending_updates;
+CREATE POLICY "owner_select_pending_updates"
+  ON recipe_pending_updates FOR SELECT
+  USING (user_id = auth.uid());
+
+-- Автор може додавати свої
+DROP POLICY IF EXISTS "owner_insert_pending_updates" ON recipe_pending_updates;
+CREATE POLICY "owner_insert_pending_updates"
+  ON recipe_pending_updates FOR INSERT
+  WITH CHECK (user_id = auth.uid());
+
+-- Адмін бачить і змінює всі
+DROP POLICY IF EXISTS "admins_all_pending_updates" ON recipe_pending_updates;
+CREATE POLICY "admins_all_pending_updates"
+  ON recipe_pending_updates FOR ALL
+  USING (
+    EXISTS (
+      SELECT 1 FROM profiles
+      WHERE profiles.id = auth.uid() AND profiles.is_admin = true
+    )
+  );
+
+-- Індекси
+CREATE INDEX IF NOT EXISTS idx_recipe_pending_updates_status    ON recipe_pending_updates(status);
+CREATE INDEX IF NOT EXISTS idx_recipe_pending_updates_recipe_id ON recipe_pending_updates(recipe_id);
+CREATE INDEX IF NOT EXISTS idx_recipes_deleted_at               ON recipes(deleted_at) WHERE deleted_at IS NULL;
+CREATE INDEX IF NOT EXISTS idx_profiles_shadow_ban              ON profiles(is_shadow_banned) WHERE is_shadow_banned = true;

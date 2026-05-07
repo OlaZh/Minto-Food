@@ -48,6 +48,7 @@ const saveNotesBtn = document.getElementById('save-notes-btn');
 let recipeIdToDelete = null;
 let currentViewingId = null;
 let editingRecipeId = null;
+let _editingRecipeOriginal = null;
 let currentUser = null;
 
 // Пошук/browsing state
@@ -195,6 +196,7 @@ function buildRecipeCard(recipe, savedRecipeIds) {
   <div class="recipe-card__content">
     <h3 class="recipe-card__name">${name}</h3>
     ${recipe.status === 'pending' ? '<div class="recipe-card__pending-badge">На модерації</div>' : ''}
+    ${isOwn && recipe.has_pending_update ? '<div class="recipe-card__update-badge">Оновлення на перевірці 🕓</div>' : ''}
     ${isOwn && recipe.status === 'draft' && recipe.moderation_note
       ? `<div class="recipe-card__mod-note">${recipe.moderation_note}</div>`
       : ''}
@@ -614,6 +616,7 @@ function editRecipe(recipe) {
   const name = getRecipeName(recipe);
 
   editingRecipeId = recipe.id;
+  _editingRecipeOriginal = recipe;
   if (viewModal) viewModal.classList.remove('is-active');
 
   if (modal) {
@@ -836,13 +839,51 @@ async function saveRecipe(recipeData) {
   };
 
   if (editingRecipeId !== null) {
-    const { error } = await supabase.from('recipes').update(payload).eq('id', editingRecipeId);
-    if (error) {
-      console.error('Помилка оновлення:', error);
-      showToast('Помилка збереження', 'error');
-      return false;
+    // Для опублікованих рецептів — значущі зміни йдуть на перевірку
+    const original = _editingRecipeOriginal;
+    const MODERATED = ['image', 'steps', 'name_ua'];
+
+    if (original?.status === 'published') {
+      const pendingChanges = {};
+      const directPayload = { ...payload };
+
+      for (const field of MODERATED) {
+        const newVal = payload[field];
+        const oldVal = original[field];
+        const changed = newVal !== oldVal && !(newVal == null && oldVal == null);
+        if (changed) {
+          pendingChanges[field] = newVal;
+          delete directPayload[field];
+        }
+      }
+
+      // Дрібні зміни — зберігаємо одразу
+      if (Object.keys(directPayload).length > 0) {
+        await supabase.from('recipes').update(directPayload).eq('id', editingRecipeId);
+      }
+
+      if (Object.keys(pendingChanges).length > 0) {
+        // Значущі зміни — йдуть на перевірку
+        await supabase.from('recipe_pending_updates').insert({
+          recipe_id: editingRecipeId,
+          user_id: user.id,
+          changes: pendingChanges,
+        });
+        await supabase.from('recipes').update({ has_pending_update: true }).eq('id', editingRecipeId);
+        showToast('Зміни надіслані на перевірку 🌿');
+      } else {
+        showToast('Рецепт оновлено!');
+      }
+    } else {
+      // Draft або pending — зберігаємо напряму
+      const { error } = await supabase.from('recipes').update(payload).eq('id', editingRecipeId);
+      if (error) {
+        console.error('Помилка оновлення:', error);
+        showToast('Помилка збереження', 'error');
+        return false;
+      }
+      showToast('Рецепт оновлено!');
     }
-    showToast('Рецепт оновлено!');
   } else {
     const { error } = await supabase.from('recipes').insert([payload]);
     if (error) {

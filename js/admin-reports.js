@@ -170,12 +170,25 @@ function _buildCard(report, grouped) {
       </div>
     </div>
     <div class="admin-report-card__actions">
-      <button class="btn btn--sm btn--ghost" data-action="dismiss" title="Відхилити скаргу">Відхилити</button>
-      <button class="btn btn--sm btn--outline" data-action="resolve" title="Прибрати рецепт з публіки">Прибрати</button>
-      <button class="btn btn--sm btn--danger" data-action="delete" title="Видалити рецепт">Видалити</button>
-      ${author && !author.is_banned
-        ? `<button class="btn btn--sm btn--danger" data-action="ban" title="Забанити автора">Бан</button>`
-        : ''}
+      <button class="btn btn--sm btn--ghost" data-action="dismiss"
+        title="Скарга безпідставна — рецепт лишається, скарга закривається">
+        Скарга безпідставна
+      </button>
+      <button class="btn btn--sm btn--outline" data-action="resolve"
+        title="Рецепт прихований зі спільноти, але не видалений">
+        Приховати рецепт
+      </button>
+      <button class="btn btn--sm btn--danger" data-action="delete"
+        title="Рецепт видаляється назавжди">
+        Видалити рецепт
+      </button>
+      ${author?.is_banned
+        ? `<button class="btn btn--sm btn--ghost" disabled title="Вже забанений">🚫 Вже бан</button>`
+        : `<button class="btn btn--sm btn--danger" data-action="ban"
+            title="Забанити автора — всі рецепти приховуються">
+            Бан автора
+           </button>`
+      }
     </div>
   `;
 
@@ -233,8 +246,8 @@ async function _handleAction(action, report) {
     const result = await confirmWithReason('Видалити рецепт', `Рецепт "${name}" буде видалено назавжди.`, 'Видалити');
     if (!result) return;
     await withUndo(`Рецепт "${name}" видалено`, async () => {
-      await supabase.from('recipes').delete().eq('id', recipe.id);
-      await logAction('recipes', recipe.id, 'delete', { reason: result.reason, comment: result.comment });
+      await supabase.from('recipes').update({ deleted_at: new Date().toISOString(), status: 'draft' }).eq('id', recipe.id);
+      await logAction('recipes', recipe.id, 'soft_delete', { reason: result.reason, comment: result.comment });
       clearStatsCache(); await loadStats(); await loadReports();
     });
     return;

@@ -31,7 +31,7 @@ export async function loadUsers() {
 
   let query = supabase
     .from('profiles')
-    .select('id, full_name, is_admin, is_banned, created_at')
+    .select('id, full_name, is_admin, is_banned, is_shadow_banned, strikes, freeze_until, created_at')
     .order('created_at', { ascending: false })
     .limit(50);
 
@@ -76,31 +76,47 @@ export async function loadUsers() {
 
 function _buildRow(user, recipeCount, lastActive) {
   const row = document.createElement('div');
-  row.className = 'admin-user-row' + (user.is_banned ? ' admin-user-row--banned' : '');
+  const isFrozen = user.freeze_until && new Date(user.freeze_until) > new Date();
+  row.className = 'admin-user-row'
+    + (user.is_banned        ? ' admin-user-row--banned' : '')
+    + (user.is_shadow_banned ? ' admin-user-row--shadow' : '')
+    + (isFrozen              ? ' admin-user-row--frozen'  : '');
   row.dataset.id = user.id;
 
   const name = user.full_name || user.id.slice(0, 8);
+  const strikesHtml = (user.strikes || 0) > 0
+    ? `<span class="admin-strike-badge" title="Страйки">${'⚡'.repeat(Math.min(user.strikes, 3))} ${user.strikes} страйк${user.strikes > 1 ? 'и' : ''}</span>`
+    : '';
 
   row.innerHTML = `
     <div class="admin-user-row__info">
       <div class="admin-user-row__name">
         ${name}
-        ${user.is_admin  ? '<span style="font-size:.7rem;background:var(--color-accent);color:#fff;border-radius:4px;padding:1px 5px;margin-left:4px">ADMIN</span>' : ''}
-        ${user.is_banned ? '<span style="font-size:.7rem;background:#ef4444;color:#fff;border-radius:4px;padding:1px 5px;margin-left:4px">BANNED</span>' : ''}
+        ${user.is_admin        ? '<span class="admin-user-badge admin-user-badge--admin">ADMIN</span>' : ''}
+        ${user.is_banned       ? '<span class="admin-user-badge admin-user-badge--banned">BANNED</span>' : ''}
+        ${user.is_shadow_banned? '<span class="admin-user-badge admin-user-badge--shadow">SHADOW</span>' : ''}
+        ${isFrozen             ? '<span class="admin-user-badge admin-user-badge--frozen">FREEZE</span>' : ''}
+        ${strikesHtml}
       </div>
       <div class="admin-user-row__meta">
         <span>Рецептів: ${recipeCount}</span>
         <span>З ${formatDate(user.created_at)}</span>
         <span>Остання активність: ${lastActive ? formatDate(lastActive) : '—'}</span>
+        ${isFrozen ? `<span style="color:#f59e0b">Заморожений до ${formatDate(user.freeze_until)}</span>` : ''}
       </div>
     </div>
-    <div class="admin-user-row__status"></div>
     <div class="admin-user-row__actions">
       ${user.is_banned
         ? `<button class="btn btn--sm btn--outline" data-action="unban">Розбан</button>`
         : `<button class="btn btn--sm btn--danger"  data-action="ban">Бан</button>`
       }
-      <button class="btn btn--sm btn--ghost" data-action="toggle-admin" title="${user.is_admin ? 'Зняти права адміна' : 'Надати права адміна'}">
+      <button class="btn btn--sm btn--outline" data-action="strike" title="Видати страйк (+1)">⚡ Страйк</button>
+      <button class="btn btn--sm btn--ghost" data-action="shadow-ban"
+        title="${user.is_shadow_banned ? 'Зняти shadow ban' : 'Shadow ban — нові рецепти авто-на модерацію'}">
+        ${user.is_shadow_banned ? '👁 Зняти тінь' : '👁 Shadow'}
+      </button>
+      <button class="btn btn--sm btn--ghost" data-action="toggle-admin"
+        title="${user.is_admin ? 'Зняти права адміна' : 'Надати права адміна'}">
         ${user.is_admin ? '🔓 Admin' : '🔐 Admin'}
       </button>
       <button class="btn btn--sm btn--danger" data-action="delete" title="Видалити акаунт">🗑</button>
@@ -109,6 +125,8 @@ function _buildRow(user, recipeCount, lastActive) {
 
   row.querySelector('[data-action="ban"]')?.addEventListener('click', () => _ban(user, row));
   row.querySelector('[data-action="unban"]')?.addEventListener('click', () => _unban(user, row));
+  row.querySelector('[data-action="strike"]')?.addEventListener('click', () => _addStrike(user, row));
+  row.querySelector('[data-action="shadow-ban"]')?.addEventListener('click', () => _toggleShadowBan(user, row));
   row.querySelector('[data-action="toggle-admin"]')?.addEventListener('click', () => _toggleAdmin(user, row));
   row.querySelector('[data-action="delete"]')?.addEventListener('click', () => _deleteUser(user, row));
 
@@ -163,4 +181,48 @@ async function _deleteUser(user, row) {
     await logAction('profiles', user.id, 'delete_account', { reason: result.reason, comment: result.comment });
     clearStatsCache(); await loadStats(); row.remove();
   });
+}
+
+async function _addStrike(user, row) {
+  const name = user.full_name || user.id.slice(0, 8);
+  const newStrikes = (user.strikes || 0) + 1;
+
+  const effects = newStrikes === 1
+    ? 'Перший страйк — попередження.'
+    : newStrikes === 2
+      ? 'Другий страйк — акаунт буде заморожений на 24 год.'
+      : `Третій страйк — акаунт буде автоматично забанений.`;
+
+  const ok = await confirm('Видати страйк', `${name}: ${effects}`, 'Видати страйк');
+  if (!ok) return;
+
+  const update = { strikes: newStrikes };
+  if (newStrikes === 2) {
+    update.freeze_until = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+  }
+  if (newStrikes >= 3) {
+    update.is_banned = true;
+    await supabase.from('recipes').update({ status: 'draft' }).eq('user_id', user.id).eq('status', 'published');
+  }
+
+  await supabase.from('profiles').update(update).eq('id', user.id);
+  await logAction('profiles', user.id, 'strike', { strikes: newStrikes, auto_ban: newStrikes >= 3 });
+  clearStatsCache();
+  await loadStats();
+  await loadUsers();
+}
+
+async function _toggleShadowBan(user, row) {
+  const name = user.full_name || user.id.slice(0, 8);
+  const newVal = !user.is_shadow_banned;
+  const action = newVal
+    ? 'Shadow ban — нові рецепти автоматично йтимуть на модерацію. Юзер не знає.'
+    : `Зняти shadow ban з "${name}".`;
+
+  const ok = await confirm(newVal ? 'Shadow ban' : 'Зняти shadow ban', action, newVal ? 'Shadow ban' : 'Зняти');
+  if (!ok) return;
+
+  await supabase.from('profiles').update({ is_shadow_banned: newVal }).eq('id', user.id);
+  await logAction('profiles', user.id, newVal ? 'shadow_ban' : 'shadow_unban');
+  await loadUsers();
 }

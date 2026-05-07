@@ -176,13 +176,9 @@ async function _delete(product, row) {
   );
   if (!ok) return;
 
-  // Спочатку видаляємо з product_recipe, щоб не зламати рецепти FK-ом
-  if (count > 0) {
-    await supabase.from('product_recipe').delete().eq('ingredient_id', product.id);
-  }
-
-  await supabase.from('products').delete().eq('id', product.id);
-  await logAction('products', product.id, 'delete', { recipes_affected: count });
+  // Soft delete — зберігаємо як evidence, не видаляємо назавжди
+  await supabase.from('products').update({ deleted_at: new Date().toISOString() }).eq('id', product.id);
+  await logAction('products', product.id, 'soft_delete', { recipes_affected: count });
   row.remove();
   clearStatsCache();
   await loadStats();

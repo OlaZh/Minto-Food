@@ -147,7 +147,14 @@
                   <option value="">Всі типи</option>
                   <option value="copyright">Авторські права</option>
                   <option value="spam">Спам</option>
-                  <option value="inappropriate">Неприйнятний контент</option>
+                  <option value="inappropriate">Неприйнятний</option>
+                  <option value="inappropriate_content">Inappropriate content</option>
+                  <option value="nsfw">NSFW</option>
+                  <option value="hate_speech">Hate speech</option>
+                  <option value="suspicious_links">Suspicious links</option>
+                  <option value="bot_activity">Bot activity</option>
+                  <option value="scam">Scam</option>
+                  <option value="misinformation">Misinformation</option>
                   <option value="incorrect">Некоректна інформація</option>
                   <option value="other">Інше</option>
                 </select>
@@ -194,9 +201,13 @@
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                 <path d="M3 2h4l2 7H3L3 2z"/>
               </svg>
-              Нові рецепти
+              Рецепти
             </h1>
-            <div class="admin-section__controls">
+            <div class="admin-tabs">
+              <button class="admin-tab admin-tab--active" id="recipesTabNew">На модерації</button>
+              <button class="admin-tab" id="recipesTabUpdates">Оновлення</button>
+            </div>
+            <div class="admin-section__controls" id="recipesFiltersRow">
               <input type="search" class="admin-search" id="searchRecipes" placeholder="Пошук по назві або інгредієнтах…" />
               <div class="admin-filters">
                 <select class="admin-select" id="filterRecipesDays">

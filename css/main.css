@@ -2157,6 +2157,17 @@ textarea:-webkit-autofill:focus {
   font-weight: 600;
   letter-spacing: 0.03em;
 }
+.recipe-card__update-badge {
+  display: inline-block;
+  margin: 4px 0 6px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(99, 102, 241, 0.12);
+  color: #4338ca;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+}
 .recipe-card__mod-note {
   margin: 6px 0 4px;
   padding: 8px 10px;
@@ -12932,10 +12943,8 @@ input:checked + .settings-toggle__track::after {
 }
 .admin-section__header {
   display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: var(--space-md);
-  flex-wrap: wrap;
+  flex-direction: column;
+  gap: var(--space-sm);
 }
 .admin-section__title {
   display: flex;
@@ -12950,6 +12959,43 @@ input:checked + .settings-toggle__track::after {
   align-items: center;
   gap: var(--space-sm);
   flex-wrap: wrap;
+}
+
+.admin-tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: var(--space-md);
+}
+
+.admin-tab {
+  padding: 6px 16px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  background: transparent;
+  color: var(--color-text-secondary);
+  font: 500 0.875rem var(--font-ui);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.admin-tab--active {
+  background: var(--color-accent);
+  color: #fff;
+  border-color: var(--color-accent);
+}
+.admin-tab__badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.3);
+  font-size: 0.7rem;
+  font-weight: 700;
 }
 
 .admin-filters {

@@ -12,7 +12,20 @@ import { loadStats } from './admin-stats.js';
 let _filters = { days: '7', sort: 'date_desc', search: '', lang: '', photo: '', category: '', ingredients: '' };
 let _searchTimer = null;
 
+let _activeTab = 'new'; // 'new' | 'updates'
+
 export async function initRecipes() {
+  document.getElementById('recipesTabNew')?.addEventListener('click', () => {
+    _activeTab = 'new';
+    _syncTabs();
+    loadRecipes();
+  });
+  document.getElementById('recipesTabUpdates')?.addEventListener('click', () => {
+    _activeTab = 'updates';
+    _syncTabs();
+    loadPendingUpdates();
+  });
+
   document.getElementById('filterRecipesDays')?.addEventListener('change', (e) => {
     _filters.days = e.target.value; loadRecipes();
   });
@@ -39,7 +52,15 @@ export async function initRecipes() {
     }, 300);
   });
 
+  _syncTabs();
   await loadRecipes();
+}
+
+function _syncTabs() {
+  document.getElementById('recipesTabNew')?.classList.toggle('admin-tab--active', _activeTab === 'new');
+  document.getElementById('recipesTabUpdates')?.classList.toggle('admin-tab--active', _activeTab === 'updates');
+  const filtersRow = document.getElementById('recipesFiltersRow');
+  if (filtersRow) filtersRow.style.display = _activeTab === 'new' ? '' : 'none';
 }
 
 export async function loadRecipes() {
@@ -110,7 +131,7 @@ export async function loadRecipes() {
 
   const enriched = data.map(r => ({ ...r, author: authorsMap[r.user_id] || null }));
 
-  // Spam detection — >10 рецептів за день від одного автора
+  // Auto-flagging
   const authorDayCount = {};
   const today = new Date(); today.setHours(0, 0, 0, 0);
   enriched.forEach((r) => {
@@ -121,13 +142,43 @@ export async function loadRecipes() {
 
   listEl.innerHTML = '';
   enriched.forEach((recipe) => {
-    const isSpam = (authorDayCount[recipe.user_id] || 0) > 10;
-    listEl.appendChild(_buildRow(recipe, isSpam));
+    const flags = _detectFlags(recipe, authorDayCount);
+    listEl.appendChild(_buildRow(recipe, flags));
   });
 }
 
-function _buildRow(recipe, isSpam) {
+function _detectFlags(recipe, authorDayCount) {
+  const flags = [];
+
+  if ((authorDayCount[recipe.user_id] || 0) > 10) {
+    flags.push({ key: 'spam', label: '⚠️ >10/день', color: '#ef4444' });
+  }
+
+  const allText = [recipe.steps || '', recipe.name_ua || '', recipe.name_en || ''].join(' ');
+  if (/https?:\/\/|www\.|t\.me\/|telegram|viber|whatsapp/i.test(allText)) {
+    flags.push({ key: 'links', label: '🔗 Посилання', color: '#f59e0b' });
+  }
+
+  if (/купити|замовити|знижка|безкоштовно|перейди|click here|subscribe|канал|реклама|прайс/i.test(allText)) {
+    flags.push({ key: 'promo', label: '🚨 Реклама', color: '#ef4444' });
+  }
+
+  const nameText = (recipe.name_ua || recipe.name_en || '').trim();
+  const hasAlpha = /[a-zA-ZА-ЯІЄЇа-яієї]/.test(nameText);
+  if (nameText.length >= 5 && hasAlpha && nameText === nameText.toUpperCase() && nameText !== nameText.toLowerCase()) {
+    flags.push({ key: 'caps', label: '🔤 КАПСЛОК', color: '#f59e0b' });
+  }
+
+  const stepsLen = (recipe.steps || '').replace(/\s+/g, '').length;
+  if (stepsLen === 0)       flags.push({ key: 'no_steps',    label: '⚠️ Немає кроків',    color: '#9ca3af' });
+  else if (stepsLen < 30)   flags.push({ key: 'short_steps', label: '⚠️ Короткі кроки',   color: '#9ca3af' });
+
+  return flags;
+}
+
+function _buildRow(recipe, flags) {
   const row = document.createElement('div');
+  const isSpam = flags.some(f => f.key === 'spam' || f.key === 'promo');
   row.className = 'admin-recipe-row' + (isSpam ? ' admin-recipe-row--spam-author' : '');
   row.dataset.id = recipe.id;
 
@@ -142,7 +193,8 @@ function _buildRow(recipe, isSpam) {
     <div class="admin-recipe-row__info">
       <div class="admin-recipe-row__name">${name}</div>
       <div class="admin-recipe-row__meta">
-        <span class="admin-recipe-row__author">${author?.full_name || '—'}${isSpam ? ' ⚠️ >10 за день' : ''}</span>
+        <span class="admin-recipe-row__author">${author?.full_name || '—'}</span>
+        ${flags.map(f => `<span style="font-size:11px;color:${f.color};font-weight:600;margin-left:4px">${f.label}</span>`).join('')}
         <span>${formatDate(recipe.created_at)}</span>
         ${recipe.rating > 0 ? `<span>★ ${Number(recipe.rating).toFixed(1)}</span>` : ''}
         ${recipe.status !== 'published' ? `<span style="color:var(--color-text-muted)">(${recipe.status})</span>` : ''}
@@ -298,8 +350,8 @@ async function _delete(recipe) {
   const result = await confirmWithReason('Видалити рецепт', `Рецепт "${name}" буде видалено назавжди.`, 'Видалити');
   if (!result) return;
   await withUndo(`Рецепт "${name}" видалено`, async () => {
-    await supabase.from('recipes').delete().eq('id', recipe.id);
-    await logAction('recipes', recipe.id, 'delete', { from: 'admin_recipes', ...result });
+    await supabase.from('recipes').update({ deleted_at: new Date().toISOString(), status: 'draft' }).eq('id', recipe.id);
+    await logAction('recipes', recipe.id, 'soft_delete', { from: 'admin_recipes', ...result });
     clearStatsCache(); await loadStats(); await loadRecipes();
   });
 }
@@ -439,4 +491,176 @@ async function _openEditDrawer(recipe) {
       loadRecipes();
     }
   });
+}
+
+// ============================================================
+// Pending Updates — оновлення опублікованих рецептів
+// ============================================================
+
+export async function loadPendingUpdates() {
+  const listEl = document.getElementById('recipesList');
+  if (!listEl) return;
+  listEl.innerHTML = skeletonList(4);
+
+  const { data, error } = await supabase
+    .from('recipe_pending_updates')
+    .select('id, recipe_id, user_id, changes, created_at')
+    .eq('status', 'pending')
+    .order('created_at', { ascending: false })
+    .limit(100);
+
+  if (error) {
+    listEl.innerHTML = `<p style="color:var(--color-danger)">Помилка: ${error.message}</p>`;
+    return;
+  }
+
+  if (!data?.length) {
+    listEl.innerHTML = emptyState('Оновлень на перевірку немає 🌿');
+    document.getElementById('recipesTabUpdates')?.querySelector('.admin-tab__badge')?.remove();
+    return;
+  }
+
+  // Batch: рецепти + автори
+  const recipeIds = [...new Set(data.map(u => u.recipe_id))];
+  const authorIds = [...new Set(data.map(u => u.user_id).filter(Boolean))];
+
+  const [{ data: recipes }, { data: profiles }] = await Promise.all([
+    supabase.from('recipes').select('id, name_ua, name_en, image').in('id', recipeIds),
+    supabase.from('profiles').select('id, full_name').in('id', authorIds),
+  ]);
+
+  const recipeMap = Object.fromEntries((recipes || []).map(r => [r.id, r]));
+  const authorMap = Object.fromEntries((profiles || []).map(p => [p.id, p]));
+
+  // Оновлюємо badge на вкладці
+  const tabBadge = document.getElementById('recipesTabUpdates');
+  if (tabBadge) {
+    let badge = tabBadge.querySelector('.admin-tab__badge');
+    if (!badge) { badge = document.createElement('span'); badge.className = 'admin-tab__badge'; tabBadge.appendChild(badge); }
+    badge.textContent = data.length;
+  }
+
+  listEl.innerHTML = '';
+  data.forEach(update => {
+    const recipe = recipeMap[update.recipe_id] || {};
+    const author = authorMap[update.user_id] || {};
+    listEl.appendChild(_buildUpdateRow(update, recipe, author));
+  });
+}
+
+function _buildUpdateRow(update, recipe, author) {
+  const row = document.createElement('div');
+  row.className = 'admin-recipe-row';
+
+  const name = recipe.name_ua || recipe.name_en || 'Рецепт';
+  const changes = update.changes || {};
+  const changedFields = Object.keys(changes);
+
+  const fieldLabels = { image: '📸 Фото', steps: '📝 Кроки', name_ua: '🔤 Назва' };
+  const changesList = changedFields.map(f => fieldLabels[f] || f).join(', ');
+
+  const thumb = changes.image
+    ? `<img class="admin-recipe-row__thumb" src="${changes.image}" alt="" loading="lazy">`
+    : recipe.image
+      ? `<img class="admin-recipe-row__thumb" src="${recipe.image}" alt="" loading="lazy">`
+      : `<div class="admin-recipe-row__thumb"></div>`;
+
+  row.innerHTML = `
+    ${thumb}
+    <div class="admin-recipe-row__info">
+      <div class="admin-recipe-row__name">${name}</div>
+      <div class="admin-recipe-row__meta">
+        <span class="admin-recipe-row__author">${author.full_name || '—'}</span>
+        <span style="color:var(--color-accent);font-weight:600">${changesList}</span>
+        <span>${formatDate(update.created_at)}</span>
+      </div>
+    </div>
+    <div class="admin-recipe-row__actions">
+      <button class="btn btn--sm btn--ghost" data-action="preview-update" title="Переглянути зміни">👁</button>
+      <button class="btn btn--sm btn--primary" data-action="approve-update" title="Застосувати зміни">Схвалити</button>
+      <button class="btn btn--sm btn--outline" data-action="reject-update" title="Відхилити зміни">Відхилити</button>
+    </div>
+  `;
+
+  row.querySelector('[data-action="preview-update"]')?.addEventListener('click', () =>
+    _previewUpdate(update, recipe, changes));
+  row.querySelector('[data-action="approve-update"]')?.addEventListener('click', () =>
+    _approveUpdate(update, recipe, changes, row));
+  row.querySelector('[data-action="reject-update"]')?.addEventListener('click', () =>
+    _rejectUpdate(update, recipe, row));
+
+  return row;
+}
+
+function _previewUpdate(update, recipe, changes) {
+  const name = recipe.name_ua || recipe.name_en || 'Рецепт';
+  const fieldLabels = { image: 'Нове фото', steps: 'Нові кроки приготування', name_ua: 'Нова назва' };
+
+  const diffBlocks = Object.entries(changes).map(([field, newVal]) => {
+    const label = fieldLabels[field] || field;
+    const oldVal = recipe[field];
+    if (field === 'image') {
+      return `
+        <p style="font-size:12px;font-weight:600;margin:12px 0 4px">${label}</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <div>
+            <div style="font-size:11px;color:var(--color-text-muted);margin-bottom:4px">Зараз</div>
+            ${oldVal ? `<img src="${oldVal}" style="width:100%;border-radius:8px">` : '<div style="height:80px;background:var(--color-bg-secondary);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--color-text-muted)">Немає фото</div>'}
+          </div>
+          <div>
+            <div style="font-size:11px;color:#a16207;margin-bottom:4px">Нове</div>
+            <img src="${newVal}" style="width:100%;border-radius:8px">
+          </div>
+        </div>`;
+    }
+    return `
+      <p style="font-size:12px;font-weight:600;margin:12px 0 4px">${label}</p>
+      ${oldVal ? `<p style="font-size:12px;color:var(--color-text-muted);background:var(--color-bg-secondary);padding:8px 10px;border-radius:6px;white-space:pre-wrap">${oldVal}</p>` : ''}
+      <p style="font-size:12px;background:rgba(166,214,184,.18);border-left:3px solid var(--color-accent);padding:8px 10px;border-radius:0 6px 6px 0;white-space:pre-wrap">${newVal}</p>`;
+  }).join('');
+
+  openDrawer(`Зміни: ${name}`, diffBlocks);
+}
+
+async function _approveUpdate(update, recipe, changes, row) {
+  const name = recipe.name_ua || recipe.name_en || 'Рецепт';
+  const ok = await confirm('Застосувати зміни', `Нові значення будуть опубліковані для рецепту «${name}».`, 'Застосувати');
+  if (!ok) return;
+
+  await supabase.from('recipes').update({ ...changes, has_pending_update: false }).eq('id', update.recipe_id);
+  await supabase.from('recipe_pending_updates').update({ status: 'approved' }).eq('id', update.id);
+  await logAction('recipes', update.recipe_id, 'approve_update', { fields: Object.keys(changes) });
+
+  clearStatsCache();
+  await loadStats();
+  row.remove();
+  if (!document.getElementById('recipesList')?.children.length) {
+    document.getElementById('recipesList').innerHTML = emptyState('Оновлень на перевірку немає 🌿');
+  }
+}
+
+async function _rejectUpdate(update, recipe, row) {
+  const name = recipe.name_ua || recipe.name_en || 'Рецепт';
+  const result = await _confirmReject(name);
+  if (!result) return;
+
+  await supabase.from('recipe_pending_updates').update({
+    status: 'rejected',
+    moderation_note: result.userMessage || null,
+  }).eq('id', update.id);
+
+  if (result.userMessage) {
+    await supabase.from('recipes').update({
+      has_pending_update: false,
+      moderation_note: result.userMessage,
+    }).eq('id', update.recipe_id);
+  } else {
+    await supabase.from('recipes').update({ has_pending_update: false }).eq('id', update.recipe_id);
+  }
+
+  await logAction('recipes', update.recipe_id, 'reject_update', { reason: result.reason });
+  row.remove();
+  if (!document.getElementById('recipesList')?.children.length) {
+    document.getElementById('recipesList').innerHTML = emptyState('Оновлень на перевірку немає 🌿');
+  }
 }

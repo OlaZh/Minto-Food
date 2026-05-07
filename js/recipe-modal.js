@@ -444,8 +444,11 @@ async function saveRecipe() {
   const totals = getTotals();
 
   // Визначаємо статус на основі toggle
-  // 'public' → 'pending' (чекає модерації), 'private' → 'draft'
-  const status = recipeVisibility === 'public' ? 'pending' : 'draft';
+  // Shadow banned юзери — ЗАВЖДИ pending, навіть якщо обрали "для себе"
+  const { data: profile } = await supabase
+    .from('profiles').select('is_shadow_banned').eq('id', user.id).single();
+  const isShadowBanned = profile?.is_shadow_banned === true;
+  const status = isShadowBanned ? 'pending' : (recipeVisibility === 'public' ? 'pending' : 'draft');
 
   const payload = {
     name_ua: document.getElementById('rm-name')?.value.trim(),
