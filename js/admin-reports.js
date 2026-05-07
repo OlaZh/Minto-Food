@@ -232,9 +232,15 @@ async function _handleAction(action, report) {
     const ok = await confirm('Відхилити скаргу', `Скаргу на "${name}" буде відхилено. Рецепт залишається опублікованим.`);
     if (!ok) return;
     await withUndo(`Скаргу на "${name}" відхилено`, async () => {
-      await _resolveReport(report.id, 'dismissed');
-      await logAction('recipe_reports', report.id, 'dismiss');
-      clearStatsCache(); await loadStats(); await loadReports();
+      try {
+        await _resolveReport(report.id, 'dismissed');
+        await logAction('recipe_reports', report.id, 'dismiss');
+        clearStatsCache(); await loadStats(); await loadReports();
+      } catch (e) {
+        console.error('_resolveReport error:', e);
+        alert(`Помилка: ${e?.message || e}`);
+        await loadReports();
+      }
     });
     return;
   }
@@ -282,11 +288,12 @@ async function _handleAction(action, report) {
 
 async function _resolveReport(reportId, status) {
   const { data: { session } } = await supabase.auth.getSession();
-  await supabase.from('recipe_reports').update({
+  const { error } = await supabase.from('recipe_reports').update({
     status,
-    resolved_by: session?.user?.id,
+    resolved_by: session?.user?.id ?? null,
     resolved_at: new Date().toISOString(),
   }).eq('id', reportId);
+  if (error) throw error;
 }
 
 async function _banUser(userId) {

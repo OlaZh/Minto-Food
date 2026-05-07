@@ -177,6 +177,59 @@
   }
 
   .admin-bulk { flex-wrap: wrap; gap: 6px; }
+
+  // Report card: actions під контентом
+  .admin-report-card {
+    grid-template-columns: 32px 1fr;
+
+    &__actions {
+      grid-column: 1 / -1;
+      flex-direction: row;
+      flex-wrap: wrap;
+    }
+  }
+
+  // Recipe row: actions під інфо
+  .admin-recipe-row {
+    grid-template-columns: 48px 1fr;
+
+    &__actions {
+      grid-column: 1 / -1;
+      flex-wrap: wrap;
+    }
+  }
+
+  // Product / User row: actions під інфо
+  .admin-product-row,
+  .admin-user-row {
+    grid-template-columns: 1fr;
+
+    &__actions {
+      flex-wrap: wrap;
+    }
+
+    &__status {
+      flex-wrap: wrap;
+    }
+  }
+
+  // Selects — повна ширина на мобільному
+  .admin-select {
+    max-width: 100%;
+    flex: 1 1 140px;
+  }
+
+  input[type="date"].admin-select {
+    max-width: 100%;
+    min-width: 130px;
+  }
+
+  // Undo toast — не виходить за екран
+  .admin-undo-toast {
+    min-width: min(300px, calc(100vw - 32px));
+    max-width: calc(100vw - 32px);
+    bottom: 80px; // над tab-bar
+  }
 }
 
 // ---- Undo toast ----
