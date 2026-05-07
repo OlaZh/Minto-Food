@@ -17,18 +17,39 @@
 
   <body class="page admin-page">
 
-    <!-- MOBILE BLOCK -->
-    <div class="admin-mobile-block" id="adminMobileBlock" hidden>
-      <div class="admin-mobile-block__inner">
-        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
-          <rect x="5" y="2" width="14" height="20" rx="2"/>
-          <line x1="12" y1="18" x2="12" y2="18.01"/>
+    <!-- MOBILE HEADER (shown on mobile by JS) -->
+    <header class="admin-mobile-header" id="adminMobileHeader" hidden>
+      <a href="index.html" class="admin-mobile-header__back">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
         </svg>
-        <h2>Адмінка доступна тільки на десктопі</h2>
-        <p>Будь ласка, відкрийте цю сторінку на пристрої з шириною екрану ≥ 1024px.</p>
-        <a href="index.html" class="btn btn--primary">На головну</a>
+        Сайт
+      </a>
+      <div class="admin-mobile-header__logo">
+        <img src="img/logo.svg" alt="Minto" />
+        <span class="admin-sidebar__badge">Admin</span>
       </div>
-    </div>
+      <button class="theme-toggle" id="adminMobileThemeToggle" type="button" aria-label="Змінити тему">
+        <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+          <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
+          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+        </svg>
+        <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+        </svg>
+      </button>
+    </header>
+
+    <!-- MOBILE TABS (shown on mobile by JS) -->
+    <nav class="admin-mobile-tabs" id="adminMobileTabs" hidden>
+      <button class="admin-mobile-tab admin-mobile-tab--active" data-section="reports">Скарги</button>
+      <button class="admin-mobile-tab" data-section="recipes">Рецепти</button>
+      <button class="admin-mobile-tab" data-section="users">Юзери</button>
+      <button class="admin-mobile-tab" data-section="products">Продукти</button>
+      <button class="admin-mobile-tab" data-section="archive">Архів</button>
+    </nav>
 
     <!-- DESKTOP LAYOUT -->
     <div class="admin-layout" id="adminLayout">

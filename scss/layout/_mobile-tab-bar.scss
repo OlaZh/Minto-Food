@@ -183,6 +183,10 @@
     stroke-linejoin: round;
     flex-shrink: 0;
   }
+
+  &[hidden] {
+    display: none;
+  }
 }
 
 /* ---------- ANIMATIONS ---------- */

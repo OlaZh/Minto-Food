@@ -352,8 +352,8 @@
 
 ### 🔮 Наступна фаза — середня складність
 
-- [ ] **Shadow ban** — нове поле `is_shadow_banned` в `profiles`; нові рецепти такого юзера автоматично йдуть у `draft` замість `published`. Ідеально для спамерів і ботів — вони не знають що заблоковані
-- [ ] **Архів порушень (soft delete)** — замість `DELETE` додавати `deleted_at TIMESTAMPTZ`; видалений контент зберігається як evidence, видно в адмінці з фільтром "Архів"
+- [x] ✅ **Shadow ban** — нове поле `is_shadow_banned` в `profiles`; нові рецепти такого юзера автоматично йдуть у `draft` замість `published`. Ідеально для спамерів і ботів — вони не знають що заблоковані
+- [x] ✅ **Архів порушень (soft delete)** — замість `DELETE` додавати `deleted_at TIMESTAMPTZ`; видалений контент зберігається як evidence, видно в адмінці з фільтром "Архів"
 - [ ] **Auto-flagging розширений** — автопідсвічування підозрілих сигналів: багато посилань у тексті, капслок-спам, підозрілі слова (не блокувати — тільки "увага, перевір")
 - [ ] 🚫 Inappropriate content - Це:
       матюки,бридкий контент,дивні жарти,треш
@@ -659,33 +659,33 @@
 
 ### 🔗 Публічні URL рецептів
 
-- [ ] Колонка `recipes.slug TEXT UNIQUE` (генерується з `name_ua` + transliteration)
-- [ ] Бекфіл slug для існуючих опублікованих рецептів
-- [ ] Тригер на INSERT/UPDATE для авто-генерації slug
-- [ ] Маршрут `/recipe/{slug}` (Vercel rewrites або hash routing з SSR fallback)
-- [ ] Сторінка рецепту рендериться **без login** (публічний доступ)
-- [ ] CTA "Зберегти в книгу" → відкриває login modal для незалогінених
-- [ ] 404 page для неіснуючих slug
+- [x] ✅ Колонка `recipes.slug TEXT UNIQUE` (генерується з `name_ua` + transliteration)
+- [x] ✅ Бекфіл slug для існуючих опублікованих рецептів
+- [x] ✅ Тригер на INSERT/UPDATE для авто-генерації slug
+- [x] ✅ Маршрут `/recipe/{slug}` (Vercel rewrites або hash routing з SSR fallback)
+- [x] ✅ Сторінка рецепту рендериться **без login** (публічний доступ)
+- [x] ✅ CTA "Зберегти в книгу" → відкриває login modal для незалогінених
+- [x] ✅ 404 page для неіснуючих slug
 
 ### 🏷 Schema.org Recipe markup (JSON-LD)
 
 > **Це найважливіше для SEO.** Google розпізнає Recipe markup і показує rich result-картки з фото + зіркою + часом приготування прямо в пошуку.
 
-- [ ] JSON-LD блок на кожній публічній сторінці рецепту:
-  - [ ] `@type: Recipe`
-  - [ ] `name`, `image`, `author`, `datePublished`
-  - [ ] `description`, `prepTime`, `cookTime`, `totalTime`, `recipeYield`
-  - [ ] `recipeCategory`, `recipeCuisine`
-  - [ ] `nutrition` (калорії, білки, жири, вуглеводи з твоїх полів!)
-  - [ ] `recipeIngredient[]`, `recipeInstructions[]`
-  - [ ] `aggregateRating` (з твоєї системи рейтингу)
+- [x] ✅ JSON-LD блок на кожній публічній сторінці рецепту:
+  - [x] ✅ `@type: Recipe`
+  - [x] ✅ `name`, `image`, `author`, `datePublished`
+  - [ ] `description`, `prepTime`, `cookTime`, `totalTime`, `recipeYield` _(description ✅, prepTime/cookTime/totalTime/recipeYield — поля відсутні в БД)_
+  - [x] ✅ `recipeCategory`, `recipeCuisine`
+  - [x] ✅ `nutrition` (калорії, білки, жири, вуглеводи з твоїх полів!)
+  - [x] ✅ `recipeIngredient[]`, `recipeInstructions[]`
+  - [x] ✅ `aggregateRating` (з твоєї системи рейтингу)
 - [ ] Тест через Google Rich Results Test (search.google.com/test/rich-results)
 
 ### 🌐 Multi-language SEO
 
 - [ ] **hreflang tags** на всіх сторінках для 3 мов
 - [ ] Окремі URL для кожної мови: `/uk/recipe/...`, `/en/recipe/...`, `/pl/recipe/...` (АБО `?lang=` параметр з canonical)
-- [ ] **Canonical URL** на кожній сторінці
+- [x] ✅ **Canonical URL** на кожній сторінці
 - [ ] Meta tags локалізовані (title, description) у 3 мовах
 
 ### 🗺 Sitemap.xml & robots.txt
@@ -702,8 +702,8 @@
 
 ### 🖼 Open Graph + Twitter Cards
 
-- [ ] OG tags на кожній сторінці (title, description, image, type)
-- [ ] Twitter Card tags (summary_large_image)
+- [x] ✅ OG tags на кожній сторінці (title, description, image, type)
+- [x] ✅ Twitter Card tags (summary_large_image)
 - [ ] **Динамічна OG image** для рецептів — `vercel/og` або статичні (recipe.image + бренд оверлей)
 - [ ] Тест через opengraph.xyz / twitter card validator
 

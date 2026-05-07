@@ -346,6 +346,10 @@
       background: #fcede8;
     }
   }
+
+  &[hidden] {
+    display: none;
+  }
 }
 
 .header__user-dropdown-divider {
