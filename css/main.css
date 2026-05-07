@@ -571,8 +571,8 @@ textarea:-webkit-autofill:focus {
 }
 @media (max-width: 768px) {
   .page-header {
-    padding: 12px 48px 6px;
-    margin-bottom: 12px;
+    padding: 12px 48px;
+    margin-bottom: 0;
   }
   .page-header__title {
     font-size: 20px;
@@ -5847,7 +5847,7 @@ textarea:-webkit-autofill:focus {
   .day-week-nav {
     flex-wrap: nowrap;
     gap: 4px;
-    padding: 4px 0 var(--space-md);
+    padding: 0 0 var(--space-md);
   }
   .day-week-nav__arrow {
     display: none;
@@ -8988,7 +8988,7 @@ input:checked + .settings-toggle__track::after {
     display: flex;
     flex-direction: column;
     gap: var(--space-xs);
-    padding: var(--space-md) 0 var(--space-4xl);
+    padding: 0 0 var(--space-4xl);
   }
 }
 /* Рядок дій під навігацією на мобільному */
