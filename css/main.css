@@ -10310,13 +10310,18 @@ input:checked + .settings-toggle__track::after {
 }
 @media (max-width: 768px) {
   .cookbook-page__add-btn--mobile {
-    padding: 8px;
-    width: 36px;
-    height: 36px;
+    padding: 6px;
+    width: 32px;
+    height: 32px;
     min-width: 0;
+    min-height: 32px;
   }
   .cookbook-page__add-btn--mobile span {
     display: none;
+  }
+  .cookbook-page__add-btn--mobile svg {
+    width: 14px;
+    height: 14px;
   }
 }
 
@@ -11282,10 +11287,10 @@ input:checked + .settings-toggle__track::after {
 }
 @media (max-width: 480px) {
   .cookbook-page {
-    padding: 16px 0 48px;
+    padding: 0 0 48px;
   }
   .cookbook-page__header {
-    margin-bottom: 16px;
+    margin-bottom: 0;
   }
   .cookbook-page__title {
     font-size: 20px;
