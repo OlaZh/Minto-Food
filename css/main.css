@@ -12762,94 +12762,31 @@ input:checked + .settings-toggle__track::after {
   cursor: pointer;
   white-space: nowrap;
   transition: color 0.15s, border-color 0.15s;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
 }
 .admin-mobile-tab--active {
   color: var(--color-accent);
   border-bottom-color: var(--color-accent);
 }
-
-@media (max-width: 1023px) {
-  .admin-layout {
-    display: block;
-  }
-  .admin-layout .admin-sidebar {
-    display: none;
-  }
-  .admin-layout .admin-main {
-    min-height: auto;
-  }
-  .admin-layout--mobile {
-    display: block;
-  }
-  .admin-layout--mobile .admin-sidebar {
-    display: none;
-  }
-  .admin-layout--mobile .admin-main {
-    min-height: auto;
-  }
-  .admin-stats-bar {
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    padding: 8px 16px;
-    gap: 8px;
-    scrollbar-width: none;
-    -webkit-overflow-scrolling: touch;
-  }
-  .admin-stats-bar::-webkit-scrollbar {
-    display: none;
-  }
-  .admin-stats-bar__pill {
-    flex-shrink: 0;
-    min-width: 130px;
-  }
-  .admin-section {
-    padding: 16px 16px 80px;
-  }
-  .admin-section__header {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 10px;
-    padding-bottom: 12px;
-  }
-  .admin-section__controls {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 8px;
-  }
-  .admin-filters {
-    flex-wrap: wrap;
-    gap: 6px;
-  }
-  .admin-search {
-    width: 100%;
-    box-sizing: border-box;
-  }
-  .admin-card__actions {
-    flex-wrap: wrap;
-  }
-  .admin-drawer__panel {
-    width: 100%;
-    max-width: 100%;
-    border-radius: 20px 20px 0 0;
-  }
-  .admin-bulk {
-    flex-wrap: wrap;
-    gap: 6px;
-  }
-  .admin-select {
-    max-width: 100%;
-    flex: 1 1 140px;
-  }
-  input[type=date].admin-select {
-    max-width: 100%;
-    min-width: 130px;
-  }
-  .admin-undo-toast {
-    min-width: min(300px, 100vw - 32px);
-    max-width: calc(100vw - 32px);
-    bottom: 80px;
-  }
+.admin-mobile-tab__badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: #ef4444;
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 700;
 }
+.admin-mobile-tab__badge[hidden] {
+  display: none;
+}
+
 .admin-undo-toast {
   position: fixed;
   bottom: 24px;
@@ -13663,4 +13600,81 @@ input[type=date].admin-select {
 .admin-kcal-edit label {
   font-size: 0.75rem;
   color: var(--color-text-secondary);
+}
+
+@media (max-width: 1023px) {
+  .admin-layout,
+  .admin-layout--mobile {
+    display: block;
+  }
+  .admin-layout .admin-sidebar,
+  .admin-layout--mobile .admin-sidebar {
+    display: none;
+  }
+  .admin-layout .admin-main,
+  .admin-layout--mobile .admin-main {
+    min-height: auto;
+  }
+  .admin-stats-bar {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding: 8px 16px;
+    gap: 8px;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  .admin-stats-bar::-webkit-scrollbar {
+    display: none;
+  }
+  .admin-stats-bar__pill {
+    flex-shrink: 0;
+    min-width: 130px;
+  }
+  .admin-section {
+    padding: 16px 16px 80px;
+  }
+  .admin-section__header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    padding-bottom: 12px;
+  }
+  .admin-section__controls {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+  .admin-filters {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .admin-select {
+    max-width: 100%;
+    flex: 1 1 140px;
+  }
+  input[type=date].admin-select {
+    max-width: 100%;
+    min-width: 130px;
+  }
+  .admin-search {
+    width: 100%;
+    box-sizing: border-box;
+  }
+  .admin-card__actions {
+    flex-wrap: wrap;
+  }
+  .admin-bulk {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .admin-drawer__panel {
+    width: 100%;
+    max-width: 100%;
+    border-radius: 20px 20px 0 0;
+  }
+  .admin-undo-toast {
+    min-width: min(300px, 100vw - 32px);
+    max-width: calc(100vw - 32px);
+    bottom: 80px;
+  }
 }

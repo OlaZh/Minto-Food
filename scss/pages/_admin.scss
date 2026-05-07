@@ -115,97 +115,33 @@
   cursor: pointer;
   white-space: nowrap;
   transition: color .15s, border-color .15s;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
 
   &--active {
     color: var(--color-accent);
     border-bottom-color: var(--color-accent);
   }
-}
 
-// ---- Mobile layout overrides ----
-@media (max-width: 1023px) {
-  // Ховаємо сайдбар і скидаємо grid — незалежно від JS-класу
-  .admin-layout {
-    display: block;
+  &__badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    border-radius: 999px;
+    background: #ef4444;
+    color: #fff;
+    font-size: .7rem;
+    font-weight: 700;
 
-    .admin-sidebar { display: none; }
-
-    .admin-main { min-height: auto; }
-  }
-
-  // JS додає цей клас — лишаємо для сумісності
-  .admin-layout--mobile {
-    display: block;
-
-    .admin-sidebar { display: none; }
-
-    .admin-main { min-height: auto; }
-  }
-
-  .admin-stats-bar {
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    padding: 8px 16px;
-    gap: 8px;
-    scrollbar-width: none;
-    -webkit-overflow-scrolling: touch;
-    &::-webkit-scrollbar { display: none; }
-
-    &__pill { flex-shrink: 0; min-width: 130px; }
-  }
-
-  .admin-section {
-    padding: 16px 16px 80px;
-  }
-
-  .admin-section__header {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 10px;
-    padding-bottom: 12px;
-  }
-
-  .admin-section__controls {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 8px;
-  }
-
-  .admin-filters {
-    flex-wrap: wrap;
-    gap: 6px;
-  }
-
-  .admin-search { width: 100%; box-sizing: border-box; }
-
-  .admin-card__actions { flex-wrap: wrap; }
-
-  .admin-drawer__panel {
-    width: 100%;
-    max-width: 100%;
-    border-radius: 20px 20px 0 0;
-  }
-
-  .admin-bulk { flex-wrap: wrap; gap: 6px; }
-
-  // Selects — повна ширина на мобільному
-  .admin-select {
-    max-width: 100%;
-    flex: 1 1 140px;
-  }
-
-  input[type="date"].admin-select {
-    max-width: 100%;
-    min-width: 130px;
-  }
-
-  // Undo toast — не виходить за екран
-  .admin-undo-toast {
-    min-width: min(300px, calc(100vw - 32px));
-    max-width: calc(100vw - 32px);
-    bottom: 80px; // над tab-bar
+    &[hidden] { display: none; }
   }
 }
+
+// ---- Mobile overrides (в кінці файлу, після всіх компонентів) ----
 
 // ---- Undo toast ----
 .admin-undo-toast {
@@ -1041,4 +977,79 @@ input[type="date"].admin-select {
   }
 
   label { font-size: .75rem; color: var(--color-text-secondary); }
+}
+
+// ============================================================
+// Mobile overrides — ПІСЛЯ всіх компонентів (каскад правильний)
+// ============================================================
+@media (max-width: 1023px) {
+  // Layout: скидаємо grid, ховаємо сайдбар
+  .admin-layout,
+  .admin-layout--mobile {
+    display: block;
+
+    .admin-sidebar { display: none; }
+    .admin-main    { min-height: auto; }
+  }
+
+  // Stats bar: горизонтальний скрол
+  .admin-stats-bar {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding: 8px 16px;
+    gap: 8px;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    &::-webkit-scrollbar { display: none; }
+    &__pill { flex-shrink: 0; min-width: 130px; }
+  }
+
+  // Section
+  .admin-section { padding: 16px 16px 80px; }
+
+  .admin-section__header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    padding-bottom: 12px;
+  }
+
+  .admin-section__controls {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  // Filters
+  .admin-filters { flex-wrap: wrap; gap: 6px; }
+
+  .admin-select {
+    max-width: 100%;
+    flex: 1 1 140px;
+  }
+
+  input[type="date"].admin-select {
+    max-width: 100%;
+    min-width: 130px;
+  }
+
+  .admin-search { width: 100%; box-sizing: border-box; }
+
+  // Bulk / card actions
+  .admin-card__actions { flex-wrap: wrap; }
+  .admin-bulk          { flex-wrap: wrap; gap: 6px; }
+
+  // Drawer
+  .admin-drawer__panel {
+    width: 100%;
+    max-width: 100%;
+    border-radius: 20px 20px 0 0;
+  }
+
+  // Undo toast — над мобільним tab-bar, не виходить за екран
+  .admin-undo-toast {
+    min-width: min(300px, calc(100vw - 32px));
+    max-width: calc(100vw - 32px);
+    bottom: 80px;
+  }
 }

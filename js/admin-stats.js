@@ -66,9 +66,12 @@ function renderStats(stats) {
     recipesPill.classList.toggle('admin-stats-bar__pill--alert', stats.recipesToday > 0);
   }
 
-  updateSidebarBadge('sidebarReportsCount', stats.reports);
-  updateSidebarBadge('sidebarRecipesCount', stats.recipesToday);
-  updateSidebarBadge('sidebarProductsCount', stats.userProducts);
+  updateSidebarBadge('sidebarReportsCount',   stats.reports);
+  updateSidebarBadge('sidebarRecipesCount',   stats.recipesToday);
+  updateSidebarBadge('sidebarProductsCount',  stats.userProducts);
+  updateSidebarBadge('mobileTabReportsCount',  stats.reports);
+  updateSidebarBadge('mobileTabRecipesCount',  stats.recipesToday);
+  updateSidebarBadge('mobileTabProductsCount', stats.userProducts);
 }
 
 function _setVal(id, val) {
