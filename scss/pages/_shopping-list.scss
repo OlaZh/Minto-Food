@@ -378,6 +378,7 @@
     flex-direction: column;
     gap: 2px;
     min-width: 0;
+    cursor: pointer;
   }
 
   &__name {
@@ -388,6 +389,7 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    cursor: pointer;
   }
 
   &__note {
@@ -396,12 +398,14 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    cursor: pointer;
   }
 
   &__amount {
     font-size: 13px;
     color: var(--color-text-secondary);
     white-space: nowrap;
+    cursor: pointer;
   }
 
   &__actions {

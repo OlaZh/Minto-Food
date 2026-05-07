@@ -117,8 +117,14 @@ function render(newIds) {
         ${amountText ? `<span class="shop-item__amount">${escapeHTML(amountText)}</span>` : ''}
       `;
 
-      li.querySelector('input[type=checkbox]')
-        .addEventListener('change', e => toggleItem(item.id, e.target.checked));
+      li.addEventListener('click', e => {
+        const cb = li.querySelector('.shop-item__checkbox');
+        const clickedLabel = e.target.closest('.shop-item__check-label');
+        if (!clickedLabel) {
+          cb.checked = !cb.checked;
+        }
+        toggleItem(item.id, cb.checked);
+      });
 
       ul.appendChild(li);
     });

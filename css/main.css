@@ -11665,6 +11665,7 @@ input:checked + .settings-toggle__track::after {
   flex-direction: column;
   gap: 2px;
   min-width: 0;
+  cursor: pointer;
 }
 .shop-item__name {
   font-size: 15px;
@@ -11674,6 +11675,7 @@ input:checked + .settings-toggle__track::after {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  cursor: pointer;
 }
 .shop-item__note {
   font-size: 12px;
@@ -11681,11 +11683,13 @@ input:checked + .settings-toggle__track::after {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  cursor: pointer;
 }
 .shop-item__amount {
   font-size: 13px;
   color: var(--color-text-secondary);
   white-space: nowrap;
+  cursor: pointer;
 }
 .shop-item__actions {
   display: flex;
