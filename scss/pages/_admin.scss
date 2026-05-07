@@ -63,6 +63,8 @@
   top: 0;
   z-index: 200;
 
+  &[hidden] { display: none; }
+
   &__back {
     display: flex;
     align-items: center;
@@ -98,6 +100,7 @@
   scrollbar-width: none;
   -webkit-overflow-scrolling: touch;
   &::-webkit-scrollbar { display: none; }
+  &[hidden] { display: none; }
 }
 
 .admin-mobile-tab {
@@ -443,7 +446,7 @@
 
 .admin-tab {
   padding: 6px 16px;
-  border-radius: var(--radius-md);
+  border-radius: 8px;
   border: 1px solid var(--color-border);
   background: transparent;
   color: var(--color-text-secondary);
@@ -478,7 +481,14 @@
 .admin-filters {
   display: flex;
   gap: var(--space-sm);
+  align-items: center;
   flex-wrap: wrap;
+}
+
+.admin-date-sep {
+  font-size: .8125rem;
+  color: var(--color-text-secondary);
+  flex-shrink: 0;
 }
 
 .admin-select,
@@ -500,6 +510,13 @@
 
 .admin-select {
   cursor: pointer;
+  max-width: 180px;
+  flex-shrink: 1;
+}
+
+input[type="date"].admin-select {
+  max-width: 155px;
+  min-width: 130px;
 }
 
 .admin-search {

@@ -170,7 +170,7 @@ function _buildCard(report, grouped) {
       </div>
     </div>
     <div class="admin-report-card__actions">
-      <button class="btn btn--sm btn--ghost" data-action="dismiss"
+      <button class="btn btn--sm btn--outline" data-action="dismiss"
         title="Скарга безпідставна — рецепт лишається, скарга закривається">
         Скарга безпідставна
       </button>

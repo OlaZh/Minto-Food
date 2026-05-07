@@ -511,12 +511,18 @@ export function openReportModal(recipeId, recipeName = '') {
         <form id="report-form">
           <div class="form-group">
             <label>Причина скарги</label>
-            <select id="report-reason-select" required>
+            <select id="report-reason-select" class="form-select" required>
               <option value="">Оберіть причину...</option>
               <option value="inappropriate">Неприйнятний вміст</option>
+              <option value="nsfw">NSFW</option>
               <option value="copyright">Порушення авторських прав</option>
               <option value="spam">Спам або реклама</option>
-              <option value="incorrect">Неправильна інформація</option>
+              <option value="hate_speech">Мова ненависті</option>
+              <option value="scam">Шахрайство</option>
+              <option value="misinformation">Небезпечна дезінформація</option>
+              <option value="suspicious_links">Підозрілі посилання</option>
+              <option value="bot_activity">Активність бота</option>
+              <option value="incorrect">Некоректна інформація</option>
               <option value="other">Інше</option>
             </select>
           </div>

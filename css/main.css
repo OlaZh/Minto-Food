@@ -12703,6 +12703,9 @@ input:checked + .settings-toggle__track::after {
   top: 0;
   z-index: 200;
 }
+.admin-mobile-header[hidden] {
+  display: none;
+}
 .admin-mobile-header__back {
   display: flex;
   align-items: center;
@@ -12741,6 +12744,9 @@ input:checked + .settings-toggle__track::after {
   -webkit-overflow-scrolling: touch;
 }
 .admin-mobile-tabs::-webkit-scrollbar {
+  display: none;
+}
+.admin-mobile-tabs[hidden] {
   display: none;
 }
 
@@ -13070,7 +13076,7 @@ input:checked + .settings-toggle__track::after {
 
 .admin-tab {
   padding: 6px 16px;
-  border-radius: var(--radius-md);
+  border-radius: 8px;
   border: 1px solid var(--color-border);
   background: transparent;
   color: var(--color-text-secondary);
@@ -13102,7 +13108,14 @@ input:checked + .settings-toggle__track::after {
 .admin-filters {
   display: flex;
   gap: var(--space-sm);
+  align-items: center;
   flex-wrap: wrap;
+}
+
+.admin-date-sep {
+  font-size: 0.8125rem;
+  color: var(--color-text-secondary);
+  flex-shrink: 0;
 }
 
 .admin-select,
@@ -13124,6 +13137,13 @@ input:checked + .settings-toggle__track::after {
 
 .admin-select {
   cursor: pointer;
+  max-width: 180px;
+  flex-shrink: 1;
+}
+
+input[type=date].admin-select {
+  max-width: 155px;
+  min-width: 130px;
 }
 
 .admin-search {

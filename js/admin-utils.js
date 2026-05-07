@@ -66,14 +66,14 @@ function _closeConfirm(result) {
 
 const MOD_REASONS = [
   { value: 'nsfw',                 label: 'NSFW' },
-  { value: 'spam',                 label: 'Spam' },
-  { value: 'scam',                 label: 'Scam' },
-  { value: 'hate_speech',          label: 'Hate speech' },
-  { value: 'copyright',            label: 'Copyright' },
-  { value: 'misinformation',       label: 'Dangerous misinformation' },
-  { value: 'inappropriate_content',label: 'Inappropriate content' },
-  { value: 'suspicious_links',     label: 'Suspicious links' },
-  { value: 'bot_activity',         label: 'Bot activity' },
+  { value: 'spam',                 label: 'Спам' },
+  { value: 'scam',                 label: 'Шахрайство' },
+  { value: 'hate_speech',          label: 'Мова ненависті' },
+  { value: 'copyright',            label: 'Авторські права' },
+  { value: 'misinformation',       label: 'Небезпечна дезінформація' },
+  { value: 'inappropriate_content',label: 'Неприйнятний вміст' },
+  { value: 'suspicious_links',     label: 'Підозрілі посилання' },
+  { value: 'bot_activity',         label: 'Активність бота' },
   { value: 'other',                label: 'Інше' },
 ];
 
@@ -241,15 +241,15 @@ export function reportTypeLabel(type) {
   const map = {
     copyright:             'Авторські права',
     spam:                  'Спам',
-    inappropriate:         'Неприйнятний',
-    incorrect:             'Некоректно',
+    inappropriate:         'Неприйнятний вміст',
+    incorrect:             'Некоректна інформація',
     nsfw:                  'NSFW',
-    scam:                  'Scam',
-    hate_speech:           'Hate speech',
-    misinformation:        'Misinformation',
-    inappropriate_content: 'Inappropriate',
-    suspicious_links:      'Suspicious links',
-    bot_activity:          'Bot activity',
+    scam:                  'Шахрайство',
+    hate_speech:           'Мова ненависті',
+    misinformation:        'Небезпечна дезінформація',
+    inappropriate_content: 'Неприйнятний вміст',
+    suspicious_links:      'Підозрілі посилання',
+    bot_activity:          'Активність бота',
     other:                 'Інше',
   };
   return map[type] || type;
