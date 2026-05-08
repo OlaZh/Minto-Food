@@ -674,7 +674,7 @@
 - [x] ✅ JSON-LD блок на кожній публічній сторінці рецепту:
   - [x] ✅ `@type: Recipe`
   - [x] ✅ `name`, `image`, `author`, `datePublished`
-  - [ ] `description`, `prepTime`, `cookTime`, `totalTime`, `recipeYield` _(description ✅, prepTime/cookTime/totalTime/recipeYield — поля відсутні в БД)_
+  - [x] ✅ `description`, `prepTime`, `cookTime`, `totalTime`, `recipeYield` _(міграція `seo_timing_migration.sql` + Schema.org оновлено)_
   - [x] ✅ `recipeCategory`, `recipeCuisine`
   - [x] ✅ `nutrition` (калорії, білки, жири, вуглеводи з твоїх полів!)
   - [x] ✅ `recipeIngredient[]`, `recipeInstructions[]`
@@ -683,22 +683,22 @@
 
 ### 🌐 Multi-language SEO
 
-- [ ] **hreflang tags** на всіх сторінках для 3 мов
-- [ ] Окремі URL для кожної мови: `/uk/recipe/...`, `/en/recipe/...`, `/pl/recipe/...` (АБО `?lang=` параметр з canonical)
+- [x] ✅ **hreflang tags** на сторінках рецептів для 3 мов (uk/en/pl + x-default)
+- [x] ✅ Окремі URL для кожної мови через `?lang=` параметр з canonical
 - [x] ✅ **Canonical URL** на кожній сторінці
-- [ ] Meta tags локалізовані (title, description) у 3 мовах
+- [x] ✅ Meta tags локалізовані (title, description) у 3 мовах
 
 ### 🗺 Sitemap.xml & robots.txt
 
-- [ ] Динамічний `/sitemap.xml` (Vercel function):
-  - [ ] Усі статичні сторінки (index, pricing, about, etc.)
-  - [ ] Усі опубліковані рецепти (дата оновлення = `recipes.updated_at`)
+- [x] ✅ Динамічний `/sitemap.xml` (Vercel function `/api/sitemap.js`):
+  - [x] ✅ Усі статичні сторінки (index, recipes, product-guide)
+  - [x] ✅ Усі опубліковані рецепти (дата оновлення = `recipes.updated_at`)
   - [ ] Усі продукти з путівника (якщо публічні)
-  - [ ] Multi-language sitemap або hreflang всередині
-- [ ] `/robots.txt`:
-  - [ ] Allow public pages
-  - [ ] Disallow: `/admin*`, `/profile*`, `/api/*`
-  - [ ] Sitemap location
+  - [x] ✅ hreflang всередині sitemap (uk/en/pl)
+- [x] ✅ `/robots.txt`:
+  - [x] ✅ Allow public pages
+  - [x] ✅ Disallow: `/admin.html`, `/profile.html`, `/api/*`
+  - [x] ✅ Sitemap location
 
 ### 🖼 Open Graph + Twitter Cards
 
@@ -709,10 +709,12 @@
 
 ### 🔘 Шерінг
 
-- [ ] Кнопка "Поділитися" на recipe-картці (Web Share API з fallback на copy link)
+- [x] ✅ Кнопка "Поділитися" на recipe-картці (Web Share API з fallback на copy link)
 - [ ] Тест share у Telegram / Messenger / iOS Messages → красива preview-картка
 
 ### 📈 Search Console + Bing Webmaster
+
+> ⏳ **Блокер: потрібен реальний домен** (`mintofood.com` або кастомний на Vercel). Технічна частина (sitemap, robots.txt, Schema.org) вже готова — повернутись сюди одразу після підключення домену.
 
 - [ ] Зареєструвати `mintofood.com` у Google Search Console
 - [ ] Submit sitemap.xml

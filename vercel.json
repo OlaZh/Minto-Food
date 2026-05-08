@@ -1,5 +1,6 @@
 {
   "rewrites": [
-    { "source": "/recipe/:slug", "destination": "/recipe.html" }
+    { "source": "/sitemap.xml",   "destination": "/api/sitemap" },
+    { "source": "/recipe/:slug",  "destination": "/recipe.html" }
   ]
 }

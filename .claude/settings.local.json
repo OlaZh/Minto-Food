@@ -18,7 +18,8 @@
       "Bash(node)",
       "Bash(dir /a \"c:\\\\Users\\\\violk\\\\Desktop\\\\Minto Food\\\\\" | findstr \".json\")",
       "Bash(Get-ChildItem -Path \"c:\\\\Users\\\\violk\\\\Desktop\\\\Minto Food\" -Recurse -Filter \"*.scss\")",
-      "Bash(Select-Object -ExpandProperty FullName)"
+      "Bash(Select-Object -ExpandProperty FullName)",
+      "Bash(dir \"c:\\\\Users\\\\violk\\\\Desktop\\\\Minto Food\")"
     ]
   }
 }
