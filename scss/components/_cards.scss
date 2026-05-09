@@ -140,6 +140,27 @@
     color: var(--color-text-secondary);
   }
 
+  &__meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+  }
+
+  &__meta-item {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--color-text-secondary);
+    background: var(--color-bg-hover);
+    padding: 2px 7px;
+    border-radius: 999px;
+    white-space: nowrap;
+
+    &--diff-easy   { color: #16a34a; background: rgba(22, 163, 74, .1); }
+    &--diff-medium { color: #d97706; background: rgba(217, 119, 6, .1); }
+    &--diff-hard   { color: #dc2626; background: rgba(220, 38, 38, .1); }
+  }
+
   &__footer {
     display: flex;
     align-items: center;

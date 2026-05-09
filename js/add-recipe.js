@@ -2,6 +2,7 @@ import { supabase } from './supabaseClient.js';
 import { initAuth } from './auth.js';
 import { showToast, toBase64, parseNumber, setInputVal } from './utils.js';
 import { getLang } from './storage.js';
+import { i18n } from './i18n.js';
 import { getRecipeDisplayName } from './recipe-utils.js';
 import { lockScroll, unlockScroll } from './scroll-lock.js';
 import { initRecipeModal, openRecipeModal } from './recipe-modal.js';
@@ -147,18 +148,224 @@ async function loadAndDisplayRecipes() {
   displayRecipes(data || [], false);
 }
 
-const categoryTranslations = {
-  all: 'Всі',
-  breakfast: 'Сніданки',
-  lunch: 'Обіди',
-  dinner: 'Вечері',
-  dessert: 'Десерти',
-  snack: 'Перекуси',
-  drinks: 'Напої',
-  bakery: 'Випічка',
-  fast: 'Швидкі рецепти ⚡',
-  no_power: 'Без світла 🔋',
+function t(key) {
+  const lang = getLang();
+  return (i18n[lang] || i18n.ua)[key] || key;
+}
+
+function getCategoryLabel(value) {
+  const key = `cat_${value}`;
+  return t(key) !== key ? t(key) : value;
+}
+
+function getDifficultyLabel(value) {
+  const key = `diff_${value}`;
+  return t(key) !== key ? t(key) : value;
+}
+
+// type-значення тегів → i18n-ключі заголовків груп
+const GROUP_LABEL_KEYS = {
+  category:       'filterGroupCategory',
+  dish_type:      'filterGroupDishType',
+  cooking_method: 'filterGroupCookingMethod',
+  dietary:        'filterGroupDietary',
+  lifestyle:      'filterGroupLifestyle',
 };
+
+// selectedFilters: { [tagType]: Set<tagId (number)> }
+const selectedFilters = {};
+
+function hasActiveFilters() {
+  return Object.values(selectedFilters).some((s) => s.size > 0);
+}
+
+async function applyRecipeFilters() {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  const activeGroups = Object.entries(selectedFilters).filter(([, s]) => s.size > 0);
+
+  // Для кожної групи отримуємо recipe_id де тег збігається (OR всередині групи)
+  const recipeSets = await Promise.all(
+    activeGroups.map(async ([, tagIds]) => {
+      const { data } = await supabase
+        .from('recipe_tags')
+        .select('recipe_id')
+        .in('tag_id', [...tagIds]);
+      return new Set((data || []).map((r) => r.recipe_id));
+    }),
+  );
+
+  // AND між групами — перетин
+  let matchingIds = recipeSets[0];
+  for (let i = 1; i < recipeSets.length; i++) {
+    matchingIds = new Set([...matchingIds].filter((id) => recipeSets[i].has(id)));
+  }
+
+  if (matchingIds.size === 0) {
+    displayRecipes([], false);
+    return;
+  }
+
+  let query = supabase.from('recipes').select('*').in('id', [...matchingIds]);
+  if (user) {
+    query = query.or(`status.eq.published,user_id.eq.${user.id}`);
+  } else {
+    query = query.eq('status', 'published');
+  }
+
+  const { data, error } = await query;
+  if (!error) displayRecipes(data || [], false);
+}
+
+function resetSearch() {
+  const searchInputEl = document.getElementById('recipe-search-input');
+  const clearBtn = document.getElementById('clear-search-btn');
+  const searchModeEl = document.getElementById('search-mode-btn');
+  if (searchInputEl) searchInputEl.value = '';
+  if (clearBtn) clearBtn.style.display = 'none';
+  if (searchModeEl) {
+    searchModeEl.innerHTML = iconSearch;
+    searchModeEl.classList.remove('is-active');
+  }
+}
+
+async function buildFilterPanel() {
+  const panel = document.getElementById('recipe-filters-panel');
+  if (!panel) return;
+
+  const lang = getLang();
+  const nameField = lang === 'en' ? 'name_en' : lang === 'pl' ? 'name_pl' : 'name_ua';
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  // 1. Завантажуємо активні теги з БД
+  const { data: tags } = await supabase
+    .from('tags')
+    .select('id, code, type, name_ua, name_en, name_pl, icon')
+    .eq('is_active', true)
+    .order('type')
+    .order('id');
+
+  if (!tags?.length) return;
+
+  // 2. Рахуємо скільки опублікованих рецептів має кожен тег
+  const statusFilter = user
+    ? `status.eq.published,user_id.eq.${user.id}`
+    : 'status.eq.published';
+
+  const { data: pubRecipes } = await supabase
+    .from('recipes')
+    .select('id')
+    .or(statusFilter);
+
+  const pubIds = (pubRecipes || []).map((r) => r.id);
+  const tagCounts = {};
+
+  if (pubIds.length > 0) {
+    const { data: links } = await supabase
+      .from('recipe_tags')
+      .select('tag_id')
+      .in('recipe_id', pubIds);
+    (links || []).forEach((l) => {
+      tagCounts[l.tag_id] = (tagCounts[l.tag_id] || 0) + 1;
+    });
+  }
+
+  // 3. Групуємо теги по type
+  const groups = {};
+  tags.forEach((tag) => {
+    if (!groups[tag.type]) groups[tag.type] = [];
+    groups[tag.type].push(tag);
+  });
+
+  // 4. Будуємо DOM
+  panel.innerHTML = '';
+
+  Object.entries(groups).forEach(([type, groupTags], idx) => {
+    const labelKey = GROUP_LABEL_KEYS[type];
+    const groupLabel = labelKey ? t(labelKey) : type;
+    const totalSelected = selectedFilters[type]?.size || 0;
+    const badge = totalSelected > 0 ? `<span class="filter-group__badge">${totalSelected}</span>` : '';
+
+    const groupEl = document.createElement('div');
+    groupEl.className = 'filter-group' + (idx === 0 ? ' filter-group--open' : '');
+    groupEl.innerHTML = `
+      <button class="filter-group__header" type="button" aria-expanded="${idx === 0}">
+        <span class="filter-group__label">${groupLabel}${badge}</span>
+        <svg class="filter-group__chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 6l4 4 4-4"/>
+        </svg>
+      </button>
+      <div class="filter-group__body"></div>
+    `;
+
+    const body = groupEl.querySelector('.filter-group__body');
+    groupTags.forEach((tag) => {
+      const count = tagCounts[tag.id] || 0;
+      const isChecked = selectedFilters[type]?.has(tag.id) || false;
+      const tagName = tag[nameField] || tag.name_ua;
+
+      const label = document.createElement('label');
+      label.className =
+        'filter-option' +
+        (isChecked ? ' filter-option--checked' : '') +
+        (count === 0 ? ' filter-option--zero' : '');
+      label.innerHTML = `
+        <input type="checkbox" name="${type}" value="${tag.id}" ${isChecked ? 'checked' : ''}>
+        ${tag.icon ? `<span>${tag.icon}</span>` : ''}
+        <span class="filter-option__label">${tagName}</span>
+        ${count > 0 ? `<span class="filter-option__count">${count}</span>` : ''}
+      `;
+
+      label.querySelector('input').addEventListener('change', (e) => {
+        if (!selectedFilters[type]) selectedFilters[type] = new Set();
+        if (e.target.checked) {
+          selectedFilters[type].add(tag.id);
+        } else {
+          selectedFilters[type].delete(tag.id);
+          if (selectedFilters[type].size === 0) delete selectedFilters[type];
+        }
+        resetSearch();
+        buildFilterPanel();
+        if (hasActiveFilters()) {
+          applyRecipeFilters();
+        } else {
+          loadAndDisplayRecipes();
+        }
+      });
+
+      body.appendChild(label);
+    });
+
+    const header = groupEl.querySelector('.filter-group__header');
+    header.addEventListener('click', () => {
+      const isOpen = groupEl.classList.toggle('filter-group--open');
+      header.setAttribute('aria-expanded', isOpen);
+    });
+
+    panel.appendChild(groupEl);
+  });
+
+  if (hasActiveFilters()) {
+    const resetRow = document.createElement('div');
+    resetRow.className = 'filter-reset-row';
+    const resetBtn = document.createElement('button');
+    resetBtn.className = 'filter-reset-btn';
+    resetBtn.type = 'button';
+    resetBtn.textContent = t('filterReset');
+    resetBtn.addEventListener('click', () => {
+      Object.keys(selectedFilters).forEach((k) => delete selectedFilters[k]);
+      buildFilterPanel();
+      loadAndDisplayRecipes();
+    });
+    resetRow.appendChild(resetBtn);
+    panel.appendChild(resetRow);
+  }
+}
 
 // =============================================================
 // 4.0 ДОПОМІЖНА: будує DOM-картку рецепту
@@ -169,9 +376,21 @@ function buildRecipeCard(recipe, savedRecipeIds) {
   const name = getRecipeName(recipe);
   const cardImage =
     recipe.image || 'https://images.unsplash.com/photo-1495521821757-a1efb6729352?q=80&w=500';
-  const displayCategory = categoryTranslations[recipe.category] || recipe.category || '';
+  const displayCategory = recipe.category ? getCategoryLabel(recipe.category) : '';
   const isSaved = savedRecipeIds.includes(recipe.id);
   const isOwn = isOwnRecipe(recipe);
+
+  const timeVal = recipe.time_minutes;
+  const timePart = timeVal ? `<span class="recipe-card__meta-item">⏱ ${timeVal} ${t('cardMin')}</span>` : '';
+  const diffPart = recipe.difficulty
+    ? `<span class="recipe-card__meta-item recipe-card__meta-item--diff recipe-card__meta-item--diff-${recipe.difficulty}">${getDifficultyLabel(recipe.difficulty)}</span>`
+    : '';
+  const weightPart = recipe.total_weight
+    ? `<span class="recipe-card__meta-item">⚖ ${recipe.total_weight} ${t('cardG')}</span>`
+    : '';
+  const metaRow = (timePart || diffPart || weightPart)
+    ? `<div class="recipe-card__meta">${timePart}${diffPart}${weightPart}</div>`
+    : '';
 
   const card = document.createElement('div');
   card.className = 'recipe-card content-fade-in';
@@ -200,6 +419,7 @@ function buildRecipeCard(recipe, savedRecipeIds) {
     ${isOwn && recipe.status === 'draft' && recipe.moderation_note
       ? `<div class="recipe-card__mod-note">${recipe.moderation_note}</div>`
       : ''}
+    ${metaRow}
     <div class="recipe-card__footer">
       <span class="recipe-card__kcal">${recipe.kcal || 0} ккал</span>
       <button class="recipe-card__btn js-view-recipe">Переглянути</button>
@@ -416,7 +636,7 @@ export async function openRecipeView(recipeId) {
 
   setT('view-title', name);
   setT('view-calories', recipe.kcal);
-  setT('view-category', categoryTranslations[recipe.category] || recipe.category);
+  setT('view-category', getCategoryLabel(recipe.category));
   setT('view-proteins', recipe.protein);
   setT('view-carbs', recipe.carbs);
   setT('view-fats', recipe.fat);
@@ -1130,47 +1350,6 @@ if (clearSearchBtn) {
   });
 }
 
-document.querySelectorAll('.recipe-filters__item').forEach((btn) => {
-  btn.addEventListener('click', async () => {
-    document
-      .querySelectorAll('.recipe-filters__item')
-      .forEach((b) => b.classList.remove('recipe-filters__item--active'));
-    btn.classList.add('recipe-filters__item--active');
-
-    // Скидаємо пошук при кліку на фільтр
-    const searchInputEl = document.getElementById('recipe-search-input');
-    const clearBtn = document.getElementById('clear-search-btn');
-    const searchModeEl = document.getElementById('search-mode-btn');
-    if (searchInputEl) searchInputEl.value = '';
-    if (clearBtn) clearBtn.style.display = 'none';
-    if (searchModeEl) {
-      searchModeEl.innerHTML = iconSearch;
-      searchModeEl.classList.remove('is-active');
-    }
-
-    const category = btn.dataset.category;
-
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    let query = supabase.from('recipes').select('*');
-
-    if (category !== 'all') {
-      query = query.eq('category', category);
-    }
-
-    if (user) {
-      query = query.or(`status.eq.published,user_id.eq.${user.id}`);
-    } else {
-      query = query.eq('status', 'published');
-    }
-
-    const { data, error } = await query;
-    if (!error) displayRecipes(data || [], false);
-  });
-});
-
 // =============================================================
 // 15. СЛУХАЧІ ПОДІЙ ТА ІНІЦІАЛІЗАЦІЯ
 // =============================================================
@@ -1258,7 +1437,7 @@ async function loadNewRecipes() {
         <div class="new-recipe-item__info">
           <div class="new-recipe-item__name">${name}${isOwn ? ' <span style="font-size:11px;opacity:.7;">(Мій)</span>' : ''}</div>
           <div class="new-recipe-item__meta">
-            <span>${categoryTranslations[recipe.category] || recipe.category || ''}</span>
+            <span>${recipe.category ? getCategoryLabel(recipe.category) : ''}</span>
             <span>·</span>
             <span>${formatTimeAgo(recipe.created_at)}</span>
           </div>
@@ -1304,6 +1483,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   await initAuth();
   await initBookSelector();
   await initRecipeModal();
+  buildFilterPanel();
   loadAndDisplayRecipes();
   initAiUpload();
 

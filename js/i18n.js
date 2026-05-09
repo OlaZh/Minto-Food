@@ -38,6 +38,20 @@ export const i18n = {
     dishNamePlaceholder: 'Наприклад: Борщ',
     apiImportPlaceholder: 'Введіть назву страви...',
     apiImportBtn: 'Пошук',
+    // Панель фільтрів рецептів (заголовки груп — самі теги з БД)
+    filterGroupCategory:      'Категорії страв',
+    filterGroupDishType:      'Тип страви',
+    filterGroupCookingMethod: 'Метод приготування',
+    filterGroupDietary:       'Дієтичні / функціональні',
+    filterGroupLifestyle:     'Побутові фільтри',
+    filterReset:              'Скинути',
+    // Складність (зберігається в recipes.difficulty як 'easy'/'medium'/'hard')
+    diff_easy:   'Легко',
+    diff_medium: 'Середньо',
+    diff_hard:   'Складно',
+    // Картка рецепту
+    cardMin:     'хв',
+    cardG:       'г',
   },
   pl: {
     // Прийоми їжі
@@ -78,6 +92,20 @@ export const i18n = {
     dishNamePlaceholder: 'Na przykład: Barszcz',
     apiImportPlaceholder: 'Wpisz nazwę dania...',
     apiImportBtn: 'Szukaj',
+    // Панель фільтрів рецептів (заголовки груп — самі теги з БД)
+    filterGroupCategory:      'Kategoria posiłku',
+    filterGroupDishType:      'Rodzaj dania',
+    filterGroupCookingMethod: 'Metoda gotowania',
+    filterGroupDietary:       'Dietetyczne / funkcjonalne',
+    filterGroupLifestyle:     'Filtry domowe',
+    filterReset:              'Resetuj',
+    // Складність
+    diff_easy:   'Łatwe',
+    diff_medium: 'Średnie',
+    diff_hard:   'Trudne',
+    // Картка рецепту
+    cardMin:     'min',
+    cardG:       'g',
   },
   en: {
     // Прийоми їжі
@@ -118,5 +146,19 @@ export const i18n = {
     dishNamePlaceholder: 'For example: Soup',
     apiImportPlaceholder: 'Enter dish name...',
     apiImportBtn: 'Search',
+    // Recipe filter panel (group headers — tags come from DB)
+    filterGroupCategory:      'Meal Category',
+    filterGroupDishType:      'Dish Type',
+    filterGroupCookingMethod: 'Cooking Method',
+    filterGroupDietary:       'Dietary / Functional',
+    filterGroupLifestyle:     'Household Filters',
+    filterReset:              'Reset',
+    // Difficulty
+    diff_easy:   'Easy',
+    diff_medium: 'Medium',
+    diff_hard:   'Hard',
+    // Recipe card
+    cardMin:     'min',
+    cardG:       'g',
   },
 };
