@@ -153,6 +153,7 @@ function _renderRecipe(recipe, authorName, ingredients) {
     : '';
 
   const steps = (recipe.steps || '')
+    .replace(/\\n/g, '\n')
     .split('\n')
     .map(s => s.trim())
     .filter(Boolean);
@@ -379,7 +380,7 @@ function _setMeta(attr, key, value) {
 
 function _injectSchemaOrg(recipe, authorName, ingredients) {
   const name  = recipe.name_ua || recipe.name_en || 'Рецепт';
-  const steps = (recipe.steps || '').split('\n').map(s => s.trim()).filter(Boolean);
+  const steps = (recipe.steps || '').replace(/\\n/g, '\n').split('\n').map(s => s.trim()).filter(Boolean);
 
   const schema = {
     '@context': 'https://schema.org',
