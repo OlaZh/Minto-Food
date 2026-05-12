@@ -19,7 +19,15 @@
       "Bash(dir /a \"c:\\\\Users\\\\violk\\\\Desktop\\\\Minto Food\\\\\" | findstr \".json\")",
       "Bash(Get-ChildItem -Path \"c:\\\\Users\\\\violk\\\\Desktop\\\\Minto Food\" -Recurse -Filter \"*.scss\")",
       "Bash(Select-Object -ExpandProperty FullName)",
-      "Bash(dir \"c:\\\\Users\\\\violk\\\\Desktop\\\\Minto Food\")"
+      "Bash(dir \"c:\\\\Users\\\\violk\\\\Desktop\\\\Minto Food\")",
+      "Bash(grep -E \"\\\\.tsx?$|\\\\.jsx?$\")",
+      "Bash(npx create-next-app@latest admin-app --typescript --tailwind --eslint --app --src-dir --import-alias \"@/*\" --no-git --yes)",
+      "Bash(npm install *)",
+      "Bash(npx shadcn@latest init --yes --defaults)",
+      "Bash(npx shadcn@latest add button input label select textarea badge card tabs dialog form toast separator progress)",
+      "Bash(npx shadcn@latest add sonner switch command popover checkbox)",
+      "Bash(npx tsc *)",
+      "Bash(npx shadcn@latest add badge label progress tabs separator --overwrite)"
     ]
   }
 }
