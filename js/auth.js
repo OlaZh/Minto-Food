@@ -53,9 +53,9 @@ export async function initAuth(onAuthChange = null) {
       const userId = session?.user?.id;
 
       // Перевіряємо чи обраний нікнейм — якщо ні, показуємо onboarding
-      if (userId) {
+      if (session?.user) {
         const { checkOnboarding } = await import('./onboarding.js');
-        await checkOnboarding(userId);
+        await checkOnboarding(session.user);
       }
 
       const today = new Date().toDateString();
@@ -223,8 +223,7 @@ function updateAuthUI() {
       .slice(0, 2)
       .join('')
       .toUpperCase();
-    const avatarUrl =
-      currentUser.user_metadata?.avatar_url || currentUser.user_metadata?.picture;
+    const avatarUrl = currentUser.user_metadata?.avatar_url || currentUser.user_metadata?.picture;
 
     // Ensure wrapper exists
     let wrap = document.getElementById('headerUserArea');
