@@ -28,7 +28,7 @@ export default function AuthorsClient({ authors: initial }: AuthorsClientProps) 
 
   return (
     <div>
-      <div className="sticky top-0 z-10 bg-white border-b border-gray-200 px-8 py-4 flex items-center justify-between">
+      <div className="sticky top-0 z-10 bg-white border-b border-gray-200 px-4 md:px-8 py-4 flex items-center justify-between">
         <h1 className="text-lg font-semibold">Автори</h1>
         <Dialog open={createOpen} onOpenChange={setCreateOpen}>
           <DialogTrigger render={
@@ -48,12 +48,12 @@ export default function AuthorsClient({ authors: initial }: AuthorsClientProps) 
 
       <div className="divide-y divide-gray-100">
         {initial.length === 0 && (
-          <div className="px-8 py-16 text-center text-gray-400 text-sm">
+          <div className="px-4 md:px-8 py-16 text-center text-gray-400 text-sm">
             Авторів поки немає
           </div>
         )}
         {initial.map(author => (
-          <div key={author.id} className="flex items-center gap-4 px-8 py-4 hover:bg-gray-50 group">
+          <div key={author.id} className="flex items-center gap-4 px-4 md:px-8 py-4 hover:bg-gray-50 group">
             <div className="w-10 h-10 rounded-full bg-gray-100 overflow-hidden shrink-0">
               {author.avatar ? (
                 <img src={author.avatar} alt="" className="w-full h-full object-cover" />

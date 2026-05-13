@@ -10,12 +10,12 @@ export default async function TagsPage() {
 
   return (
     <div>
-      <div className="sticky top-0 z-10 bg-white border-b border-gray-200 px-8 py-4">
+      <div className="sticky top-0 z-10 bg-white border-b border-gray-200 px-4 md:px-8 py-4">
         <h1 className="text-lg font-semibold">Теги</h1>
         <p className="text-xs text-gray-400 mt-0.5">Теги генеруються автоматично при збереженні рецепта</p>
       </div>
 
-      <div className="px-8 py-6">
+      <div className="px-4 md:px-8 py-6">
         <div className="flex flex-wrap gap-2">
           {(tags as Tag[] ?? []).map(tag => (
             <div

@@ -46,7 +46,7 @@ export default async function RecipesPage({
   return (
     <div>
       {/* Header */}
-      <div className="sticky top-0 z-10 bg-white border-b border-gray-200 px-8 py-4 flex items-center justify-between">
+      <div className="sticky top-0 z-10 bg-white border-b border-gray-200 px-4 md:px-8 py-4 flex items-center justify-between">
         <h1 className="text-lg font-semibold">Рецепти</h1>
         <div className="flex items-center gap-2">
           <form action={async () => { 'use server'; await publishScheduledRecipes() }}>
@@ -55,7 +55,7 @@ export default async function RecipesPage({
               Опублікувати заплановані
             </Button>
           </form>
-          <Link href="/recipes/new">
+          <Link href="/recipes/new" className="hidden md:inline-flex">
             <Button size="sm">
               <Plus className="h-3.5 w-3.5 mr-1.5" />
               Новий рецепт
@@ -65,14 +65,14 @@ export default async function RecipesPage({
       </div>
 
       {/* Filters */}
-      <div className="px-8 py-3 border-b border-gray-100 flex items-center gap-2 flex-wrap">
+      <div className="px-4 md:px-8 py-3 border-b border-gray-100 flex items-center gap-2 flex-wrap">
         {statuses.map(s => (
           <Link
             key={s}
             href={`/recipes${s !== 'all' ? `?status=${s}` : ''}`}
             className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${
               (params.status ?? 'all') === s
-                ? 'bg-gray-900 text-white border-gray-900'
+                ? 'bg-[#4ab584] text-white border-[#4ab584]'
                 : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'
             }`}
           >
@@ -91,13 +91,13 @@ export default async function RecipesPage({
 
       {/* List */}
       {error && (
-        <div className="px-8 py-6 text-sm text-red-500">
+        <div className="px-4 md:px-8 py-6 text-sm text-red-500">
           Помилка: {error.message}
         </div>
       )}
 
       {!error && (!recipes || recipes.length === 0) && (
-        <div className="px-8 py-16 text-center text-gray-400">
+        <div className="px-4 md:px-8 py-16 text-center text-gray-400">
           <p className="text-sm">Рецептів не знайдено</p>
           <Link href="/recipes/new" className="mt-3 inline-block">
             <Button variant="outline" size="sm">Створити перший</Button>
@@ -113,7 +113,7 @@ export default async function RecipesPage({
             <Link
               key={recipe.id}
               href={`/recipes/${recipe.id}/edit`}
-              className="flex items-center gap-4 px-8 py-3 hover:bg-gray-50 group cursor-pointer"
+              className="flex items-center gap-4 px-4 md:px-8 py-3 hover:bg-gray-50 group cursor-pointer"
             >
               {/* Thumbnail */}
               <div className="w-12 h-12 rounded-md overflow-hidden bg-gray-100 shrink-0">
