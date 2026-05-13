@@ -738,10 +738,18 @@ function fillForm(data) {
 // PROFILE HEADER
 // =====================================
 
-function updateProfileHeader(user) {
+async function updateProfileHeader(user) {
   if (!user) return;
 
+  const { data: profileData } = await supabase
+    .from('profiles')
+    .select('display_name, full_name')
+    .eq('id', user.id)
+    .single();
+
   const name =
+    profileData?.display_name ||
+    profileData?.full_name ||
     user.user_metadata?.full_name ||
     user.user_metadata?.name ||
     user.email?.split('@')[0] ||
@@ -1356,6 +1364,116 @@ function initProfileTabs() {
 }
 
 // =====================================
+// NICKNAME EDITOR
+// =====================================
+
+const _NB_MIN = 2, _NB_MAX = 25;
+const _NB_ALLOWED = /^[\p{L}\p{N} \-_.]{2,25}$/u;
+let _nbDebounce = null;
+let _nbValid = false;
+
+function _initNicknameEditor(user) {
+  const editBtn    = document.getElementById('settingsEditName');
+  const editor     = document.getElementById('nicknameEditor');
+  const input      = document.getElementById('nicknameInput');
+  const hint       = document.getElementById('nicknameHint');
+  const saveBtn    = document.getElementById('nicknameSaveBtn');
+  const cancelBtn  = document.getElementById('nicknameCancelBtn');
+  const nameDisplay = document.getElementById('settingsNameDisplay');
+  if (!editBtn || !editor || !input) return;
+
+  editBtn.addEventListener('click', () => {
+    input.value = nameDisplay?.textContent?.trim() === '—' ? '' : (nameDisplay?.textContent?.trim() || '');
+    editor.style.display = 'block';
+    editBtn.style.display = 'none';
+    input.focus();
+    _nbValid = false;
+    saveBtn.disabled = true;
+    _setNbHint(hint, `від ${_NB_MIN} до ${_NB_MAX} символів`, '');
+  });
+
+  cancelBtn.addEventListener('click', () => {
+    editor.style.display = 'none';
+    editBtn.style.display = '';
+  });
+
+  input.addEventListener('input', () => {
+    const val = input.value.trim();
+    _nbValid = false;
+    saveBtn.disabled = true;
+    input.style.borderColor = '#82bf99';
+
+    if (!val) { _setNbHint(hint, `від ${_NB_MIN} до ${_NB_MAX} символів`, ''); return; }
+    if (val.length < _NB_MIN) { _setNbHint(hint, `Мінімум ${_NB_MIN} символи`, '#e74c3c'); input.style.borderColor = '#e74c3c'; return; }
+    if (!_NB_ALLOWED.test(val)) { _setNbHint(hint, 'Тільки літери, цифри, пробіл, . - _', '#e74c3c'); input.style.borderColor = '#e74c3c'; return; }
+
+    _setNbHint(hint, 'Перевіряємо…', '#3f7558');
+    clearTimeout(_nbDebounce);
+    _nbDebounce = setTimeout(() => _checkNbUnique(val, user.id), 450);
+  });
+
+  input.addEventListener('keydown', e => { if (e.key === 'Enter' && !saveBtn.disabled) saveBtn.click(); });
+
+  saveBtn.addEventListener('click', async () => {
+    const val = input.value.trim();
+    if (!_nbValid || !val) return;
+
+    saveBtn.disabled = true;
+    saveBtn.textContent = 'Збереження…';
+
+    const { error } = await supabase
+      .from('profiles')
+      .upsert({ id: user.id, display_name: val }, { onConflict: 'id' });
+
+    if (error) {
+      _setNbHint(hint, 'Помилка збереження', '#e74c3c');
+      saveBtn.disabled = false;
+      saveBtn.textContent = 'Зберегти';
+      return;
+    }
+
+    if (nameDisplay) nameDisplay.textContent = val;
+    editor.style.display = 'none';
+    editBtn.style.display = '';
+    saveBtn.textContent = 'Зберегти';
+    showToast('Нікнейм збережено ✓');
+  });
+}
+
+async function _checkNbUnique(val, userId) {
+  const input   = document.getElementById('nicknameInput');
+  const hint    = document.getElementById('nicknameHint');
+  const saveBtn = document.getElementById('nicknameSaveBtn');
+  if (!input) return;
+
+  const { count } = await supabase
+    .from('profiles')
+    .select('id', { count: 'exact', head: true })
+    .ilike('display_name', val)
+    .neq('id', userId);
+
+  if (input.value.trim() !== val) return; // stale check
+
+  if (count > 0) {
+    _setNbHint(hint, 'Це ім\'я вже зайняте, спробуй інше', '#e74c3c');
+    input.style.borderColor = '#e74c3c';
+    _nbValid = false;
+    if (saveBtn) saveBtn.disabled = true;
+  } else {
+    _setNbHint(hint, '✓ Це ім\'я вільне', '#4ab584');
+    input.style.borderColor = '#4ab584';
+    _nbValid = true;
+    if (saveBtn) saveBtn.disabled = false;
+  }
+}
+
+function _setNbHint(el, text, color) {
+  if (!el) return;
+  el.textContent = text;
+  el.style.color = color || '#3f7558';
+}
+
+// =====================================
 // SETTINGS TAB
 // =====================================
 
@@ -1364,7 +1482,12 @@ function initSettings(user) {
   const emailEl = document.getElementById('settingsEmailDisplay');
   const nameEl = document.getElementById('settingsNameDisplay');
   if (emailEl && user?.email) emailEl.textContent = user.email;
-  if (nameEl && user?.user_metadata?.full_name) nameEl.textContent = user.user_metadata.full_name;
+  if (nameEl) {
+    supabase.from('profiles').select('display_name, full_name').eq('id', user.id).single()
+      .then(({ data }) => {
+        nameEl.textContent = data?.display_name || data?.full_name || user.user_metadata?.full_name || '';
+      });
+  }
 
   // Theme buttons
   function syncThemeBtns() {
@@ -1416,6 +1539,9 @@ function initSettings(user) {
       localStorage.setItem('units', btn.dataset.unit);
     });
   });
+
+  // Nickname editor
+  _initNicknameEditor(user);
 
   // Sign out from settings
   document.getElementById('settingsSignOut')?.addEventListener('click', async () => {

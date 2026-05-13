@@ -51,6 +51,13 @@ export async function initAuth(onAuthChange = null) {
       closeAuthModal();
 
       const userId = session?.user?.id;
+
+      // Перевіряємо чи обраний нікнейм — якщо ні, показуємо onboarding
+      if (userId) {
+        const { checkOnboarding } = await import('./onboarding.js');
+        await checkOnboarding(userId);
+      }
+
       const today = new Date().toDateString();
       const key = `minto_welcome_${userId}`;
 

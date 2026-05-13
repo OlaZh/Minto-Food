@@ -844,10 +844,31 @@
 
                 <div class="settings-row settings-row--last">
                   <div class="settings-row__label">
-                    <span class="settings-row__title">Ім'я</span>
+                    <span class="settings-row__title">Нікнейм</span>
                     <span class="settings-row__sub" id="settingsNameDisplay">—</span>
                   </div>
                   <button class="settings-edit-btn" id="settingsEditName">Змінити</button>
+                </div>
+
+                <!-- Inline nickname editor (hidden by default) -->
+                <div id="nicknameEditor" style="display:none; padding: 12px 0 4px;">
+                  <input id="nicknameInput" type="text" maxlength="25" autocomplete="off" autocorrect="off" spellcheck="false"
+                    style="width:100%; padding:10px 14px; font-size:15px; font-family:inherit;
+                           border:2px solid #82bf99; border-radius:10px; outline:none;
+                           color:#0f2818; box-sizing:border-box; transition:border-color .2s;" />
+                  <p id="nicknameHint" style="font-size:12px; min-height:16px; margin:4px 0 10px; color:#3f7558;">від 2 до 25 символів</p>
+                  <div style="display:flex; gap:8px;">
+                    <button id="nicknameSaveBtn" disabled
+                      style="flex:1; padding:10px; font-size:14px; font-weight:600; font-family:inherit;
+                             background:#4ab584; color:#fff; border:none; border-radius:10px; cursor:pointer; transition:background .2s;">
+                      Зберегти
+                    </button>
+                    <button id="nicknameCancelBtn"
+                      style="padding:10px 16px; font-size:14px; font-family:inherit;
+                             background:transparent; color:#3f7558; border:2px solid #82bf99; border-radius:10px; cursor:pointer;">
+                      Скасувати
+                    </button>
+                  </div>
                 </div>
 
                 <div class="settings-actions">

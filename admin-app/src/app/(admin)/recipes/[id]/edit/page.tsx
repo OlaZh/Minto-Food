@@ -24,18 +24,17 @@ export default async function EditRecipePage({ params }: EditRecipePageProps) {
   if (error || !recipe) notFound()
 
   const { data: rawIngredients } = await supabase
-    .from('recipe_ingredients_raw')
+    .from('product_recipe')
     .select(`
-      product_id, quantity, unit,
+      ingredient_id, amount, unit,
       product:products(id, name_ua, name_en)
     `)
     .eq('recipe_id', id)
-    .eq('parsed_success', true)
 
   const ingredients: IngredientRow[] = (rawIngredients ?? []).map((r: any) => ({
-    product_id: r.product_id,
+    product_id: r.ingredient_id,
     product_name: r.product?.name_ua || r.product?.name_en || '',
-    quantity: r.quantity,
+    quantity: r.amount,
     unit: r.unit ?? 'г',
   }))
 

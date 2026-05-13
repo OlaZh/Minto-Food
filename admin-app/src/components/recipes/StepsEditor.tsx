@@ -15,10 +15,16 @@ interface StepsEditorProps {
 
 const STEP_SEPARATOR = '\n'
 
+function parseSteps(value: string): string[] {
+  if (!value) return ['']
+  return value
+    .split(/\\n|\n/)
+    .map(s => s.replace(/^\d+\.\s*/, '').trim())
+    .filter(Boolean)
+}
+
 export default function StepsEditor({ locale, label, value, onChange }: StepsEditorProps) {
-  const steps = value
-    ? value.split(STEP_SEPARATOR).filter(s => s.trim())
-    : ['']
+  const steps = parseSteps(value)
 
   function updateSteps(newSteps: string[]) {
     onChange(newSteps.filter(s => s.trim()).join(STEP_SEPARATOR))

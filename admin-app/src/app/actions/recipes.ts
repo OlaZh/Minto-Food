@@ -82,24 +82,20 @@ export async function updateRecipe(
 async function syncIngredients(recipeId: string, ingredients: IngredientRow[]) {
   const supabase = await createClient()
 
-  await supabase
-    .from('recipe_ingredients_raw')
-    .delete()
-    .eq('recipe_id', recipeId)
+  await supabase.from('product_recipe').delete().eq('recipe_id', recipeId)
 
   if (!ingredients.length) return
 
-  const rows = ingredients.map(ing => ({
-    recipe_id: recipeId,
-    product_id: ing.product_id,
-    quantity: ing.quantity,
-    unit: ing.unit,
-    normalized_unit: ing.unit,
-    input_text: `${ing.quantity} ${ing.unit} ${ing.product_name}`,
-    parsed_success: true,
-  }))
+  const rows = ingredients
+    .filter(ing => ing.product_id)
+    .map(ing => ({
+      recipe_id: recipeId,
+      ingredient_id: ing.product_id,
+      amount: ing.quantity,
+      unit: ing.unit,
+    }))
 
-  await supabase.from('recipe_ingredients_raw').insert(rows)
+  if (rows.length) await supabase.from('product_recipe').insert(rows)
 }
 
 async function syncTags(

@@ -68,7 +68,7 @@ async function init() {
   // Паралельно: автор + інгредієнти
   const [profileRes, ingRes] = await Promise.all([
     recipe.user_id
-      ? supabase.from('profiles').select('full_name').eq('id', recipe.user_id).maybeSingle()
+      ? supabase.from('profiles').select('display_name, full_name').eq('id', recipe.user_id).maybeSingle()
       : Promise.resolve({ data: null }),
     supabase
       .from('product_recipe')
@@ -76,7 +76,7 @@ async function init() {
       .eq('recipe_id', recipe.id),
   ]);
 
-  const authorName  = profileRes.data?.full_name ?? null;
+  const authorName  = profileRes.data?.display_name || profileRes.data?.full_name || null;
   const ingredients = ingRes.data ?? [];
 
   _renderRecipe(recipe, authorName, ingredients);
@@ -152,10 +152,9 @@ function _renderRecipe(recipe, authorName, ingredients) {
        </ul>`
     : '';
 
-  const steps = (recipe.steps || '')
-    .replace(/\\n/g, '\n')
-    .split('\n')
-    .map(s => s.trim())
+  const steps = (recipe.steps_ua || recipe.steps || '')
+    .split(/\\n|\n/)
+    .map(s => s.replace(/^\d+\.\s*/, '').trim())
     .filter(Boolean);
 
   const stepsHtml = steps.length
@@ -380,7 +379,7 @@ function _setMeta(attr, key, value) {
 
 function _injectSchemaOrg(recipe, authorName, ingredients) {
   const name  = recipe.name_ua || recipe.name_en || 'Рецепт';
-  const steps = (recipe.steps || '').replace(/\\n/g, '\n').split('\n').map(s => s.trim()).filter(Boolean);
+  const steps = (recipe.steps_ua || recipe.steps || '').split(/\\n|\n/).map(s => s.replace(/^\d+\.\s*/, '').trim()).filter(Boolean);
 
   const schema = {
     '@context': 'https://schema.org',
