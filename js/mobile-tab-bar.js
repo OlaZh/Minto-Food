@@ -1,5 +1,5 @@
 import { lockScroll, unlockScroll } from './scroll-lock.js';
-import { isAdmin } from './auth.js';
+import { isAdmin, openAdminPanel } from './auth.js';
 
 (() => {
   const PAGE_MAP = [
@@ -53,7 +53,7 @@ import { isAdmin } from './auth.js';
       icon: `<svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`,
     },
     {
-      href: 'https://minto-food-xv5f.vercel.app',
+      href: '#',
       label: 'Адмінка',
       icon: `<svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>`,
       adminOnly: true,
@@ -134,7 +134,13 @@ import { isAdmin } from './auth.js';
 
     isAdmin().then((admin) => {
       const adminLink = document.getElementById('mobileAdminLink');
-      if (adminLink) adminLink.hidden = !admin;
+      if (adminLink) {
+        adminLink.hidden = !admin;
+        adminLink.addEventListener('click', (e) => {
+          e.preventDefault();
+          openAdminPanel();
+        });
+      }
     });
   }
 

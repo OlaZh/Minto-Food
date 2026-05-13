@@ -297,7 +297,7 @@ function ensureUserDropdown(wrap) {
       </svg>
       Мій профіль
     </a>
-    <a href="https://minto-food-xv5f.vercel.app" target="_blank" rel="noopener" class="header__user-dropdown-item header__user-dropdown-item--admin" id="headerAdminLink" hidden>
+    <a href="#" class="header__user-dropdown-item header__user-dropdown-item--admin" id="headerAdminLink" hidden>
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
         <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
       </svg>
@@ -319,6 +319,13 @@ function ensureUserDropdown(wrap) {
   isAdmin().then((admin) => {
     const adminLink = document.getElementById('headerAdminLink');
     if (adminLink) adminLink.hidden = !admin;
+    const mobileAdminLink = document.getElementById('mobileAdminLink');
+    if (mobileAdminLink) mobileAdminLink.hidden = !admin;
+  });
+
+  document.getElementById('headerAdminLink')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    openAdminPanel();
   });
 
   document.getElementById('headerSignOutDropdownBtn')?.addEventListener('click', async () => {
@@ -588,4 +595,22 @@ function getErrorMessage(message) {
     'Password should be at least 6 characters': 'Пароль має бути не менше 6 символів',
   };
   return errors[message] || 'Сталася помилка. Спробуйте ще раз.';
+}
+
+// =============================================================
+// ВІДКРИТИ АДМІН-ПАНЕЛЬ — передає сесію через SSO
+// =============================================================
+
+export async function openAdminPanel() {
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+  if (!session) {
+    showToast('Спочатку увійдіть в акаунт', 'error');
+    return;
+  }
+  const url = new URL('https://minto-food-xv5f.vercel.app/auth/transfer');
+  url.searchParams.set('access_token', session.access_token);
+  url.searchParams.set('refresh_token', session.refresh_token);
+  window.open(url.toString(), '_blank');
 }
