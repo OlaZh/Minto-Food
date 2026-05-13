@@ -2,8 +2,8 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
 export async function middleware(request: NextRequest) {
-  // Skip the unauthorized page itself to avoid redirect loops
-  if (request.nextUrl.pathname === '/unauthorized') {
+  const pathname = request.nextUrl.pathname
+  if (pathname === '/login' || pathname === '/unauthorized' || pathname.startsWith('/auth/')) {
     return NextResponse.next()
   }
 
@@ -32,7 +32,7 @@ export async function middleware(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser()
 
   if (!user) {
-    return NextResponse.redirect(new URL('/unauthorized', request.url))
+    return NextResponse.redirect(new URL('/login', request.url))
   }
 
   const { data: profile } = await supabase
