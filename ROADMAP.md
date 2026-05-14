@@ -216,7 +216,7 @@
 
 > **Мета:** закрити критичну діру в продакшні — обробити скарги юзерів (`recipe_reports` уже працює, але дані лежать без модерації) і модерувати UGC (рецепти + юзерські продукти).
 > **Принцип:** desktop-first. Адмінка — професійний tool, не для мобайлу. На <1024px показуємо повідомлення "Адмінка доступна на десктопі".
-> **URL:** `/admin.html`, доступ через `profiles.is_admin = true`.
+> **Реалізація:** ~~`/admin.html` (стара HTML-версія)~~ → переписано як окремий **Next.js App** (`admin-app/`), Server Actions + Supabase SSR, доступ через `profiles.is_admin = true`.
 
 ---
 
@@ -241,18 +241,22 @@
 
 ### 🚪 Routing & Auth
 
-- [x] ✅ `/admin.html` створено
-- [x] ✅ `isAdmin()` в `auth.js` з кешем на сесію
-- [x] ✅ `requireAdmin()` в `admin-utils.js` — redirect якщо не адмін
-- [x] ✅ Лінк "Адмінка" в хедері (hidden якщо не адмін)
+- [x] ✅ Next.js app `admin-app/` — окремий деплой
+- [x] ✅ `middleware.ts` — перевірка сесії + `is_admin`, redirect на `/login` якщо не адмін
+- [x] ✅ `app/login/page.tsx` — логін-сторінка
+- [x] ✅ `app/auth/callback/route.ts` — OAuth callback
+- [x] ✅ `app/auth/transfer/route.ts` — передача сесії з основного сайту
+- [x] ✅ `app/unauthorized/page.tsx` — сторінка "Немає доступу"
+- [x] ✅ Лінк "Адмінка" в хедері основного сайту (hidden якщо не адмін)
 - [x] ✅ Лінк в мобільному меню "Ще" — видимий тільки для адміна
 
 ### 🎨 Layout
 
-- [x] ✅ Sidebar з 4 вкладками + badges
-- [x] ✅ Top stats bar: 4 pills
+- [x] ✅ `app/(admin)/layout.tsx` — shared layout з sidebar + навігацією
+- [x] ✅ Sidebar: Dashboard / Скарги / Модерація / Рецепти / Продукти / Юзери / Автори / Теги / Архів
+- [x] ✅ `MobileNav.tsx` — мобільна навігація
 - [x] ✅ Mobile block (<1024px)
-- [x] ✅ `scss/pages/_admin.scss`
+- [x] ✅ Tailwind + shadcn/ui компоненти
 - [x] ✅ Color coding типів скарг (copyright/spam/inappropriate/incorrect/other)
 
 ### 🚩 Секція 1: Скарги
@@ -315,9 +319,20 @@
 - [x] ✅ Pill 4: юзерських продуктів на модерації
 - [x] ✅ Кеш 5 хв у localStorage
 
-### 🧱 JS-модулі
+### 🧱 Next.js структура (замість старих JS-модулів)
 
-- [x] ✅ `admin.js`, `admin-reports.js`, `admin-recipes.js`, `admin-products.js`, `admin-users.js`, `admin-stats.js`, `admin-utils.js`
+- [x] ✅ `app/(admin)/dashboard/` — статистика
+- [x] ✅ `app/(admin)/reports/` + `ReportsClient.tsx` — скарги
+- [x] ✅ `app/(admin)/moderation/` + `ModerationClient.tsx` — модерація
+- [x] ✅ `app/(admin)/recipes/` + `[id]/edit/` — рецепти (перегляд + редагування + створення)
+- [x] ✅ `app/(admin)/products/` + `ProductsClient.tsx` — юзерські продукти
+- [x] ✅ `app/(admin)/users/` + `UsersClient.tsx` — користувачі
+- [x] ✅ `app/(admin)/authors/` + `AuthorsClient.tsx` — автори (нова секція)
+- [x] ✅ `app/(admin)/tags/` — теги (нова секція)
+- [x] ✅ `app/(admin)/archive/` + `ArchiveClient.tsx` — архів soft-deleted контенту
+- [x] ✅ `app/actions/moderation.ts`, `actions/recipes.ts`, `actions/authors.ts` — Server Actions
+- [x] ✅ `components/moderation/ActionButton.tsx` — кнопки дій модерації
+- [x] ✅ `lib/supabase/client.ts` + `server.ts` — Supabase SSR клієнти
 
 ### 🛡 Безпека
 
@@ -342,27 +357,26 @@
 ## 🛡 ФАЗА 10.6: Адмінка — Розширені інструменти модерації
 
 > **Статус:** В роботі (травень 2026)
+> **Стек:** Next.js `admin-app/`, Server Actions, Supabase
 
-### ⚡ Зараз — легко і одразу цінно
+### ✅ Зроблено
 
-- [ ] **"Переглянути як користувач"** — кнопка в drawer/картці рецепту, відкриває `/recipe/[id]` в новій вкладці
-- [ ] **Mini-history автора** — в drawer скарги/рецепту: кількість рецептів, кількість скарг, дата реєстрації, чи був бан раніше
-- [ ] **Причина модерації для адмін-дій** — при бані/видаленні вибрати категорію (NSFW / Spam / Scam / Hate speech / Copyright / Dangerous misinformation) + короткий коментар; зберігається в `admin_actions`
+- [x] ✅ **Shadow ban** — поле `is_shadow_banned` в `profiles`; нові рецепти такого юзера автоматично йдуть у `draft` замість `published`
+- [x] ✅ **Архів порушень (soft delete)** — `deleted_at TIMESTAMPTZ` замість `DELETE`; видалений контент зберігається як evidence, `app/(admin)/archive/` показує архів
+
+### ⚡ В черзі — легко і одразу цінно
+
+- [x] ✅ **"Переглянути як користувач"** — ↗ іконка-посилання поруч з назвою рецепту в `ReportsClient` і `ModerationClient`, відкриває `NEXT_PUBLIC_MAIN_SITE_URL/recipe/:slug` в новій вкладці
+- [x] ✅ **Mini-history автора** — під рядком автора в `ReportsClient` і `ModerationClient`: кількість рецептів, кількість скарг (помаранчевий якщо >0), дата реєстрації
+- [x] ✅ **Причина модерації** — компонент `ModerationReasonDialog`: категорія (Спам / NSFW / Шахрайство / Мова ненависті / Авторські права / Неприйнятний вміст / Дезінформація / Інше) + коментар; використовується при "Бан автора" і "Видалити рецепт" в `ReportsClient` і `ModerationClient`; зберігається в `admin_actions.payload.reason`
 - [ ] **Undo action** — 5-секундний toast з кнопкою "Скасувати" перед тим як реально виконати destructive дію (видалити, забанити)
 
-### 🔮 Наступна фаза — середня складність
+### 🔮 Наступна черга — середня складність
 
-- [x] ✅ **Shadow ban** — нове поле `is_shadow_banned` в `profiles`; нові рецепти такого юзера автоматично йдуть у `draft` замість `published`. Ідеально для спамерів і ботів — вони не знають що заблоковані
-- [x] ✅ **Архів порушень (soft delete)** — замість `DELETE` додавати `deleted_at TIMESTAMPTZ`; видалений контент зберігається як evidence, видно в адмінці з фільтром "Архів"
-- [ ] **Auto-flagging розширений** — автопідсвічування підозрілих сигналів: багато посилань у тексті, капслок-спам, підозрілі слова (не блокувати — тільки "увага, перевір")
-- [ ] 🚫 Inappropriate content - Це:
-      матюки,бридкий контент,дивні жарти,треш
-      Бо не все підпадає під hate speech або NSFW.
-- [ ] 🔗 Suspicious links -Для:
-      дивних сайтів,казино,adult-links,phishing
-- [ ] 🤖 Bot activity
-      Якщо:
-      акаунт штампує рецепти,дивна автоматична активність
+- [ ] **Auto-flagging** — автопідсвічування підозрілих сигналів (не блокувати — тільки "увага, перевір"):
+  - [ ] 🚫 Inappropriate content — матюки, бридкий контент, треш
+  - [ ] 🔗 Suspicious links — казино, adult-links, phishing
+  - [ ] 🤖 Bot activity — акаунт штампує рецепти, дивна автоматична активність
 
 ---
 

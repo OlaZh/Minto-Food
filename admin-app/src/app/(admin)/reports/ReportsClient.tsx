@@ -1,9 +1,11 @@
 'use client'
 
+import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import ActionButton from '@/components/moderation/ActionButton'
+import ModerationReasonDialog, { type ModerationReason } from '@/components/moderation/ModerationReasonDialog'
 import {
   resolveReport, hideRecipeFromReport,
   deleteRecipeFromReport, banUser, addStrike,
@@ -29,8 +31,14 @@ const statuses = [
   { value: 'all',       label: 'Всі' },
 ]
 
+type PendingDialog = {
+  title: string
+  action: (reason: ModerationReason) => Promise<unknown>
+}
+
 export default function ReportsClient({ reports, currentStatus }: ReportsClientProps) {
   const router = useRouter()
+  const [dialog, setDialog] = useState<PendingDialog | null>(null)
 
   return (
     <div>
@@ -76,13 +84,35 @@ export default function ReportsClient({ reports, currentStatus }: ReportsClientP
 
                 {/* Info */}
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium">{name}</p>
+                  <div className="flex items-center gap-1.5">
+                    <p className="text-sm font-medium">{name}</p>
+                    {recipe?.slug && (
+                      <a
+                        href={`${process.env.NEXT_PUBLIC_MAIN_SITE_URL}/recipe/${recipe.slug}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs text-gray-400 hover:text-gray-600 leading-none shrink-0"
+                        title="Переглянути як користувач"
+                      >↗</a>
+                    )}
+                  </div>
                   <div className="flex flex-wrap gap-x-3 gap-y-0.5 mt-0.5 text-xs text-gray-400">
                     <span className="text-orange-600 font-medium">{reasonLabel}</span>
-                    {author && <span>Автор: <b className="text-gray-700">{author.full_name ?? '—'}</b>{author.is_banned ? ' 🚫' : ''}</span>}
+                    {author && <span>Автор: <b className="text-gray-700">{author.full_name ?? '—'}</b>{author.is_banned ? ' 🚫' : ''}{author.strikes > 0 ? ` ⚡${author.strikes}` : ''}</span>}
                     {report.reporter && <span>Скаржник: {report.reporter.full_name ?? '—'}</span>}
                     <span>{report.created_at?.slice(0, 10)}</span>
                   </div>
+                  {author && (
+                    <div className="flex gap-x-3 mt-0.5 text-xs text-gray-400">
+                      <span>{author.recipe_count ?? 0} рецептів</span>
+                      {(author.report_count ?? 0) > 0 && (
+                        <span className="text-orange-500">{author.report_count} скарг</span>
+                      )}
+                      {author.created_at && (
+                        <span>з {author.created_at.slice(0, 10)}</span>
+                      )}
+                    </div>
+                  )}
                 </div>
 
                 {/* Status badge */}
@@ -112,13 +142,15 @@ export default function ReportsClient({ reports, currentStatus }: ReportsClientP
                     action={() => hideRecipeFromReport(report.id, recipe?.id)}
                     onDone={() => router.refresh()}
                   />
-                  <ActionButton
-                    label="Видалити рецепт"
-                    confirmText="Видалити назавжди?"
-                    variant="destructive"
-                    action={() => deleteRecipeFromReport(report.id, recipe?.id)}
-                    onDone={() => router.refresh()}
-                  />
+                  <button
+                    className="h-7 text-xs px-2.5 rounded-md border border-red-200 text-red-600 bg-white hover:bg-red-50 transition-colors"
+                    onClick={() => setDialog({
+                      title: 'Видалити рецепт',
+                      action: (reason) => deleteRecipeFromReport(report.id, recipe?.id, reason),
+                    })}
+                  >
+                    Видалити рецепт
+                  </button>
                   {author && !author.is_banned && (
                     <ActionButton
                       label={`⚡ Страйк (${author.strikes ?? 0})`}
@@ -129,13 +161,15 @@ export default function ReportsClient({ reports, currentStatus }: ReportsClientP
                     />
                   )}
                   {author && !author.is_banned && (
-                    <ActionButton
-                      label="Бан автора"
-                      confirmText="Забанити?"
-                      variant="destructive"
-                      action={() => banUser(author.id)}
-                      onDone={() => router.refresh()}
-                    />
+                    <button
+                      className="h-7 text-xs px-2.5 rounded-md border border-red-200 text-red-600 bg-white hover:bg-red-50 transition-colors"
+                      onClick={() => setDialog({
+                        title: 'Бан автора',
+                        action: (reason) => banUser(author.id, reason),
+                      })}
+                    >
+                      Бан автора
+                    </button>
                   )}
                 </div>
               )}
@@ -143,6 +177,14 @@ export default function ReportsClient({ reports, currentStatus }: ReportsClientP
           )
         })}
       </div>
+
+      <ModerationReasonDialog
+        open={!!dialog}
+        onClose={() => setDialog(null)}
+        title={dialog?.title ?? ''}
+        action={dialog?.action ?? (() => Promise.resolve())}
+        onDone={() => router.refresh()}
+      />
     </div>
   )
 }

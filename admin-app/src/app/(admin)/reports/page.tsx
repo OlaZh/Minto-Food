@@ -13,7 +13,7 @@ export default async function ReportsPage({
     .from('recipe_reports')
     .select(`
       id, reason, admin_notes, created_at, status, recipe_id, reporter_id,
-      recipe:recipes(id, name_ua, name_en, image, status, user_id, category)
+      recipe:recipes(id, slug, name_ua, name_en, image, status, user_id, category)
     `)
     .order('created_at', { ascending: false })
     .limit(100)
@@ -22,18 +22,52 @@ export default async function ReportsPage({
 
   const { data: reports } = await query
 
-  // Batch-load profiles
   const authorIds = [...new Set((reports ?? []).map((r: any) => r.recipe?.user_id).filter(Boolean))]
   const reporterIds = [...new Set((reports ?? []).map((r: any) => r.reporter_id).filter(Boolean))]
   const allIds = [...new Set([...authorIds, ...reporterIds])]
 
   let profilesMap: Record<string, any> = {}
+
   if (allIds.length) {
-    const { data: profiles } = await supabase
-      .from('profiles')
-      .select('id, full_name, is_banned, strikes')
-      .in('id', allIds)
-    profilesMap = Object.fromEntries((profiles ?? []).map((p: any) => [p.id, p]))
+    const [{ data: profiles }, { data: recipesData }] = await Promise.all([
+      supabase
+        .from('profiles')
+        .select('id, full_name, is_banned, strikes, created_at')
+        .in('id', allIds),
+      supabase
+        .from('recipes')
+        .select('id, user_id')
+        .in('user_id', authorIds)
+        .is('deleted_at', null),
+    ])
+
+    const recipeCountMap: Record<string, number> = {}
+    const recipeIdToUserId: Record<string, string> = {}
+    for (const r of recipesData ?? []) {
+      recipeCountMap[r.user_id] = (recipeCountMap[r.user_id] ?? 0) + 1
+      recipeIdToUserId[r.id] = r.user_id
+    }
+
+    const allRecipeIds = Object.keys(recipeIdToUserId)
+    const reportCountMap: Record<string, number> = {}
+    if (allRecipeIds.length) {
+      const { data: reportsData } = await supabase
+        .from('recipe_reports')
+        .select('recipe_id')
+        .in('recipe_id', allRecipeIds)
+      for (const rep of reportsData ?? []) {
+        const uid = recipeIdToUserId[rep.recipe_id]
+        if (uid) reportCountMap[uid] = (reportCountMap[uid] ?? 0) + 1
+      }
+    }
+
+    profilesMap = Object.fromEntries(
+      (profiles ?? []).map((p: any) => [p.id, {
+        ...p,
+        recipe_count: recipeCountMap[p.id] ?? 0,
+        report_count: reportCountMap[p.id] ?? 0,
+      }])
+    )
   }
 
   const enriched = (reports ?? []).map((r: any) => ({

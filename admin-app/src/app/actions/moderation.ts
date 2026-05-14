@@ -48,12 +48,16 @@ export async function hideRecipeFromReport(reportId: string, recipeId: string) {
   revalidatePath('/reports')
 }
 
-export async function deleteRecipeFromReport(reportId: string, recipeId: string) {
+export async function deleteRecipeFromReport(
+  reportId: string,
+  recipeId: string,
+  reason?: { category: string; comment: string }
+) {
   const supabase = await createClient()
   await supabase.from('recipes').update({
     deleted_at: new Date().toISOString(), status: 'draft',
   }).eq('id', recipeId)
-  await logAction(supabase, 'recipes', recipeId, 'soft_delete', { from: 'admin_report' })
+  await logAction(supabase, 'recipes', recipeId, 'soft_delete', { from: 'admin_report', reason })
   revalidatePath('/reports')
 }
 
@@ -78,7 +82,7 @@ export async function rejectRecipe(recipeId: string, note: string) {
 
 // ─── USERS ────────────────────────────────────────────────────
 
-export async function banUser(userId: string, reason?: string) {
+export async function banUser(userId: string, reason?: { category: string; comment: string }) {
   const supabase = await createClient()
   await supabase.from('profiles').update({ is_banned: true }).eq('id', userId)
   await supabase.from('recipes').update({ status: 'draft' })

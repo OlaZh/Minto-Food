@@ -1,16 +1,24 @@
 'use client'
 
+import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import ActionButton from '@/components/moderation/ActionButton'
+import ModerationReasonDialog, { type ModerationReason } from '@/components/moderation/ModerationReasonDialog'
 import { approveRecipe, rejectRecipe, banUser, addStrike } from '@/app/actions/moderation'
 
 interface ModerationClientProps {
   recipes: any[]
 }
 
+type PendingDialog = {
+  title: string
+  action: (reason: ModerationReason) => Promise<unknown>
+}
+
 export default function ModerationClient({ recipes }: ModerationClientProps) {
   const router = useRouter()
+  const [dialog, setDialog] = useState<PendingDialog | null>(null)
 
   return (
     <div>
@@ -52,6 +60,15 @@ export default function ModerationClient({ recipes }: ModerationClientProps) {
                     <Link href={`/recipes/${recipe.id}/edit`} className="text-sm font-medium hover:underline">
                       {name}
                     </Link>
+                    {recipe.slug && (
+                      <a
+                        href={`${process.env.NEXT_PUBLIC_MAIN_SITE_URL}/recipe/${recipe.slug}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs text-gray-400 hover:text-gray-600 leading-none"
+                        title="Переглянути як користувач"
+                      >↗</a>
+                    )}
                     {recipe.category && (
                       <span className="text-xs bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded">{recipe.category}</span>
                     )}
@@ -61,6 +78,7 @@ export default function ModerationClient({ recipes }: ModerationClientProps) {
                       <span>
                         Автор: <b className="text-gray-700">{author.full_name ?? '—'}</b>
                         {author.is_shadow_banned && ' 👁'}
+                        {author.is_banned && ' 🚫'}
                         {author.strikes > 0 && ` ⚡${author.strikes}`}
                       </span>
                     )}
@@ -68,6 +86,17 @@ export default function ModerationClient({ recipes }: ModerationClientProps) {
                     {stepsCount > 0 && <span>{stepsCount} кроків</span>}
                     <span suppressHydrationWarning>{recipe.created_at?.slice(0, 10)}</span>
                   </div>
+                  {author && (
+                    <div className="flex gap-x-3 mt-0.5 text-xs text-gray-400">
+                      <span>{author.recipe_count ?? 0} рецептів</span>
+                      {(author.report_count ?? 0) > 0 && (
+                        <span className="text-orange-500">{author.report_count} скарг</span>
+                      )}
+                      {author.created_at && (
+                        <span>з {author.created_at.slice(0, 10)}</span>
+                      )}
+                    </div>
+                  )}
                 </div>
 
                 <span className="text-xs bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full font-medium shrink-0">
@@ -100,19 +129,29 @@ export default function ModerationClient({ recipes }: ModerationClientProps) {
                   />
                 )}
                 {author && !author.is_banned && (
-                  <ActionButton
-                    label="Бан автора"
-                    confirmText="Забанити автора?"
-                    variant="destructive"
-                    action={() => banUser(author.id)}
-                    onDone={() => router.refresh()}
-                  />
+                  <button
+                    className="h-7 text-xs px-2.5 rounded-md border border-red-200 text-red-600 bg-white hover:bg-red-50 transition-colors"
+                    onClick={() => setDialog({
+                      title: 'Бан автора',
+                      action: (reason) => banUser(author.id, reason),
+                    })}
+                  >
+                    Бан автора
+                  </button>
                 )}
               </div>
             </div>
           )
         })}
       </div>
+
+      <ModerationReasonDialog
+        open={!!dialog}
+        onClose={() => setDialog(null)}
+        title={dialog?.title ?? ''}
+        action={dialog?.action ?? (() => Promise.resolve())}
+        onDone={() => router.refresh()}
+      />
     </div>
   )
 }

@@ -28,7 +28,8 @@
       "Bash(npx shadcn@latest add sonner switch command popover checkbox)",
       "Bash(npx tsc *)",
       "Bash(npx shadcn@latest add badge label progress tabs separator --overwrite)",
-      "Bash(Select-String -Pattern '\"dev\"|\"start\"|\"port\"')"
+      "Bash(Select-String -Pattern '\"dev\"|\"start\"|\"port\"')",
+      "Bash(Get-ChildItem -Path \"c:\\\\Users\\\\violk\\\\Desktop\\\\Minto Food\\\\admin-app\\\\src\" -Recurse -Filter \"*.tsx\")"
     ]
   }
 }
