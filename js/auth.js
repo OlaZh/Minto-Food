@@ -22,17 +22,28 @@ let _isAdminCache = null;
 // ІНІЦІАЛІЗАЦІЯ — викликати на кожній сторінці
 // =============================================================
 
+const _SUPABASE_REF = 'xpaibteyntflrixmigfx';
+
 // Синхронно читає кешовану сесію з localStorage щоб уникнути FOUC
 function _readCachedUser() {
   try {
-    const projectRef = 'xpaibteyntflrixmigfx';
-    const raw = localStorage.getItem(`sb-${projectRef}-auth-token`);
+    const raw = localStorage.getItem(`sb-${_SUPABASE_REF}-auth-token`);
     if (!raw) return null;
     const parsed = JSON.parse(raw);
     return parsed?.user ?? null;
   } catch {
     return null;
   }
+}
+
+// Очищає всі ключі авторизації Supabase з localStorage негайно
+function _clearAuthStorage() {
+  try {
+    [
+      `sb-${_SUPABASE_REF}-auth-token`,
+      `sb-${_SUPABASE_REF}-auth-token-code-verifier`,
+    ].forEach((key) => localStorage.removeItem(key));
+  } catch {}
 }
 
 export async function initAuth(onAuthChange = null) {
@@ -347,13 +358,14 @@ function ensureUserDropdown(wrap) {
     openAdminPanel();
   });
 
-  document.getElementById('headerSignOutDropdownBtn')?.addEventListener('click', () => {
+  document.getElementById('headerSignOutDropdownBtn')?.addEventListener('click', async () => {
     closeUserDropdown();
-    // Оновлюємо UI одразу, не чекаючи мережевого запиту
+    // Очищаємо UI і storage одразу — до мережевого запиту
     currentUser = null;
     _isAdminCache = null;
     updateAuthUI();
-    signOut();
+    _clearAuthStorage();
+    await signOut();
   });
 
   document.addEventListener('click', (e) => {
