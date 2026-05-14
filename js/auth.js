@@ -22,8 +22,27 @@ let _isAdminCache = null;
 // ІНІЦІАЛІЗАЦІЯ — викликати на кожній сторінці
 // =============================================================
 
+// Синхронно читає кешовану сесію з localStorage щоб уникнути FOUC
+function _readCachedUser() {
+  try {
+    const projectRef = 'xpaibteyntflrixmigfx';
+    const raw = localStorage.getItem(`sb-${projectRef}-auth-token`);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    return parsed?.user ?? null;
+  } catch {
+    return null;
+  }
+}
+
 export async function initAuth(onAuthChange = null) {
   onAuthChangeCallback = onAuthChange;
+
+  // Швидке відновлення з кешу — прибирає "моргання" при завантаженні
+  if (!currentUser) {
+    currentUser = _readCachedUser();
+    if (currentUser) updateAuthUI();
+  }
 
   // Створюємо модальне вікно логіну якщо ще немає
   if (
@@ -328,9 +347,13 @@ function ensureUserDropdown(wrap) {
     openAdminPanel();
   });
 
-  document.getElementById('headerSignOutDropdownBtn')?.addEventListener('click', async () => {
+  document.getElementById('headerSignOutDropdownBtn')?.addEventListener('click', () => {
     closeUserDropdown();
-    await signOut();
+    // Оновлюємо UI одразу, не чекаючи мережевого запиту
+    currentUser = null;
+    _isAdminCache = null;
+    updateAuthUI();
+    signOut();
   });
 
   document.addEventListener('click', (e) => {
