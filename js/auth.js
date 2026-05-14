@@ -39,10 +39,9 @@ function _readCachedUser() {
 // Очищає всі ключі авторизації Supabase з localStorage негайно
 function _clearAuthStorage() {
   try {
-    [
-      `sb-${_SUPABASE_REF}-auth-token`,
-      `sb-${_SUPABASE_REF}-auth-token-code-verifier`,
-    ].forEach((key) => localStorage.removeItem(key));
+    [`sb-${_SUPABASE_REF}-auth-token`, `sb-${_SUPABASE_REF}-auth-token-code-verifier`].forEach(
+      (key) => localStorage.removeItem(key),
+    );
   } catch {}
 }
 
@@ -226,6 +225,8 @@ export async function signUpWithEmail(email, password, name = '') {
 // =============================================================
 
 export async function signOut() {
+  // Видаляємо storage одразу — до мережевого запиту Supabase
+  _clearAuthStorage();
   const { error } = await supabase.auth.signOut();
   if (error) {
     console.error('Помилка виходу:', error);
@@ -360,11 +361,10 @@ function ensureUserDropdown(wrap) {
 
   document.getElementById('headerSignOutDropdownBtn')?.addEventListener('click', async () => {
     closeUserDropdown();
-    // Очищаємо UI і storage одразу — до мережевого запиту
+    // Оновлюємо UI одразу — signOut() сам очистить storage
     currentUser = null;
     _isAdminCache = null;
     updateAuthUI();
-    _clearAuthStorage();
     await signOut();
   });
 
