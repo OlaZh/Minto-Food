@@ -345,6 +345,18 @@
     &:hover {
       background: #fcede8;
     }
+
+    [data-theme='dark'] & {
+      color: #ff8b78;
+
+      svg {
+        color: #ff8b78;
+      }
+
+      &:hover {
+        background: rgba(192, 57, 43, 0.15);
+      }
+    }
   }
 
   &[hidden] {

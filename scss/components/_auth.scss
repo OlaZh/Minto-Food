@@ -231,6 +231,12 @@
   padding: 8px 12px;
   margin: 0;
 
+  [data-theme='dark'] & {
+    color: #ff8b78;
+    background: rgba(192, 57, 43, 0.15);
+    border-color: rgba(192, 57, 43, 0.4);
+  }
+
   &[hidden] {
     display: none;
   }
@@ -244,6 +250,10 @@
   border-radius: 8px;
   padding: 8px 12px;
   margin: 0;
+
+  [data-theme='dark'] & {
+    color: #6fcfba;
+  }
 
   &[hidden] {
     display: none;

@@ -1218,7 +1218,7 @@
 
   &--active {
     background: var(--color-accent);
-    color: #fff;
+    color: var(--color-text-inverse);
     font-weight: 600;
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
   }
@@ -1385,7 +1385,7 @@
   &:hover {
     background: var(--color-accent, #4ab584);
     border-color: var(--color-accent, #4ab584);
-    color: #fff;
+    color: var(--color-text-inverse);
   }
 }
 
@@ -1509,7 +1509,7 @@
 
     .mob-week-grid__day-abbr,
     .mob-week-grid__day-num {
-      color: #fff;
+      color: var(--color-text-inverse);
     }
   }
 }

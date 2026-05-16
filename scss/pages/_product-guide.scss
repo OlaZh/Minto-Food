@@ -70,7 +70,8 @@
 .chip-remove {
   background: none;
   border: none;
-  color: rgba(255, 255, 255, 0.8);
+  color: var(--color-text-inverse);
+  opacity: 0.75;
   cursor: pointer;
   font-size: 14px;
   line-height: 1;
@@ -79,7 +80,7 @@
   align-items: center;
 
   &:hover {
-    color: white;
+    opacity: 1;
   }
 }
 

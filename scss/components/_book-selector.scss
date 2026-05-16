@@ -89,7 +89,7 @@
     font-size: 0.7rem;
     padding: 3px 8px;
     background: var(--color-accent);
-    color: white;
+    color: var(--color-text-inverse);
     border-radius: 20px;
     font-weight: 600;
   }
@@ -521,7 +521,7 @@
     background: var(--color-accent);
 
     svg {
-      color: white;
+      color: var(--color-text-inverse);
     }
   }
 
@@ -595,7 +595,7 @@
 
     .btn-save {
       background: var(--color-accent);
-      color: #fff;
+      color: var(--color-text-inverse);
       border: none;
 
       &:hover {

@@ -399,7 +399,7 @@
 
     &.selected {
       background: var(--color-accent);
-      color: white;
+      color: var(--color-text-inverse);
       font-weight: 600;
     }
   }
@@ -636,7 +636,7 @@
     border-radius: 12px;
     border: none;
     background: var(--color-accent);
-    color: #fff;
+    color: var(--color-text-inverse);
     font-size: 14px;
     font-weight: 700;
     font-family: inherit;
@@ -675,7 +675,7 @@
     border-radius: 12px;
     border: none;
     background: var(--color-accent);
-    color: #fff;
+    color: var(--color-text-inverse);
     font-size: 15px;
     font-weight: 700;
     font-family: inherit;
@@ -1183,7 +1183,7 @@
 .activity-btn-add {
   padding: 10px 20px;
   background: var(--color-accent);
-  color: #fff;
+  color: var(--color-text-inverse);
   border: none;
   border-radius: 8px;
   font-weight: 600;

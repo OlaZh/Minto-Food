@@ -782,7 +782,7 @@
 
     &:hover {
       background: var(--color-accent);
-      color: #fff;
+      color: var(--color-text-inverse);
     }
   }
 
@@ -925,7 +925,7 @@
     border: none;
     border-radius: 6px;
     background: var(--color-accent);
-    color: #fff;
+    color: var(--color-text-inverse);
     font-size: 20px;
     line-height: 1;
     cursor: pointer;
@@ -974,7 +974,7 @@
   border: none;
   border-radius: 8px;
   background: var(--color-accent);
-  color: #fff;
+  color: var(--color-text-inverse);
   font-size: 22px;
   font-weight: 300;
   line-height: 1;
@@ -1050,7 +1050,7 @@
 
     &:hover {
       background: var(--color-accent);
-      color: #fff;
+      color: var(--color-text-inverse);
     }
   }
 
