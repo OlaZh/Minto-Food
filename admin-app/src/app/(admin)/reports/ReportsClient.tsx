@@ -10,6 +10,8 @@ import {
   resolveReport, hideRecipeFromReport,
   deleteRecipeFromReport, banUser, addStrike,
 } from '@/app/actions/moderation'
+import { detectFlags } from '@/lib/autoFlag'
+import AutoFlagBadges from '@/components/moderation/AutoFlagBadges'
 
 const REASON_LABELS: Record<string, string> = {
   spam: 'Спам',
@@ -70,6 +72,7 @@ export default function ReportsClient({ reports, currentStatus }: ReportsClientP
           const author = recipe?.author
           const name = recipe?.name_ua || recipe?.name_en || 'Без назви'
           const reasonLabel = REASON_LABELS[report.reason] ?? report.reason ?? '—'
+          const flags = detectFlags(recipe ?? {})
 
           return (
             <div key={report.id} className="px-4 md:px-8 py-4 hover:bg-gray-50">
@@ -113,6 +116,7 @@ export default function ReportsClient({ reports, currentStatus }: ReportsClientP
                       )}
                     </div>
                   )}
+                  <AutoFlagBadges flags={flags} />
                 </div>
 
                 {/* Status badge */}
@@ -137,8 +141,8 @@ export default function ReportsClient({ reports, currentStatus }: ReportsClientP
                   />
                   <ActionButton
                     label="Приховати рецепт"
-                    confirmText="Перевести в чернетку?"
                     variant="outline"
+                    useUndo
                     action={() => hideRecipeFromReport(report.id, recipe?.id)}
                     onDone={() => router.refresh()}
                   />
@@ -154,8 +158,8 @@ export default function ReportsClient({ reports, currentStatus }: ReportsClientP
                   {author && !author.is_banned && (
                     <ActionButton
                       label={`⚡ Страйк (${author.strikes ?? 0})`}
-                      confirmText="Видати страйк?"
                       variant="outline"
+                      useUndo
                       action={() => addStrike(author.id, author.strikes ?? 0)}
                       onDone={() => router.refresh()}
                     />

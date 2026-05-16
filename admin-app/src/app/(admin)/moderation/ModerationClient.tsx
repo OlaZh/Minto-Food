@@ -6,6 +6,8 @@ import { useRouter } from 'next/navigation'
 import ActionButton from '@/components/moderation/ActionButton'
 import ModerationReasonDialog, { type ModerationReason } from '@/components/moderation/ModerationReasonDialog'
 import { approveRecipe, rejectRecipe, banUser, addStrike } from '@/app/actions/moderation'
+import { detectFlags } from '@/lib/autoFlag'
+import AutoFlagBadges from '@/components/moderation/AutoFlagBadges'
 
 interface ModerationClientProps {
   recipes: any[]
@@ -44,6 +46,8 @@ export default function ModerationClient({ recipes }: ModerationClientProps) {
               return 0
             } catch { return 0 }
           })()
+
+          const flags = detectFlags(recipe)
 
           return (
             <div key={recipe.id} className="px-4 md:px-8 py-4 hover:bg-gray-50">
@@ -97,6 +101,7 @@ export default function ModerationClient({ recipes }: ModerationClientProps) {
                       )}
                     </div>
                   )}
+                  <AutoFlagBadges flags={flags} />
                 </div>
 
                 <span className="text-xs bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full font-medium shrink-0">
@@ -114,16 +119,16 @@ export default function ModerationClient({ recipes }: ModerationClientProps) {
                 />
                 <ActionButton
                   label="Відхилити"
-                  confirmText="Відхилити рецепт?"
                   variant="outline"
+                  useUndo
                   action={() => rejectRecipe(recipe.id, '')}
                   onDone={() => router.refresh()}
                 />
                 {author && !author.is_banned && (
                   <ActionButton
                     label={`⚡ Страйк (${author.strikes ?? 0})`}
-                    confirmText="Видати страйк автору?"
                     variant="outline"
+                    useUndo
                     action={() => addStrike(author.id, author.strikes ?? 0)}
                     onDone={() => router.refresh()}
                   />

@@ -1,8 +1,7 @@
 'use client'
 
-import { useState, useTransition } from 'react'
-import { Loader2 } from 'lucide-react'
-import { toast } from 'sonner'
+import { useState } from 'react'
+import { withUndoToast } from '@/lib/undoToast'
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from '@/components/ui/dialog'
@@ -36,10 +35,8 @@ const CATEGORIES = [
 export default function ModerationReasonDialog({ open, onClose, title, action, onDone }: Props) {
   const [category, setCategory] = useState('')
   const [comment, setComment] = useState('')
-  const [pending, startTransition] = useTransition()
 
   function handleClose() {
-    if (pending) return
     setCategory('')
     setComment('')
     onClose()
@@ -47,17 +44,11 @@ export default function ModerationReasonDialog({ open, onClose, title, action, o
 
   function handleConfirm() {
     if (!category) return
-    startTransition(async () => {
-      try {
-        await action({ category, comment })
-        setCategory('')
-        setComment('')
-        onClose()
-        onDone?.()
-      } catch (e: any) {
-        toast.error(e?.message ?? 'Помилка')
-      }
-    })
+    const reason = { category, comment }
+    setCategory('')
+    setComment('')
+    onClose()
+    withUndoToast(title, () => action(reason), onDone)
   }
 
   return (
@@ -96,16 +87,15 @@ export default function ModerationReasonDialog({ open, onClose, title, action, o
         </div>
 
         <DialogFooter>
-          <Button variant="outline" size="sm" onClick={handleClose} disabled={pending}>
+          <Button variant="outline" size="sm" onClick={handleClose}>
             Скасувати
           </Button>
           <Button
             variant="destructive"
             size="sm"
             onClick={handleConfirm}
-            disabled={!category || pending}
+            disabled={!category}
           >
-            {pending && <Loader2 className="h-3 w-3 animate-spin mr-1" />}
             Підтвердити
           </Button>
         </DialogFooter>

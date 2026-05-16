@@ -4,6 +4,7 @@ import { useState, useTransition } from 'react'
 import { Button } from '@/components/ui/button'
 import { Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
+import { withUndoToast } from '@/lib/undoToast'
 
 interface ActionButtonProps {
   label: string
@@ -13,15 +14,21 @@ interface ActionButtonProps {
   action: () => Promise<unknown>
   onDone?: () => void
   className?: string
+  useUndo?: boolean
 }
 
 export default function ActionButton({
-  label, confirmText, variant = 'outline', size = 'sm', action, onDone, className,
+  label, confirmText, variant = 'outline', size = 'sm',
+  action, onDone, className, useUndo = false,
 }: ActionButtonProps) {
   const [pending, startTransition] = useTransition()
   const [confirming, setConfirming] = useState(false)
 
   function handleClick() {
+    if (useUndo) {
+      withUndoToast(label, action, onDone)
+      return
+    }
     if (confirmText && !confirming) {
       setConfirming(true)
       return
@@ -31,8 +38,8 @@ export default function ActionButton({
       try {
         await action()
         onDone?.()
-      } catch (e: any) {
-        toast.error(e?.message ?? 'Помилка')
+      } catch (e: unknown) {
+        toast.error(e instanceof Error ? e.message : 'Помилка')
       }
     })
   }

@@ -86,16 +86,16 @@ export default function UsersClient({ users }: UsersClientProps) {
                 ) : (
                   <ActionButton
                     label="Бан"
-                    confirmText="Забанити?"
                     variant="destructive"
+                    useUndo
                     action={() => banUser(user.id)}
                     onDone={() => router.refresh()}
                   />
                 )}
                 <ActionButton
                   label={`⚡ Страйк (${user.strikes ?? 0})`}
-                  confirmText="Видати страйк?"
                   variant="outline"
+                  useUndo
                   action={() => addStrike(user.id, user.strikes ?? 0)}
                   onDone={() => router.refresh()}
                 />

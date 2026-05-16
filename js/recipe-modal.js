@@ -448,19 +448,37 @@ async function saveRecipe() {
   const { data: profile } = await supabase
     .from('profiles').select('is_shadow_banned').eq('id', user.id).single();
   const isShadowBanned = profile?.is_shadow_banned === true;
-  const status = isShadowBanned ? 'pending' : (recipeVisibility === 'public' ? 'pending' : 'draft');
+  const isPublicSubmission = recipeVisibility === 'public';
+  const status = isShadowBanned ? 'pending' : (isPublicSubmission ? 'pending' : 'draft');
+
+  const nameVal = document.getElementById('rm-name')?.value.trim() ?? '';
+  const stepsVal = document.getElementById('rm-steps')?.value.trim() ?? '';
+
+  // Валідація тільки для публічних рецептів
+  if (isPublicSubmission) {
+    if (!nameVal) {
+      showToast('Для публікації потрібна назва рецепту', 'error');
+      return;
+    }
+    const hasIngredients = getIngredients().length > 0;
+    if (!hasIngredients && !stepsVal) {
+      showToast('Додайте інгредієнти або кроки приготування', 'error');
+      return;
+    }
+  }
 
   const payload = {
-    name_ua: document.getElementById('rm-name')?.value.trim(),
+    name_ua: nameVal,
     kcal: totals.kcal || 0,
     protein: parseFloat(totals.protein.toFixed(1)) || 0,
     fat: parseFloat(totals.fat.toFixed(1)) || 0,
     carbs: parseFloat(totals.carbs.toFixed(1)) || 0,
     category: document.getElementById('rm-category')?.value,
-    steps: document.getElementById('rm-steps')?.value || '',
+    steps: stepsVal,
     image: finalImage,
     user_id: user.id,
     status: status,
+    is_public: isPublicSubmission,
   };
 
   const { data, error } = await supabase.from('recipes').insert([payload]).select().single();
