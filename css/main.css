@@ -1269,11 +1269,15 @@ textarea:-webkit-autofill:focus {
    SITE FOOTER
    =============================== */
 .site-footer {
-  background-color: var(--color-bg-secondary);
+  background-color: #9bcdaf;
   border-top: 1px solid var(--color-border);
   margin-top: 48px;
   position: relative;
   z-index: 1;
+}
+
+[data-theme=dark] .site-footer {
+  background-color: #162e27;
 }
 
 /* ---- Inner grid ---- */
@@ -1313,9 +1317,14 @@ textarea:-webkit-autofill:focus {
 .site-footer__logo {
   display: inline-flex;
   align-items: center;
+  opacity: 0.7;
+  transition: opacity 0.15s ease;
+}
+.site-footer__logo:hover {
+  opacity: 1;
 }
 .site-footer__logo img {
-  height: 28px;
+  height: 26px;
   width: auto;
 }
 
@@ -1325,9 +1334,10 @@ textarea:-webkit-autofill:focus {
   line-height: 1.4;
   max-width: 200px;
   margin: 0;
+  opacity: 0.8;
 }
 
-/* ---- Column (desktop) ---- */
+/* ---- Column ---- */
 @media (max-width: 600px) {
   .site-footer__col {
     display: none;
@@ -1336,10 +1346,11 @@ textarea:-webkit-autofill:focus {
 
 .site-footer__heading {
   font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
+  font-weight: 500;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--color-text-secondary);
+  opacity: 0.6;
   margin: 0 0 6px;
 }
 
@@ -1353,15 +1364,18 @@ textarea:-webkit-autofill:focus {
 }
 .site-footer__links a {
   font-size: 13px;
+  font-weight: 400;
   color: var(--color-text-primary);
   text-decoration: none;
-  transition: color 0.15s ease;
+  opacity: 0.82;
+  transition: opacity 0.15s ease;
 }
 .site-footer__links a:hover {
+  opacity: 1;
   color: var(--color-accent);
 }
 
-/* ---- Mobile accordion (details/summary) ---- */
+/* ---- Mobile accordion ---- */
 .site-footer__accordion {
   display: none;
   border-top: 1px solid var(--color-border);
@@ -1384,10 +1398,11 @@ textarea:-webkit-autofill:focus {
   justify-content: space-between;
   padding: 12px 0;
   font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
+  font-weight: 500;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--color-text-secondary);
+  opacity: 0.6;
   cursor: pointer;
   list-style: none;
   user-select: none;
@@ -1415,11 +1430,14 @@ textarea:-webkit-autofill:focus {
 }
 .site-footer__accordion ul a {
   font-size: 14px;
+  font-weight: 400;
   color: var(--color-text-primary);
   text-decoration: none;
+  opacity: 0.82;
 }
 .site-footer__accordion ul a:hover {
   color: var(--color-accent);
+  opacity: 1;
 }
 
 /* ---- Bottom bar ---- */
@@ -1427,15 +1445,19 @@ textarea:-webkit-autofill:focus {
   max-width: 1320px;
   margin: 0 auto;
   padding: 10px 24px;
-  border-top: 1px solid var(--color-border);
+  border-top: 1px solid rgba(130, 191, 153, 0.5);
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: space-between;
+  gap: 16px;
 }
 @media (max-width: 600px) {
   .site-footer__bottom {
     margin-top: 8px;
-    padding: 8px 20px;
+    padding: 10px 20px;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
   }
 }
 
@@ -1443,7 +1465,51 @@ textarea:-webkit-autofill:focus {
   font-size: 12px;
   color: var(--color-text-secondary);
   margin: 0;
-  text-align: center;
+  opacity: 0.7;
+}
+
+/* ---- Language switcher ---- */
+.site-footer__lang {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.site-footer__lang span {
+  font-size: 11px;
+  color: var(--color-text-secondary);
+  opacity: 0.4;
+}
+
+.site-footer__lang-btn {
+  background: none;
+  border: none;
+  font-size: 11px;
+  font-weight: 600;
+  font-family: var(--font-body);
+  letter-spacing: 0.05em;
+  color: var(--color-text-secondary);
+  opacity: 0.5;
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: 3px;
+  transition: opacity 0.15s ease, color 0.15s ease;
+}
+.site-footer__lang-btn:hover {
+  opacity: 0.9;
+  color: var(--color-text-primary);
+}
+.site-footer__lang-btn.is-active {
+  opacity: 1;
+  color: var(--color-accent);
+}
+
+/* ---- Made with ---- */
+.site-footer__made {
+  font-size: 11px;
+  color: var(--color-text-secondary);
+  margin: 0;
+  opacity: 0.55;
+  white-space: nowrap;
 }
 
 /* =============================================================
