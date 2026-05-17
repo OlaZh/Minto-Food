@@ -6,6 +6,8 @@
   background-color: var(--color-bg-secondary);
   border-top: 1px solid var(--color-border);
   margin-top: 48px;
+  position: relative;
+  z-index: 1;
 }
 
 /* ---- Inner grid ---- */

@@ -208,6 +208,7 @@ body {
   font-family: var(--font-body);
   font-weight: 400;
   line-height: 1.6;
+  background-color: var(--color-bg-primary);
   color: var(--color-text-primary);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -509,6 +510,8 @@ textarea:-webkit-autofill:focus {
   padding: 0 24px;
   width: 100%;
   box-sizing: border-box;
+  position: relative;
+  z-index: 1;
 }
 
 .layout {
@@ -523,6 +526,7 @@ textarea:-webkit-autofill:focus {
    ============================================================= */
 .page {
   min-height: 100vh;
+  background-color: var(--color-bg-primary);
   display: flex;
   flex-direction: column;
 }
@@ -1268,6 +1272,8 @@ textarea:-webkit-autofill:focus {
   background-color: var(--color-bg-secondary);
   border-top: 1px solid var(--color-border);
   margin-top: 48px;
+  position: relative;
+  z-index: 1;
 }
 
 /* ---- Inner grid ---- */
@@ -1991,7 +1997,7 @@ textarea:-webkit-autofill:focus {
 .leaves-bg {
   position: fixed;
   inset: 0;
-  z-index: -1;
+  z-index: 0;
   pointer-events: none;
   overflow: hidden;
 }
