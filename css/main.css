@@ -6533,7 +6533,7 @@ textarea:-webkit-autofill:focus {
 
 .profile-container {
   padding-top: 0;
-  padding-bottom: 60px;
+  padding-bottom: 0;
 }
 
 .page {
@@ -10546,7 +10546,7 @@ input:checked + .settings-toggle__track::after {
    ============================================================ */
 /* ================= PAGE LAYOUT ================= */
 .cookbook-page {
-  padding: 0 0 60px;
+  padding: 0;
   min-height: 100vh;
 }
 .cookbook-page__header {
@@ -11522,7 +11522,7 @@ input:checked + .settings-toggle__track::after {
 /* ================= RESPONSIVE ================= */
 @media (max-width: 768px) {
   .cookbook-page {
-    padding: 0 0 60px;
+    padding: 0;
   }
   .cookbook-page__title {
     font-size: 24px;
