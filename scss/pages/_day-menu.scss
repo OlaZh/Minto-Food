@@ -2,24 +2,6 @@
 
 @media (min-width: 1025px) {
   .page--day-menu {
-    height: 100dvh;
-    overflow: hidden;
-
-    .site-footer {
-      display: none;
-    }
-
-    .app-bg {
-      flex: 1;
-      min-height: 0;
-      overflow: hidden;
-    }
-
-    .app-shell,
-    .container {
-      height: 100%;
-    }
-
     .container {
       display: flex;
       flex-direction: column;
@@ -46,12 +28,6 @@
 
     .main {
       height: auto;
-      overflow-y: hidden;
-
-      &:has(.meal.is-open) {
-        height: 100%;
-        overflow-y: auto;
-      }
     }
 
     .water-sidebar {

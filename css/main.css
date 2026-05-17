@@ -5034,22 +5034,6 @@ textarea:-webkit-autofill:focus {
 }
 /* ================= DAY WEEK NAV ================= */
 @media (min-width: 1025px) {
-  .page--day-menu {
-    height: 100dvh;
-    overflow: hidden;
-  }
-  .page--day-menu .site-footer {
-    display: none;
-  }
-  .page--day-menu .app-bg {
-    flex: 1;
-    min-height: 0;
-    overflow: hidden;
-  }
-  .page--day-menu .app-shell,
-  .page--day-menu .container {
-    height: 100%;
-  }
   .page--day-menu .container {
     display: flex;
     flex-direction: column;
@@ -5072,11 +5056,6 @@ textarea:-webkit-autofill:focus {
   }
   .page--day-menu .main {
     height: auto;
-    overflow-y: hidden;
-  }
-  .page--day-menu .main:has(.meal.is-open) {
-    height: 100%;
-    overflow-y: auto;
   }
   .page--day-menu .water-sidebar {
     gap: 6px;
