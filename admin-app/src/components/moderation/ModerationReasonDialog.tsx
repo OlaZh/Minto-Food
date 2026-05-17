@@ -53,7 +53,7 @@ export default function ModerationReasonDialog({ open, onClose, title, action, o
 
   return (
     <Dialog open={open} onOpenChange={(isOpen: boolean) => { if (!isOpen) handleClose() }}>
-      <DialogContent showCloseButton={!pending}>
+      <DialogContent>
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
         </DialogHeader>
