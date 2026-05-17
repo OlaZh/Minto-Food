@@ -2,13 +2,6 @@
    SITE FOOTER
    =============================== */
 
-/* Full-screen app pages — body scroll заборонено, footer не заважає layout */
-.page--day-menu,
-.page--week-menu {
-  overflow: hidden;
-  height: 100dvh;
-}
-
 .site-footer {
   background-color: var(--color-bg-secondary);
   border-top: 1px solid var(--color-border);
