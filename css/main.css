@@ -531,6 +531,12 @@ textarea:-webkit-autofill:focus {
   flex-direction: column;
 }
 
+.app-bg,
+.page > main,
+#recipeRoot {
+  flex: 1;
+}
+
 /* =============================================================
    UNIFIED PAGE HEADER — однаковий заголовок на всіх сторінках
    ============================================================= */

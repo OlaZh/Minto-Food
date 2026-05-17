@@ -29,6 +29,13 @@
   flex-direction: column;
 }
 
+// Sticky footer: content areas must grow to push footer to the bottom
+.app-bg,
+.page > main,
+#recipeRoot {
+  flex: 1;
+}
+
 /* =============================================================
    UNIFIED PAGE HEADER — однаковий заголовок на всіх сторінках
    ============================================================= */
