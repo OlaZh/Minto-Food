@@ -5,6 +5,10 @@
     height: 100dvh;
     overflow: hidden;
 
+    .site-footer {
+      display: none;
+    }
+
     .app-bg {
       flex: 1;
       min-height: 0;

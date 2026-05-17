@@ -5038,6 +5038,9 @@ textarea:-webkit-autofill:focus {
     height: 100dvh;
     overflow: hidden;
   }
+  .page--day-menu .site-footer {
+    display: none;
+  }
   .page--day-menu .app-bg {
     flex: 1;
     min-height: 0;
