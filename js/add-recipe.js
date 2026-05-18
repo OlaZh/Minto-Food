@@ -160,16 +160,78 @@ function getDifficultyLabel(value) {
   return t(key) !== key ? t(key) : value;
 }
 
-// type-значення тегів → i18n-ключі заголовків груп
-const GROUP_LABEL_KEYS = {
-  category:       'filterGroupCategory',
-  dish_type:      'filterGroupDishType',
-  cooking_method: 'filterGroupCookingMethod',
-  dietary:        'filterGroupDietary',
-  lifestyle:      'filterGroupLifestyle',
+// =============================================================
+// ФІЛЬТРИ — дворівнева архітектура
+//   1. COLUMN_GROUPS — фільтрують напряму по колонках recipes
+//   2. TAG_GROUP_TYPES — фільтрують через recipe_tags (з tags table)
+// =============================================================
+
+const COLUMN_GROUPS = [
+  {
+    id: 'category',
+    dbColumn: 'category',
+    labelKey: 'filterGroupCategory',
+    options: [
+      { value: 'breakfast',  ua: 'Сніданок',   en: 'Breakfast', pl: 'Śniadanie',  icon: '🌅' },
+      { value: 'lunch',      ua: 'Обід',        en: 'Lunch',     pl: 'Obiad',      icon: '☀️' },
+      { value: 'dinner',     ua: 'Вечеря',      en: 'Dinner',    pl: 'Kolacja',    icon: '🌙' },
+      { value: 'snack',      ua: 'Перекус',     en: 'Snack',     pl: 'Przekąska',  icon: '🍎' },
+      { value: 'dessert',    ua: 'Десерт',      en: 'Dessert',   pl: 'Deser',      icon: '🍰' },
+      { value: 'drinks',     ua: 'Напої',       en: 'Drinks',    pl: 'Napoje',     icon: '🥤' },
+      { value: 'bakery',     ua: 'Випічка',     en: 'Bakery',    pl: 'Pieczywo',   icon: '🥐' },
+    ],
+  },
+  {
+    id: 'dish_type',
+    dbColumn: 'type',
+    labelKey: 'filterGroupDishType',
+    options: [
+      { value: 'porridge',    ua: 'Каша',           en: 'Porridge',   pl: 'Kasza',        icon: '🥣' },
+      { value: 'soup',        ua: 'Суп',            en: 'Soup',       pl: 'Zupa',         icon: '🍲' },
+      { value: 'salad',       ua: 'Салат',          en: 'Salad',      pl: 'Sałatka',      icon: '🥗' },
+      { value: 'side_dish',   ua: 'Гарнір',         en: 'Side dish',  pl: 'Dodatek',      icon: '🍚' },
+      { value: 'main_course', ua: 'Основна страва', en: 'Main course',pl: 'Danie główne', icon: '🍽️' },
+      { value: 'pasta',       ua: 'Паста',          en: 'Pasta',      pl: 'Makaron',      icon: '🍝' },
+      { value: 'sauce',       ua: 'Соус',           en: 'Sauce',      pl: 'Sos',          icon: '🫙' },
+      { value: 'sandwich',    ua: 'Сендвіч',        en: 'Sandwich',   pl: 'Kanapka',      icon: '🥪' },
+      { value: 'casserole',   ua: 'Запіканка',      en: 'Casserole',  pl: 'Zapiekanka',   icon: '🫕' },
+      { value: 'pancakes',    ua: 'Млинці',         en: 'Pancakes',   pl: 'Naleśniki',    icon: '🥞' },
+      { value: 'omelet',      ua: 'Омлет',          en: 'Omelet',     pl: 'Omlet',        icon: '🍳' },
+      { value: 'smoothie',    ua: 'Смузі',          en: 'Smoothie',   pl: 'Smoothie',     icon: '🥤' },
+    ],
+  },
+  {
+    id: 'cooking_method',
+    dbColumn: 'cooking_method',
+    labelKey: 'filterGroupCookingMethod',
+    options: [
+      { value: 'boiling',  ua: 'Варіння',          en: 'Boiling',    pl: 'Gotowanie',   icon: '♨️' },
+      { value: 'frying',   ua: 'Смаження',         en: 'Frying',     pl: 'Smażenie',    icon: '🍳' },
+      { value: 'baking',   ua: 'Запікання',        en: 'Baking',     pl: 'Pieczenie',   icon: '🔥' },
+      { value: 'steaming', ua: 'На парі',          en: 'Steaming',   pl: 'Na parze',    icon: '💨' },
+      { value: 'grilling', ua: 'Гриль',            en: 'Grilling',   pl: 'Grillowanie', icon: '🥩' },
+      { value: 'stewing',  ua: 'Тушкування',       en: 'Stewing',    pl: 'Duszenie',    icon: '🫕' },
+      { value: 'soaking',  ua: 'Замочування',      en: 'Soaking',    pl: 'Namaczanie',  icon: '💧' },
+      { value: 'fresh',    ua: 'Без термообробки', en: 'Fresh/Raw',  pl: 'Bez obróbki', icon: '🥬' },
+    ],
+  },
+];
+
+// Типи тегів що приходять з tags table (via recipe_tags)
+const TAG_GROUP_LABEL_KEYS = {
+  dietary:   'filterGroupDietary',
+  lifestyle: 'filterGroupLifestyle',
+  // legacy
+  diet:      'filterGroupDietary',
+  nutrition: 'filterGroupDietary',
+  health:    'filterGroupDietary',
 };
 
-// selectedFilters: { [tagType]: Set<tagId (number)> }
+const COLUMN_GROUP_IDS = new Set(COLUMN_GROUPS.map((g) => g.id));
+
+// selectedFilters: { [groupId]: Set }
+//   для column-груп → Set<string value>
+//   для tag-груп   → Set<number tagId>
 const selectedFilters = {};
 
 function hasActiveFilters() {
@@ -181,35 +243,50 @@ async function applyRecipeFilters() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const activeGroups = Object.entries(selectedFilters).filter(([, s]) => s.size > 0);
+  const statusFilter = user
+    ? `status.eq.published,user_id.eq.${user.id}`
+    : 'status.eq.published';
 
-  // Для кожної групи отримуємо recipe_id де тег збігається (OR всередині групи)
-  const recipeSets = await Promise.all(
-    activeGroups.map(async ([, tagIds]) => {
-      const { data } = await supabase
-        .from('recipe_tags')
-        .select('recipe_id')
-        .in('tag_id', [...tagIds]);
-      return new Set((data || []).map((r) => r.recipe_id));
-    }),
+  // 1. Тагові групи → отримуємо recipe_id через recipe_tags
+  const activeTagGroups = Object.entries(selectedFilters).filter(
+    ([key, s]) => s.size > 0 && !COLUMN_GROUP_IDS.has(key),
   );
 
-  // AND між групами — перетин
-  let matchingIds = recipeSets[0];
-  for (let i = 1; i < recipeSets.length; i++) {
-    matchingIds = new Set([...matchingIds].filter((id) => recipeSets[i].has(id)));
+  let tagMatchingIds = null;
+  if (activeTagGroups.length > 0) {
+    const recipeSets = await Promise.all(
+      activeTagGroups.map(async ([, tagIds]) => {
+        const { data } = await supabase
+          .from('recipe_tags')
+          .select('recipe_id')
+          .in('tag_id', [...tagIds]);
+        return new Set((data || []).map((r) => r.recipe_id));
+      }),
+    );
+    tagMatchingIds = recipeSets[0];
+    for (let i = 1; i < recipeSets.length; i++) {
+      tagMatchingIds = new Set([...tagMatchingIds].filter((id) => recipeSets[i].has(id)));
+    }
+    if (tagMatchingIds.size === 0) {
+      displayRecipes([], false);
+      return;
+    }
   }
 
-  if (matchingIds.size === 0) {
-    displayRecipes([], false);
-    return;
+  // 2. Будуємо головний запит
+  let query = supabase.from('recipes').select('*').or(statusFilter);
+
+  // 2a. Колонкові фільтри (AND між групами, OR всередині)
+  for (const group of COLUMN_GROUPS) {
+    const sel = selectedFilters[group.id];
+    if (sel?.size > 0) {
+      query = query.in(group.dbColumn, [...sel]);
+    }
   }
 
-  let query = supabase.from('recipes').select('*').in('id', [...matchingIds]);
-  if (user) {
-    query = query.or(`status.eq.published,user_id.eq.${user.id}`);
-  } else {
-    query = query.eq('status', 'published');
+  // 2b. Тагові фільтри через ID-список
+  if (tagMatchingIds !== null) {
+    query = query.in('id', [...tagMatchingIds]);
   }
 
   const { data, error } = await query;
@@ -239,30 +316,33 @@ async function buildFilterPanel() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // 1. Завантажуємо активні теги з БД
-  const { data: tags } = await supabase
-    .from('tags')
-    .select('id, code, type, name_ua, name_en, name_pl, icon')
-    .eq('is_active', true)
-    .order('type')
-    .order('id');
-
-  if (!tags?.length) return;
-
-  // 2. Рахуємо скільки опублікованих рецептів має кожен тег
   const statusFilter = user
     ? `status.eq.published,user_id.eq.${user.id}`
     : 'status.eq.published';
 
+  // 1. Рахуємо значення колонок (category, type, cooking_method)
   const { data: pubRecipes } = await supabase
     .from('recipes')
-    .select('id')
+    .select('id, category, type, cooking_method')
     .or(statusFilter);
 
   const pubIds = (pubRecipes || []).map((r) => r.id);
-  const tagCounts = {};
+  const colCounts = { category: {}, dish_type: {}, cooking_method: {} };
+  (pubRecipes || []).forEach((r) => {
+    if (r.category)        colCounts.category[r.category]             = (colCounts.category[r.category] || 0) + 1;
+    if (r.type)            colCounts.dish_type[r.type]                = (colCounts.dish_type[r.type] || 0) + 1;
+    if (r.cooking_method)  colCounts.cooking_method[r.cooking_method] = (colCounts.cooking_method[r.cooking_method] || 0) + 1;
+  });
 
-  if (pubIds.length > 0) {
+  // 2. Завантажуємо теги і рахуємо через recipe_tags
+  const { data: tags } = await supabase
+    .from('tags')
+    .select('id, code, type, name_ua, name_en, name_pl, icon')
+    .eq('is_active', true)
+    .order('id');
+
+  const tagCounts = {};
+  if (pubIds.length > 0 && tags?.length) {
     const { data: links } = await supabase
       .from('recipe_tags')
       .select('tag_id')
@@ -273,80 +353,125 @@ async function buildFilterPanel() {
   }
 
   // 3. Групуємо теги по type
-  const groups = {};
-  tags.forEach((tag) => {
-    if (!groups[tag.type]) groups[tag.type] = [];
-    groups[tag.type].push(tag);
+  const tagGroups = {};
+  (tags || []).forEach((tag) => {
+    if (!tagGroups[tag.type]) tagGroups[tag.type] = [];
+    tagGroups[tag.type].push(tag);
   });
 
-  // 4. Будуємо DOM
   panel.innerHTML = '';
+  let groupIdx = 0;
 
-  Object.entries(groups).forEach(([type, groupTags], idx) => {
-    const labelKey = GROUP_LABEL_KEYS[type];
-    const groupLabel = labelKey ? t(labelKey) : type;
-    const totalSelected = selectedFilters[type]?.size || 0;
-    const badge = totalSelected > 0 ? `<span class="filter-group__badge">${totalSelected}</span>` : '';
+  // Хелпер: будує один accordion-блок
+  function buildGroup(id, label, body) {
+    const isOpen = groupIdx === 0;
+    const totalSelected = selectedFilters[id]?.size || 0;
+    const badge = totalSelected > 0
+      ? `<span class="filter-group__badge">${totalSelected}</span>` : '';
 
     const groupEl = document.createElement('div');
-    groupEl.className = 'filter-group' + (idx === 0 ? ' filter-group--open' : '');
+    groupEl.className = 'filter-group' + (isOpen ? ' filter-group--open' : '');
     groupEl.innerHTML = `
-      <button class="filter-group__header" type="button" aria-expanded="${idx === 0}">
-        <span class="filter-group__label">${groupLabel}${badge}</span>
+      <button class="filter-group__header" type="button" aria-expanded="${isOpen}">
+        <span class="filter-group__label">${label}${badge}</span>
         <svg class="filter-group__chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M4 6l4 4 4-4"/>
         </svg>
       </button>
       <div class="filter-group__body"></div>
     `;
+    const bodyEl = groupEl.querySelector('.filter-group__body');
+    body(bodyEl);
 
-    const body = groupEl.querySelector('.filter-group__body');
-    groupTags.forEach((tag) => {
-      const count = tagCounts[tag.id] || 0;
-      const isChecked = selectedFilters[type]?.has(tag.id) || false;
-      const tagName = tag[nameField] || tag.name_ua;
-
-      const label = document.createElement('label');
-      label.className =
-        'filter-option' +
-        (isChecked ? ' filter-option--checked' : '') +
-        (count === 0 ? ' filter-option--zero' : '');
-      label.innerHTML = `
-        <input type="checkbox" name="${type}" value="${tag.id}" ${isChecked ? 'checked' : ''}>
-        ${tag.icon ? `<span>${tag.icon}</span>` : ''}
-        <span class="filter-option__label">${tagName}</span>
-        ${count > 0 ? `<span class="filter-option__count">${count}</span>` : ''}
-      `;
-
-      label.querySelector('input').addEventListener('change', (e) => {
-        if (!selectedFilters[type]) selectedFilters[type] = new Set();
-        if (e.target.checked) {
-          selectedFilters[type].add(tag.id);
-        } else {
-          selectedFilters[type].delete(tag.id);
-          if (selectedFilters[type].size === 0) delete selectedFilters[type];
-        }
-        resetSearch();
-        buildFilterPanel();
-        if (hasActiveFilters()) {
-          applyRecipeFilters();
-        } else {
-          loadAndDisplayRecipes();
-        }
-      });
-
-      body.appendChild(label);
-    });
-
-    const header = groupEl.querySelector('.filter-group__header');
-    header.addEventListener('click', () => {
-      const isOpen = groupEl.classList.toggle('filter-group--open');
-      header.setAttribute('aria-expanded', isOpen);
+    groupEl.querySelector('.filter-group__header').addEventListener('click', () => {
+      const open = groupEl.classList.toggle('filter-group--open');
+      groupEl.querySelector('.filter-group__header').setAttribute('aria-expanded', open);
     });
 
     panel.appendChild(groupEl);
+    groupIdx++;
+  }
+
+  // Хелпер: одна checkbox-мітка
+  function addOption(container, { key, value, label, icon, isChecked, count, onChange }) {
+    const el = document.createElement('label');
+    el.className =
+      'filter-option' +
+      (isChecked ? ' filter-option--checked' : '') +
+      (count === 0 ? ' filter-option--zero' : '');
+    el.innerHTML = `
+      <input type="checkbox" name="${key}" value="${value}" ${isChecked ? 'checked' : ''}>
+      ${icon ? `<span>${icon}</span>` : ''}
+      <span class="filter-option__label">${label}</span>
+      ${count > 0 ? `<span class="filter-option__count">${count}</span>` : ''}
+    `;
+    el.querySelector('input').addEventListener('change', onChange);
+    container.appendChild(el);
+  }
+
+  // 4. Будуємо COLUMN-групи
+  for (const group of COLUMN_GROUPS) {
+    buildGroup(group.id, t(group.labelKey), (body) => {
+      group.options.forEach((opt) => {
+        const count = colCounts[group.id][opt.value] || 0;
+        const isChecked = selectedFilters[group.id]?.has(opt.value) || false;
+        const label = opt[lang === 'en' ? 'en' : lang === 'pl' ? 'pl' : 'ua'] || opt.ua;
+        addOption(body, {
+          key: group.id,
+          value: opt.value,
+          label,
+          icon: opt.icon,
+          isChecked,
+          count,
+          onChange(e) {
+            if (!selectedFilters[group.id]) selectedFilters[group.id] = new Set();
+            if (e.target.checked) selectedFilters[group.id].add(opt.value);
+            else {
+              selectedFilters[group.id].delete(opt.value);
+              if (selectedFilters[group.id].size === 0) delete selectedFilters[group.id];
+            }
+            resetSearch();
+            buildFilterPanel();
+            hasActiveFilters() ? applyRecipeFilters() : loadAndDisplayRecipes();
+          },
+        });
+      });
+    });
+  }
+
+  // 5. Будуємо TAG-групи (dietary, lifestyle)
+  Object.entries(tagGroups).forEach(([type, groupTags]) => {
+    const labelKey = TAG_GROUP_LABEL_KEYS[type];
+    if (!labelKey) return;
+    buildGroup(type, t(labelKey), (body) => {
+      groupTags.forEach((tag) => {
+        const count = tagCounts[tag.id] || 0;
+        const isChecked = selectedFilters[type]?.has(tag.id) || false;
+        const tagName = tag[nameField] || tag.name_ua;
+        addOption(body, {
+          key: type,
+          value: tag.id,
+          label: tagName,
+          icon: tag.icon,
+          isChecked,
+          count,
+          onChange(e) {
+            if (!selectedFilters[type]) selectedFilters[type] = new Set();
+            if (e.target.checked) selectedFilters[type].add(tag.id);
+            else {
+              selectedFilters[type].delete(tag.id);
+              if (selectedFilters[type].size === 0) delete selectedFilters[type];
+            }
+            resetSearch();
+            buildFilterPanel();
+            hasActiveFilters() ? applyRecipeFilters() : loadAndDisplayRecipes();
+          },
+        });
+      });
+    });
   });
 
+  // 6. Кнопка "Скинути" якщо є активні фільтри
   if (hasActiveFilters()) {
     const resetRow = document.createElement('div');
     resetRow.className = 'filter-reset-row';
