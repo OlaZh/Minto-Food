@@ -10,6 +10,7 @@ import { initAuth } from './auth.js';
 import { showToast, escapeHTML } from './utils.js';
 import { lockScroll, unlockScroll } from './scroll-lock.js';
 import { getWeekShoppingList, clearWeekShoppingList } from './storage.js';
+import { showConfirmModal } from './ui-components.js';
 
 /* ============================================================
    СТАН
@@ -709,30 +710,42 @@ async function pinListById(id, isPinned) {
 }
 
 async function clearListById(id) {
-  if (!confirm('Очистити всі позиції зі списку?')) return;
-  const { error } = await supabase
-    .from('shopping_items').delete()
-    .eq('list_id', id).eq('user_id', currentUser.id);
-  if (error) { showToast('Помилка', 'error'); return; }
-  if (panelOpenId === id) {
-    const li = document.querySelector(`.shop-list-item[data-id="${id}"]`);
-    const sub = li?.querySelector('.shop-list-item__sub-items');
-    if (sub) await loadPanelListItems(id, sub);
-  }
-  showToast('Список очищено');
+  showConfirmModal({
+    title: 'Очистити список?',
+    message: 'Всі позиції зі списку буде видалено.',
+    confirmText: 'Так, очистити',
+    onConfirm: async () => {
+      const { error } = await supabase
+        .from('shopping_items').delete()
+        .eq('list_id', id).eq('user_id', currentUser.id);
+      if (error) { showToast('Помилка', 'error'); return; }
+      if (panelOpenId === id) {
+        const li = document.querySelector(`.shop-list-item[data-id="${id}"]`);
+        const sub = li?.querySelector('.shop-list-item__sub-items');
+        if (sub) await loadPanelListItems(id, sub);
+      }
+      showToast('Список очищено');
+    },
+  });
 }
 
 async function deleteListById(id) {
-  if (!confirm('Видалити список?')) return;
-  const { error } = await supabase
-    .from('shopping_lists').delete()
-    .eq('id', id).eq('user_id', currentUser.id);
-  if (error) { showToast('Помилка', 'error'); return; }
-  allLists = allLists.filter(l => l.id !== id);
-  if (panelOpenId === id) panelOpenId = null;
-  renderLists();
-  renderWishlistPanel();
-  showToast('Список видалено');
+  showConfirmModal({
+    title: 'Видалити список?',
+    message: 'Цю дію неможливо скасувати.',
+    confirmText: 'Так, видалити',
+    onConfirm: async () => {
+      const { error } = await supabase
+        .from('shopping_lists').delete()
+        .eq('id', id).eq('user_id', currentUser.id);
+      if (error) { showToast('Помилка', 'error'); return; }
+      allLists = allLists.filter(l => l.id !== id);
+      if (panelOpenId === id) panelOpenId = null;
+      renderLists();
+      renderWishlistPanel();
+      showToast('Список видалено');
+    },
+  });
 }
 
 async function shareListById(id) {

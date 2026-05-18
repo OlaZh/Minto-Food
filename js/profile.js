@@ -15,7 +15,7 @@ import {
   getLang,
   setLang,
 } from './storage.js';
-import { initCustomSelect, setSelectValue, initSelectsGlobalListener } from './ui-components.js';
+import { initCustomSelect, setSelectValue, initSelectsGlobalListener, showConfirmModal } from './ui-components.js';
 
 // =====================================
 // DOM ELEMENTS
@@ -1551,9 +1551,14 @@ function initSettings(user) {
 
   // Delete account (confirmation only — no backend yet)
   document.getElementById('deleteAccountBtn')?.addEventListener('click', () => {
-    if (confirm('Видалити акаунт назавжди? Цю дію неможливо скасувати.')) {
-      showToast('Функція видалення акаунту незабаром буде доступна', 'info');
-    }
+    showConfirmModal({
+      title: 'Видалити акаунт?',
+      message: 'Цю дію неможливо скасувати. Всі дані буде втрачено назавжди.',
+      confirmText: 'Так, видалити',
+      onConfirm: () => {
+        showToast('Функція видалення акаунту незабаром буде доступна', 'info');
+      },
+    });
   });
 }
 

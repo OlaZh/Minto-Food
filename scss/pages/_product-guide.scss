@@ -22,7 +22,7 @@
 
   &:focus-within {
     border-color: var(--color-accent);
-    box-shadow: 0 0 0 3px rgba(74, 181, 132, 0.15);
+    box-shadow: var(--focus-ring);
   }
 }
 
@@ -155,7 +155,7 @@
 
 .subfilter-item {
   padding: 10px 20px;
-  border-radius: 8px;
+  border-radius: var(--radius-xs);
   border: 1px solid var(--color-border);
   background: var(--color-surface);
   color: var(--color-text-primary);

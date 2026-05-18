@@ -45,7 +45,9 @@
               <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
             </svg>
           </button>
-          <a href="#" id="headerAuthBtn" class="header__profile-name">Увійти</a>
+        </div>
+        <div class="header__right">
+          <a href="#" id="headerAuthBtn" class="header__profile-name" data-i18n="login"> Увійти </a>
         </div>
 
         <button class="header__burger" aria-label="Меню" aria-expanded="false">
@@ -55,9 +57,7 @@
       <div class="header__nav-overlay"></div>
     </header>
 
-    <div class="app-bg">
-      <div class="app-shell">
-        <main class="shop-page">
+    <main class="main shop-page">
           <div class="container">
             <div class="page-header">
             <h1 class="page-header__title">Список покупок</h1>
@@ -203,13 +203,13 @@
           </div>
 
         </main>
-      </div>
-    </div>
 
     <!-- Edit Item Modal -->
     <div class="modal-overlay" id="shop-edit-modal">
       <div class="modal-card shop-edit-modal">
-        <button class="modal-card__close" id="shop-edit-close">&times;</button>
+        <button class="modal-card__close" id="shop-edit-close" aria-label="Закрити">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
         <div class="shop-edit-modal__header">
           <h3>Редагувати позицію</h3>
         </div>

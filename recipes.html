@@ -36,7 +36,7 @@
             </li>
             <li>
               <a
-                href="./recipes.html"
+                href="recipes.html"
                 class="header__nav-link header__nav-link--active"
                 data-i18n="navRecipes"
                 >Рецепти</a
@@ -102,7 +102,9 @@
               <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
             </svg>
           </button>
-          <a href="#" id="headerAuthBtn" class="header__profile-name">Увійти</a>
+        </div>
+        <div class="header__right">
+          <a href="#" id="headerAuthBtn" class="header__profile-name" data-i18n="login"> Увійти </a>
         </div>
         <button class="header__burger" aria-label="Меню" aria-expanded="false">
           <span></span>
@@ -113,9 +115,7 @@
       <div class="header__nav-overlay"></div>
     </header>
 
-    <div class="app-bg">
-      <div class="app-shell">
-        <main class="recipe-page">
+    <main class="main recipe-page">
           <div class="container">
             <div class="page-header">
               <div class="page-header__actions page-header__actions--left">
@@ -163,7 +163,9 @@
                   placeholder="Пошук за назвою або інгредієнтом..."
                   data-i18n-placeholder="searchPlaceholder"
                   id="recipe-search-input" />
-                <button id="clear-search-btn" type="button">&times;</button>
+                <button id="clear-search-btn" type="button" aria-label="Очистити пошук">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
                 <button class="search-icon-btn" id="search-mode-btn" type="button"></button>
               </div>
             </div>
@@ -255,12 +257,12 @@
             </div>
           </div>
         </div>
-      </div>
-    </div>
 
     <div class="modal-overlay" id="add-recipe-modal">
       <div class="modal-card">
-        <button class="modal-card__close" id="close-modal">&times;</button>
+        <button class="modal-card__close" id="close-modal" aria-label="Закрити">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
 
         <div id="initial-options-view">
           <div class="modal-card__header">
@@ -415,26 +417,11 @@
       </div>
     </div>
 
-    <div id="confirm-modal" class="modal-overlay">
-      <div class="modal-card confirm-box">
-        <p class="confirm-title" data-i18n="deleteRecipeTitle">Видалити рецепт?</p>
-        <p class="confirm-message" data-i18n="deleteRecipeWarning">
-          Цю дію неможливо буде скасувати.
-        </p>
-        <div class="confirm-btns">
-          <button id="confirm-yes" class="btn-confirm btn-danger" data-i18n="confirmDelete">
-            Так, видалити
-          </button>
-          <button id="confirm-no" class="btn-confirm btn-secondary" data-i18n="cancel">
-            Скасувати
-          </button>
-        </div>
-      </div>
-    </div>
-
     <div id="view-recipe-modal" class="modal-overlay">
       <div class="modal-card recipe-detail">
-        <button class="modal-card__close" id="close-view-modal">&times;</button>
+        <button class="modal-card__close" id="close-view-modal" aria-label="Закрити">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
 
         <div class="recipe-detail__header">
           <h2 id="view-title" data-i18n="viewRecipeTitle">Назва рецепта</h2>

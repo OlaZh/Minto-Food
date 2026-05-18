@@ -5,6 +5,7 @@ import { initAuth, requireAuth } from './auth.js';
 import { initBarcodeScanner, closeScanner } from './barcode-scanner.js';
 import { getLocalDateString, showToast } from './utils.js';
 import { getDailyCaloriesNorm, getLang, setLang, getItem, setItem } from './storage.js';
+import { showConfirmModal } from './ui-components.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
   let currentSelectedDate = getLocalDateString();
@@ -338,45 +339,32 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // ================== DELETE CONFIRM ==================
   function openDeleteConfirm(mealKey, index) {
-    const modal = document.getElementById('confirm-modal');
-    if (!modal) return;
+    showConfirmModal({
+      title: 'Точно видалити?',
+      confirmText: 'Так',
+      onConfirm: async () => {
+        const itemToDelete = mealsState[mealKey][index];
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
 
-    modal.classList.add('is-active');
-    modal.hidden = false;
+        let query = supabase.from('meals').delete().eq('id', itemToDelete.id);
 
-    const yes = document.getElementById('confirm-yes');
-    const no = document.getElementById('confirm-no');
+        if (user) {
+          query = query.eq('user_id', user.id);
+        } else {
+          query = query.is('user_id', null);
+        }
 
-    yes.onclick = async () => {
-      const itemToDelete = mealsState[mealKey][index];
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+        const { error } = await query;
 
-      let query = supabase.from('meals').delete().eq('id', itemToDelete.id);
-
-      if (user) {
-        query = query.eq('user_id', user.id);
-      } else {
-        query = query.is('user_id', null);
-      }
-
-      const { error } = await query;
-
-      if (!error) {
-        mealsState[mealKey].splice(index, 1);
-        renderMeal(mealKey);
-        renderSummary();
-      }
-
-      modal.classList.remove('is-active');
-      modal.hidden = true;
-    };
-
-    no.onclick = () => {
-      modal.classList.remove('is-active');
-      modal.hidden = true;
-    };
+        if (!error) {
+          mealsState[mealKey].splice(index, 1);
+          renderMeal(mealKey);
+          renderSummary();
+        }
+      },
+    });
   }
 
   // ================== MODAL ELEMENTS (ADD FOOD) ==================
@@ -1043,21 +1031,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (clearMenuBtn) {
     clearMenuBtn.addEventListener('click', () => {
       closeActionsMenu();
-      const confirmModal = document.getElementById('confirm-modal');
-      if (!confirmModal) { clearDay(); return; }
-      const titleEl = confirmModal.querySelector('.confirm-title');
-      const yes = document.getElementById('confirm-yes');
-      const no = document.getElementById('confirm-no');
-      if (titleEl) titleEl.textContent = 'Очистити весь день?';
-      confirmModal.classList.add('is-active');
-      confirmModal.hidden = false;
-      const close = () => {
-        confirmModal.classList.remove('is-active');
-        confirmModal.hidden = true;
-        if (titleEl) titleEl.textContent = 'Точно видалити?';
-      };
-      yes.onclick = () => { close(); clearDay(); };
-      no.onclick = close;
+      showConfirmModal({
+        title: 'Очистити весь день?',
+        confirmText: 'Так',
+        onConfirm: clearDay,
+      });
     });
   }
 

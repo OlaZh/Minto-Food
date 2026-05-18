@@ -33,410 +33,108 @@
 
     <link rel="stylesheet" href="./css/main.css" />
 
-    <style>
-      /* ── Recipe page layout ───────────────────────────── */
-      .rp-bar {
-        position: sticky;
-        top: 0;
-        z-index: 100;
-        display: flex;
-        align-items: center;
-        gap: 16px;
-        padding: 0 24px;
-        height: 60px;
-        background: var(--color-bg-primary);
-        border-bottom: 1px solid var(--color-border);
-      }
-      .rp-bar__logo img {
-        height: 28px;
-        display: block;
-      }
-      .rp-bar__back {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        font-size: 13px;
-        font-family: var(--font-ui);
-        color: var(--color-text-secondary);
-        text-decoration: none;
-        margin-right: auto;
-        transition: color 0.15s;
-      }
-      .rp-bar__back:hover {
-        color: var(--color-accent);
-      }
-      .rp-bar__auth {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-      }
-
-      /* ── Hero ─────────────────────────────────────────── */
-      .rp-hero {
-        width: 100%;
-        max-height: 420px;
-        object-fit: cover;
-        display: block;
-        background: var(--color-bg-secondary);
-      }
-      .rp-hero--empty {
-        width: 100%;
-        height: 220px;
-        background: var(--color-bg-secondary);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 56px;
-      }
-
-      /* ── Content ──────────────────────────────────────── */
-      .rp-content {
-        max-width: 820px;
-        margin: 0 auto;
-        padding: 36px 24px 72px;
-      }
-      .rp-title {
-        font-family: var(--font-heading);
-        font-size: 2rem;
-        font-weight: 700;
-        color: var(--color-text-primary);
-        margin: 0 0 14px;
-        line-height: 1.25;
-      }
-      .rp-meta {
-        display: flex;
-        flex-wrap: wrap;
-        align-items: center;
-        gap: 10px 16px;
-        font-family: var(--font-ui);
-        font-size: 13px;
-        color: var(--color-text-secondary);
-        margin-bottom: 28px;
-        padding-bottom: 20px;
-        border-bottom: 1px solid var(--color-border);
-      }
-      .rp-meta__dot::before {
-        content: '·';
-        margin-right: 16px;
-      }
-      .rp-meta__rating {
-        display: inline-flex;
-        align-items: center;
-        gap: 4px;
-        color: var(--color-accent);
-        font-weight: 600;
-      }
-      .rp-meta__chip {
-        background: var(--color-accent-soft);
-        color: var(--color-accent);
-        border-radius: 20px;
-        padding: 3px 10px;
-        font-size: 12px;
-        font-weight: 600;
-      }
-
-      /* ── Macros ───────────────────────────────────────── */
-      .rp-macros {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 10px;
-        margin-bottom: 36px;
-      }
-      .rp-macro {
-        background: var(--color-bg-secondary);
-        border-radius: 14px;
-        padding: 16px 10px 14px;
-        text-align: center;
-        font-family: var(--font-ui);
-      }
-      .rp-macro__val {
-        display: block;
-        font-size: 1.375rem;
-        font-weight: 700;
-        color: var(--color-text-primary);
-        line-height: 1;
-      }
-      .rp-macro__lbl {
-        display: block;
-        font-size: 11px;
-        color: var(--color-text-secondary);
-        margin-top: 4px;
-        letter-spacing: 0.03em;
-        text-transform: uppercase;
-      }
-
-      /* ── Section titles ───────────────────────────────── */
-      .rp-h2 {
-        font-family: var(--font-heading);
-        font-size: 1.125rem;
-        font-weight: 600;
-        color: var(--color-text-primary);
-        margin: 36px 0 16px;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-      }
-      .rp-h2::after {
-        content: '';
-        flex: 1;
-        height: 2px;
-        background: var(--color-accent-soft);
-        border-radius: 1px;
-      }
-
-      /* ── Ingredients ──────────────────────────────────── */
-      .rp-ings {
-        list-style: none;
-        padding: 0;
-        margin: 0;
-        display: flex;
-        flex-direction: column;
-        gap: 7px;
-      }
-      .rp-ing {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        padding: 9px 14px;
-        background: var(--color-bg-secondary);
-        border-radius: 10px;
-        font-family: var(--font-body);
-        font-size: 14px;
-        color: var(--color-text-primary);
-      }
-      .rp-ing__dot {
-        width: 7px;
-        height: 7px;
-        border-radius: 50%;
-        background: var(--color-accent);
-        flex-shrink: 0;
-      }
-      .rp-ing__amount {
-        color: var(--color-text-secondary);
-        font-size: 13px;
-        white-space: nowrap;
-        margin-left: auto;
-      }
-
-      /* ── Steps ────────────────────────────────────────── */
-      .rp-steps {
-        display: flex;
-        flex-direction: column;
-        gap: 14px;
-      }
-      .rp-step {
-        display: flex;
-        gap: 14px;
-        align-items: flex-start;
-      }
-      .rp-step__num {
-        min-width: 30px;
-        height: 30px;
-        border-radius: 50%;
-        background: var(--color-accent);
-        color: var(--color-text-inverse);
-        font-size: 13px;
-        font-weight: 700;
-        font-family: var(--font-ui);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-shrink: 0;
-        margin-top: 2px;
-      }
-      .rp-step__text {
-        font-family: var(--font-body);
-        font-size: 15px;
-        line-height: 1.72;
-        color: var(--color-text-primary);
-        flex: 1;
-      }
-
-      /* ── CTA ──────────────────────────────────────────── */
-      .rp-cta {
-        margin-top: 52px;
-        padding: 32px 28px;
-        background: var(--color-accent-soft);
-        border-radius: 20px;
-        text-align: center;
-      }
-      .rp-cta__icon {
-        font-size: 36px;
-        line-height: 1;
-        margin-bottom: 12px;
-      }
-      .rp-cta__title {
-        font-family: var(--font-heading);
-        font-size: 1.125rem;
-        font-weight: 600;
-        color: var(--color-text-primary);
-        margin: 0 0 8px;
-      }
-      .rp-cta__sub {
-        font-family: var(--font-body);
-        font-size: 14px;
-        color: var(--color-text-secondary);
-        margin: 0 0 22px;
-      }
-      .rp-cta__actions {
-        display: flex;
-        gap: 10px;
-        justify-content: center;
-        flex-wrap: wrap;
-      }
-
-      /* ── Footer ───────────────────────────────────────── */
-      .rp-footer {
-        max-width: 820px;
-        margin: 0 auto;
-        padding: 20px 24px 40px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 16px;
-        font-family: var(--font-ui);
-        font-size: 13px;
-        color: var(--color-text-secondary);
-        border-top: 1px solid var(--color-border);
-      }
-      .rp-footer a {
-        color: var(--color-accent);
-        text-decoration: none;
-      }
-      .rp-footer a:hover {
-        text-decoration: underline;
-      }
-
-      /* ── 404 ──────────────────────────────────────────── */
-      .rp-404 {
-        max-width: 480px;
-        margin: 80px auto;
-        text-align: center;
-        padding: 0 24px;
-        font-family: var(--font-ui);
-      }
-      .rp-404__icon {
-        font-size: 56px;
-        margin-bottom: 16px;
-      }
-      .rp-404__title {
-        font-family: var(--font-heading);
-        font-size: 1.5rem;
-        font-weight: 600;
-        color: var(--color-text-primary);
-        margin: 0 0 10px;
-      }
-      .rp-404__sub {
-        font-size: 14px;
-        color: var(--color-text-secondary);
-        margin: 0 0 28px;
-      }
-
-      /* ── Skeleton ─────────────────────────────────────── */
-      .rp-skel {
-        animation: rp-pulse 1.4s ease-in-out infinite;
-      }
-      @keyframes rp-pulse {
-        0%,
-        100% {
-          opacity: 1;
-        }
-        50% {
-          opacity: 0.45;
-        }
-      }
-      .rp-skel-hero {
-        width: 100%;
-        height: 320px;
-        background: var(--color-bg-secondary);
-      }
-      .rp-skel-block {
-        border-radius: 10px;
-        background: var(--color-bg-secondary);
-        margin-bottom: 12px;
-      }
-
-      /* ── Share button ────────────────────────────────────── */
-      .rp-share-btn {
-        display: inline-flex;
-        align-items: center;
-        gap: 5px;
-        padding: 4px 12px;
-        border-radius: 20px;
-        border: 1px solid var(--color-border);
-        background: transparent;
-        color: var(--color-text-secondary);
-        font-family: var(--font-ui);
-        font-size: 12px;
-        cursor: pointer;
-        transition:
-          color 0.15s,
-          border-color 0.15s;
-        margin-left: auto;
-      }
-      .rp-share-btn:hover {
-        color: var(--color-accent);
-        border-color: var(--color-accent);
-      }
-      .rp-share-btn:disabled {
-        opacity: 0.6;
-        cursor: default;
-      }
-
-      /* ── Responsive ───────────────────────────────────── */
-      @media (max-width: 600px) {
-        .rp-title {
-          font-size: 1.5rem;
-        }
-        .rp-content {
-          padding: 24px 16px 56px;
-        }
-        .rp-macros {
-          grid-template-columns: repeat(2, 1fr);
-        }
-        .rp-bar {
-          padding: 0 16px;
-        }
-        .rp-footer {
-          flex-direction: column;
-          gap: 8px;
-          text-align: center;
-        }
-      }
-    </style>
   </head>
 
-  <body class="page">
-    <!-- ── Top bar ──────────────────────────────────────── -->
-    <header class="rp-bar">
-      <a href="index.html" class="rp-bar__logo" aria-label="Minto">
-        <img src="img/logo.svg" alt="Minto" />
-      </a>
-      <a href="recipes.html" class="rp-bar__back">
-        <svg
-          width="16"
-          height="16"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          aria-hidden="true">
-          <line x1="19" y1="12" x2="5" y2="12" />
-          <polyline points="12 19 5 12 12 5" />
-        </svg>
-        Всі рецепти
-      </a>
-      <div class="rp-bar__auth">
-        <a id="headerAuthBtn" href="#" class="btn btn--ghost btn--sm">Увійти</a>
+  <body class="page page--recipe">
+    <header class="header">
+      <div class="header__container">
+        <a href="index.html" class="header__logo"
+          ><img src="img/logo.svg" alt="Logo" data-i18n="logo"
+        /></a>
+
+        <nav class="header__nav">
+          <ul class="header__nav-list">
+            <li>
+              <a href="index.html" class="header__nav-link" data-i18n="navDayMenu">Меню на день</a>
+            </li>
+            <li>
+              <a href="week-menu.html" class="header__nav-link" data-i18n="navWeekMenu">Меню на тиждень</a>
+            </li>
+            <li>
+              <a
+                href="recipes.html"
+                class="header__nav-link header__nav-link--active"
+                data-i18n="navRecipes"
+                >Рецепти</a
+              >
+            </li>
+            <li>
+              <a href="product-guide.html" class="header__nav-link" data-i18n="navProductGuide"
+                >Путівник по продуктам</a
+              >
+            </li>
+            <li>
+              <a href="shopping-list.html" class="header__nav-link" data-i18n="navShoppingList">Список покупок</a>
+            </li>
+            <li>
+              <a href="cookbook.html" class="header__nav-link" data-i18n="cookbook"
+                >Книга рецептів</a
+              >
+            </li>
+          </ul>
+        </nav>
+
+        <div class="header__actions">
+          <button
+            class="theme-toggle"
+            type="button"
+            aria-label="Змінити тему"
+            data-i18n-aria="toggleTheme">
+            <svg
+              class="sun-icon"
+              xmlns="http://www.w3.org/2000/svg"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round">
+              <circle cx="12" cy="12" r="5"></circle>
+              <line x1="12" y1="1" x2="12" y2="3"></line>
+              <line x1="12" y1="21" x2="12" y2="23"></line>
+              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+              <line x1="1" y1="12" x2="3" y2="12"></line>
+              <line x1="21" y1="12" x2="23" y2="12"></line>
+              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+            </svg>
+            <svg
+              class="moon-icon"
+              xmlns="http://www.w3.org/2000/svg"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round">
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+            </svg>
+          </button>
+        </div>
+
+        <div class="header__right">
+          <a href="#" id="headerAuthBtn" class="header__profile-name" data-i18n="login"> Увійти </a>
+        </div>
+        <button class="header__burger" aria-label="Меню" aria-expanded="false">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
       </div>
+      <div class="header__nav-overlay"></div>
     </header>
 
     <!-- ── Main content (rendered by JS) ────────────────── -->
-    <div id="recipeRoot"></div>
+    <main class="main">
+      <div id="recipeRoot"></div>
+    </main>
 
-        <footer class="site-footer">
+    <footer class="site-footer">
       <div class="site-footer__inner">
 
         <div class="site-footer__brand">
@@ -526,5 +224,8 @@
     </footer>
 
     <script type="module" src="./js/recipe-page.js"></script>
+    <script type="module" src="./js/theme-toggle.js"></script>
+    <script type="module" src="./js/mobile-nav.js"></script>
+    <script type="module" src="./js/mobile-tab-bar.js"></script>
   </body>
 </html>

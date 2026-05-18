@@ -11,14 +11,6 @@
 
 /* ================= ОСНОВНА СТРУКТУРА ================= */
 
-.container,
-.profile-container {
-  max-width: 1320px;
-  margin: 0 auto;
-  padding: 0 24px;
-  width: 100%;
-  box-sizing: border-box;
-}
 
 .header {
   width: 100%;
@@ -35,17 +27,7 @@
   }
 }
 
-.profile-container {
-  padding-top: 0;
-  padding-bottom: 0;
-}
 
-.page {
-  min-height: 100vh;
-  background-color: var(--color-bg-primary);
-  display: flex;
-  flex-direction: column;
-}
 
 .profile-page {
   width: 100%;
@@ -268,6 +250,10 @@
 
   &:last-child {
     margin-bottom: 0;
+  }
+
+  &--mt {
+    margin-top: var(--space-lg);
   }
 }
 
@@ -835,23 +821,17 @@
 }
 
 .profile-signout-btn {
+  @extend %button-ghost;
+
   margin-top: 16px;
   width: 100%;
   padding: 10px 14px;
   font-size: 13px;
   font-weight: 600;
-  font-family: inherit;
-  color: var(--color-text-secondary);
-  background: transparent;
   border: 1px solid var(--color-border);
-  border-radius: 10px;
-  cursor: pointer;
-  transition:
-    border-color 0.18s ease,
-    color 0.18s ease,
-    background 0.18s ease;
+  border-radius: var(--radius-sm);
 
-  &:hover {
+  &:hover:not(:disabled) {
     border-color: #ef4444;
     color: #ef4444;
     background: rgba(239, 68, 68, 0.06);
@@ -1764,6 +1744,51 @@
   }
 }
 
+/* ── Nickname editor ───────────────────────────────── */
+
+.nickname-editor {
+  padding: 12px 0 4px;
+
+  &__input {
+    width: 100%;
+    padding: 10px 14px;
+    font-size: 15px;
+    font-family: var(--font-body);
+    border: 2px solid var(--color-accent);
+    border-radius: var(--radius-sm);
+    outline: none;
+    color: var(--color-text-primary);
+    background: var(--color-bg-secondary);
+    box-sizing: border-box;
+    transition: border-color var(--duration-fast) var(--ease-out);
+  }
+
+  &__hint {
+    font-size: 12px;
+    min-height: 16px;
+    margin: 4px 0 10px;
+    color: var(--color-text-secondary);
+  }
+
+  &__actions {
+    display: flex;
+    gap: var(--space-xs);
+  }
+
+  &__save {
+    @extend %button-primary;
+    flex: 1;
+    padding: 10px;
+    font-size: 14px;
+  }
+
+  &__cancel {
+    @extend %button-secondary;
+    padding: 10px 16px;
+    font-size: 14px;
+  }
+}
+
 /* Тогл */
 .settings-toggle {
   position: relative;
@@ -1905,7 +1930,7 @@
     display: none;
   }
 
-  .profile-container {
+  .page--profile .container {
     padding-top: 0;
   }
 
@@ -1934,7 +1959,7 @@
 }
 
 @media (max-width: 480px) {
-  .profile-container {
+  .page--profile .container {
     padding-left: 12px;
     padding-right: 12px;
   }

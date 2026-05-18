@@ -716,19 +716,6 @@
   }
 }
 
-.week-modal__loading,
-.week-modal__empty,
-.week-modal__error {
-  text-align: center;
-  padding: 20px;
-  font-size: 13px;
-  color: var(--color-text-secondary);
-}
-
-.week-modal__error {
-  color: #c0392b;
-}
-
 /* ================= РУЧНЕ ВВЕДЕННЯ ================= */
 .week-modal__manual-form {
   display: flex;
@@ -1022,18 +1009,15 @@
 
 /* ================= КНОПКА СТВОРИТИ РЕЦЕПТ ================= */
 .week-modal__create-btn {
+  @extend %button-base;
+
   width: 100%;
   padding: 10px 16px;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   border: 1px dashed var(--color-accent);
   background: var(--color-accent-soft);
   color: var(--color-text-primary);
-  font-family: var(--font-body);
-  font-weight: 600;
   font-size: 13px;
-  cursor: pointer;
-  transition: all 0.25s ease;
-  text-align: center;
   flex-shrink: 0;
 
   &:hover {

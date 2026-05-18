@@ -214,17 +214,6 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-.app-shell {
-  max-width: 1320px;
-  margin: 0 auto;
-  padding: 0 24px;
-}
-@media (max-width: 768px) {
-  .app-shell {
-    padding: 0;
-  }
-}
-
 /* ===============================
    HEADINGS
    =============================== */
@@ -390,7 +379,7 @@ textarea:-webkit-autofill:focus {
   --focus-ring: 0 0 0 3px rgba(111, 207, 186, 0.35);
 }
 
-.btn-danger, .week-nav-btn, .recipe-section__show-all, .day-week-nav__arrow, .new-recipes-drawer__close, #cancel-preview, .shop-action-btn, .cookbook-page__add-btn, .product-card__btn, .week-action-btn, .btn-new-recipes, .day-quick-btn, .api-result-card__content .api-add-btn, .recipe-card__btn, .smart-import__btn, .btn-save-mini, .btn-upload, .btn-add-recipe, .btn-secondary, .button--secondary, .shop-newlist__create-btn, .shop-wishlist__btn, .shop-add-form__btn, .preview-form__footer .btn-save, .btn-confirm, .btn-primary, .button--primary {
+.week-modal__create-btn, .btn-danger, .water-btn, .week-nav-btn, .profile-signout-btn, .recipe-section__show-all, .day-week-nav__arrow, .new-recipes-drawer__close, #cancel-preview, .shop-action-btn, .cookbook-page__add-btn, .product-card__btn, .week-action-btn, .btn-new-recipes, .day-quick-btn, .api-result-card__content .api-add-btn, .recipe-card__btn, .smart-import__btn, .btn-save-mini, .btn-upload, .btn-add-recipe, .btn-secondary, .button--secondary, .shop-newlist__create-btn, .shop-wishlist__btn, .shop-add-form__btn, .preview-form__footer .btn-save, .btn-confirm, .btn-primary, .button--primary {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -409,11 +398,11 @@ textarea:-webkit-autofill:focus {
   text-decoration: none;
   transition: background-color var(--duration-base) var(--ease-out), border-color var(--duration-base) var(--ease-out), transform var(--duration-fast) var(--ease-out), box-shadow var(--duration-base) var(--ease-out);
 }
-.btn-danger:focus-visible, .week-nav-btn:focus-visible, .recipe-section__show-all:focus-visible, .day-week-nav__arrow:focus-visible, .new-recipes-drawer__close:focus-visible, #cancel-preview:focus-visible, .shop-action-btn:focus-visible, .cookbook-page__add-btn:focus-visible, .product-card__btn:focus-visible, .week-action-btn:focus-visible, .btn-new-recipes:focus-visible, .day-quick-btn:focus-visible, .api-result-card__content .api-add-btn:focus-visible, .recipe-card__btn:focus-visible, .smart-import__btn:focus-visible, .btn-save-mini:focus-visible, .btn-upload:focus-visible, .btn-add-recipe:focus-visible, .btn-secondary:focus-visible, .button--secondary:focus-visible, .shop-newlist__create-btn:focus-visible, .shop-wishlist__btn:focus-visible, .shop-add-form__btn:focus-visible, .preview-form__footer .btn-save:focus-visible, .btn-confirm:focus-visible, .btn-primary:focus-visible, .button--primary:focus-visible {
+.week-modal__create-btn:focus-visible, .btn-danger:focus-visible, .water-btn:focus-visible, .week-nav-btn:focus-visible, .profile-signout-btn:focus-visible, .recipe-section__show-all:focus-visible, .day-week-nav__arrow:focus-visible, .new-recipes-drawer__close:focus-visible, #cancel-preview:focus-visible, .shop-action-btn:focus-visible, .cookbook-page__add-btn:focus-visible, .product-card__btn:focus-visible, .week-action-btn:focus-visible, .btn-new-recipes:focus-visible, .day-quick-btn:focus-visible, .api-result-card__content .api-add-btn:focus-visible, .recipe-card__btn:focus-visible, .smart-import__btn:focus-visible, .btn-save-mini:focus-visible, .btn-upload:focus-visible, .btn-add-recipe:focus-visible, .btn-secondary:focus-visible, .button--secondary:focus-visible, .shop-newlist__create-btn:focus-visible, .shop-wishlist__btn:focus-visible, .shop-add-form__btn:focus-visible, .preview-form__footer .btn-save:focus-visible, .btn-confirm:focus-visible, .btn-primary:focus-visible, .button--primary:focus-visible {
   outline: none;
   box-shadow: var(--focus-ring);
 }
-.btn-danger:disabled, .week-nav-btn:disabled, .recipe-section__show-all:disabled, .day-week-nav__arrow:disabled, .new-recipes-drawer__close:disabled, #cancel-preview:disabled, .shop-action-btn:disabled, .cookbook-page__add-btn:disabled, .product-card__btn:disabled, .week-action-btn:disabled, .btn-new-recipes:disabled, .day-quick-btn:disabled, .api-result-card__content .api-add-btn:disabled, .recipe-card__btn:disabled, .smart-import__btn:disabled, .btn-save-mini:disabled, .btn-upload:disabled, .btn-add-recipe:disabled, .btn-secondary:disabled, .button--secondary:disabled, .shop-newlist__create-btn:disabled, .shop-wishlist__btn:disabled, .shop-add-form__btn:disabled, .preview-form__footer .btn-save:disabled, .btn-confirm:disabled, .btn-primary:disabled, .button--primary:disabled {
+.week-modal__create-btn:disabled, .btn-danger:disabled, .water-btn:disabled, .week-nav-btn:disabled, .profile-signout-btn:disabled, .recipe-section__show-all:disabled, .day-week-nav__arrow:disabled, .new-recipes-drawer__close:disabled, #cancel-preview:disabled, .shop-action-btn:disabled, .cookbook-page__add-btn:disabled, .product-card__btn:disabled, .week-action-btn:disabled, .btn-new-recipes:disabled, .day-quick-btn:disabled, .api-result-card__content .api-add-btn:disabled, .recipe-card__btn:disabled, .smart-import__btn:disabled, .btn-save-mini:disabled, .btn-upload:disabled, .btn-add-recipe:disabled, .btn-secondary:disabled, .button--secondary:disabled, .shop-newlist__create-btn:disabled, .shop-wishlist__btn:disabled, .shop-add-form__btn:disabled, .preview-form__footer .btn-save:disabled, .btn-confirm:disabled, .btn-primary:disabled, .button--primary:disabled {
   opacity: 0.5;
   cursor: not-allowed;
   pointer-events: none;
@@ -448,13 +437,13 @@ textarea:-webkit-autofill:focus {
   transform: translateY(1px);
 }
 
-.week-nav-btn, .recipe-section__show-all, .day-week-nav__arrow, .new-recipes-drawer__close, #cancel-preview {
+.week-nav-btn, .profile-signout-btn, .recipe-section__show-all, .day-week-nav__arrow, .new-recipes-drawer__close, #cancel-preview {
   background: transparent;
   color: var(--color-text-secondary);
   min-height: 36px;
   padding: var(--space-xs) var(--space-md);
 }
-.week-nav-btn:hover:not(:disabled), .recipe-section__show-all:hover:not(:disabled), .day-week-nav__arrow:hover:not(:disabled), .new-recipes-drawer__close:hover:not(:disabled), #cancel-preview:hover:not(:disabled) {
+.week-nav-btn:hover:not(:disabled), .profile-signout-btn:hover:not(:disabled), .recipe-section__show-all:hover:not(:disabled), .day-week-nav__arrow:hover:not(:disabled), .new-recipes-drawer__close:hover:not(:disabled), #cancel-preview:hover:not(:disabled) {
   background: var(--color-bg-hover);
   color: var(--color-text-primary);
 }
@@ -531,9 +520,7 @@ textarea:-webkit-autofill:focus {
   flex-direction: column;
 }
 
-.app-bg,
-.page > main,
-#recipeRoot {
+.main {
   flex: 1;
 }
 
@@ -637,7 +624,7 @@ textarea:-webkit-autofill:focus {
    STRUCTURE FOR EACH COLUMN
    ============================================================= */
 .sidebar,
-.main,
+.meals-column,
 .right-sidebar,
 .water-sidebar {
   display: flex;
@@ -651,9 +638,9 @@ textarea:-webkit-autofill:focus {
 }
 
 /* =============================================================
-   MAIN CONTENT COLUMN
+   MEALS COLUMN (center grid column on day-menu)
    ============================================================= */
-.main {
+.meals-column {
   width: 100%;
 }
 
@@ -1729,18 +1716,10 @@ textarea:-webkit-autofill:focus {
 .water-btn {
   width: 100%;
   height: 44px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-xs);
   background: var(--color-surface);
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
   color: var(--color-text-primary);
   font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background-color var(--duration-base) var(--ease-out), border-color var(--duration-base) var(--ease-out), transform var(--duration-fast) var(--ease-out);
 }
 .water-btn svg {
   width: 14px;
@@ -5182,7 +5161,7 @@ textarea:-webkit-autofill:focus {
   .page--day-menu .layout:has(.meal.is-open) {
     flex: 1 1 auto;
   }
-  .page--day-menu .main {
+  .page--day-menu .meals-column {
     height: auto;
   }
   .page--day-menu .water-sidebar {
@@ -6637,15 +6616,6 @@ textarea:-webkit-autofill:focus {
 }
 
 /* ================= ОСНОВНА СТРУКТУРА ================= */
-.container,
-.profile-container {
-  max-width: 1320px;
-  margin: 0 auto;
-  padding: 0 24px;
-  width: 100%;
-  box-sizing: border-box;
-}
-
 .header {
   width: 100%;
   background-color: var(--color-bg-secondary);
@@ -6658,11 +6628,6 @@ textarea:-webkit-autofill:focus {
   align-items: center;
   justify-content: space-between;
   height: 70px;
-}
-
-.profile-container {
-  padding-top: 0;
-  padding-bottom: 0;
 }
 
 .page {
@@ -7382,15 +7347,10 @@ textarea:-webkit-autofill:focus {
   padding: 10px 14px;
   font-size: 13px;
   font-weight: 600;
-  font-family: inherit;
-  color: var(--color-text-secondary);
-  background: transparent;
   border: 1px solid var(--color-border);
-  border-radius: 10px;
-  cursor: pointer;
-  transition: border-color 0.18s ease, color 0.18s ease, background 0.18s ease;
+  border-radius: var(--radius-sm);
 }
-.profile-signout-btn:hover {
+.profile-signout-btn:hover:not(:disabled) {
   border-color: #ef4444;
   color: #ef4444;
   background: rgba(239, 68, 68, 0.06);
@@ -8355,7 +8315,7 @@ input:checked + .settings-toggle__track::after {
   .profile-signout-btn {
     display: none;
   }
-  .profile-container {
+  .page--profile .container {
     padding-top: 0;
   }
   .profile-main {
@@ -8378,7 +8338,7 @@ input:checked + .settings-toggle__track::after {
   }
 }
 @media (max-width: 480px) {
-  .profile-container {
+  .page--profile .container {
     padding-left: 12px;
     padding-right: 12px;
   }
@@ -9327,16 +9287,11 @@ input:checked + .settings-toggle__track::after {
 .week-modal__create-btn {
   width: 100%;
   padding: 10px 16px;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   border: 1px dashed var(--color-accent);
   background: var(--color-accent-soft);
   color: var(--color-text-primary);
-  font-family: var(--font-body);
-  font-weight: 600;
   font-size: 13px;
-  cursor: pointer;
-  transition: all 0.25s ease;
-  text-align: center;
   flex-shrink: 0;
 }
 .week-modal__create-btn:hover {
@@ -10138,7 +10093,7 @@ input:checked + .settings-toggle__track::after {
 }
 .product-search:focus-within {
   border-color: var(--color-accent);
-  box-shadow: 0 0 0 3px rgba(74, 181, 132, 0.15);
+  box-shadow: var(--focus-ring);
 }
 
 .product-search__input {
@@ -10255,7 +10210,7 @@ input:checked + .settings-toggle__track::after {
 
 .subfilter-item {
   padding: 10px 20px;
-  border-radius: 8px;
+  border-radius: var(--radius-xs);
   border: 1px solid var(--color-border);
   background: var(--color-surface);
   color: var(--color-text-primary);
@@ -11908,7 +11863,7 @@ input:checked + .settings-toggle__track::after {
   width: 100%;
   padding: 9px 12px;
   border: 1px solid var(--color-border);
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   background: var(--color-bg-secondary);
   color: var(--color-text-primary);
   font-family: var(--font-body);
@@ -11921,7 +11876,7 @@ input:checked + .settings-toggle__track::after {
 .shop-add-form__input:focus, .shop-add-form__qty:focus, .shop-add-form__unit:focus {
   outline: none;
   border-color: var(--color-accent);
-  box-shadow: 0 0 0 3px rgba(74, 181, 132, 0.15);
+  box-shadow: var(--focus-ring);
 }
 .shop-add-form__input:-webkit-autofill, .shop-add-form__input:-webkit-autofill:focus, .shop-add-form__qty:-webkit-autofill, .shop-add-form__qty:-webkit-autofill:focus, .shop-add-form__unit:-webkit-autofill, .shop-add-form__unit:-webkit-autofill:focus {
   -webkit-box-shadow: 0 0 0 1000px var(--color-bg-secondary) inset;

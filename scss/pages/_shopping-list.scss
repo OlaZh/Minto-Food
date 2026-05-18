@@ -4,7 +4,6 @@
 
 .shop-page {
   padding: 0 0 60px;
-  min-height: 100vh;
 
   @media (max-width: 768px) {
     padding: 0 0 100px;
@@ -143,7 +142,7 @@
     width: 100%;
     padding: 9px 12px;
     border: 1px solid var(--color-border);
-    border-radius: 8px;
+    border-radius: var(--radius-sm);
     background: var(--color-bg-secondary);
     color: var(--color-text-primary);
     font-family: var(--font-body);
@@ -157,7 +156,7 @@
     &:focus {
       outline: none;
       border-color: var(--color-accent);
-      box-shadow: 0 0 0 3px rgba(74, 181, 132, 0.15);
+      box-shadow: var(--focus-ring);
     }
 
     &:-webkit-autofill,
@@ -1308,7 +1307,6 @@
 
 .shared-list-page {
   padding: 40px 0 60px;
-  min-height: 100vh;
 
   @media (max-width: 768px) {
     padding: 24px 0 60px;

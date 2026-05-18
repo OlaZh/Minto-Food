@@ -36,13 +36,13 @@
               >
             </li>
             <li>
-              <a href="./recipes.html" class="header__nav-link" data-i18n="navRecipes">Рецепти</a>
+              <a href="recipes.html" class="header__nav-link" data-i18n="navRecipes">Рецепти</a>
             </li>
             <li>
               <a
                 href="product-guide.html"
                 class="header__nav-link header__nav-link--active"
-                data-i18n="navShoppingList"
+                data-i18n="navProductGuide"
                 >Путівник по продуктам</a
               >
             </li>
@@ -112,9 +112,7 @@
       </div>
       <div class="header__nav-overlay"></div>
     </header>
-    <div class="app-bg">
-      <div class="app-shell">
-        <main class="main">
+    <main class="main">
           <div class="container">
           <section class="product-guide">
             <!-- Заголовок -->
@@ -361,8 +359,6 @@
           </section>
           </div>
         </main>
-      </div>
-    </div>
 
     <div class="modal" data-modal="product" hidden>
       <div class="modal__overlay" data-modal-close></div>
@@ -372,7 +368,9 @@
         <!-- HEADER -->
         <div class="modal__header">
           <h2 class="modal__title" data-i18n="productName"></h2>
-          <button class="modal__close" data-modal-close>&times;</button>
+          <button class="modal__close" data-modal-close aria-label="Закрити">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
         </div>
 
         <!-- BODY -->

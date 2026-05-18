@@ -5,6 +5,7 @@ import { getLang } from './storage.js';
 import { i18n } from './i18n.js';
 import { getRecipeDisplayName } from './recipe-utils.js';
 import { lockScroll, unlockScroll } from './scroll-lock.js';
+import { showLoading, showConfirmModal } from './ui-components.js';
 import { initRecipeModal, openRecipeModal } from './recipe-modal.js';
 import {
   initBookSelector,
@@ -33,9 +34,6 @@ const previewForm = document.getElementById('recipe-preview-form');
 const previewFormElement = document.querySelector('.preview-form');
 const cancelPreview = document.getElementById('cancel-preview');
 
-const confirmModal = document.getElementById('confirm-modal');
-const confirmYesBtn = document.getElementById('confirm-yes');
-const confirmNoBtn = document.getElementById('confirm-no');
 
 const viewModal = document.getElementById('view-recipe-modal');
 const closeViewModalBtn = document.getElementById('close-view-modal');
@@ -46,7 +44,6 @@ const saveNotesBtn = document.getElementById('save-notes-btn');
 // 2. ДАНІ ТА СТАН
 // =============================================================
 
-let recipeIdToDelete = null;
 let currentViewingId = null;
 let editingRecipeId = null;
 let _editingRecipeOriginal = null;
@@ -862,20 +859,12 @@ function editRecipe(recipe) {
 // =============================================================
 
 function openDeleteConfirm(recipeId) {
-  recipeIdToDelete = recipeId;
-  if (confirmModal) confirmModal.classList.add('is-active');
-}
-
-const closeConfirmModal = () => {
-  if (confirmModal) confirmModal.classList.remove('is-active');
-  recipeIdToDelete = null;
-};
-
-if (confirmYesBtn) {
-  confirmYesBtn.addEventListener('click', async () => {
-    if (recipeIdToDelete !== null) {
-      const { error } = await supabase.from('recipes').delete().eq('id', recipeIdToDelete);
-
+  showConfirmModal({
+    title: 'Видалити рецепт?',
+    message: 'Цю дію неможливо буде скасувати.',
+    confirmText: 'Так, видалити',
+    onConfirm: async () => {
+      const { error } = await supabase.from('recipes').delete().eq('id', recipeId);
       if (error) {
         console.error('Помилка видалення:', error);
         showToast('Помилка видалення', 'error');
@@ -887,13 +876,8 @@ if (confirmYesBtn) {
         }
         loadAndDisplayRecipes();
       }
-    }
-    closeConfirmModal();
+    },
   });
-}
-
-if (confirmNoBtn) {
-  confirmNoBtn.addEventListener('click', closeConfirmModal);
 }
 
 // =============================================================
@@ -1371,7 +1355,7 @@ async function loadNewRecipes() {
   const body = document.getElementById('new-recipes-body');
   if (!body) return;
 
-  body.innerHTML = '<p class="new-recipes-drawer__loading">Завантаження...</p>';
+  showLoading(body);
 
   const since24h = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
 
@@ -1557,7 +1541,6 @@ if (document.getElementById('btn-api-search')) {
 
 window.addEventListener('click', (e) => {
   if (e.target === modal) closeModal();
-  if (e.target === confirmModal) closeConfirmModal();
   if (e.target === viewModal) closeViewModal();
 });
 

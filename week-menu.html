@@ -38,7 +38,7 @@
               >
             </li>
             <li>
-              <a href="./recipes.html" class="header__nav-link" data-i18n="navRecipes">Рецепти</a>
+              <a href="recipes.html" class="header__nav-link" data-i18n="navRecipes">Рецепти</a>
             </li>
             <li>
               <a href="product-guide.html" class="header__nav-link" data-i18n="navProductGuide"
@@ -100,7 +100,7 @@
         </div>
 
         <div class="header__right">
-          <a href="#" id="headerAuthBtn" class="header__profile-name">Увійти</a>
+          <a href="#" id="headerAuthBtn" class="header__profile-name" data-i18n="login"> Увійти </a>
         </div>
         <button class="header__burger" aria-label="Меню" aria-expanded="false">
           <span></span>
@@ -111,10 +111,8 @@
       <div class="header__nav-overlay"></div>
     </header>
 
-    <div class="app-bg">
-      <div class="app-shell">
-        <div class="container">
-        <main class="main">
+    <main class="main">
+      <div class="container">
           <!-- ===== PAGE TITLE ===== -->
           <div class="page-header">
             <h1 class="page-header__title" data-i18n="navWeekMenu">Меню на тиждень</h1>
@@ -373,16 +371,16 @@
 
           <!-- MOBILE VIEW — рендериться через JS -->
           <div id="weekMobileView" class="week-mobile-view"></div>
-        </main>
-        </div>
       </div>
-    </div>
+    </main>
 
     <!-- МОДАЛЬНЕ ВІКНО ДОДАВАННЯ СТРАВИ -->
     <div id="weekAddModal" class="modal" hidden>
       <div class="modal__overlay"></div>
       <div class="modal__window">
-        <button class="modal__close">&times;</button>
+        <button class="modal__close" aria-label="Закрити">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
         <h2 class="modal__title" data-i18n="addMealTitle">Додати страву</h2>
 
         <!-- ЄДИНИЙ ПОШУК -->
@@ -400,32 +398,6 @@
 
         <!-- РЕЗУЛЬТАТИ — скролляться нижче -->
         <div id="weekUnifiedResults" class="week-modal__results"></div>
-      </div>
-    </div>
-
-    <!-- МОДАЛЬНЕ ВІКНО ПІДТВЕРДЖЕННЯ ОЧИЩЕННЯ ТИЖНЯ -->
-    <div id="week-clear-modal" class="modal-overlay">
-      <div class="modal-card confirm-box">
-        <h3 class="confirm-title">Очистити весь тиждень?</h3>
-        <p class="confirm-message">Усі страви цього тижня будуть видалені. Цю дію неможливо скасувати.</p>
-        <div class="confirm-btns">
-          <button id="week-clear-yes" class="btn-confirm btn-danger">Так, очистити</button>
-          <button id="week-clear-no" class="btn-secondary">Скасувати</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- МОДАЛЬНЕ ВІКНО ПІДТВЕРДЖЕННЯ ВИДАЛЕННЯ -->
-    <div id="week-confirm-modal" class="modal-overlay">
-      <div class="modal-card confirm-box">
-        <h3 class="confirm-title" data-i18n="deleteMealTitle">Видалити страву?</h3>
-        <p class="confirm-message" data-i18n="deleteMealWarning">Цю дію неможливо скасувати.</p>
-        <div class="confirm-btns">
-          <button id="week-confirm-yes" class="btn-confirm btn-danger" data-i18n="confirmDelete">
-            Так, видалити
-          </button>
-          <button id="week-confirm-no" class="btn-secondary" data-i18n="cancel">Скасувати</button>
-        </div>
       </div>
     </div>
 

@@ -3,6 +3,7 @@ import { i18n } from './i18n.js';
 import { initRecipeModal, openRecipeModal } from './recipe-modal.js';
 import { initAuth, requireAuth } from './auth.js';
 import { showToast, getLocalDateString } from './utils.js';
+import { showLoading, showEmpty, showConfirmModal } from './ui-components.js';
 import { getLang, setLang, saveWeekShoppingList, setItem, getItem } from './storage.js';
 import { getRecipeDisplayName } from './recipe-utils.js';
 
@@ -239,11 +240,23 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Підтвердження очищення цілого прийому їжі
   function openClearCellConfirm(day, mealType) {
-    deleteTarget = { day, mealType, clearAll: true };
-    if (confirmModal) {
-      confirmModal.classList.add('is-active');
-      confirmModal.hidden = false;
-    }
+    showConfirmModal({
+      title: 'Очистити прийом їжі?',
+      confirmText: 'Так, очистити',
+      onConfirm: async () => {
+        const items = weekMealsState[day][mealType] || [];
+        const ids = items.map((item) => item.id);
+        if (ids.length > 0) {
+          const { error } = await supabase.from('week_meals').delete().in('id', ids);
+          if (!error) {
+            weekMealsState[day][mealType] = [];
+            renderCell(day, mealType);
+            renderDaySummary(day);
+            renderMobileView();
+          }
+        }
+      },
+    });
   }
 
   function renderDaySummary(day) {
@@ -414,42 +427,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // ================== ВИДАЛЕННЯ ==================
 
-  const confirmModal = document.getElementById('week-confirm-modal');
-  const confirmYes = document.getElementById('week-confirm-yes');
-  const confirmNo = document.getElementById('week-confirm-no');
-
-  let deleteTarget = null;
-
   function openDeleteConfirm(id, day, mealType) {
-    deleteTarget = { id, day, mealType };
-    if (confirmModal) {
-      confirmModal.classList.add('is-active');
-      confirmModal.hidden = false;
-    }
-  }
-
-  if (confirmYes) {
-    confirmYes.addEventListener('click', async () => {
-      if (!deleteTarget) return;
-
-      const { id, day, mealType, clearAll } = deleteTarget;
-
-      if (clearAll) {
-        // Видаляємо всі страви з клітинки
-        const items = weekMealsState[day][mealType] || [];
-        const ids = items.map((item) => item.id);
-
-        if (ids.length > 0) {
-          const { error } = await supabase.from('week_meals').delete().in('id', ids);
-          if (!error) {
-            weekMealsState[day][mealType] = [];
-            renderCell(day, mealType);
-            renderDaySummary(day);
-            renderMobileView();
-          }
-        }
-      } else {
-        // Видаляємо одну страву
+    showConfirmModal({
+      title: 'Видалити страву?',
+      confirmText: 'Так, видалити',
+      onConfirm: async () => {
         const { error } = await supabase.from('week_meals').delete().eq('id', id);
         if (!error) {
           weekMealsState[day][mealType] = weekMealsState[day][mealType].filter(
@@ -459,23 +441,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           renderDaySummary(day);
           renderMobileView();
         }
-      }
-
-      deleteTarget = null;
-      if (confirmModal) {
-        confirmModal.classList.remove('is-active');
-        confirmModal.hidden = true;
-      }
-    });
-  }
-
-  if (confirmNo) {
-    confirmNo.addEventListener('click', () => {
-      deleteTarget = null;
-      if (confirmModal) {
-        confirmModal.classList.remove('is-active');
-        confirmModal.hidden = true;
-      }
+      },
     });
   }
 
@@ -554,7 +520,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const resultsEl = addModal?.querySelector('#weekUnifiedResults');
     if (!resultsEl) return;
 
-    resultsEl.innerHTML = '<p class="week-modal__loading">Завантаження...</p>';
+    showLoading(resultsEl);
 
     const {
       data: { user },
@@ -577,7 +543,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     ]);
 
     if (sharedResponse.error || savedLinksResponse.error) {
-      resultsEl.innerHTML = '<p class="week-modal__error">Помилка завантаження</p>';
+      showEmpty(resultsEl, '⚠️', 'Помилка завантаження');
       return;
     }
 
@@ -594,7 +560,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       const { data: savedData, error: savedError } = await savedQuery;
       if (savedError) {
-        resultsEl.innerHTML = '<p class="week-modal__error">Помилка завантаження</p>';
+        showEmpty(resultsEl, '⚠️', 'Помилка завантаження');
         return;
       }
 
@@ -853,59 +819,39 @@ document.addEventListener('DOMContentLoaded', async () => {
   // ================== ОЧИЩЕННЯ ТИЖНЯ ==================
 
   const clearWeekBtn = document.getElementById('clearWeekBtn');
-  const clearWeekModal = document.getElementById('week-clear-modal');
-  const clearWeekYes = document.getElementById('week-clear-yes');
-  const clearWeekNo = document.getElementById('week-clear-no');
-
-  function openClearWeekModal() {
-    if (clearWeekModal) {
-      clearWeekModal.classList.add('is-active');
-      clearWeekModal.hidden = false;
-    }
-  }
-
-  function closeClearWeekModal() {
-    if (clearWeekModal) {
-      clearWeekModal.classList.remove('is-active');
-      clearWeekModal.hidden = true;
-    }
-  }
 
   if (clearWeekBtn) {
-    clearWeekBtn.addEventListener('click', openClearWeekModal);
-  }
+    clearWeekBtn.addEventListener('click', () => {
+      showConfirmModal({
+        title: 'Очистити весь тиждень?',
+        message: 'Усі страви цього тижня будуть видалені. Цю дію неможливо скасувати.',
+        confirmText: 'Так, очистити',
+        onConfirm: async () => {
+          const weekStartStr = getLocalDateString(currentWeekStart);
+          const {
+            data: { user },
+          } = await supabase.auth.getUser();
 
-  if (clearWeekYes) {
-    clearWeekYes.addEventListener('click', async () => {
-      const weekStartStr = getLocalDateString(currentWeekStart);
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+          let query = supabase.from('week_meals').delete().eq('week_start', weekStartStr);
+          if (user) {
+            query = query.eq('user_id', user.id);
+          } else {
+            query = query.is('user_id', null);
+          }
 
-      let query = supabase.from('week_meals').delete().eq('week_start', weekStartStr);
-      if (user) {
-        query = query.eq('user_id', user.id);
-      } else {
-        query = query.is('user_id', null);
-      }
-
-      const { error } = await query;
-      if (!error) {
-        DAYS.forEach((day) => {
-          MEAL_TYPES.forEach((meal) => {
-            weekMealsState[day][meal] = [];
-          });
-        });
-        renderAllCells();
-        showToast('Тиждень очищено ✓');
-      }
-
-      closeClearWeekModal();
+          const { error } = await query;
+          if (!error) {
+            DAYS.forEach((day) => {
+              MEAL_TYPES.forEach((meal) => {
+                weekMealsState[day][meal] = [];
+              });
+            });
+            renderAllCells();
+            showToast('Тиждень очищено ✓');
+          }
+        },
+      });
     });
-  }
-
-  if (clearWeekNo) {
-    clearWeekNo.addEventListener('click', closeClearWeekModal);
   }
 
   // ================== МОБІЛЬНИЙ ВИГЛЯД ==================
