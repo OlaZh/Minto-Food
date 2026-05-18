@@ -570,9 +570,9 @@ footer
 
 ### 📞 Customer interviews
 
-- [ ] Сформулювати target persona: жінки 25-45, ЄС + Україна, цікавляться харчуванням, користувались MyFitnessPal/Yazio/Lifesum
+- [x] Сформулювати target persona: жінки 25-45, ЄС + Україна, цікавляться харчуванням, користувались MyFitnessPal/Yazio/Lifesum
 - [ ] Знайти 15 респондентів: соцмережі, ком'юніті, знайомі, Reddit r/MealPrep / r/loseit, українські Telegram-групи
-- [ ] Підготувати скрипт інтерв'ю (30-45 хв):
+- [x] Підготувати скрипт інтерв'ю (30-45 хв):
   - [ ] Що зараз використовуєш для трекінгу харчування? Чому саме це?
   - [ ] Що в цьому додатку бісить? Що б змінила?
   - [ ] Чи платиш за щось у цій сфері? Скільки? За що саме?
@@ -588,7 +588,7 @@ footer
 - [ ] **Top 3 фічі**, за які люди готові платити → це і є основа Premium (а НЕ "10 рецептів max")
 - [ ] Скласти **value proposition** одним реченням: "MintoFood — це [що] для [кого], тому що [unique value]"
 - [ ] Зафіксувати: ціна (стрес-тест на $3 / $5 / $7 / $10) — за що готові, за що ні
-- [ ] Документувати все у `docs/customer-research.md` — оновлювати кожні 3 міс
+- [x] Документувати все у `docs/customer-research.md` — оновлювати кожні 3 міс
 
 ### 💡 Outcome
 
@@ -606,42 +606,31 @@ footer
 
 ### 🧽 Чистка
 
-- [ ] Розібратись з `profiles` vs `user_profiles` (мерджити?)
-- [ ] Видалити `old_products` (якщо мертва таблиця)
-- [ ] Видалити `recipetest` (якщо тестова)
-- [ ] Розібратись з дублем `cookbook_notes` / `cookbook_n...`
-- [ ] Аудит всіх RLS-політик (кожна таблиця має політики, anon-ключ нічого зайвого не бачить)
+- [x] `profiles` vs `user_profiles` — різні ролі, обидві активні (profiles = auth/admin, user_profiles = health data)
+- [x] Видалити `old_products` — замінена новою таблицею products
+- [x] Видалити `recipetest`, `cookbook_notes`, `cookbook_notebooks`, `shopping_list`, `meals_backup_before_streaks`, `product_similar`
+- [x] Аудит RLS — всі public таблиці захищені ✅
 
 ### 🧬 Migration safety (НОВЕ — критичне для solo founder)
 
-- [ ] **Naming convention:** `YYYYMMDD_HHMM_description.sql` (наприклад: `20260601_1430_add_subscription_columns.sql`)
-- [ ] Тримати всі міграції у `supabase/migrations/` + у git
-- [ ] **Migration policy документ** (`docs/migrations.md`):
-  - [ ] Завжди backup перед destructive change
-  - [ ] Destructive = `DROP COLUMN`, `DROP TABLE`, `ALTER TYPE`, `TRUNCATE`
-  - [ ] Спочатку додаємо колонку nullable → бекфіл → потім NOT NULL
-  - [ ] Перевіряти на staging перед prod
-- [ ] **Rollback стратегія:** для кожної міграції — окремий `_rollback.sql`
+- [x] **Naming convention:** `YYYYMMDD_HHMM_description.sql` — зафіксовано у `supabase/migrations/README.md`
+- [x] Тримати всі міграції у `supabase/migrations/` + у git
+- [x] **Migration policy документ** `docs/migrations.md` — checklist, типи операцій, алгоритм NOT NULL
+- [x] **Rollback стратегія:** для кожної міграції — окремий `_rollback.sql`
 - [ ] **Staging DB sync:** скрипт, що клонує prod schema на staging (без даних або з анонімізованими)
 
 ### 🚩 Feature flags (НОВЕ — критичне!)
 
-- [ ] Таблиця `feature_flags` (key, enabled, rollout_pct, target_users[], description)
-- [ ] Helper `js/featureFlag.js`: `isEnabled('new_recipe_form', userId)` → boolean
-- [ ] Кешування на сесію (не запит на кожну дію)
+- [x] Таблиця `feature_flags` — `supabase/migrations/20260518_1000_feature_flags.sql`
+- [x] Helper `js/feature-flag.js`: `isEnabled(key, userId)` → boolean, кеш 5 хв, детермінований rollout
+- [x] Кешування 5 хвилин (sessionLevel, не запит на кожну дію)
 - [ ] Адмінка: секція `app/(admin)/feature-flags/` для toggle без deploy
-- [ ] Перші флаги: `social_features_enabled`, `ai_scan_enabled`, `paywall_enabled`, `new_onboarding`
+- [x] Перші флаги: `social_features_enabled`, `ai_scan_enabled`, `paywall_enabled`, `new_onboarding`, `referral_enabled`
 
 ### 📋 Release checklist
 
-- [ ] Створити `docs/release-checklist.md`:
-  - [ ] Тест на staging
-  - [ ] Backup БД
-  - [ ] Sentry alerts перевірити (немає чи pending)
-  - [ ] Перевірити рівень помилок останні 24 год
-  - [ ] Deploy → smoke test (login, додати meal, відкрити рецепт)
-  - [ ] Моніторити Sentry +2 год
-- [ ] Прикріпити це в pre-commit hook або як PR template
+- [x] `docs/release-checklist.md` — pre-deploy, deploy, smoke test, rollback
+- [ ] Прикріпити як PR template (`.github/pull_request_template.md`)
 
 ---
 
@@ -651,33 +640,31 @@ footer
 
 ### 📄 Документи
 
-- [ ] Privacy Policy у 3 мовах (ua/en/pl) — описує які дані збираєш, навіщо, як зберігаєш, з ким ділишся (Supabase, Vercel, провайдер платежів, аналітика)
-- [ ] Terms of Service у 3 мовах — правила користування, обмеження відповідальності, refund policy, припинення акаунту
-- [ ] Cookie Policy у 3 мовах
+- [x] Privacy Policy — `privacy.html` (шаблон ua, потребує юриста + 3 мови)
+- [x] Terms of Service — `terms.html` (шаблон ua, потребує юриста + 3 мови)
+- [x] Cookie Policy — `cookies.html` (шаблон ua, потребує юриста + 3 мови)
 - [ ] Disclaimer "Не є медичною порадою" — на сторінках профілю, контролю ваги, активності, статистики
-- [ ] Imprint / Impressum — обов'язково в ЄС (адреса, NIP, контакт)
+- [x] Imprint / Impressum — `imprint.html` (шаблон, заповнити реальними даними)
 - [ ] DMCA / copyright complaint procedure — обов'язково для UGC платформи
 
 ### 🍪 Cookie consent banner
 
-- [ ] Self-built АБО готове рішення (Cookiebot, Termly, Iubenda)
-- [ ] Категорії cookies: Strictly Necessary / Analytics / Marketing
-- [ ] Granular toggles
-- [ ] Reject All на тому ж рівні видимості що Accept All (compliance)
-- [ ] Збереження вибору на 6-12 місяців
-- [ ] Re-prompt при додаванні нових cookies
+- [x] Self-built — `js/cookie-consent.js` + `scss/components/_cookie-consent.scss`
+- [x] Категорії cookies: Necessary / Analytics / Marketing
+- [x] Granular toggles (панель "Налаштувати")
+- [x] Reject All на тому ж рівні видимості що Accept All (compliance)
+- [x] Збереження вибору на 6 місяців (localStorage)
+- [ ] Re-prompt при додаванні нових cookies (оновлювати вручну при зміні)
 
 ### 🔐 GDPR — права юзера
 
-- [ ] **Data Export** — кнопка "Завантажити мої дані" → Vercel function → JSON-файл
-- [ ] **Right to be Forgotten:**
-  - [ ] Видалення всіх даних з усіх таблиць
-  - [ ] Soft-delete з 30-денним grace period
-  - [ ] Hard-delete після grace period
-  - [ ] Анонімізація даних, які треба зберігати юридично (платежі)
-- [ ] **Data Rectification** — юзер може правити свої дані (вже працює через профіль)
-- [ ] **Data Portability** — JSON export ✅
-- [ ] Логування всіх GDPR-запитів у `gdpr_requests` (compliance trail)
+- [x] **Data Export** — `api/gdpr-export.js` → JSON (`SUPABASE_SERVICE_ROLE_KEY` додано у Vercel ✅)
+- [x] **Right to be Forgotten:** soft-delete + 30-денний grace period через `soft_delete_user()`
+  - [ ] Hard-delete CRON job після grace period
+  - [ ] Анонімізація платіжних записів
+- [x] **Data Rectification** — через профіль (вже працює)
+- [x] **Data Portability** — JSON export через `/api/gdpr-export`
+- [x] Логування GDPR-запитів у таблицю `gdpr_requests` — `20260518_1300_gdpr.sql`
 
 ### 📑 DPA з усіма sub-processors
 
@@ -687,7 +674,7 @@ footer
 - [ ] Resend
 - [ ] PostHog (EU hosting!)
 - [ ] Sentry
-- [ ] Список усіх sub-processors на публічній сторінці `/privacy/processors`
+- [x] Список sub-processors — у `privacy.html#processors`
 
 ### 🧒 Edge cases
 
@@ -698,7 +685,7 @@ footer
 ### ✅ QA
 
 - [ ] Тест GDPR data export — отримуєш всі свої дані
-- [ ] Тест GDPR delete — акаунт видаляється повністю
+- [ ] Тест GDPR delete — акаунт видаляється
 - [ ] Тест cookie banner — refuse all → не вантажиться analytics
 - [ ] Тест: signup без accept Terms → блокується
 - [ ] **Юридичний review з юристом** (€200-500 одноразово) — НЕ пропускати

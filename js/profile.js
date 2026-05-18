@@ -1018,11 +1018,7 @@ function setupActivitySelect() {
       select.classList.remove('open');
       const otherInput = document.getElementById('otherActivityInput');
 
-      if (newOption.dataset.value === 'other') {
-        otherInput.style.display = 'block';
-      } else {
-        otherInput.style.display = 'none';
-      }
+      otherInput.hidden = newOption.dataset.value !== 'other';
 
       updateCaloriesPreview();
     });
@@ -1384,8 +1380,8 @@ function _initNicknameEditor(user) {
 
   editBtn.addEventListener('click', () => {
     input.value = nameDisplay?.textContent?.trim() === '—' ? '' : (nameDisplay?.textContent?.trim() || '');
-    editor.style.display = 'block';
-    editBtn.style.display = 'none';
+    editor.hidden = false;
+    editBtn.hidden = true;
     input.focus();
     _nbValid = false;
     saveBtn.disabled = true;
@@ -1393,8 +1389,8 @@ function _initNicknameEditor(user) {
   });
 
   cancelBtn.addEventListener('click', () => {
-    editor.style.display = 'none';
-    editBtn.style.display = '';
+    editor.hidden = true;
+    editBtn.hidden = false;
   });
 
   input.addEventListener('input', () => {
@@ -1433,8 +1429,8 @@ function _initNicknameEditor(user) {
     }
 
     if (nameDisplay) nameDisplay.textContent = val;
-    editor.style.display = 'none';
-    editBtn.style.display = '';
+    editor.hidden = true;
+    editBtn.hidden = false;
     saveBtn.textContent = 'Зберегти';
     showToast('Нікнейм збережено ✓');
   });

@@ -4858,94 +4858,6 @@ textarea:-webkit-autofill:focus {
   color: var(--color-text-secondary);
 }
 
-.edit-book-modal {
-  max-width: 520px;
-  width: 90%;
-  max-height: 90vh;
-  overflow-y: auto;
-}
-.edit-book-modal::-webkit-scrollbar {
-  width: 4px;
-}
-.edit-book-modal::-webkit-scrollbar-track {
-  background: transparent;
-}
-.edit-book-modal::-webkit-scrollbar-thumb {
-  background: var(--color-border);
-  border-radius: 999px;
-}
-.edit-book-modal::-webkit-scrollbar-thumb:hover {
-  background: var(--color-accent);
-}
-.edit-book-modal__header {
-  text-align: center;
-  margin-bottom: 20px;
-}
-.edit-book-modal__header h3 {
-  margin: 0;
-  font-size: 1.15rem;
-}
-.edit-book-modal__actions {
-  display: flex;
-  gap: 10px;
-  margin-top: 20px;
-}
-.edit-book-modal__actions button {
-  flex: 1;
-  padding: 10px 16px;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 600;
-  font-family: inherit;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-.edit-book-modal__actions .btn-secondary {
-  background: transparent;
-  border: 1px solid var(--color-border);
-  color: var(--color-text-primary);
-}
-.edit-book-modal__actions .btn-secondary:hover {
-  border-color: var(--color-accent);
-  color: var(--color-accent);
-}
-.edit-book-modal__actions .btn-save {
-  background: var(--color-accent);
-  color: var(--color-text-inverse);
-  border: none;
-}
-.edit-book-modal__actions .btn-save:hover {
-  background: var(--color-accent-hover);
-  transform: translateY(-1px);
-}
-.edit-book-modal .form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  margin-bottom: 16px;
-}
-.edit-book-modal .form-group label {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--color-text-secondary);
-}
-.edit-book-modal .form-group input[type=text] {
-  width: 100%;
-  padding: 10px 14px;
-  background: var(--color-bg);
-  border: 1px solid var(--color-border);
-  border-radius: 8px;
-  color: var(--color-text-primary);
-  font-family: inherit;
-  font-size: 14px;
-  outline: none;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
-}
-.edit-book-modal .form-group input[type=text]:focus {
-  border-color: var(--color-accent);
-  box-shadow: 0 0 0 3px rgba(46, 204, 113, 0.12);
-}
-
 /* ============================================================
    COMPONENT: NEW RECIPES DRAWER
    Desktop — slide in from right
@@ -5139,6 +5051,153 @@ textarea:-webkit-autofill:focus {
     background: var(--color-border);
   }
 }
+.cookie-banner {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 9999;
+  background: var(--color-bg-primary);
+  border-top: 1px solid var(--color-border);
+  box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.08);
+  padding: 16px 20px;
+}
+@media (min-width: 769px) {
+  .cookie-banner {
+    padding: 20px 32px;
+  }
+}
+.cookie-banner__main {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+@media (max-width: 768px) {
+  .cookie-banner__main {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+.cookie-banner__text {
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+  flex: 1;
+  min-width: 200px;
+}
+.cookie-banner__link {
+  color: var(--color-accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.cookie-banner__actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+@media (max-width: 480px) {
+  .cookie-banner__actions {
+    width: 100%;
+  }
+}
+.cookie-banner__btn {
+  padding: 9px 18px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.2s ease;
+}
+@media (max-width: 480px) {
+  .cookie-banner__btn {
+    flex: 1;
+    text-align: center;
+  }
+}
+.cookie-banner__btn--customize {
+  background: transparent;
+  color: var(--color-text-secondary);
+  border-color: var(--color-border);
+}
+.cookie-banner__btn--customize:hover {
+  border-color: var(--color-accent);
+  color: var(--color-text-primary);
+}
+.cookie-banner__btn--reject {
+  background: transparent;
+  color: var(--color-text-primary);
+  border-color: var(--color-border);
+}
+.cookie-banner__btn--reject:hover {
+  border-color: var(--color-text-primary);
+}
+.cookie-banner__btn--accept {
+  background: var(--color-accent);
+  color: #fff;
+  border-color: var(--color-accent);
+}
+.cookie-banner__btn--accept:hover {
+  opacity: 0.88;
+}
+.cookie-banner__btn--save {
+  background: var(--color-accent);
+  color: #fff;
+  border-color: var(--color-accent);
+  padding: 9px 24px;
+}
+.cookie-banner__btn--save:hover {
+  opacity: 0.88;
+}
+.cookie-banner__prefs {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.cookie-banner__toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.cookie-banner__toggle-row input[type=checkbox] {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--color-accent);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.cookie-banner__toggle-row input[type=checkbox]:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+.cookie-banner__toggle-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.cookie-banner__toggle-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+.cookie-banner__toggle-desc {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+.cookie-banner__prefs-footer {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 4px;
+}
+
 /* ================= DAY WEEK NAV ================= */
 @media (min-width: 1025px) {
   .page--day-menu .container {
@@ -6085,33 +6144,11 @@ textarea:-webkit-autofill:focus {
   background: #7a9fd4;
 }
 
-/* ================= KBJU BALANCE ================= */
-.kbju-balance {
-  font-size: 12px;
-  color: var(--color-text-secondary);
-  line-height: 1.6;
-  padding: var(--space-sm);
-  background: var(--color-bg-primary);
-  border-radius: var(--radius-md);
-  border: 1px solid var(--color-border);
-}
-.kbju-balance:empty {
-  display: none;
-}
-
 /* ================= QUICK ACTIONS ================= */
 .day-quick-actions {
   display: flex;
   flex-direction: column;
   gap: var(--space-xs);
-}
-.day-quick-actions__title {
-  font-size: 12px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.07em;
-  color: var(--color-text-secondary);
-  margin: 0 0 var(--space-xxs);
 }
 
 .day-quick-btn {
@@ -6259,20 +6296,6 @@ textarea:-webkit-autofill:focus {
 /* ================= RECIPE PAGE WRAPPER ================= */
 .recipe-page {
   padding: 0 0 60px;
-}
-.recipe-page__intro {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-md);
-  margin-bottom: var(--space-xl);
-}
-.recipe-page__title {
-  font-family: var(--font-heading);
-  font-size: 24px;
-  font-weight: 800;
-  color: var(--color-text-primary);
-  white-space: nowrap;
 }
 
 /* ================= КНОПКИ ХЕДЕРА РЕЦЕПТІВ ================= */
@@ -6615,20 +6638,6 @@ textarea:-webkit-autofill:focus {
 }
 
 /* ================= ОСНОВНА СТРУКТУРА ================= */
-.header {
-  width: 100%;
-  background-color: var(--color-bg-secondary);
-  border-bottom: 1px solid var(--color-border);
-}
-.header__container {
-  display: flex;
-  margin: 0 auto;
-  max-width: 1320px;
-  align-items: center;
-  justify-content: space-between;
-  height: 70px;
-}
-
 .profile-page {
   width: 100%;
   display: flex;
@@ -7395,12 +7404,6 @@ textarea:-webkit-autofill:focus {
 }
 
 /* ================= CONTENT ================= */
-.profile-content {
-  display: flex;
-  flex-direction: column;
-  gap: 32px;
-}
-
 /* ================= ACCESSIBILITY ================= */
 .visually-hidden {
   position: absolute;
@@ -8390,7 +8393,7 @@ input:checked + .settings-toggle__track::after {
 /* ================= WEEK MENU ================= */
 .week-menu {
   width: 100%;
-  padding-top: 8px;
+  padding: 8px 0 60px;
 }
 
 /* ================= ЗАГОЛОВОК ================= */
@@ -8498,11 +8501,6 @@ input:checked + .settings-toggle__track::after {
   justify-content: center;
   text-align: center;
   gap: 3px;
-}
-
-.summary-kcal {
-  font-weight: 700;
-  font-size: 14px;
 }
 
 /* Header row */
@@ -10090,6 +10088,10 @@ input:checked + .settings-toggle__track::after {
 /* ============================================================
    PAGE: PRODUCT GUIDE
    ============================================================ */
+.product-guide {
+  padding-bottom: 60px;
+}
+
 /* ================= SEARCH FIELD ================= */
 .product-search {
   display: flex;
@@ -10649,20 +10651,7 @@ input:checked + .settings-toggle__track::after {
    ============================================================ */
 /* ================= PAGE LAYOUT ================= */
 .cookbook-page {
-  padding: 0;
-}
-.cookbook-page__header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 28px;
-}
-.cookbook-page__title {
-  font-size: 26px;
-  font-weight: 800;
-  letter-spacing: -0.3px;
-  color: var(--color-text-primary);
-  margin: 0;
+  padding: 0 0 60px;
 }
 
 .cookbook-page__add-btn {
@@ -11123,112 +11112,6 @@ input:checked + .settings-toggle__track::after {
   font-size: 40px;
 }
 
-.cookbook-recipe {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 14px;
-  background: var(--color-bg-primary);
-  border: 1px solid var(--color-border);
-  border-radius: 16px;
-  cursor: pointer;
-  transition: all 0.25s ease;
-  position: relative;
-}
-.cookbook-recipe:hover {
-  border-color: var(--color-accent);
-  background: var(--color-accent-soft);
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(111, 207, 186, 0.15);
-}
-.cookbook-recipe:hover .cookbook-recipe__remove {
-  opacity: 1;
-}
-.cookbook-recipe:hover .cookbook-recipe__arrow {
-  opacity: 1;
-  transform: translateX(3px);
-}
-.cookbook-recipe__image {
-  width: 64px;
-  height: 64px;
-  border-radius: 12px;
-  overflow: hidden;
-  flex-shrink: 0;
-  background: var(--color-bg-secondary);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid var(--color-border);
-}
-.cookbook-recipe__image img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-.cookbook-recipe__placeholder {
-  font-size: 28px;
-}
-.cookbook-recipe__info {
-  flex: 1;
-  min-width: 0;
-}
-.cookbook-recipe__title {
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--color-text-primary);
-  margin-bottom: 4px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  line-height: 1.3;
-}
-.cookbook-recipe__kcal {
-  font-size: 12px;
-  color: var(--color-text-secondary);
-  font-weight: 500;
-}
-.cookbook-recipe__kcal span {
-  color: var(--color-accent);
-  font-weight: 700;
-}
-.cookbook-recipe__arrow {
-  color: var(--color-accent);
-  opacity: 0;
-  transition: all 0.2s ease;
-  flex-shrink: 0;
-}
-.cookbook-recipe__arrow svg {
-  stroke: currentColor;
-}
-.cookbook-recipe__remove {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  width: 28px;
-  height: 28px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: 8px;
-  cursor: pointer;
-  opacity: 0;
-  transition: all 0.2s ease;
-}
-.cookbook-recipe__remove svg {
-  stroke: var(--color-text-secondary);
-  width: 14px;
-  height: 14px;
-}
-.cookbook-recipe__remove:hover {
-  border-color: #e74c3c;
-  background: rgba(231, 76, 60, 0.1);
-}
-.cookbook-recipe__remove:hover svg {
-  stroke: #e74c3c;
-}
-
 /* ================= RECIPE CARDS IN BOOK ================= */
 .cookbook-recipe-card {
   position: relative;
@@ -11341,7 +11224,7 @@ input:checked + .settings-toggle__track::after {
 .cookbook-form__field {
   margin-bottom: 20px;
 }
-.cookbook-form__field label {
+.cookbook-form__field label:not(.cookbook-form__checkbox) {
   display: block;
   margin-bottom: 8px;
   font-size: 14px;
@@ -11425,6 +11308,46 @@ input:checked + .settings-toggle__track::after {
   background: var(--color-accent-hover);
   transform: translateY(-2px);
   box-shadow: 0 8px 20px rgba(111, 207, 186, 0.3);
+}
+.cookbook-form__actions {
+  display: flex;
+  gap: 10px;
+}
+.cookbook-form__actions .cookbook-form__submit {
+  flex: 2;
+  width: auto;
+}
+.cookbook-form__btn-cancel {
+  flex: 1;
+  padding: 14px;
+  border-radius: 12px;
+  border: 1px solid var(--color-border);
+  background: transparent;
+  color: var(--color-text-secondary);
+  font-size: 15px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.cookbook-form__btn-cancel:hover {
+  border-color: var(--color-accent);
+  color: var(--color-text-primary);
+}
+.cookbook-form__checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--color-text-primary);
+}
+.cookbook-form__checkbox input[type=checkbox] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--color-accent);
+  cursor: pointer;
+  flex-shrink: 0;
 }
 
 /* ================= STICKY NOTE ================= */
@@ -11513,11 +11436,8 @@ input:checked + .settings-toggle__track::after {
   box-shadow: 0 32px 80px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.4);
 }
 .cookbook-cover-picker-modal__header {
-  padding: 22px 24px 18px;
+  padding: 22px 60px 18px 24px;
   border-bottom: 1px solid var(--color-border);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
   flex-shrink: 0;
 }
 .cookbook-cover-picker-modal__header h3 {
@@ -11633,12 +11553,6 @@ input:checked + .settings-toggle__track::after {
 
 /* ================= RESPONSIVE ================= */
 @media (max-width: 768px) {
-  .cookbook-page {
-    padding: 0;
-  }
-  .cookbook-page__title {
-    font-size: 24px;
-  }
   .cookbook-books__grid {
     grid-template-columns: repeat(2, 1fr);
   }
@@ -11686,12 +11600,6 @@ input:checked + .settings-toggle__track::after {
 @media (max-width: 480px) {
   .cookbook-page {
     padding: 0 0 48px;
-  }
-  .cookbook-page__header {
-    margin-bottom: 0;
-  }
-  .cookbook-page__title {
-    font-size: 20px;
   }
   .cookbook-books__grid {
     grid-template-columns: repeat(2, 1fr);
@@ -14451,4 +14359,109 @@ input[type=date].admin-select {
     max-width: calc(100vw - 32px);
     bottom: 80px;
   }
+}
+.legal-page {
+  padding: 40px 0 80px;
+  max-width: 780px;
+  margin: 0 auto;
+}
+.legal-page__header {
+  margin-bottom: 32px;
+}
+.legal-page__title {
+  font-size: clamp(24px, 4vw, 36px);
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin-bottom: 8px;
+}
+.legal-page__meta {
+  font-size: 14px;
+  color: var(--color-text-secondary);
+}
+.legal-page__notice {
+  background: rgba(255, 193, 7, 0.12);
+  border: 1px solid rgba(255, 193, 7, 0.4);
+  border-radius: 12px;
+  padding: 14px 18px;
+  font-size: 14px;
+  color: var(--color-text-primary);
+  margin-bottom: 40px;
+}
+.legal-page__body {
+  display: flex;
+  flex-direction: column;
+  gap: 36px;
+}
+.legal-page__section h2 {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin-bottom: 12px;
+}
+.legal-page__section h3 {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 16px 0 8px;
+}
+.legal-page__section p {
+  font-size: 15px;
+  line-height: 1.7;
+  color: var(--color-text-secondary);
+  margin-bottom: 10px;
+}
+.legal-page__section p:last-child {
+  margin-bottom: 0;
+}
+.legal-page__section ul {
+  padding-left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.legal-page__section ul li {
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--color-text-secondary);
+}
+.legal-page__section a {
+  color: var(--color-accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.legal-page__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  margin-top: 8px;
+}
+.legal-page__table th, .legal-page__table td {
+  text-align: left;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--color-border);
+}
+.legal-page__table th {
+  font-weight: 600;
+  color: var(--color-text-primary);
+  background: var(--color-bg-secondary);
+}
+.legal-page__table td {
+  color: var(--color-text-secondary);
+}
+@media (max-width: 600px) {
+  .legal-page__table {
+    display: block;
+    overflow-x: auto;
+  }
+}
+.legal-page__link-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--color-accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  font-size: inherit;
+  font-family: inherit;
+  cursor: pointer;
 }

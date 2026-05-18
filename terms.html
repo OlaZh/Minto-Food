@@ -1,24 +1,16 @@
-﻿<!doctype html>
+<!DOCTYPE html>
 <html lang="uk">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Книга рецептів</title>
-
-    <script>
-      (function () {
-        const theme = localStorage.getItem('theme');
-        if (theme === 'dark') {
-          document.documentElement.setAttribute('data-theme', 'dark');
-        }
-      })();
-    </script>
-
-    <link rel="stylesheet" href="./css/main.css" />
+    <title>Умови використання — MintoFood</title>
+    <meta name="description" content="Умови використання MintoFood." />
+    <meta name="robots" content="noindex" />
+    <link rel="stylesheet" href="css/main.css" />
+    <link rel="icon" href="img/favicon.ico" />
   </head>
-
-  <body class="page page--cookbook">
-                <header class="header">
+  <body class="page page--legal">
+            <header class="header">
       <div class="header__container">
         <a href="index.html" class="header__logo"
           ><img src="img/logo.svg" alt="Logo" data-i18n="logo"
@@ -111,139 +103,104 @@
 
     <main class="main">
       <div class="container">
-        <div class="cookbook-page">
-          <div class="page-header">
-            <h1 class="page-header__title">Книга рецептів</h1>
-            <div class="page-header__actions page-header__actions--right">
-              <button class="cookbook-page__add-btn cookbook-page__add-btn--mobile js-add-book-btn">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2.5"
-                  stroke-linecap="round"
-                  stroke-linejoin="round">
-                  <line x1="12" y1="5" x2="12" y2="19" />
-                  <line x1="5" y1="12" x2="19" y2="12" />
-                </svg>
-                <span>Нова книга</span>
-              </button>
-            </div>
+        <div class="legal-page">
+
+          <div class="legal-page__header">
+            <h1 class="legal-page__title">Умови використання</h1>
+            <p class="legal-page__meta">Останнє оновлення: [ДАТА] · Чинна з: [ДАТА]</p>
           </div>
 
-          <div class="cookbook-layout">
-            <section class="cookbook-main">
-              <div class="cookbook-books__grid" id="booksGrid"></div>
+          <div class="legal-page__notice">
+            ⚠️ Цей документ є шаблоном і потребує юридичної перевірки перед публікацією.
+          </div>
+
+          <div class="legal-page__body">
+
+            <section class="legal-page__section">
+              <h2>1. Прийняття умов</h2>
+              <p>Використовуючи MintoFood, ви погоджуєтесь з цими умовами. Якщо ви не погоджуєтесь — не використовуйте сервіс.</p>
             </section>
 
-            <aside class="cookbook-sidebar">
-              <button
-                class="cookbook-page__add-btn cookbook-page__add-btn--sidebar js-add-book-btn"
-                id="addBookBtn">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2.5"
-                  stroke-linecap="round"
-                  stroke-linejoin="round">
-                  <line x1="12" y1="5" x2="12" y2="19" />
-                  <line x1="5" y1="12" x2="19" y2="12" />
-                </svg>
-                Нова книга
-              </button>
-              <h2 class="cookbook-sidebar__title">Нещодавно переглянуті</h2>
-              <div class="cookbook-recent" id="recentRecipes"></div>
-            </aside>
+            <section class="legal-page__section">
+              <h2>2. Опис сервісу</h2>
+              <p>MintoFood — вебдодаток для планування харчування, ведення кулінарних книг і відстеження КБЖУ. Сервіс надається "як є" ("as is").</p>
+            </section>
+
+            <section class="legal-page__section">
+              <h2>3. Акаунт</h2>
+              <ul>
+                <li>Ви несете відповідальність за безпеку свого акаунту</li>
+                <li>Один акаунт — одна особа. Не передавайте доступ іншим</li>
+                <li>Ми можемо заблокувати акаунт при порушенні цих умов</li>
+              </ul>
+            </section>
+
+            <section class="legal-page__section">
+              <h2>4. Контент користувача</h2>
+              <ul>
+                <li>Ви зберігаєте авторські права на свій контент (рецепти, нотатки)</li>
+                <li>Публікуючи рецепт у спільноту — ви надаєте MintoFood ліцензію на відображення</li>
+                <li>Заборонено: NSFW-контент, спам, порушення авторських прав, шахрайство</li>
+                <li>Ми можемо видалити будь-який контент що порушує ці правила</li>
+              </ul>
+            </section>
+
+            <section class="legal-page__section">
+              <h2>5. Медичний disclaimer</h2>
+              <p><strong>MintoFood не є медичним або дієтологічним сервісом.</strong> Інформація на сайті — загальноінформаційна і не є медичною порадою. Перед зміною дієти, особливо при захворюваннях, вагітності або розладах харчової поведінки — проконсультуйтесь з лікарем або дієтологом.</p>
+            </section>
+
+            <section class="legal-page__section">
+              <h2>6. Обмеження відповідальності</h2>
+              <p>MintoFood не несе відповідальності за будь-яку пряму чи непряму шкоду від використання сервісу. Максимальна відповідальність обмежена сумою що ви заплатили за останні 12 місяців (або €10, якщо ви не платили).</p>
+            </section>
+
+            <section class="legal-page__section">
+              <h2>7. Підписка та оплата</h2>
+              <p>[ЗАПОВНИТИ після вибору платіжного провайдера в Фазі 19]</p>
+              <ul>
+                <li>Refund policy: [X] днів</li>
+                <li>Скасування: будь-коли через акаунт</li>
+                <li>Після скасування — доступ до кінця оплаченого періоду</li>
+              </ul>
+            </section>
+
+            <section class="legal-page__section">
+              <h2>8. Припинення акаунту</h2>
+              <p>Ви можете видалити акаунт у будь-який час через <a href="profile.html">Профіль → Налаштування</a>. Ми можемо заблокувати акаунт при систематичних порушеннях без повернення коштів.</p>
+            </section>
+
+            <section class="legal-page__section">
+              <h2>9. Скарги на авторські права (DMCA / Copyright)</h2>
+              <p>MintoFood поважає авторські права. Якщо ви вважаєте, що ваш контент опубліковано без дозволу — напишіть нам.</p>
+              <p><strong>Що потрібно вказати у скарзі:</strong></p>
+              <ul>
+                <li>Ваше ім'я та контактні дані</li>
+                <li>Опис оригінального твору, авторські права на який порушено</li>
+                <li>Посилання на спірний контент на нашому сайті</li>
+                <li>Заява що ви є власником прав або уповноваженою особою</li>
+              </ul>
+              <p>Надсилайте на: <a href="mailto:dmca@mintofood.com">dmca@mintofood.com</a></p>
+              <p><strong>Процес:</strong> Ми розглядаємо скарги протягом 5 робочих днів. Якщо скарга обґрунтована — контент видаляється. Автор отримує повідомлення і може подати зустрічну скаргу.</p>
+              <p>Систематичні порушники авторських прав можуть бути заблоковані.</p>
+            </section>
+
+            <section class="legal-page__section">
+              <h2>10. Зміни в умовах</h2>
+              <p>Ми повідомляємо про суттєві зміни за 30 днів через email. Продовження використання після набуття чинності = прийняття.</p>
+            </section>
+
+            <section class="legal-page__section">
+              <h2>11. Застосовне право</h2>
+              <p>Ці умови регулюються правом [ПОЛЬЩІ / КРАЇНИ РЕЄСТРАЦІЇ]. Суперечки вирішуються у судах [МІСТА], якщо інше не передбачено обов'язковими нормами ЄС.</p>
+            </section>
+
           </div>
         </div>
       </div>
     </main>
 
-    <!-- Модалка: Відкрита книга -->
-    <div class="modal-overlay" id="bookModal">
-      <div class="cookbook-modal">
-        <button class="modal__close" id="closeBookModal" aria-label="Закрити">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round">
-            <line x1="18" y1="6" x2="6" y2="18"></line>
-            <line x1="6" y1="6" x2="18" y2="18"></line>
-          </svg>
-        </button>
-
-        <div class="cookbook-modal__header">
-          <h2 class="cookbook-modal__title" id="bookModalTitle">Назва книги</h2>
-        </div>
-
-        <div class="cookbook-modal__content cookbook-modal__content--active">
-          <div class="cookbook-recipes" id="bookRecipes">
-            <p class="cookbook-recipes__empty">
-              Тут поки немає рецептів. Додай їх зі сторінки "Рецепти"!
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Модалка: Створити нову книгу -->
-    <div class="modal-overlay" id="newBookModal">
-      <div class="cookbook-modal cookbook-modal--small">
-        <button class="modal__close" id="closeNewBookModal" aria-label="Закрити">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round">
-            <line x1="18" y1="6" x2="6" y2="18"></line>
-            <line x1="6" y1="6" x2="18" y2="18"></line>
-          </svg>
-        </button>
-
-        <h2 class="cookbook-modal__title">Нова книга</h2>
-
-        <form class="cookbook-form" id="newBookForm">
-          <div class="cookbook-form__field">
-            <label for="newBookName">Назва книги</label>
-            <input
-              type="text"
-              id="newBookName"
-              placeholder="Наприклад: Обіди на роботу"
-              required
-              maxlength="50" />
-          </div>
-
-          <div class="cookbook-form__field">
-            <label for="newBookIcon">Іконка</label>
-            <div class="cookbook-form__icons" id="iconPicker">
-              <!-- populated by JS -->
-            </div>
-          </div>
-
-          <button type="submit" class="cookbook-form__submit">Створити книгу</button>
-        </form>
-      </div>
-    </div>
-
-                    <footer class="site-footer">
+            <footer class="site-footer">
       <div class="site-footer__inner">
 
         <div class="site-footer__brand">
@@ -334,9 +291,8 @@
       </div>
     </footer>
 
-    <script type="module" src="./js/theme-toggle.js"></script>
-    <script type="module" src="./js/cookbook.js"></script>
     <script type="module" src="js/mobile-nav.js"></script>
-    <script type="module" src="js/mobile-tab-bar.js"></script>
+    <script type="module" src="js/theme-toggle.js"></script>
+    <script type="module" src="js/auth.js"></script>
   </body>
 </html>

@@ -1,4 +1,16 @@
 import { lockScroll, unlockScroll } from './scroll-lock.js';
+import { initCookieConsent } from './cookie-consent.js';
+
+initCookieConsent();
+
+// Set active nav link based on current page filename
+(() => {
+  const filename = location.pathname.split('/').pop() || 'index.html';
+  document.querySelectorAll('.header__nav-link').forEach((link) => {
+    const href = link.getAttribute('href');
+    link.classList.toggle('header__nav-link--active', href === filename);
+  });
+})();
 
 (() => {
   const burger = document.querySelector('.header__burger');

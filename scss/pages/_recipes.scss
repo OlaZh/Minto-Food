@@ -6,22 +6,6 @@
 
 .recipe-page {
   padding: 0 0 60px;
-
-  &__intro {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--space-md);
-    margin-bottom: var(--space-xl);
-  }
-
-  &__title {
-    font-family: var(--font-heading);
-    font-size: 24px;
-    font-weight: 800;
-    color: var(--color-text-primary);
-    white-space: nowrap;
-  }
 }
 
 /* ================= КНОПКИ ХЕДЕРА РЕЦЕПТІВ ================= */

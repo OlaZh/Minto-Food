@@ -1,24 +1,16 @@
-﻿<!doctype html>
+<!DOCTYPE html>
 <html lang="uk">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Книга рецептів</title>
-
-    <script>
-      (function () {
-        const theme = localStorage.getItem('theme');
-        if (theme === 'dark') {
-          document.documentElement.setAttribute('data-theme', 'dark');
-        }
-      })();
-    </script>
-
-    <link rel="stylesheet" href="./css/main.css" />
+    <title>Cookies — MintoFood</title>
+    <meta name="description" content="Політика cookies MintoFood." />
+    <meta name="robots" content="noindex" />
+    <link rel="stylesheet" href="css/main.css" />
+    <link rel="icon" href="img/favicon.ico" />
   </head>
-
-  <body class="page page--cookbook">
-                <header class="header">
+  <body class="page page--legal">
+            <header class="header">
       <div class="header__container">
         <a href="index.html" class="header__logo"
           ><img src="img/logo.svg" alt="Logo" data-i18n="logo"
@@ -111,139 +103,69 @@
 
     <main class="main">
       <div class="container">
-        <div class="cookbook-page">
-          <div class="page-header">
-            <h1 class="page-header__title">Книга рецептів</h1>
-            <div class="page-header__actions page-header__actions--right">
-              <button class="cookbook-page__add-btn cookbook-page__add-btn--mobile js-add-book-btn">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2.5"
-                  stroke-linecap="round"
-                  stroke-linejoin="round">
-                  <line x1="12" y1="5" x2="12" y2="19" />
-                  <line x1="5" y1="12" x2="19" y2="12" />
-                </svg>
-                <span>Нова книга</span>
-              </button>
-            </div>
+        <div class="legal-page">
+
+          <div class="legal-page__header">
+            <h1 class="legal-page__title">Політика cookies</h1>
+            <p class="legal-page__meta">Останнє оновлення: [ДАТА]</p>
           </div>
 
-          <div class="cookbook-layout">
-            <section class="cookbook-main">
-              <div class="cookbook-books__grid" id="booksGrid"></div>
+          <div class="legal-page__notice">
+            ⚠️ Потребує юридичної перевірки перед публікацією.
+          </div>
+
+          <div class="legal-page__body">
+
+            <section class="legal-page__section">
+              <h2>Що таке cookies</h2>
+              <p>Cookies — невеликі текстові файли що браузер зберігає на вашому пристрої. Ми використовуємо cookies та localStorage для роботи сервісу та (за вашою згодою) для аналітики.</p>
             </section>
 
-            <aside class="cookbook-sidebar">
-              <button
-                class="cookbook-page__add-btn cookbook-page__add-btn--sidebar js-add-book-btn"
-                id="addBookBtn">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2.5"
-                  stroke-linecap="round"
-                  stroke-linejoin="round">
-                  <line x1="12" y1="5" x2="12" y2="19" />
-                  <line x1="5" y1="12" x2="19" y2="12" />
-                </svg>
-                Нова книга
-              </button>
-              <h2 class="cookbook-sidebar__title">Нещодавно переглянуті</h2>
-              <div class="cookbook-recent" id="recentRecipes"></div>
-            </aside>
+            <section class="legal-page__section">
+              <h2>Категорії cookies</h2>
+
+              <h3>Необхідні (завжди активні)</h3>
+              <table class="legal-page__table">
+                <thead>
+                  <tr><th>Назва</th><th>Мета</th><th>Термін</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td>sb-*</td><td>Supabase сесія авторизації</td><td>Сесія</td></tr>
+                  <tr><td>minto_consent</td><td>Збережений вибір cookies</td><td>6 місяців</td></tr>
+                  <tr><td>minto_theme</td><td>Налаштування теми (темна/світла)</td><td>Постійно</td></tr>
+                  <tr><td>minto_lang</td><td>Вибрана мова</td><td>Постійно</td></tr>
+                </tbody>
+              </table>
+
+              <h3>Аналітичні (тільки зі згодою)</h3>
+              <table class="legal-page__table">
+                <thead>
+                  <tr><th>Назва</th><th>Мета</th><th>Термін</th><th>Провайдер</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td>ph_*</td><td>PostHog — аналітика використання</td><td>1 рік</td><td>PostHog EU</td></tr>
+                </tbody>
+              </table>
+
+              <h3>Маркетингові (тільки зі згодою)</h3>
+              <p>Наразі не використовуються. Якщо запровадимо — оновимо цю сторінку і попросимо нову згоду.</p>
+            </section>
+
+            <section class="legal-page__section">
+              <h2>Як керувати cookies</h2>
+              <ul>
+                <li><strong>Через наш banner:</strong> при першому відвідуванні або через <button class="legal-page__link-btn" id="reopenCookieBanner">Відкрити налаштування cookies</button></li>
+                <li><strong>Через браузер:</strong> налаштування → конфіденційність → cookies</li>
+                <li><strong>Відписатись від PostHog:</strong> <a href="https://posthog.com/docs/privacy/opt-out" target="_blank" rel="noopener noreferrer">PostHog opt-out</a></li>
+              </ul>
+            </section>
+
           </div>
         </div>
       </div>
     </main>
 
-    <!-- Модалка: Відкрита книга -->
-    <div class="modal-overlay" id="bookModal">
-      <div class="cookbook-modal">
-        <button class="modal__close" id="closeBookModal" aria-label="Закрити">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round">
-            <line x1="18" y1="6" x2="6" y2="18"></line>
-            <line x1="6" y1="6" x2="18" y2="18"></line>
-          </svg>
-        </button>
-
-        <div class="cookbook-modal__header">
-          <h2 class="cookbook-modal__title" id="bookModalTitle">Назва книги</h2>
-        </div>
-
-        <div class="cookbook-modal__content cookbook-modal__content--active">
-          <div class="cookbook-recipes" id="bookRecipes">
-            <p class="cookbook-recipes__empty">
-              Тут поки немає рецептів. Додай їх зі сторінки "Рецепти"!
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Модалка: Створити нову книгу -->
-    <div class="modal-overlay" id="newBookModal">
-      <div class="cookbook-modal cookbook-modal--small">
-        <button class="modal__close" id="closeNewBookModal" aria-label="Закрити">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round">
-            <line x1="18" y1="6" x2="6" y2="18"></line>
-            <line x1="6" y1="6" x2="18" y2="18"></line>
-          </svg>
-        </button>
-
-        <h2 class="cookbook-modal__title">Нова книга</h2>
-
-        <form class="cookbook-form" id="newBookForm">
-          <div class="cookbook-form__field">
-            <label for="newBookName">Назва книги</label>
-            <input
-              type="text"
-              id="newBookName"
-              placeholder="Наприклад: Обіди на роботу"
-              required
-              maxlength="50" />
-          </div>
-
-          <div class="cookbook-form__field">
-            <label for="newBookIcon">Іконка</label>
-            <div class="cookbook-form__icons" id="iconPicker">
-              <!-- populated by JS -->
-            </div>
-          </div>
-
-          <button type="submit" class="cookbook-form__submit">Створити книгу</button>
-        </form>
-      </div>
-    </div>
-
-                    <footer class="site-footer">
+            <footer class="site-footer">
       <div class="site-footer__inner">
 
         <div class="site-footer__brand">
@@ -334,9 +256,15 @@
       </div>
     </footer>
 
-    <script type="module" src="./js/theme-toggle.js"></script>
-    <script type="module" src="./js/cookbook.js"></script>
     <script type="module" src="js/mobile-nav.js"></script>
-    <script type="module" src="js/mobile-tab-bar.js"></script>
+    <script type="module" src="js/theme-toggle.js"></script>
+    <script type="module" src="js/auth.js"></script>
+    <script type="module">
+      import { initCookieConsent } from './js/cookie-consent.js';
+      document.getElementById('reopenCookieBanner')?.addEventListener('click', () => {
+        localStorage.removeItem('minto_consent');
+        initCookieConsent();
+      });
+    </script>
   </body>
 </html>

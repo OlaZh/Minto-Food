@@ -1,4 +1,5 @@
 {
+  "buildCommand": "npm run build",
   "rewrites": [
     { "source": "/sitemap.xml",   "destination": "/api/sitemap" },
     { "source": "/recipe/:slug",  "destination": "/recipe.html" }

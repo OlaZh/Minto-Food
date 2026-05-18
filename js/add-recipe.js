@@ -841,7 +841,7 @@ function editRecipe(recipe) {
     const options = document.getElementById('initial-options-view');
     const form = document.getElementById('recipe-preview-form');
     if (options) options.style.display = 'none';
-    if (form) form.style.display = 'block';
+    if (form) form.hidden = false;
 
     setInputVal('prev-name', name);
     setInputVal('prev-calories', recipe.kcal);
@@ -897,7 +897,7 @@ const closeModal = () => {
 
     unlockScroll('add-recipe-modal');
     setTimeout(() => {
-      if (previewForm) previewForm.style.display = 'none';
+      if (previewForm) previewForm.hidden = true;
       if (optionsView) {
         optionsView.style.display = 'block';
         optionsView.style.opacity = '1';
@@ -1546,7 +1546,7 @@ window.addEventListener('click', (e) => {
 
 if (cancelPreview) {
   cancelPreview.addEventListener('click', () => {
-    if (previewForm) previewForm.style.display = 'none';
+    if (previewForm) previewForm.hidden = true;
     if (optionsView) optionsView.style.display = 'block';
   });
 }

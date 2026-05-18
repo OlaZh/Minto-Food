@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="uk">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Конфіденційність — MintoFood</title>
+    <meta name="description" content="Політика конфіденційності MintoFood. Як ми збираємо, зберігаємо та захищаємо ваші дані." />
+    <meta name="robots" content="noindex" />
+    <link rel="stylesheet" href="css/main.css" />
+    <link rel="icon" href="img/favicon.ico" />
+  </head>
+  <body class="page page--legal">
+            <header class="header">
+      <div class="header__container">
+        <a href="index.html" class="header__logo"
+          ><img src="img/logo.svg" alt="Logo" data-i18n="logo"
+        /></a>
+
+        <nav class="header__nav">
+          <ul class="header__nav-list">
+            <li>
+              <a href="index.html" class="header__nav-link" data-i18n="navDayMenu">Меню на день</a>
+            </li>
+            <li>
+              <a href="week-menu.html" class="header__nav-link" data-i18n="navWeekMenu"
+                >Меню на тиждень</a
+              >
+            </li>
+            <li>
+              <a href="recipes.html" class="header__nav-link" data-i18n="navRecipes">Рецепти</a>
+            </li>
+            <li>
+              <a href="product-guide.html" class="header__nav-link" data-i18n="navProductGuide"
+                >Путівник по продуктам</a
+              >
+            </li>
+            <li>
+              <a href="shopping-list.html" class="header__nav-link" data-i18n="navShoppingList"
+                >Список покупок</a
+              >
+            </li>
+            <li>
+              <a href="cookbook.html" class="header__nav-link" data-i18n="navCookbook"
+                >Книга рецептів</a
+              >
+            </li>
+          </ul>
+        </nav>
+
+        <div class="header__actions">
+          <button
+            class="theme-toggle"
+            type="button"
+            aria-label="Змінити тему"
+            data-i18n-aria="toggleTheme">
+            <svg
+              class="sun-icon"
+              xmlns="http://www.w3.org/2000/svg"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round">
+              <circle cx="12" cy="12" r="5"></circle>
+              <line x1="12" y1="1" x2="12" y2="3"></line>
+              <line x1="12" y1="21" x2="12" y2="23"></line>
+              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+              <line x1="1" y1="12" x2="3" y2="12"></line>
+              <line x1="21" y1="12" x2="23" y2="12"></line>
+              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+            </svg>
+            <svg
+              class="moon-icon"
+              xmlns="http://www.w3.org/2000/svg"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round">
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+            </svg>
+          </button>
+        </div>
+        <div class="header__right">
+          <a href="#" id="headerAuthBtn" class="header__profile-name" data-i18n="login"> Увійти </a>
+        </div>
+        <button class="header__burger" aria-label="Меню" aria-expanded="false">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+      </div>
+      <div class="header__nav-overlay"></div>
+    </header>
+
+    <main class="main">
+      <div class="container">
+        <div class="legal-page">
+
+          <div class="legal-page__header">
+            <h1 class="legal-page__title">Політика конфіденційності</h1>
+            <p class="legal-page__meta">Останнє оновлення: [ДАТА] · Чинна з: [ДАТА]</p>
+          </div>
+
+          <div class="legal-page__notice">
+            ⚠️ Цей документ є шаблоном і потребує юридичної перевірки перед публікацією.
+            Зверніться до юриста з досвідом у GDPR/ЄС-праві.
+          </div>
+
+          <div class="legal-page__body">
+
+            <section class="legal-page__section">
+              <h2>1. Хто ми</h2>
+              <p>MintoFood — це веб-додаток для планування харчування та ведення кулінарних книг. Оператор персональних даних: [НАЗВА КОМПАНІЇ / ФОП], [АДРЕСА], [НІП/ЄДРПОУ], [КРАЇНА].</p>
+              <p>Контакт з питань конфіденційності: <a href="mailto:privacy@mintofood.com">privacy@mintofood.com</a></p>
+            </section>
+
+            <section class="legal-page__section">
+              <h2>2. Які дані ми збираємо</h2>
+              <ul>
+                <li><strong>Акаунт:</strong> email, ім'я, аватар (через OAuth — Google/GitHub)</li>
+                <li><strong>Профіль харчування:</strong> вік, стать, вага, зріст, рівень активності, харчові цілі</li>
+                <li><strong>Контент:</strong> рецепти, книги рецептів, списки покупок, нотатки</li>
+                <li><strong>Використання:</strong> дати входу, дії в додатку (через PostHog, якщо ви погодились)</li>
+                <li><strong>Технічні:</strong> IP-адреса, браузер, пристрій (для безпеки та діагностики)</li>
+              </ul>
+            </section>
+
+            <section class="legal-page__section">
+              <h2>3. Навіщо ми збираємо дані</h2>
+              <ul>
+                <li>Надання сервісу та персоналізація (правова підстава: виконання договору)</li>
+                <li>Аналітика та покращення продукту (правова підстава: згода)</li>
+                <li>Безпека та боротьба зі зловживаннями (правова підстава: законний інтерес)</li>
+                <li>Відповідь на юридичні запити (правова підстава: юридичне зобов'язання)</li>
+              </ul>
+            </section>
+
+            <section class="legal-page__section">
+              <h2>4. З ким ми ділимось даними</h2>
+              <p>Ми не продаємо ваші дані третім особам. Ми передаємо дані лише sub-processors, необхідним для роботи сервісу:</p>
+              <ul>
+                <li><strong>Supabase</strong> (БД і авторизація) — EU-хостинг</li>
+                <li><strong>Vercel</strong> (хостинг) — США, стандартні договірні застереження</li>
+                <li><strong>PostHog</strong> (аналітика) — EU-хостинг (тільки зі згодою)</li>
+                <li><strong>Resend</strong> (транзакційні листи) — США, SCC</li>
+                <li><strong>Sentry</strong> (моніторинг помилок) — США, SCC</li>
+              </ul>
+              <p>Повний список: <a href="privacy.html#processors">/privacy#processors</a></p>
+            </section>
+
+            <section class="legal-page__section">
+              <h2>5. Ваші права (GDPR)</h2>
+              <ul>
+                <li><strong>Доступ:</strong> отримати копію всіх своїх даних</li>
+                <li><strong>Виправлення:</strong> виправити неточні дані через профіль</li>
+                <li><strong>Видалення:</strong> видалити акаунт і всі дані</li>
+                <li><strong>Перенесення:</strong> отримати дані у форматі JSON</li>
+                <li><strong>Заперечення:</strong> відмовитись від аналітики через налаштування cookies</li>
+              </ul>
+              <p>Для реалізації прав: <a href="profile.html">Профіль → Налаштування → GDPR</a> або напишіть на <a href="mailto:privacy@mintofood.com">privacy@mintofood.com</a>.</p>
+            </section>
+
+            <section class="legal-page__section">
+              <h2>6. Скільки зберігаємо дані</h2>
+              <ul>
+                <li>Дані акаунту — до видалення акаунту + 30 днів grace period</li>
+                <li>Логи безпеки — 12 місяців</li>
+                <li>Платіжні записи — 5 років (юридичне зобов'язання)</li>
+              </ul>
+            </section>
+
+            <section class="legal-page__section">
+              <h2>7. Cookies</h2>
+              <p>Детальніше про cookies: <a href="cookies.html">Політика cookies</a>.</p>
+            </section>
+
+            <section class="legal-page__section">
+              <h2>8. Вік</h2>
+              <p>Сервіс призначений для осіб від 16 років (або від 13 років у країнах де це дозволено GDPR). Якщо вам менше — не реєструйтесь. Якщо ми дізнаємось що акаунт належить дитині молодше мінімального віку — ми його видалимо.</p>
+            </section>
+
+            <section class="legal-page__section">
+              <h2>9. Зміни в цій політиці</h2>
+              <p>Ми сповіщаємо про суттєві зміни через email (якщо у вас є акаунт). Продовження використання після повідомлення означає прийняття змін.</p>
+            </section>
+
+            <section class="legal-page__section" id="processors">
+              <h2>10. Список sub-processors</h2>
+              <table class="legal-page__table">
+                <thead>
+                  <tr><th>Сервіс</th><th>Призначення</th><th>Країна</th><th>Гарантії</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td>Supabase</td><td>БД, авторизація</td><td>EU</td><td>EU-хостинг</td></tr>
+                  <tr><td>Vercel</td><td>Хостинг</td><td>США</td><td>SCC</td></tr>
+                  <tr><td>PostHog</td><td>Аналітика</td><td>EU</td><td>EU-хостинг</td></tr>
+                  <tr><td>Resend</td><td>Email</td><td>США</td><td>SCC</td></tr>
+                  <tr><td>Sentry</td><td>Моніторинг</td><td>США</td><td>SCC</td></tr>
+                  <tr><td>Cloudflare</td><td>DNS, CDN</td><td>США</td><td>SCC</td></tr>
+                </tbody>
+              </table>
+            </section>
+
+          </div>
+        </div>
+      </div>
+    </main>
+
+            <footer class="site-footer">
+      <div class="site-footer__inner">
+
+        <div class="site-footer__brand">
+          <a href="index.html" class="site-footer__logo">
+            <img src="img/logo.svg" alt="MintoFood" />
+          </a>
+          <p class="site-footer__tagline">Харчові звички набувають форми</p>
+        </div>
+
+        <div class="site-footer__col">
+          <h3 class="site-footer__heading">Продукт</h3>
+          <ul class="site-footer__links">
+            <li><a href="index.html">Меню на день</a></li>
+            <li><a href="week-menu.html">Меню на тиждень</a></li>
+            <li><a href="recipes.html">Рецепти</a></li>
+            <li><a href="cookbook.html">Книга рецептів</a></li>
+            <li><a href="product-guide.html">Путівник по продуктах</a></li>
+            <li><a href="shopping-list.html">Список покупок</a></li>
+          </ul>
+        </div>
+
+        <div class="site-footer__col">
+          <h3 class="site-footer__heading">Підтримка</h3>
+          <ul class="site-footer__links">
+            <li><a href="mailto:support@mintofood.com">Центр допомоги</a></li>
+            <li><a href="mailto:support@mintofood.com">Зворотний зв'язок</a></li>
+            <li><a href="mailto:support@mintofood.com">Повідомити про помилку</a></li>
+          </ul>
+        </div>
+
+        <div class="site-footer__col">
+          <h3 class="site-footer__heading">Компанія</h3>
+          <ul class="site-footer__links">
+            <li><a href="privacy.html">Конфіденційність</a></li>
+            <li><a href="terms.html">Умови використання</a></li>
+            <li><a href="cookies.html">Cookies</a></li>
+            <li><a href="privacy.html#gdpr">GDPR</a></li>
+            <li><a href="imprint.html">Про нас</a></li>
+            <li><a href="mailto:dmca@mintofood.com">DMCA</a></li>
+          </ul>
+        </div>
+
+      </div>
+
+      <div class="site-footer__accordion">
+        <details>
+          <summary>Продукт</summary>
+          <ul>
+            <li><a href="index.html">Меню на день</a></li>
+            <li><a href="week-menu.html">Меню на тиждень</a></li>
+            <li><a href="recipes.html">Рецепти</a></li>
+            <li><a href="cookbook.html">Книга рецептів</a></li>
+            <li><a href="product-guide.html">Путівник по продуктах</a></li>
+            <li><a href="shopping-list.html">Список покупок</a></li>
+          </ul>
+        </details>
+        <details>
+          <summary>Підтримка</summary>
+          <ul>
+            <li><a href="mailto:support@mintofood.com">Центр допомоги</a></li>
+            <li><a href="mailto:support@mintofood.com">Зворотний зв'язок</a></li>
+            <li><a href="mailto:support@mintofood.com">Повідомити про помилку</a></li>
+          </ul>
+        </details>
+        <details>
+          <summary>Компанія</summary>
+          <ul>
+            <li><a href="privacy.html">Конфіденційність</a></li>
+            <li><a href="terms.html">Умови використання</a></li>
+            <li><a href="cookies.html">Cookies</a></li>
+            <li><a href="privacy.html#gdpr">GDPR</a></li>
+            <li><a href="imprint.html">Про нас</a></li>
+            <li><a href="mailto:dmca@mintofood.com">DMCA</a></li>
+          </ul>
+        </details>
+      </div>
+
+      <div class="site-footer__bottom">
+        <p class="site-footer__copyright">© 2026 MintoFood</p>
+        <nav class="site-footer__lang" aria-label="Мова">
+          <button class="site-footer__lang-btn is-active" data-lang="uk">UA</button>
+          <span aria-hidden="true">·</span>
+          <button class="site-footer__lang-btn" data-lang="en">EN</button>
+          <span aria-hidden="true">·</span>
+          <button class="site-footer__lang-btn" data-lang="pl">PL</button>
+        </nav>
+        <p class="site-footer__made">Зроблено у Варшаві 🌿</p>
+      </div>
+    </footer>
+
+    <script type="module" src="js/mobile-nav.js"></script>
+    <script type="module" src="js/theme-toggle.js"></script>
+    <script type="module" src="js/auth.js"></script>
+  </body>
+</html>

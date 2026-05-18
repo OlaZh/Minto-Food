@@ -62,7 +62,6 @@ function renderCoverGridHTML(activeCover) {
 
 let currentUser = null;
 let currentBookId = null;
-let currentNotebook = null;
 let selectedIcon = 'book';
 let editSelectedCover = null;
 
@@ -78,7 +77,6 @@ const bookModal = document.getElementById('bookModal');
 const closeBookModal = document.getElementById('closeBookModal');
 const bookModalTitle = document.getElementById('bookModalTitle');
 const bookRecipes = document.getElementById('bookRecipes');
-const bookNotebook = document.getElementById('bookNotebook');
 
 // Модалка нової книги
 const newBookModal = document.getElementById('newBookModal');
@@ -86,13 +84,6 @@ const closeNewBookModal = document.getElementById('closeNewBookModal');
 const newBookForm = document.getElementById('newBookForm');
 const newBookName = document.getElementById('newBookName');
 const iconPicker = document.getElementById('iconPicker');
-
-// Модалка нової нотатки
-const newNoteModal = document.getElementById('newNoteModal');
-const closeNewNoteModal = document.getElementById('closeNewNoteModal');
-const newNoteForm = document.getElementById('newNoteForm');
-const noteTitle = document.getElementById('noteTitle');
-const noteContent = document.getElementById('noteContent');
 
 // =====================================
 // ІНІЦІАЛІЗАЦІЯ
@@ -177,19 +168,6 @@ function openModal(modal) {
 function closeModal(modal) {
   modal?.classList.remove('is-active'); // ✅
   unlockScroll(`cookbook:${modal?.id || 'modal'}`);
-}
-
-function switchTab(tabName) {
-  tabs.forEach((tab) => {
-    tab.classList.toggle('cookbook-modal__tab--active', tab.dataset.tab === tabName);
-  });
-
-  tabContents.forEach((content) => {
-    content.classList.toggle(
-      'cookbook-modal__content--active',
-      content.dataset.content === tabName,
-    );
-  });
 }
 
 // =====================================
@@ -428,34 +406,37 @@ function createEditBookModal() {
   modal.id = 'editBookModal';
   modal.className = 'modal-overlay';
   modal.innerHTML = `
-    <div class="modal-card edit-book-modal">
-      <button class="modal-card__close" id="closeEditBookModal">&times;</button>
-      
-      <div class="edit-book-modal__header">
-        <h3>Редагувати книгу</h3>
-      </div>
-      
-      <form id="editBookForm">
-        <div class="form-group">
-          <label>Назва книги</label>
+    <div class="cookbook-modal cookbook-modal--small">
+      <button class="modal__close" id="closeEditBookModal" aria-label="Закрити">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+
+      <h2 class="cookbook-modal__title">Редагувати книгу</h2>
+
+      <form class="cookbook-form" id="editBookForm">
+        <div class="cookbook-form__field">
+          <label for="editBookName">Назва книги</label>
           <input type="text" id="editBookName" required maxlength="50" />
         </div>
-        
-        <div class="form-group">
+
+        <div class="cookbook-form__field">
           <label>Обкладинка</label>
           <div class="cookbook-cover-grid" id="editCoverGrid"></div>
         </div>
 
-        <div class="form-group" id="setDefaultGroup" style="display: none;">
-          <label class="checkbox-label">
+        <div class="cookbook-form__field" id="setDefaultGroup" hidden>
+          <label class="cookbook-form__checkbox">
             <input type="checkbox" id="editBookDefault" />
             <span>Зробити головною книгою</span>
           </label>
         </div>
-        
-        <div class="edit-book-modal__actions">
-          <button type="button" class="btn-secondary" id="cancelEditBook">Скасувати</button>
-          <button type="submit" class="btn-save">Зберегти</button>
+
+        <div class="cookbook-form__actions">
+          <button type="button" class="cookbook-form__btn-cancel" id="cancelEditBook">Скасувати</button>
+          <button type="submit" class="cookbook-form__submit">Зберегти</button>
         </div>
       </form>
     </div>
@@ -541,13 +522,8 @@ function openEditBookModal(book) {
   // Показуємо чекбокс "Зробити головною" тільки якщо це не головна книга
   const defaultGroup = document.getElementById('setDefaultGroup');
   const defaultCheckbox = document.getElementById('editBookDefault');
-  if (book.is_default) {
-    defaultGroup.style.display = 'none';
-    defaultCheckbox.checked = false;
-  } else {
-    defaultGroup.style.display = 'block';
-    defaultCheckbox.checked = false;
-  }
+  defaultGroup.hidden = book.is_default;
+  defaultCheckbox.checked = false;
 
   openModal(modal);
 }
@@ -694,227 +670,6 @@ async function removeRecipeFromBook(recipeId) {
 }
 
 // =====================================
-// БЛОКНОТ
-// =====================================
-
-async function loadNotebook() {
-  try {
-    const { data, error } = await supabase
-      .from('cookbook_notebooks')
-      .select('*')
-      .eq('cookbook_id', currentBookId)
-      .maybeSingle();
-
-    if (error && error.code !== 'PGRST116') throw error; // PGRST116 = not found
-
-    currentNotebook = data;
-
-    if (data) {
-      notebookEmpty.style.display = 'none';
-      notebookContent.style.display = 'block';
-      await loadNotes();
-    } else {
-      notebookEmpty.style.display = 'flex';
-      notebookContent.style.display = 'none';
-    }
-  } catch (err) {
-    console.error('Error loading notebook:', err);
-  }
-}
-
-async function handleCreateNotebook() {
-  try {
-    const { data, error } = await supabase
-      .from('cookbook_notebooks')
-      .insert([{ cookbook_id: currentBookId }])
-      .select()
-      .single();
-
-    if (error) throw error;
-
-    currentNotebook = data;
-    notebookEmpty.style.display = 'none';
-    notebookContent.style.display = 'block';
-    notesList.innerHTML = '<p class="cookbook-notebook__empty-notes">Поки немає нотаток</p>';
-  } catch (err) {
-    console.error('Error creating notebook:', err);
-    showToast('Помилка створення блокнота', 'error');
-  }
-}
-
-async function loadNotes() {
-  if (!currentNotebook) return;
-
-  try {
-    const { data, error } = await supabase
-      .from('cookbook_notes')
-      .select('*')
-      .eq('notebook_id', currentNotebook.id)
-      .order('created_at', { ascending: false });
-
-    if (error) throw error;
-
-    renderNotes(data || []);
-  } catch (err) {
-    console.error('Error loading notes:', err);
-  }
-}
-
-function renderNotes(notes) {
-  if (!notes.length) {
-    notesList.innerHTML = '<p class="cookbook-notebook__empty-notes">Поки немає нотаток</p>';
-    return;
-  }
-
-  notesList.innerHTML = notes
-    .map(
-      (note) => `
-    <article class="cookbook-note" data-note-id="${note.id}">
-      <div class="cookbook-note__header">
-        <h4 class="cookbook-note__title">${escapeHTML(note.title)}</h4>
-        <span class="cookbook-note__date">${formatDate(note.created_at)}</span>
-      </div>
-      <div class="cookbook-note__content">${escapeHTML(note.content || '').replace(/\n/g, '<br>')}</div>
-      <div class="cookbook-note__actions">
-        <button class="cookbook-note__edit" data-note-id="${note.id}" aria-label="Редагувати">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-          </svg>
-        </button>
-        <button class="cookbook-note__delete" data-note-id="${note.id}" aria-label="Видалити">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="3 6 5 6 21 6"></polyline>
-            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-          </svg>
-        </button>
-      </div>
-    </article>
-  `,
-    )
-    .join('');
-
-  // Редагування — використовуємо делегування подій
-  notesList.onclick = async (e) => {
-    const editBtn = e.target.closest('.cookbook-note__edit');
-    const deleteBtn = e.target.closest('.cookbook-note__delete');
-
-    if (editBtn) {
-      const noteId = editBtn.dataset.noteId;
-      const note = notes.find((n) => n.id == noteId);
-      if (note) editNote(note);
-    }
-
-    if (deleteBtn) {
-      const noteId = deleteBtn.dataset.noteId;
-      await deleteNote(noteId);
-    }
-  };
-}
-
-async function handleCreateNote(e) {
-  e.preventDefault();
-
-  const title = noteTitle.value.trim();
-  const content = noteContent.value.trim();
-
-  if (!title) return;
-
-  try {
-    const { error } = await supabase.from('cookbook_notes').insert([
-      {
-        notebook_id: currentNotebook.id,
-        title,
-        content,
-      },
-    ]);
-
-    if (error) throw error;
-
-    closeModal(newNoteModal);
-    newNoteForm.reset();
-    await loadNotes();
-    showToast('Нотатку створено!');
-  } catch (err) {
-    console.error('Error creating note:', err);
-    showToast('Помилка створення нотатки', 'error');
-  }
-}
-
-function editNote(note) {
-  noteTitle.value = note.title;
-  noteContent.value = note.content || '';
-
-  // Змінюємо форму на редагування
-  const submitBtn = newNoteForm.querySelector('.cookbook-form__submit');
-  if (submitBtn) submitBtn.textContent = 'Зберегти зміни';
-
-  // Зберігаємо ID для оновлення
-  newNoteForm.dataset.editId = note.id;
-
-  openModal(newNoteModal);
-
-  // Змінюємо обробник
-  newNoteForm.onsubmit = async (e) => {
-    e.preventDefault();
-    await updateNote(note.id);
-  };
-}
-
-async function updateNote(noteId) {
-  const title = noteTitle.value.trim();
-  const content = noteContent.value.trim();
-
-  if (!title) return;
-
-  try {
-    const { error } = await supabase
-      .from('cookbook_notes')
-      .update({ title, content, updated_at: new Date().toISOString() })
-      .eq('id', noteId);
-
-    if (error) throw error;
-
-    closeModal(newNoteModal);
-    newNoteForm.reset();
-    delete newNoteForm.dataset.editId;
-
-    // Повертаємо обробник на створення
-    const submitBtn = newNoteForm.querySelector('.cookbook-form__submit');
-    if (submitBtn) submitBtn.textContent = 'Зберегти';
-    newNoteForm.onsubmit = handleCreateNote;
-
-    await loadNotes();
-    showToast('Нотатку оновлено!');
-  } catch (err) {
-    console.error('Error updating note:', err);
-    showToast('Помилка оновлення нотатки', 'error');
-  }
-}
-
-async function deleteNote(noteId) {
-  showConfirmModal({
-    title: 'Видалити нотатку?',
-    message: 'Цю дію неможливо буде скасувати.',
-    confirmText: 'Так, видалити',
-    cancelText: 'Скасувати',
-    onConfirm: async () => {
-      try {
-        const { error } = await supabase.from('cookbook_notes').delete().eq('id', noteId);
-
-        if (error) throw error;
-
-        await loadNotes();
-        showToast('Нотатку видалено');
-      } catch (err) {
-        console.error('Error deleting note:', err);
-        showToast('Помилка видалення нотатки', 'error');
-      }
-    },
-  });
-}
-
-// =====================================
 // НЕЩОДАВНО ПЕРЕГЛЯНУТІ
 // =====================================
 
@@ -978,20 +733,6 @@ async function loadRecentRecipes() {
 }
 
 // =====================================
-// УТИЛІТИ
-// =====================================
-
-function formatDate(dateStr) {
-  if (!dateStr) return '';
-  const date = new Date(dateStr);
-  return date.toLocaleDateString('uk-UA', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-  });
-}
-
-// =====================================
 // ПІКЕР ОБКЛАДИНОК
 // =====================================
 
@@ -1003,9 +744,14 @@ function createCoverPickerModal() {
   modal.className = 'modal-overlay';
   modal.innerHTML = `
     <div class="cookbook-cover-picker-modal">
+      <button class="modal__close" id="closeCoverPickerModal" aria-label="Закрити">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
       <div class="cookbook-cover-picker-modal__header">
         <h3>Оберіть обкладинку</h3>
-        <button class="modal-card__close" id="closeCoverPickerModal">&times;</button>
       </div>
       <div class="cookbook-cover-picker-modal__body">
         <div class="cookbook-cover-grid" id="coverPickerGrid"></div>
