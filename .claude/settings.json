@@ -2,6 +2,9 @@
   "permissions": {
     "allow": [
       "Bash(grep -n \"app-bg\\\\|app-shell\\\\|</main>\\\\|</div>$\\\\|<footer\\\\|</body>\" \"c:/Users/violk/Desktop/Minto Food/recipes.html\")"
+    ],
+    "additionalDirectories": [
+      "c:\\Users\\violk\\Desktop\\Minto Food\\api"
     ]
   }
 }

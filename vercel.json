@@ -4,5 +4,11 @@
   "rewrites": [
     { "source": "/sitemap.xml",   "destination": "/api/sitemap" },
     { "source": "/recipe/:slug",  "destination": "/recipe.html" }
+  ],
+  "crons": [
+    {
+      "path":     "/api/cron/gdpr-hard-delete",
+      "schedule": "0 2 * * *"
+    }
   ]
 }

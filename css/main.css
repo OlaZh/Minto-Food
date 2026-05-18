@@ -4107,6 +4107,52 @@ textarea:-webkit-autofill:focus {
   color: var(--color-accent);
 }
 
+/* ================= OAUTH CONSENT TEXT ================= */
+.auth-modal__oauth-consent {
+  font-size: 11px;
+  color: var(--color-text-secondary);
+  text-align: center;
+  margin: -6px 0 0;
+  line-height: 1.5;
+}
+.auth-modal__oauth-consent a {
+  color: var(--color-accent);
+  text-decoration: underline;
+}
+.auth-modal__oauth-consent a:hover {
+  color: var(--color-accent-hover);
+}
+
+/* ================= CONSENT CHECKBOX ================= */
+.form-group--consent {
+  margin-top: 4px;
+}
+
+.form-group__consent-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  cursor: pointer;
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+}
+.form-group__consent-label input[type=checkbox] {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  margin-top: 1px;
+  accent-color: var(--color-accent);
+  cursor: pointer;
+}
+.form-group__consent-label a {
+  color: var(--color-accent);
+  text-decoration: underline;
+}
+.form-group__consent-label a:hover {
+  color: var(--color-accent-hover);
+}
+
 /* ================= ПОМИЛКА / УСПІХ ================= */
 .auth-modal__error {
   font-size: 13px;
@@ -4165,6 +4211,12 @@ textarea:-webkit-autofill:focus {
 }
 .auth-modal__submit:active {
   transform: translateY(0);
+}
+.auth-modal__submit:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
 }
 
 /* ================= ПЕРЕМИКАЧ ================= */
@@ -8324,6 +8376,54 @@ input:checked + .settings-toggle__track::after {
     height: 8px;
   }
 }
+/* ================= WEIGHT GOAL WARNING ================= */
+.weight-goal-warning {
+  margin-top: 8px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  border-left: 3px solid #e67e22;
+  background: rgba(230, 126, 34, 0.08);
+  font-size: 12px;
+  color: var(--color-text-primary);
+  line-height: 1.6;
+}
+.weight-goal-warning[hidden] {
+  display: none;
+}
+.weight-goal-warning a {
+  color: #e67e22;
+  font-weight: 600;
+  text-decoration: underline;
+}
+.weight-goal-warning a:hover {
+  color: rgb(191.3536585366, 101.3048780488, 21.6463414634);
+}
+.weight-goal-warning strong {
+  font-weight: 600;
+}
+.weight-goal-warning--bmi {
+  margin-top: 10px;
+}
+[data-theme=dark] .weight-goal-warning {
+  background: rgba(230, 126, 34, 0.12);
+}
+
+/* ================= MEDICAL DISCLAIMER ================= */
+.medical-disclaimer {
+  margin: 24px 0 0;
+  padding: 10px 14px;
+  border-radius: 10px;
+  border-left: 3px solid var(--color-border);
+  background: var(--color-bg-secondary);
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+}
+.medical-disclaimer strong {
+  color: var(--color-text-primary);
+  font-weight: 600;
+}
+
 /* ================= WEEK MENU ================= */
 .week-menu {
   width: 100%;

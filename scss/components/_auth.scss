@@ -221,6 +221,57 @@
   }
 }
 
+/* ================= OAUTH CONSENT TEXT ================= */
+.auth-modal__oauth-consent {
+  font-size: 11px;
+  color: var(--color-text-secondary);
+  text-align: center;
+  margin: -6px 0 0;
+  line-height: 1.5;
+
+  a {
+    color: var(--color-accent);
+    text-decoration: underline;
+
+    &:hover {
+      color: var(--color-accent-hover);
+    }
+  }
+}
+
+/* ================= CONSENT CHECKBOX ================= */
+.form-group--consent {
+  margin-top: 4px;
+}
+
+.form-group__consent-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  cursor: pointer;
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+
+  input[type='checkbox'] {
+    flex-shrink: 0;
+    width: 16px;
+    height: 16px;
+    margin-top: 1px;
+    accent-color: var(--color-accent);
+    cursor: pointer;
+  }
+
+  a {
+    color: var(--color-accent);
+    text-decoration: underline;
+
+    &:hover {
+      color: var(--color-accent-hover);
+    }
+  }
+}
+
 /* ================= ПОМИЛКА / УСПІХ ================= */
 .auth-modal__error {
   font-size: 13px;
@@ -284,6 +335,13 @@
 
   &:active {
     transform: translateY(0);
+  }
+
+  &:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
   }
 }
 

@@ -560,7 +560,7 @@ footer
 # 🚀 TIER 1 — MUST до публічного launch
 
 > Без цього не запускаємось. Усе тут має бути зроблено фундаментально, без скорочень.
-> **Орієнтовно:** 8-12 тижнів роботи (включно з юристом і beta-тестуванням).
+> **Орієнтовно:** 8-12 тижнів роботи (включно з генерацією документів і beta-тестуванням).
 
 ---
 
@@ -640,12 +640,12 @@ footer
 
 ### 📄 Документи
 
-- [x] Privacy Policy — `privacy.html` (шаблон ua, потребує юриста + 3 мови)
-- [x] Terms of Service — `terms.html` (шаблон ua, потребує юриста + 3 мови)
-- [x] Cookie Policy — `cookies.html` (шаблон ua, потребує юриста + 3 мови)
-- [ ] Disclaimer "Не є медичною порадою" — на сторінках профілю, контролю ваги, активності, статистики
+- [x] Privacy Policy — `privacy.html` (шаблон ua → замінити на згенерований документ)
+- [x] Terms of Service — `terms.html` (шаблон ua → замінити на згенерований документ)
+- [x] Cookie Policy — `cookies.html` (шаблон ua → замінити на згенерований документ)
+- [x] Disclaimer "Не є медичною порадою" — на сторінках профілю, контролю ваги, активності, статистики
 - [x] Imprint / Impressum — `imprint.html` (шаблон, заповнити реальними даними)
-- [ ] DMCA / copyright complaint procedure — обов'язково для UGC платформи
+- [x] DMCA / copyright complaint procedure — `dmca.html`, посилання у футері всіх сторінок
 
 ### 🍪 Cookie consent banner
 
@@ -654,14 +654,14 @@ footer
 - [x] Granular toggles (панель "Налаштувати")
 - [x] Reject All на тому ж рівні видимості що Accept All (compliance)
 - [x] Збереження вибору на 6 місяців (localStorage)
-- [ ] Re-prompt при додаванні нових cookies (оновлювати вручну при зміні)
+- [x] Re-prompt при додаванні нових cookies — `CONSENT_VERSION` у `js/cookie-consent.js`, bump при змінах
 
 ### 🔐 GDPR — права юзера
 
 - [x] **Data Export** — `api/gdpr-export.js` → JSON (`SUPABASE_SERVICE_ROLE_KEY` додано у Vercel ✅)
 - [x] **Right to be Forgotten:** soft-delete + 30-денний grace period через `soft_delete_user()`
-  - [ ] Hard-delete CRON job після grace period
-  - [ ] Анонімізація платіжних записів
+  - [x] Hard-delete CRON job після grace period
+  - [ ] Анонімізація платіжних записів (TIER 1 → після Фази 19)
 - [x] **Data Rectification** — через профіль (вже працює)
 - [x] **Data Portability** — JSON export через `/api/gdpr-export`
 - [x] Логування GDPR-запитів у таблицю `gdpr_requests` — `20260518_1300_gdpr.sql`
@@ -678,8 +678,8 @@ footer
 
 ### 🧒 Edge cases
 
-- [ ] Age gate at signup: "Тобі є 16+?" (ЄС default; деякі країни — 13-15)
-- [ ] Disclaimer для weight goals: якщо BMI < 18.5 або ціль <17 → попередження + посилання на лікаря
+- [x] Age gate at signup: "Тобі є 16+?" (ЄС default; деякі країни — 13-15)
+- [x] Disclaimer для weight goals: якщо BMI < 18.5 або ціль <17 → попередження + посилання на лікаря
 - [ ] Disclaimer для пенсіонерів/вагітних
 
 ### ✅ QA
@@ -688,7 +688,7 @@ footer
 - [ ] Тест GDPR delete — акаунт видаляється
 - [ ] Тест cookie banner — refuse all → не вантажиться analytics
 - [ ] Тест: signup без accept Terms → блокується
-- [ ] **Юридичний review з юристом** (€200-500 одноразово) — НЕ пропускати
+- [ ] **Згенерувати фінальні документи** через спеціалізовані сервіси (iubenda / Termly / GetTerms) — Privacy Policy, Terms, Cookie Policy у 3 мовах → замінити поточні шаблони
 
 ---
 
@@ -1505,7 +1505,7 @@ footer
 | TIER 2 | 23-30  | 12-16 тижнів (3-4 міс) | Post-launch growth |
 | TIER 3 | 31-37  | 6-12 місяців           | Scale stage        |
 
-**Бюджет TIER 1:** ~$500-1000 одноразово (юрист) + ~$50-100/міс (Vercel Pro + Supabase Pro + email + monitoring)
+**Бюджет TIER 1:** ~$0-50/рік (iubenda/Termly план) + ~$50-100/міс (Vercel Pro + Supabase Pro + email + monitoring)
 
 ---
 

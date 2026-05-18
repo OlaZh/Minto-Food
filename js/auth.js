@@ -460,6 +460,7 @@ function createAuthModalHTML() {
             </svg>
             Зареєструватись через Google
           </button>
+          <p class="auth-modal__oauth-consent">Натискаючи цю кнопку, ви підтверджуєте, що вам є 16+ років, та погоджуєтесь з <a href="terms.html" target="_blank" rel="noopener">Умовами використання</a> і <a href="privacy.html" target="_blank" rel="noopener">Політикою конфіденційності</a>.</p>
 
           <div class="auth-modal__divider">
             <span>або</span>
@@ -483,9 +484,15 @@ function createAuthModalHTML() {
                 </button>
               </div>
             </div>
+            <div class="form-group form-group--consent">
+              <label class="form-group__consent-label">
+                <input type="checkbox" id="registerAgeConsent" />
+                <span>Мені є 16 або більше років. Я погоджуюсь з <a href="terms.html" target="_blank" rel="noopener">Умовами використання</a> та <a href="privacy.html" target="_blank" rel="noopener">Політикою конфіденційності</a>.</span>
+              </label>
+            </div>
             <p class="auth-modal__error" id="registerError" hidden></p>
             <p class="auth-modal__success" id="registerSuccess" hidden></p>
-            <button type="submit" class="auth-modal__submit">Створити акаунт</button>
+            <button type="submit" class="auth-modal__submit" id="registerSubmitBtn" disabled>Створити акаунт</button>
           </form>
 
           <p class="auth-modal__switch">
@@ -554,6 +561,12 @@ function initAuthModal() {
     }
   });
 
+  // Age consent — увімкнути/вимкнути кнопку реєстрації
+  document.getElementById('registerAgeConsent')?.addEventListener('change', (e) => {
+    const btn = document.getElementById('registerSubmitBtn');
+    if (btn) btn.disabled = !e.target.checked;
+  });
+
   // Форма реєстрації
   document.getElementById('registerForm')?.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -563,6 +576,14 @@ function initAuthModal() {
     const password = document.getElementById('registerPassword').value;
     const errorEl = document.getElementById('registerError');
     const successEl = document.getElementById('registerSuccess');
+
+    // Age gate (GDPR ЄС — мінімальний вік 16 років)
+    if (!document.getElementById('registerAgeConsent')?.checked) {
+      errorEl.textContent = 'Для реєстрації вам має бути 16 або більше років';
+      errorEl.hidden = false;
+      successEl.hidden = true;
+      return;
+    }
 
     const { error, message } = await signUpWithEmail(email, password, name);
 

@@ -659,7 +659,15 @@ function updateBMI(weight, height) {
   }
 
   if (bmiAdviceEl) {
-    bmiAdviceEl.innerHTML = `Для твого зросту ідеальна вага <strong>${Math.round(20 * h * h)}–${Math.round(24 * h * h)} кг</strong>`;
+    const idealMin = Math.round(20 * h * h);
+    const idealMax = Math.round(24 * h * h);
+    let html = `Для твого зросту ідеальна вага <strong>${idealMin}–${idealMax} кг</strong>`;
+    if (bmi < 18.5) {
+      html += `<div class="weight-goal-warning weight-goal-warning--bmi">
+        ІМТ нижче 18.5 відповідає <strong>недостатній вазі</strong>. Будь ласка, <a href="https://www.who.int/news-room/fact-sheets/detail/malnutrition" target="_blank" rel="noopener">зверніться до лікаря або дієтолога</a> для персонального плану харчування.
+      </div>`;
+    }
+    bmiAdviceEl.innerHTML = html;
   }
 }
 
@@ -731,6 +739,7 @@ function fillForm(data) {
 
   if (targetWeightInput && data.target_weight) {
     targetWeightInput.value = data.target_weight;
+    checkTargetWeightWarning(data.target_weight);
   }
 }
 
@@ -912,6 +921,14 @@ function generateWeightAdvice() {
 // SYNC WEIGHT INPUTS BETWEEN TABS
 // =====================================
 
+function checkTargetWeightWarning(value) {
+  const dangerous = value > 0 && value < 17;
+  ['targetWeightWarning', 'targetWeightWarning2'].forEach((id) => {
+    const el = document.getElementById(id);
+    if (el) el.hidden = !dangerous;
+  });
+}
+
 function syncWeightInputs() {
   const targetWeight1 = document.getElementById('targetWeight');
   const targetWeight2 = document.getElementById('targetWeight2');
@@ -921,10 +938,12 @@ function syncWeightInputs() {
   if (targetWeight1 && targetWeight2) {
     targetWeight1.addEventListener('input', () => {
       targetWeight2.value = targetWeight1.value;
+      checkTargetWeightWarning(parseFloat(targetWeight1.value));
       generateWeightAdvice();
     });
     targetWeight2.addEventListener('input', () => {
       targetWeight1.value = targetWeight2.value;
+      checkTargetWeightWarning(parseFloat(targetWeight2.value));
       generateWeightAdvice();
     });
   }

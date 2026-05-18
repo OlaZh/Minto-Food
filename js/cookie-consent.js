@@ -1,5 +1,15 @@
+// ─────────────────────────────────────────────────────────────
+// CONSENT_VERSION — підвищити коли додаються нові категорії cookies.
+// Це автоматично покаже банер повторно всім юзерам з попередньою версією.
+//
+// Приклади змін що вимагають bump:
+//   '1' → '2'  при додаванні нового провайдера (PostHog, Intercom і т.д.)
+//   '2' → '3'  при додаванні нової категорії cookies
+// ─────────────────────────────────────────────────────────────
+const CONSENT_VERSION = '1';
+
 const STORAGE_KEY = 'minto_consent';
-const SEEN_KEY   = 'minto_consent_seen';
+const SEEN_KEY    = 'minto_consent_seen';
 const TTL = 180 * 24 * 60 * 60 * 1000; // 6 місяців
 
 export function getConsent() {
@@ -11,6 +21,11 @@ export function getConsent() {
       localStorage.removeItem(STORAGE_KEY);
       return null;
     }
+    // Версія змінилась — згода вже недійсна, потрібен re-prompt
+    if (data.version !== CONSENT_VERSION) {
+      localStorage.removeItem(STORAGE_KEY);
+      return null;
+    }
     return data;
   } catch {
     return null;
@@ -18,10 +33,24 @@ export function getConsent() {
 }
 
 function save(consent) {
-  const data = { ...consent, necessary: true, savedAt: Date.now() };
+  const data = { ...consent, necessary: true, version: CONSENT_VERSION, savedAt: Date.now() };
   localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
   document.dispatchEvent(new CustomEvent('consentUpdated', { detail: data }));
   return data;
+}
+
+function seenForCurrentVersion() {
+  try {
+    const raw = localStorage.getItem(SEEN_KEY);
+    if (!raw) return false;
+    return JSON.parse(raw).version === CONSENT_VERSION;
+  } catch {
+    return false;
+  }
+}
+
+function markSeen() {
+  localStorage.setItem(SEEN_KEY, JSON.stringify({ version: CONSENT_VERSION }));
 }
 
 function buildBanner() {
@@ -60,10 +89,13 @@ function buildBanner() {
 }
 
 export function initCookieConsent() {
+  // Валідна згода для поточної версії — нічого не робимо
   if (getConsent()) return;
-  if (localStorage.getItem(SEEN_KEY)) return; // вже показували — не турбуємо знову
 
-  localStorage.setItem(SEEN_KEY, '1'); // фіксуємо що показали
+  // Банер вже показували для цієї версії — не турбуємо знову
+  if (seenForCurrentVersion()) return;
+
+  markSeen();
   const banner = buildBanner();
   document.body.appendChild(banner);
 
