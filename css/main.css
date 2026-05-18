@@ -6391,76 +6391,9 @@ textarea:-webkit-autofill:focus {
   transform: scale(1.15) rotate(15deg);
 }
 
-/* ================= HORIZONTAL FILTER TABS ================= */
+/* ================= FILTER PANEL (uses product-guide classes) ================= */
 .recipe-filters-panel {
-  margin-bottom: 24px;
-}
-
-.filter-tabs {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.filter-tab {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 8px 14px;
-  border-radius: 8px;
-  border: 1px solid var(--color-border);
-  background: var(--color-surface);
-  font-family: var(--font-body);
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--color-text-primary);
-  cursor: pointer;
-  white-space: nowrap;
-  transition: border-color var(--duration-fast) var(--ease-out), background-color var(--duration-fast) var(--ease-out), color var(--duration-fast) var(--ease-out);
-}
-.filter-tab:hover {
-  border-color: var(--color-accent);
-}
-.filter-tab--active {
-  background: var(--color-accent);
-  border-color: var(--color-accent);
-  color: var(--color-text-inverse);
-}
-.filter-tab--has-selection:not(.filter-tab--active) {
-  border-color: var(--color-accent);
-  color: var(--color-accent);
-}
-.filter-tab__badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 18px;
-  height: 18px;
-  padding: 0 5px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.9);
-  color: var(--color-accent);
-  font-size: 10px;
-  font-weight: 700;
-}
-.filter-tab__chevron {
-  width: 12px;
-  height: 12px;
-  flex-shrink: 0;
-  transition: transform var(--duration-fast) var(--ease-out);
-}
-.filter-tab__chevron--open {
-  transform: rotate(180deg);
-}
-
-.filter-subpanel {
-  display: none;
-  flex-wrap: wrap;
-  gap: 6px;
-  padding: 12px 2px 4px;
-}
-.filter-subpanel--open {
-  display: flex;
+  position: relative;
 }
 
 .filter-option {

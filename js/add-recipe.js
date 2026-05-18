@@ -324,7 +324,6 @@ async function buildFilterPanel() {
     ? `status.eq.published,user_id.eq.${user.id}`
     : 'status.eq.published';
 
-  // 1. Рахуємо значення колонок (category, type, cooking_method)
   const { data: pubRecipes } = await supabase
     .from('recipes')
     .select('id, category, type, cooking_method')
@@ -338,7 +337,6 @@ async function buildFilterPanel() {
     if (r.cooking_method) colCounts.cooking_method[r.cooking_method] = (colCounts.cooking_method[r.cooking_method] || 0) + 1;
   });
 
-  // 2. Завантажуємо теги і рахуємо через recipe_tags
   const { data: tags } = await supabase
     .from('tags')
     .select('id, code, type, name_ua, name_en, name_pl, icon')
@@ -356,7 +354,6 @@ async function buildFilterPanel() {
     });
   }
 
-  // 3. Групуємо теги по type
   const tagGroups = {};
   (tags || []).forEach((tag) => {
     if (!tagGroups[tag.type]) tagGroups[tag.type] = [];
@@ -365,143 +362,129 @@ async function buildFilterPanel() {
 
   panel.innerHTML = '';
 
-  // Збираємо всі групи в один масив
   const allGroups = [];
   for (const group of COLUMN_GROUPS) {
     allGroups.push({ id: group.id, label: t(group.labelKey), kind: 'column', group });
   }
-  // Тегові групи завжди показуємо (навіть якщо тегів ще немає в БД)
-  const TAG_GROUP_ORDER = ['dietary', 'lifestyle'];
-  for (const type of TAG_GROUP_ORDER) {
+  for (const type of ['dietary', 'lifestyle']) {
     const labelKey = TAG_GROUP_LABEL_KEYS[type];
     if (!labelKey) continue;
-    const groupTags = tagGroups[type] || [];
-    allGroups.push({ id: type, label: t(labelKey), kind: 'tag', groupTags });
+    allGroups.push({ id: type, label: t(labelKey), kind: 'tag', groupTags: tagGroups[type] || [] });
   }
 
-  // Хелпер: одна checkbox-мітка
-  function addOption(container, { key, value, label, icon, isChecked, count, onChange }) {
-    const el = document.createElement('label');
-    el.className =
-      'filter-option' +
-      (isChecked ? ' filter-option--checked' : '') +
-      (count === 0 ? ' filter-option--zero' : '');
-    el.innerHTML = `
-      <input type="checkbox" name="${key}" value="${value}" ${isChecked ? 'checked' : ''}>
-      ${icon ? `<span>${icon}</span>` : ''}
-      <span class="filter-option__label">${label}</span>
-      ${count > 0 ? `<span class="filter-option__count">${count}</span>` : ''}
-    `;
-    el.querySelector('input').addEventListener('change', onChange);
-    container.appendChild(el);
-  }
-
-  // Горизонтальний рядок вкладок
+  // Рядок вкладок — ті самі класи що на путівнику продуктів
   const tabsRow = document.createElement('div');
-  tabsRow.className = 'filter-tabs';
+  tabsRow.className = 'product-filters';
 
-  // Єдина панель підфільтрів (контент змінюється при кліку на вкладку)
-  const subPanel = document.createElement('div');
-  subPanel.className = 'filter-subpanel';
+  // Обгортка абсолютних панелей підфільтрів
+  const subfiltersWrapper = document.createElement('div');
+  subfiltersWrapper.className = 'product-subfilters';
 
-  function renderSubPanel(groupInfo) {
-    subPanel.innerHTML = '';
-    if (!groupInfo) {
-      subPanel.classList.remove('filter-subpanel--open');
-      return;
-    }
-    subPanel.classList.add('filter-subpanel--open');
-
-    if (groupInfo.kind === 'column') {
-      const group = groupInfo.group;
-      group.options.forEach((opt) => {
-        const count = colCounts[group.id][opt.value] || 0;
-        const isChecked = selectedFilters[group.id]?.has(opt.value) || false;
-        const label = opt[lang === 'en' ? 'en' : lang === 'pl' ? 'pl' : 'ua'] || opt.ua;
-        addOption(subPanel, {
-          key: group.id, value: opt.value, label, icon: opt.icon, isChecked, count,
-          onChange(e) {
-            if (!selectedFilters[group.id]) selectedFilters[group.id] = new Set();
-            if (e.target.checked) selectedFilters[group.id].add(opt.value);
-            else {
-              selectedFilters[group.id].delete(opt.value);
-              if (selectedFilters[group.id].size === 0) delete selectedFilters[group.id];
-            }
-            resetSearch();
-            _activeFilterTab = group.id;
-            buildFilterPanel();
-            hasActiveFilters() ? applyRecipeFilters() : loadAndDisplayRecipes();
-          },
-        });
-      });
-    } else {
-      groupInfo.groupTags.forEach((tag) => {
-        const count = tagCounts[tag.id] || 0;
-        const isChecked = selectedFilters[groupInfo.id]?.has(tag.id) || false;
-        const tagName = tag[nameField] || tag.name_ua;
-        addOption(subPanel, {
-          key: groupInfo.id, value: tag.id, label: tagName, icon: tag.icon, isChecked, count,
-          onChange(e) {
-            if (!selectedFilters[groupInfo.id]) selectedFilters[groupInfo.id] = new Set();
-            if (e.target.checked) selectedFilters[groupInfo.id].add(tag.id);
-            else {
-              selectedFilters[groupInfo.id].delete(tag.id);
-              if (selectedFilters[groupInfo.id].size === 0) delete selectedFilters[groupInfo.id];
-            }
-            resetSearch();
-            _activeFilterTab = groupInfo.id;
-            buildFilterPanel();
-            hasActiveFilters() ? applyRecipeFilters() : loadAndDisplayRecipes();
-          },
-        });
-      });
-    }
-  }
-
-  // Будуємо вкладки
   allGroups.forEach((groupInfo) => {
     const selCount = selectedFilters[groupInfo.id]?.size || 0;
     const isActive = _activeFilterTab === groupInfo.id;
 
-    const tab = document.createElement('button');
-    tab.type = 'button';
-    tab.className =
-      'filter-tab' +
-      (isActive ? ' filter-tab--active' : '') +
-      (selCount > 0 ? ' filter-tab--has-selection' : '');
-    tab.innerHTML = `
-      <span>${groupInfo.label}</span>
-      ${selCount > 0 ? `<span class="filter-tab__badge">${selCount}</span>` : ''}
-      <svg class="filter-tab__chevron${isActive ? ' filter-tab__chevron--open' : ''}" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
-    `;
+    // Таб-кнопка
+    const tabBtn = document.createElement('button');
+    tabBtn.type = 'button';
+    tabBtn.className = 'product-filters__item' + (isActive ? ' is-active' : '');
+    tabBtn.textContent = selCount > 0 ? `${groupInfo.label} (${selCount})` : groupInfo.label;
 
-    if (isActive) renderSubPanel(groupInfo);
+    // Панель підфільтрів
+    const groupPanel = document.createElement('div');
+    groupPanel.className = 'subfilter-group' + (isActive ? ' active' : '');
+    groupPanel.dataset.subfilter = groupInfo.id;
 
-    tab.addEventListener('click', () => {
-      if (_activeFilterTab === groupInfo.id) {
-        _activeFilterTab = null;
-        tab.classList.remove('filter-tab--active');
-        tab.querySelector('.filter-tab__chevron')?.classList.remove('filter-tab__chevron--open');
-        renderSubPanel(null);
-      } else {
-        tabsRow.querySelectorAll('.filter-tab').forEach((t) => {
-          t.classList.remove('filter-tab--active');
-          t.querySelector('.filter-tab__chevron')?.classList.remove('filter-tab__chevron--open');
+    function buildItems() {
+      if (groupInfo.kind === 'column') {
+        const group = groupInfo.group;
+        group.options.forEach((opt) => {
+          const count = colCounts[group.id][opt.value] || 0;
+          const isChecked = selectedFilters[group.id]?.has(opt.value) || false;
+          const label = opt[lang === 'en' ? 'en' : lang === 'pl' ? 'pl' : 'ua'] || opt.ua;
+
+          const item = document.createElement('button');
+          item.type = 'button';
+          item.className = 'subfilter-item' + (isChecked ? ' is-active' : '');
+          item.innerHTML = `${opt.icon ? opt.icon + ' ' : ''}${label}${count > 0 ? ` <span style="opacity:.55;font-size:11px;font-weight:600">${count}</span>` : ''}`;
+
+          item.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (!selectedFilters[group.id]) selectedFilters[group.id] = new Set();
+            if (selectedFilters[group.id].has(opt.value)) {
+              selectedFilters[group.id].delete(opt.value);
+              if (selectedFilters[group.id].size === 0) delete selectedFilters[group.id];
+              item.classList.remove('is-active');
+            } else {
+              selectedFilters[group.id].add(opt.value);
+              item.classList.add('is-active');
+            }
+            const newSel = selectedFilters[group.id]?.size || 0;
+            tabBtn.textContent = newSel > 0 ? `${groupInfo.label} (${newSel})` : groupInfo.label;
+            resetSearch();
+            hasActiveFilters() ? applyRecipeFilters() : loadAndDisplayRecipes();
+          });
+
+          groupPanel.appendChild(item);
         });
+      } else {
+        groupInfo.groupTags.forEach((tag) => {
+          const count = tagCounts[tag.id] || 0;
+          const isChecked = selectedFilters[groupInfo.id]?.has(tag.id) || false;
+          const tagName = tag[nameField] || tag.name_ua;
+
+          const item = document.createElement('button');
+          item.type = 'button';
+          item.className = 'subfilter-item' + (isChecked ? ' is-active' : '');
+          item.innerHTML = `${tag.icon ? tag.icon + ' ' : ''}${tagName}${count > 0 ? ` <span style="opacity:.55;font-size:11px;font-weight:600">${count}</span>` : ''}`;
+
+          item.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (!selectedFilters[groupInfo.id]) selectedFilters[groupInfo.id] = new Set();
+            if (selectedFilters[groupInfo.id].has(tag.id)) {
+              selectedFilters[groupInfo.id].delete(tag.id);
+              if (selectedFilters[groupInfo.id].size === 0) delete selectedFilters[groupInfo.id];
+              item.classList.remove('is-active');
+            } else {
+              selectedFilters[groupInfo.id].add(tag.id);
+              item.classList.add('is-active');
+            }
+            const newSel = selectedFilters[groupInfo.id]?.size || 0;
+            tabBtn.textContent = newSel > 0 ? `${groupInfo.label} (${newSel})` : groupInfo.label;
+            resetSearch();
+            hasActiveFilters() ? applyRecipeFilters() : loadAndDisplayRecipes();
+          });
+
+          groupPanel.appendChild(item);
+        });
+      }
+    }
+
+    buildItems();
+
+    tabBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const isOpen = groupPanel.classList.contains('active');
+
+      subfiltersWrapper.querySelectorAll('.subfilter-group').forEach((g) => g.classList.remove('active'));
+      tabsRow.querySelectorAll('.product-filters__item').forEach((b) => b.classList.remove('is-active'));
+
+      if (!isOpen) {
+        groupPanel.classList.add('active');
+        tabBtn.classList.add('is-active');
         _activeFilterTab = groupInfo.id;
-        tab.classList.add('filter-tab--active');
-        tab.querySelector('.filter-tab__chevron')?.classList.add('filter-tab__chevron--open');
-        renderSubPanel(groupInfo);
+      } else {
+        _activeFilterTab = null;
       }
     });
 
-    tabsRow.appendChild(tab);
+    tabsRow.appendChild(tabBtn);
+    subfiltersWrapper.appendChild(groupPanel);
   });
 
   panel.appendChild(tabsRow);
-  panel.appendChild(subPanel);
+  panel.appendChild(subfiltersWrapper);
 
-  // Кнопка "Скинути" якщо є активні фільтри
   if (hasActiveFilters()) {
     const resetRow = document.createElement('div');
     resetRow.className = 'filter-reset-row';
@@ -1603,6 +1586,15 @@ document.addEventListener('DOMContentLoaded', async () => {
   buildFilterPanel();
   loadAndDisplayRecipes();
   initAiUpload();
+
+  // Закриваємо підфільтри при кліку поза панеллю
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('#recipe-filters-panel')) {
+      document.querySelectorAll('#recipe-filters-panel .subfilter-group').forEach((g) => g.classList.remove('active'));
+      document.querySelectorAll('#recipe-filters-panel .product-filters__item').forEach((b) => b.classList.remove('is-active'));
+      _activeFilterTab = null;
+    }
+  });
 
   // Drawer "Нові рецепти"
   document.getElementById('btn-new-recipes')?.addEventListener('click', openNewRecipesDrawer);
