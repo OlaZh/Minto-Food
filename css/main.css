@@ -379,7 +379,7 @@ textarea:-webkit-autofill:focus {
   --focus-ring: 0 0 0 3px rgba(111, 207, 186, 0.35);
 }
 
-.week-modal__create-btn, .btn-danger, .water-btn, .week-nav-btn, .profile-signout-btn, .recipe-section__show-all, .day-week-nav__arrow, .new-recipes-drawer__close, #cancel-preview, .shop-action-btn, .cookbook-page__add-btn, .product-card__btn, .week-action-btn, .nickname-editor__cancel, .btn-new-recipes, .day-quick-btn, .api-result-card__content .api-add-btn, .recipe-card__btn, .smart-import__btn, .btn-save-mini, .btn-upload, .btn-add-recipe, .btn-secondary, .button--secondary, .shop-newlist__create-btn, .shop-wishlist__btn, .shop-add-form__btn, .nickname-editor__save, .preview-form__footer .btn-save, .btn-confirm, .btn-primary, .button--primary {
+.week-modal__create-btn, .btn-danger, .water-btn, .week-nav-btn, .profile-signout-btn, .recipe-section__show-all, .day-week-nav__arrow, .new-recipes-drawer__close, #cancel-preview, .shop-action-btn, .cookbook-page__add-btn, .product-card__btn, .week-action-btn, .nickname-editor__cancel, .btn-new-recipes, .day-quick-btn, .api-result-card__content .api-add-btn, .recipe-card__btn, .smart-import__btn, .btn-save-mini, .btn-upload, .btn-add-recipe, .btn-secondary, .button--secondary, .shop-newlist__create-btn, .shop-wishlist__btn, .shop-add-form__btn, .cookbook-empty__cta, .nickname-editor__save, .preview-form__footer .btn-save, .btn-confirm, .btn-primary, .button--primary {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -398,27 +398,27 @@ textarea:-webkit-autofill:focus {
   text-decoration: none;
   transition: background-color var(--duration-base) var(--ease-out), border-color var(--duration-base) var(--ease-out), transform var(--duration-fast) var(--ease-out), box-shadow var(--duration-base) var(--ease-out);
 }
-.week-modal__create-btn:focus-visible, .btn-danger:focus-visible, .water-btn:focus-visible, .week-nav-btn:focus-visible, .profile-signout-btn:focus-visible, .recipe-section__show-all:focus-visible, .day-week-nav__arrow:focus-visible, .new-recipes-drawer__close:focus-visible, #cancel-preview:focus-visible, .shop-action-btn:focus-visible, .cookbook-page__add-btn:focus-visible, .product-card__btn:focus-visible, .week-action-btn:focus-visible, .nickname-editor__cancel:focus-visible, .btn-new-recipes:focus-visible, .day-quick-btn:focus-visible, .api-result-card__content .api-add-btn:focus-visible, .recipe-card__btn:focus-visible, .smart-import__btn:focus-visible, .btn-save-mini:focus-visible, .btn-upload:focus-visible, .btn-add-recipe:focus-visible, .btn-secondary:focus-visible, .button--secondary:focus-visible, .shop-newlist__create-btn:focus-visible, .shop-wishlist__btn:focus-visible, .shop-add-form__btn:focus-visible, .nickname-editor__save:focus-visible, .preview-form__footer .btn-save:focus-visible, .btn-confirm:focus-visible, .btn-primary:focus-visible, .button--primary:focus-visible {
+.week-modal__create-btn:focus-visible, .btn-danger:focus-visible, .water-btn:focus-visible, .week-nav-btn:focus-visible, .profile-signout-btn:focus-visible, .recipe-section__show-all:focus-visible, .day-week-nav__arrow:focus-visible, .new-recipes-drawer__close:focus-visible, #cancel-preview:focus-visible, .shop-action-btn:focus-visible, .cookbook-page__add-btn:focus-visible, .product-card__btn:focus-visible, .week-action-btn:focus-visible, .nickname-editor__cancel:focus-visible, .btn-new-recipes:focus-visible, .day-quick-btn:focus-visible, .api-result-card__content .api-add-btn:focus-visible, .recipe-card__btn:focus-visible, .smart-import__btn:focus-visible, .btn-save-mini:focus-visible, .btn-upload:focus-visible, .btn-add-recipe:focus-visible, .btn-secondary:focus-visible, .button--secondary:focus-visible, .shop-newlist__create-btn:focus-visible, .shop-wishlist__btn:focus-visible, .shop-add-form__btn:focus-visible, .cookbook-empty__cta:focus-visible, .nickname-editor__save:focus-visible, .preview-form__footer .btn-save:focus-visible, .btn-confirm:focus-visible, .btn-primary:focus-visible, .button--primary:focus-visible {
   outline: none;
   box-shadow: var(--focus-ring);
 }
-.week-modal__create-btn:disabled, .btn-danger:disabled, .water-btn:disabled, .week-nav-btn:disabled, .profile-signout-btn:disabled, .recipe-section__show-all:disabled, .day-week-nav__arrow:disabled, .new-recipes-drawer__close:disabled, #cancel-preview:disabled, .shop-action-btn:disabled, .cookbook-page__add-btn:disabled, .product-card__btn:disabled, .week-action-btn:disabled, .nickname-editor__cancel:disabled, .btn-new-recipes:disabled, .day-quick-btn:disabled, .api-result-card__content .api-add-btn:disabled, .recipe-card__btn:disabled, .smart-import__btn:disabled, .btn-save-mini:disabled, .btn-upload:disabled, .btn-add-recipe:disabled, .btn-secondary:disabled, .button--secondary:disabled, .shop-newlist__create-btn:disabled, .shop-wishlist__btn:disabled, .shop-add-form__btn:disabled, .nickname-editor__save:disabled, .preview-form__footer .btn-save:disabled, .btn-confirm:disabled, .btn-primary:disabled, .button--primary:disabled {
+.week-modal__create-btn:disabled, .btn-danger:disabled, .water-btn:disabled, .week-nav-btn:disabled, .profile-signout-btn:disabled, .recipe-section__show-all:disabled, .day-week-nav__arrow:disabled, .new-recipes-drawer__close:disabled, #cancel-preview:disabled, .shop-action-btn:disabled, .cookbook-page__add-btn:disabled, .product-card__btn:disabled, .week-action-btn:disabled, .nickname-editor__cancel:disabled, .btn-new-recipes:disabled, .day-quick-btn:disabled, .api-result-card__content .api-add-btn:disabled, .recipe-card__btn:disabled, .smart-import__btn:disabled, .btn-save-mini:disabled, .btn-upload:disabled, .btn-add-recipe:disabled, .btn-secondary:disabled, .button--secondary:disabled, .shop-newlist__create-btn:disabled, .shop-wishlist__btn:disabled, .shop-add-form__btn:disabled, .cookbook-empty__cta:disabled, .nickname-editor__save:disabled, .preview-form__footer .btn-save:disabled, .btn-confirm:disabled, .btn-primary:disabled, .button--primary:disabled {
   opacity: 0.5;
   cursor: not-allowed;
   pointer-events: none;
 }
 
-.shop-newlist__create-btn, .shop-wishlist__btn, .shop-add-form__btn, .nickname-editor__save, .preview-form__footer .btn-save, .btn-confirm, .btn-primary, .button--primary {
+.shop-newlist__create-btn, .shop-wishlist__btn, .shop-add-form__btn, .cookbook-empty__cta, .nickname-editor__save, .preview-form__footer .btn-save, .btn-confirm, .btn-primary, .button--primary {
   background: var(--color-accent);
   color: var(--color-text-inverse);
   box-shadow: var(--shadow-1);
 }
-.shop-newlist__create-btn:hover:not(:disabled), .shop-wishlist__btn:hover:not(:disabled), .shop-add-form__btn:hover:not(:disabled), .nickname-editor__save:hover:not(:disabled), .preview-form__footer .btn-save:hover:not(:disabled), .btn-confirm:hover:not(:disabled), .btn-primary:hover:not(:disabled), .button--primary:hover:not(:disabled) {
+.shop-newlist__create-btn:hover:not(:disabled), .shop-wishlist__btn:hover:not(:disabled), .shop-add-form__btn:hover:not(:disabled), .cookbook-empty__cta:hover:not(:disabled), .nickname-editor__save:hover:not(:disabled), .preview-form__footer .btn-save:hover:not(:disabled), .btn-confirm:hover:not(:disabled), .btn-primary:hover:not(:disabled), .button--primary:hover:not(:disabled) {
   background: var(--color-accent-hover);
   transform: translateY(-1px);
   box-shadow: var(--shadow-2);
 }
-.shop-newlist__create-btn:active:not(:disabled), .shop-wishlist__btn:active:not(:disabled), .shop-add-form__btn:active:not(:disabled), .nickname-editor__save:active:not(:disabled), .preview-form__footer .btn-save:active:not(:disabled), .btn-confirm:active:not(:disabled), .btn-primary:active:not(:disabled), .button--primary:active:not(:disabled) {
+.shop-newlist__create-btn:active:not(:disabled), .shop-wishlist__btn:active:not(:disabled), .shop-add-form__btn:active:not(:disabled), .cookbook-empty__cta:active:not(:disabled), .nickname-editor__save:active:not(:disabled), .preview-form__footer .btn-save:active:not(:disabled), .btn-confirm:active:not(:disabled), .btn-primary:active:not(:disabled), .button--primary:active:not(:disabled) {
   transform: translateY(0);
   box-shadow: var(--shadow-1);
 }
@@ -10742,6 +10742,16 @@ input:checked + .settings-toggle__track::after {
   }
 }
 
+.cookbook-empty {
+  grid-column: 1/-1;
+  text-align: center;
+  padding: var(--space-2xl) var(--space-lg);
+}
+.cookbook-empty__text {
+  color: var(--color-text-secondary);
+  font-size: 15px;
+  margin-bottom: var(--space-md);
+}
 /* ================= RIGHT SIDEBAR ================= */
 .cookbook-sidebar {
   position: sticky;

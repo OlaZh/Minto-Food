@@ -133,10 +133,10 @@ function initIconPicker() {
 }
 
 function setupEventListeners() {
-  // Додати книгу (обидві кнопки — десктопна і мобільна)
-  document
-    .querySelectorAll('.js-add-book-btn')
-    .forEach((btn) => btn.addEventListener('click', () => openModal(newBookModal)));
+  // Додати книгу — делегація, бо кнопка в empty state додається динамічно
+  document.addEventListener('click', (e) => {
+    if (e.target.closest('.js-add-book-btn')) openModal(newBookModal);
+  });
 
   // Закрити модалки
   closeBookModal?.addEventListener('click', () => closeModal(bookModal));
@@ -233,11 +233,20 @@ async function loadBooks() {
 }
 
 async function renderBooks(books) {
-  // Видаляємо скелетони і старі книги
-  const existingBooks = booksGrid.querySelectorAll('.cookbook-book, .skeleton-book');
+  const existingBooks = booksGrid.querySelectorAll('.cookbook-book, .skeleton-book, .cookbook-empty');
   existingBooks.forEach((el) => el.remove());
 
-  // Додаємо книги
+  if (books.length === 0) {
+    const empty = document.createElement('div');
+    empty.className = 'cookbook-empty';
+    empty.innerHTML = `
+      <p class="cookbook-empty__text">У вас поки немає жодної книги</p>
+      <button class="cookbook-empty__cta js-add-book-btn">Створити першу книгу</button>
+    `;
+    booksGrid.appendChild(empty);
+    return;
+  }
+
   for (const book of books) {
     const bookEl = await createBookElement(book);
     booksGrid.appendChild(bookEl);
