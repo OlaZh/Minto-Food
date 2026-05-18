@@ -54,6 +54,7 @@ let selectedIcon = 'book';
 let editSelectedCover = null;
 let _setupDone = false;
 let _loadVersion = 0;
+let _initialLoadDone = false;
 
 // =====================================
 // DOM ЕЛЕМЕНТИ
@@ -89,6 +90,7 @@ async function init() {
     }
     if (event === 'SIGNED_OUT') {
       currentUser = null;
+      _initialLoadDone = false;
     }
   });
 
@@ -105,8 +107,11 @@ function _onUserReady() {
   createEditBookModal();
   createCoverPickerModal();
 
-  loadBooks();
-  loadRecentRecipes();
+  if (!_initialLoadDone) {
+    _initialLoadDone = true;
+    loadBooks();
+    loadRecentRecipes();
+  }
 
   if (!_setupDone) {
     _setupDone = true;
