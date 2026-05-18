@@ -82,7 +82,7 @@ document.addEventListener('DOMContentLoaded', init);
 
 async function init() {
   const user = await initAuth((event, u) => {
-    if ((event === 'SIGNED_IN' || event === 'INITIAL_SESSION') && u) {
+    if (event === 'SIGNED_IN' && u) {
       currentUser = u;
       _onUserReady();
     }
