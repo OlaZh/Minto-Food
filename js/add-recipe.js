@@ -235,6 +235,9 @@ const COLUMN_GROUP_IDS = new Set(COLUMN_GROUPS.map((g) => g.id));
 //   для tag-груп   → Set<number tagId>
 const selectedFilters = {};
 
+// id вкладки, яка зараз відкрита (зберігається між перебудовами панелі)
+let _activeFilterTab = null;
+
 function hasActiveFilters() {
   return Object.values(selectedFilters).some((s) => s.size > 0);
 }
@@ -330,9 +333,9 @@ async function buildFilterPanel() {
   const pubIds = (pubRecipes || []).map((r) => r.id);
   const colCounts = { category: {}, dish_type: {}, cooking_method: {} };
   (pubRecipes || []).forEach((r) => {
-    if (r.category)        colCounts.category[r.category]             = (colCounts.category[r.category] || 0) + 1;
-    if (r.type)            colCounts.dish_type[r.type]                = (colCounts.dish_type[r.type] || 0) + 1;
-    if (r.cooking_method)  colCounts.cooking_method[r.cooking_method] = (colCounts.cooking_method[r.cooking_method] || 0) + 1;
+    if (r.category)       colCounts.category[r.category]             = (colCounts.category[r.category] || 0) + 1;
+    if (r.type)           colCounts.dish_type[r.type]                = (colCounts.dish_type[r.type] || 0) + 1;
+    if (r.cooking_method) colCounts.cooking_method[r.cooking_method] = (colCounts.cooking_method[r.cooking_method] || 0) + 1;
   });
 
   // 2. Завантажуємо теги і рахуємо через recipe_tags
@@ -361,34 +364,16 @@ async function buildFilterPanel() {
   });
 
   panel.innerHTML = '';
-  let groupIdx = 0;
 
-  // Хелпер: будує один accordion-блок
-  function buildGroup(id, label, body) {
-    const isOpen = groupIdx === 0;
-    const totalSelected = selectedFilters[id]?.size || 0;
-    const badge = totalSelected > 0
-      ? `<span class="filter-group__badge">${totalSelected}</span>` : '';
-
-    const groupEl = document.createElement('div');
-    groupEl.className = 'filter-group' + (isOpen ? ' filter-group--open' : '');
-    groupEl.innerHTML = `
-      <button class="filter-group__header" type="button" aria-expanded="${isOpen}">
-        <span class="filter-group__label">${label}${badge}</span>
-        ${iconChevronDown.replace('<svg ', '<svg class="filter-group__chevron" ')}
-      </button>
-      <div class="filter-group__body"></div>
-    `;
-    const bodyEl = groupEl.querySelector('.filter-group__body');
-    body(bodyEl);
-
-    groupEl.querySelector('.filter-group__header').addEventListener('click', () => {
-      const open = groupEl.classList.toggle('filter-group--open');
-      groupEl.querySelector('.filter-group__header').setAttribute('aria-expanded', open);
-    });
-
-    panel.appendChild(groupEl);
-    groupIdx++;
+  // Збираємо всі групи в один масив
+  const allGroups = [];
+  for (const group of COLUMN_GROUPS) {
+    allGroups.push({ id: group.id, label: t(group.labelKey), kind: 'column', group });
+  }
+  for (const [type, groupTags] of Object.entries(tagGroups)) {
+    const labelKey = TAG_GROUP_LABEL_KEYS[type];
+    if (!labelKey) continue;
+    allGroups.push({ id: type, label: t(labelKey), kind: 'tag', groupTags });
   }
 
   // Хелпер: одна checkbox-мітка
@@ -408,20 +393,30 @@ async function buildFilterPanel() {
     container.appendChild(el);
   }
 
-  // 4. Будуємо COLUMN-групи
-  for (const group of COLUMN_GROUPS) {
-    buildGroup(group.id, t(group.labelKey), (body) => {
+  // Горизонтальний рядок вкладок
+  const tabsRow = document.createElement('div');
+  tabsRow.className = 'filter-tabs';
+
+  // Єдина панель підфільтрів (контент змінюється при кліку на вкладку)
+  const subPanel = document.createElement('div');
+  subPanel.className = 'filter-subpanel';
+
+  function renderSubPanel(groupInfo) {
+    subPanel.innerHTML = '';
+    if (!groupInfo) {
+      subPanel.classList.remove('filter-subpanel--open');
+      return;
+    }
+    subPanel.classList.add('filter-subpanel--open');
+
+    if (groupInfo.kind === 'column') {
+      const group = groupInfo.group;
       group.options.forEach((opt) => {
         const count = colCounts[group.id][opt.value] || 0;
         const isChecked = selectedFilters[group.id]?.has(opt.value) || false;
         const label = opt[lang === 'en' ? 'en' : lang === 'pl' ? 'pl' : 'ua'] || opt.ua;
-        addOption(body, {
-          key: group.id,
-          value: opt.value,
-          label,
-          icon: opt.icon,
-          isChecked,
-          count,
+        addOption(subPanel, {
+          key: group.id, value: opt.value, label, icon: opt.icon, isChecked, count,
           onChange(e) {
             if (!selectedFilters[group.id]) selectedFilters[group.id] = new Set();
             if (e.target.checked) selectedFilters[group.id].add(opt.value);
@@ -430,47 +425,80 @@ async function buildFilterPanel() {
               if (selectedFilters[group.id].size === 0) delete selectedFilters[group.id];
             }
             resetSearch();
+            _activeFilterTab = group.id;
             buildFilterPanel();
             hasActiveFilters() ? applyRecipeFilters() : loadAndDisplayRecipes();
           },
         });
       });
-    });
-  }
-
-  // 5. Будуємо TAG-групи (dietary, lifestyle)
-  Object.entries(tagGroups).forEach(([type, groupTags]) => {
-    const labelKey = TAG_GROUP_LABEL_KEYS[type];
-    if (!labelKey) return;
-    buildGroup(type, t(labelKey), (body) => {
-      groupTags.forEach((tag) => {
+    } else {
+      groupInfo.groupTags.forEach((tag) => {
         const count = tagCounts[tag.id] || 0;
-        const isChecked = selectedFilters[type]?.has(tag.id) || false;
+        const isChecked = selectedFilters[groupInfo.id]?.has(tag.id) || false;
         const tagName = tag[nameField] || tag.name_ua;
-        addOption(body, {
-          key: type,
-          value: tag.id,
-          label: tagName,
-          icon: tag.icon,
-          isChecked,
-          count,
+        addOption(subPanel, {
+          key: groupInfo.id, value: tag.id, label: tagName, icon: tag.icon, isChecked, count,
           onChange(e) {
-            if (!selectedFilters[type]) selectedFilters[type] = new Set();
-            if (e.target.checked) selectedFilters[type].add(tag.id);
+            if (!selectedFilters[groupInfo.id]) selectedFilters[groupInfo.id] = new Set();
+            if (e.target.checked) selectedFilters[groupInfo.id].add(tag.id);
             else {
-              selectedFilters[type].delete(tag.id);
-              if (selectedFilters[type].size === 0) delete selectedFilters[type];
+              selectedFilters[groupInfo.id].delete(tag.id);
+              if (selectedFilters[groupInfo.id].size === 0) delete selectedFilters[groupInfo.id];
             }
             resetSearch();
+            _activeFilterTab = groupInfo.id;
             buildFilterPanel();
             hasActiveFilters() ? applyRecipeFilters() : loadAndDisplayRecipes();
           },
         });
       });
+    }
+  }
+
+  // Будуємо вкладки
+  allGroups.forEach((groupInfo) => {
+    const selCount = selectedFilters[groupInfo.id]?.size || 0;
+    const isActive = _activeFilterTab === groupInfo.id;
+
+    const tab = document.createElement('button');
+    tab.type = 'button';
+    tab.className =
+      'filter-tab' +
+      (isActive ? ' filter-tab--active' : '') +
+      (selCount > 0 ? ' filter-tab--has-selection' : '');
+    tab.innerHTML = `
+      <span>${groupInfo.label}</span>
+      ${selCount > 0 ? `<span class="filter-tab__badge">${selCount}</span>` : ''}
+      <svg class="filter-tab__chevron${isActive ? ' filter-tab__chevron--open' : ''}" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+    `;
+
+    if (isActive) renderSubPanel(groupInfo);
+
+    tab.addEventListener('click', () => {
+      if (_activeFilterTab === groupInfo.id) {
+        _activeFilterTab = null;
+        tab.classList.remove('filter-tab--active');
+        tab.querySelector('.filter-tab__chevron')?.classList.remove('filter-tab__chevron--open');
+        renderSubPanel(null);
+      } else {
+        tabsRow.querySelectorAll('.filter-tab').forEach((t) => {
+          t.classList.remove('filter-tab--active');
+          t.querySelector('.filter-tab__chevron')?.classList.remove('filter-tab__chevron--open');
+        });
+        _activeFilterTab = groupInfo.id;
+        tab.classList.add('filter-tab--active');
+        tab.querySelector('.filter-tab__chevron')?.classList.add('filter-tab__chevron--open');
+        renderSubPanel(groupInfo);
+      }
     });
+
+    tabsRow.appendChild(tab);
   });
 
-  // 6. Кнопка "Скинути" якщо є активні фільтри
+  panel.appendChild(tabsRow);
+  panel.appendChild(subPanel);
+
+  // Кнопка "Скинути" якщо є активні фільтри
   if (hasActiveFilters()) {
     const resetRow = document.createElement('div');
     resetRow.className = 'filter-reset-row';
@@ -480,6 +508,7 @@ async function buildFilterPanel() {
     resetBtn.textContent = t('filterReset');
     resetBtn.addEventListener('click', () => {
       Object.keys(selectedFilters).forEach((k) => delete selectedFilters[k]);
+      _activeFilterTab = null;
       buildFilterPanel();
       loadAndDisplayRecipes();
     });
