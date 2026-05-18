@@ -53,7 +53,7 @@ let currentBookId = null;
 let selectedIcon = 'book';
 let editSelectedCover = null;
 let _setupDone = false;
-let _initialLoadDone = false;
+let _loadVersion = 0;
 
 // =====================================
 // DOM ЕЛЕМЕНТИ
@@ -89,7 +89,6 @@ async function init() {
     }
     if (event === 'SIGNED_OUT') {
       currentUser = null;
-      _initialLoadDone = false;
     }
   });
 
@@ -106,11 +105,8 @@ function _onUserReady() {
   createEditBookModal();
   createCoverPickerModal();
 
-  if (!_initialLoadDone) {
-    _initialLoadDone = true;
-    loadBooks();
-    loadRecentRecipes();
-  }
+  loadBooks();
+  loadRecentRecipes();
 
   if (!_setupDone) {
     _setupDone = true;
@@ -192,6 +188,7 @@ function showBookSkeletons(count = 4) {
 }
 
 async function loadBooks() {
+  const version = ++_loadVersion;
   showBookSkeletons();
   try {
     const { data: books, error } = await supabase
@@ -201,17 +198,19 @@ async function loadBooks() {
       .order('is_default', { ascending: false })
       .order('created_at', { ascending: true });
 
+    if (version !== _loadVersion) return;
     if (error) throw error;
 
-    await renderBooks(books || []);
+    await renderBooks(books || [], version);
   } catch (err) {
+    if (version !== _loadVersion) return;
     console.error('Error loading books:', err);
     const existing = booksGrid?.querySelectorAll('.skeleton-book');
     existing?.forEach((el) => el.remove());
   }
 }
 
-async function renderBooks(books) {
+async function renderBooks(books, version) {
   const existingBooks = booksGrid.querySelectorAll('.cookbook-book, .skeleton-book, .cookbook-empty');
   existingBooks.forEach((el) => el.remove());
 
@@ -227,7 +226,9 @@ async function renderBooks(books) {
   }
 
   for (const book of books) {
+    if (version !== _loadVersion) return;
     const bookEl = await createBookElement(book);
+    if (version !== _loadVersion) return;
     booksGrid.appendChild(bookEl);
   }
 }
@@ -678,9 +679,8 @@ async function loadRecentRecipes() {
 
     const { data, error } = await supabase
       .from('cookbook_recipes')
-      .select('created_at, recipes ( id, name_ua, image, kcal )')
+      .select('recipe_id, recipes ( id, name_ua, image, kcal )')
       .in('cookbook_id', bookIds)
-      .order('created_at', { ascending: false })
       .limit(20);
 
     if (error) throw error;
