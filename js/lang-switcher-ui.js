@@ -1,4 +1,5 @@
 import { getLang, setLang } from './storage.js';
+import { iconChevronDown } from './icons.js';
 
 (() => {
   const LABELS = { ua: 'UA', pl: 'PL', en: 'EN' };
@@ -23,7 +24,7 @@ import { getLang, setLang } from './storage.js';
     btn.className = 'lang-dropdown__btn';
     btn.setAttribute('aria-haspopup', 'listbox');
     btn.setAttribute('aria-expanded', 'false');
-    btn.innerHTML = `<span class="lang-dropdown__current">${LABELS[currentLang]}</span><svg class="lang-dropdown__chevron" width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 4l4 4 4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+    btn.innerHTML = `<span class="lang-dropdown__current">${LABELS[currentLang]}</span>${iconChevronDown.replace('<svg ', '<svg class="lang-dropdown__chevron" width="12" height="12" ')}`;
 
     const menu = document.createElement('ul');
     menu.className = 'lang-dropdown__menu';

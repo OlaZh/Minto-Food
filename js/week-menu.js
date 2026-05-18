@@ -6,6 +6,7 @@ import { showToast, getLocalDateString } from './utils.js';
 import { showLoading, showEmpty, showConfirmModal } from './ui-components.js';
 import { getLang, setLang, saveWeekShoppingList, setItem, getItem } from './storage.js';
 import { getRecipeDisplayName } from './recipe-utils.js';
+import { iconMoreVertical, iconPlus } from './icons.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
   // ================== МОВА ==================
@@ -968,9 +969,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           <span>Прийоми їжі</span>
           <div class="week-mobile__menu-wrap">
             <button type="button" class="week-mobile__menu-btn" aria-label="Дії">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                <circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/>
-              </svg>
+              ${iconMoreVertical.replace('<svg ', '<svg width="16" height="16" ')}
             </button>
             <div class="week-mobile__dropdown" hidden>
               <button type="button" class="week-mobile__dropdown-item js-mob-copy">Копіювати тиждень</button>
@@ -1026,7 +1025,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         addBtn.dataset.day = day;
         addBtn.dataset.meal = mealType;
         addBtn.innerHTML =
-          '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>';
+          iconPlus.replace('<svg ', '<svg width="12" height="12" ');
 
         const infoText = count > 0 ? count + ' ' + countWord + ' · ' + kcal + ' ккал' : '';
         accHeader.innerHTML = `

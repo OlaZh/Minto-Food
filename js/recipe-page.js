@@ -5,6 +5,7 @@
 
 import { supabase }                        from './supabaseClient.js';
 import { initAuth, isLoggedIn, openAuthModal } from './auth.js';
+import { iconShare } from './icons.js';
 
 const CATEGORY_LABELS = {
   breakfast: 'Сніданок', lunch: 'Обід',    dinner: 'Вечеря',
@@ -110,10 +111,7 @@ function _renderRecipe(recipe, authorName, ingredients) {
     ...timeParts.map(t => `<span class="rp-meta__dot">${_esc(t)}</span>`),
     `<span>${_formatDate(recipe.created_at)}</span>`,
     `<button class="rp-share-btn" id="rpShareBtn" title="Поділитися рецептом" type="button">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-        <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
-        <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
-      </svg>
+      ${iconShare.replace('<svg ', '<svg width="16" height="16" aria-hidden="true" ')}
       Поділитися
     </button>`,
   ].filter(Boolean).join('');

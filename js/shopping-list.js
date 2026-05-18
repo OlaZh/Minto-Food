@@ -10,6 +10,7 @@ import { initAuth } from './auth.js';
 import { showToast, escapeHTML } from './utils.js';
 import { lockScroll, unlockScroll } from './scroll-lock.js';
 import { getWeekShoppingList, clearWeekShoppingList } from './storage.js';
+import { iconLock, iconPin, iconMoreVertical, iconChevronRight, iconEdit, iconTrash } from './icons.js';
 import { showConfirmModal } from './ui-components.js';
 
 /* ============================================================
@@ -172,11 +173,11 @@ function buildListItem(list) {
   const isPermanent = list.type === 'permanent';
 
   const lockIcon = isPermanent
-    ? `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>`
+    ? iconLock.replace('<svg ', '<svg width="11" height="11" ')
     : '';
 
   const pinBadge = (!isPermanent && list.is_pinned)
-    ? `<svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" stroke="none" style="color:var(--color-accent)"><path d="M16 2v10l2 2v2H6v-2l2-2V2h8zM8 20h8m-4 2v-2"/></svg>`
+    ? iconPin.replace('<svg ', '<svg width="10" height="10" style="color:var(--color-accent)" ')
     : '';
 
   const meta = isPermanent
@@ -185,9 +186,7 @@ function buildListItem(list) {
 
   const dotsMenu = !isPermanent ? `
     <button class="shop-list-item__dots-btn" aria-label="Меню списку">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="none">
-        <circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/>
-      </svg>
+      ${iconMoreVertical.replace('<svg ', '<svg width="14" height="14" ')}
     </button>
     <div class="shop-list-item__dropdown" hidden>
       ${list.is_pinned
@@ -206,7 +205,7 @@ function buildListItem(list) {
       </div>
       <div class="shop-list-item__controls">
         ${dotsMenu}
-        <svg class="shop-list-item__chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        ${iconChevronRight.replace('<svg ', '<svg class="shop-list-item__chevron" width="14" height="14" ')}
       </div>
     </div>
     <ul class="shop-list-item__sub-items" hidden></ul>
@@ -328,17 +327,10 @@ function buildPanelSubItem(item, listId, container) {
     ${amountText ? `<span class="shop-list-item__sub-amount">${escapeHTML(amountText)}</span>` : ''}
     <button class="shop-list-item__sub-add" title="Додати до активного списку">→</button>
     <button class="shop-list-item__sub-btn shop-list-item__sub-btn--edit" aria-label="Редагувати">
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-      </svg>
+      ${iconEdit.replace('<svg ', '<svg width="12" height="12" ')}
     </button>
     <button class="shop-list-item__sub-btn shop-list-item__sub-btn--delete" aria-label="Видалити">
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <polyline points="3 6 5 6 21 6"/>
-        <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
-        <path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/>
-      </svg>
+      ${iconTrash.replace('<svg ', '<svg width="12" height="12" ')}
     </button>
   `;
 
@@ -540,17 +532,10 @@ function buildActiveItem(item) {
     ${amountText ? `<span class="shop-item__amount">${escapeHTML(amountText)}</span>` : ''}
     <div class="shop-item__actions">
       <button class="shop-item__btn shop-item__btn--edit" aria-label="Редагувати">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-        </svg>
+        ${iconEdit.replace('<svg ', '<svg width="14" height="14" ')}
       </button>
       <button class="shop-item__btn shop-item__btn--delete" aria-label="Видалити">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="3 6 5 6 21 6"/>
-          <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
-          <path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/>
-        </svg>
+        ${iconTrash.replace('<svg ', '<svg width="14" height="14" ')}
       </button>
     </div>
   `;

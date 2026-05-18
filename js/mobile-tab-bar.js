@@ -1,5 +1,9 @@
 import { lockScroll, unlockScroll } from './scroll-lock.js';
 import { isAdmin, openAdminPanel } from './auth.js';
+import {
+  iconCalendar, iconGrid, iconUtensils, iconListChecks, iconMoreVertical,
+  iconBookOpen, iconLeaf, iconUser, iconShield,
+} from './icons.js';
 
 (() => {
   const PAGE_MAP = [
@@ -20,12 +24,16 @@ import { isAdmin, openAdminPanel } from './auth.js';
     return 'day';
   }
 
+  function tabIcon(svg) {
+    return svg.replace('<svg ', '<svg class="mobile-tab-bar__icon" ');
+  }
+
   const ICONS = {
-    day: `<svg class="mobile-tab-bar__icon" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>`,
-    week: `<svg class="mobile-tab-bar__icon" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>`,
-    recipes: `<svg class="mobile-tab-bar__icon" viewBox="0 0 24 24"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3zm0 0v7"/></svg>`,
-    shopping: `<svg class="mobile-tab-bar__icon" viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>`,
-    more: `<svg class="mobile-tab-bar__icon" viewBox="0 0 24 24"><circle cx="12" cy="5" r="1" fill="currentColor"/><circle cx="12" cy="12" r="1" fill="currentColor"/><circle cx="12" cy="19" r="1" fill="currentColor"/></svg>`,
+    day:      tabIcon(iconCalendar),
+    week:     tabIcon(iconGrid),
+    recipes:  tabIcon(iconUtensils),
+    shopping: tabIcon(iconListChecks),
+    more:     tabIcon(iconMoreVertical),
   };
 
   const TABS = [
@@ -37,27 +45,10 @@ import { isAdmin, openAdminPanel } from './auth.js';
   ];
 
   const SHEET_LINKS = [
-    {
-      href: 'cookbook.html',
-      label: 'Книга рецептів',
-      icon: `<svg viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>`,
-    },
-    {
-      href: 'product-guide.html',
-      label: 'Путівник',
-      icon: `<svg viewBox="0 0 24 24"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></svg>`,
-    },
-    {
-      href: 'profile.html',
-      label: 'Профіль',
-      icon: `<svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`,
-    },
-    {
-      href: '#',
-      label: 'Адмінка',
-      icon: `<svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>`,
-      adminOnly: true,
-    },
+    { href: 'cookbook.html',     label: 'Книга рецептів', icon: iconBookOpen },
+    { href: 'product-guide.html',label: 'Путівник',       icon: iconLeaf    },
+    { href: 'profile.html',      label: 'Профіль',        icon: iconUser    },
+    { href: '#', label: 'Адмінка', icon: iconShield, adminOnly: true },
   ];
 
   function buildTabBar(activeTab) {

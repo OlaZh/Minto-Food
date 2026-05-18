@@ -7,6 +7,7 @@ import { supabase } from './supabaseClient.js';
 import { showToast } from './utils.js';
 import { lockScroll, unlockScroll } from './scroll-lock.js';
 import { getLang } from './storage.js';
+import { iconChevronDown, iconUser, iconShield, iconLogOut, iconEye } from './icons.js';
 
 // =============================================================
 // СТАН
@@ -274,9 +275,7 @@ function updateAuthUI() {
         ${avatarUrl ? `<img src="${avatarUrl}" alt="${firstName}" class="header__avatar-img">` : ''}
       </div>
       <span class="header__avatar-name">${firstName}</span>
-      <svg class="header__avatar-chevron" width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
-        <path d="M2 4l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
+      ${iconChevronDown.replace('<svg ', '<svg class="header__avatar-chevron" width="12" height="12" aria-hidden="true" ')}
     `;
     authBtnEl.onclick = (e) => {
       e.preventDefault();
@@ -322,25 +321,16 @@ function ensureUserDropdown(wrap) {
   dropdown.setAttribute('hidden', '');
   dropdown.innerHTML = `
     <a href="profile.html" class="header__user-dropdown-item">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-        <circle cx="12" cy="7" r="4"/>
-      </svg>
+      ${iconUser.replace('<svg ', '<svg width="16" height="16" aria-hidden="true" ')}
       Мій профіль
     </a>
     <a href="#" class="header__user-dropdown-item header__user-dropdown-item--admin" id="headerAdminLink" hidden>
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-      </svg>
+      ${iconShield.replace('<svg ', '<svg width="16" height="16" aria-hidden="true" ')}
       Адмінка
     </a>
     <div class="header__user-dropdown-divider"></div>
     <button type="button" class="header__user-dropdown-item header__user-dropdown-item--danger" id="headerSignOutDropdownBtn">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-        <polyline points="16 17 21 12 16 7"/>
-        <line x1="21" y1="12" x2="9" y2="12"/>
-      </svg>
+      ${iconLogOut.replace('<svg ', '<svg width="16" height="16" aria-hidden="true" ')}
       Вийти
     </button>
   `;
@@ -445,7 +435,7 @@ function createAuthModalHTML() {
               <div class="form-group__password-wrap">
                 <input type="password" id="loginPassword" placeholder="••••••••" required />
                 <button type="button" class="form-group__eye" data-target="loginPassword" aria-label="Показати пароль">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                  ${iconEye.replace('<svg ', '<svg width="18" height="18" ')}
                 </button>
               </div>
             </div>
@@ -489,7 +479,7 @@ function createAuthModalHTML() {
               <div class="form-group__password-wrap">
                 <input type="password" id="registerPassword" placeholder="Мінімум 6 символів" required />
                 <button type="button" class="form-group__eye" data-target="registerPassword" aria-label="Показати пароль">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                  ${iconEye.replace('<svg ', '<svg width="18" height="18" ')}
                 </button>
               </div>
             </div>
