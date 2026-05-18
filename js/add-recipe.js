@@ -370,9 +370,12 @@ async function buildFilterPanel() {
   for (const group of COLUMN_GROUPS) {
     allGroups.push({ id: group.id, label: t(group.labelKey), kind: 'column', group });
   }
-  for (const [type, groupTags] of Object.entries(tagGroups)) {
+  // Тегові групи завжди показуємо (навіть якщо тегів ще немає в БД)
+  const TAG_GROUP_ORDER = ['dietary', 'lifestyle'];
+  for (const type of TAG_GROUP_ORDER) {
     const labelKey = TAG_GROUP_LABEL_KEYS[type];
     if (!labelKey) continue;
+    const groupTags = tagGroups[type] || [];
     allGroups.push({ id: type, label: t(labelKey), kind: 'tag', groupTags });
   }
 
