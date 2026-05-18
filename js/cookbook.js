@@ -1,6 +1,6 @@
 // js/cookbook.js
 // Логіка сторінки "Книга рецептів"
-import { openAuthModal } from './auth.js';
+import { initAuth, openAuthModal } from './auth.js';
 import { supabase } from './supabaseClient.js';
 import { showToast, escapeHTML } from './utils.js';
 import { showConfirmModal } from './ui-components.js';
@@ -101,23 +101,18 @@ const noteContent = document.getElementById('noteContent');
 document.addEventListener('DOMContentLoaded', init);
 
 async function init() {
-  // Перевіряємо чи залогінений
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await initAuth((event, u) => {
+    if (event === 'SIGNED_IN' && u) {
+      currentUser = u;
+      loadBooks();
+    }
+    if (event === 'SIGNED_OUT') {
+      currentUser = null;
+    }
+  });
 
   if (!user) {
-    // Відкриваємо модалку логіну (замість редіректу на неіснуючу сторінку)
     openAuthModal('login');
-
-    // Слухаємо подію логіну — коли юзер увійде, ініціалізуємо сторінку наново
-    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_IN' && session?.user) {
-        authListener.subscription.unsubscribe();
-        init(); // повторно викликаємо init вже з юзером
-      }
-    });
-
     return;
   }
 
