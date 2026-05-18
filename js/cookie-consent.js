@@ -41,30 +41,19 @@ function buildBanner() {
       </div>
     </div>
     <div class="cookie-banner__prefs" id="cbPrefs" hidden>
-      <div class="cookie-banner__toggle-row">
-        <div class="cookie-banner__toggle-info">
-          <span class="cookie-banner__toggle-name">Необхідні</span>
-          <span class="cookie-banner__toggle-desc">Авторизація, сесія, безпека</span>
-        </div>
+      <label class="cookie-banner__toggle-item cookie-banner__toggle-item--disabled">
         <input type="checkbox" checked disabled aria-label="Необхідні cookies" />
-      </div>
-      <div class="cookie-banner__toggle-row">
-        <div class="cookie-banner__toggle-info">
-          <span class="cookie-banner__toggle-name">Аналітика</span>
-          <span class="cookie-banner__toggle-desc">PostHog — статистика використання (EU-hosting)</span>
-        </div>
+        <span>Необхідні</span>
+      </label>
+      <label class="cookie-banner__toggle-item">
         <input type="checkbox" id="cbAnalytics" aria-label="Аналітичні cookies" />
-      </div>
-      <div class="cookie-banner__toggle-row">
-        <div class="cookie-banner__toggle-info">
-          <span class="cookie-banner__toggle-name">Маркетинг</span>
-          <span class="cookie-banner__toggle-desc">Рекламні кампанії (наразі не використовуються)</span>
-        </div>
+        <span>Аналітика</span>
+      </label>
+      <label class="cookie-banner__toggle-item">
         <input type="checkbox" id="cbMarketing" aria-label="Маркетингові cookies" />
-      </div>
-      <div class="cookie-banner__prefs-footer">
-        <button class="cookie-banner__btn cookie-banner__btn--save" id="cbSavePrefs">Зберегти вибір</button>
-      </div>
+        <span>Маркетинг</span>
+      </label>
+      <button class="cookie-banner__btn cookie-banner__btn--save" id="cbSavePrefs">Зберегти вибір</button>
     </div>`;
   return el;
 }
