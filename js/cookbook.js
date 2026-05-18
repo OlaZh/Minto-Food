@@ -52,6 +52,7 @@ let currentUser = null;
 let currentBookId = null;
 let selectedIcon = 'book';
 let editSelectedCover = null;
+let _setupDone = false;
 
 // =====================================
 // DOM ЕЛЕМЕНТИ
@@ -81,9 +82,9 @@ document.addEventListener('DOMContentLoaded', init);
 
 async function init() {
   const user = await initAuth((event, u) => {
-    if (event === 'SIGNED_IN' && u) {
+    if ((event === 'SIGNED_IN' || event === 'INITIAL_SESSION') && u) {
       currentUser = u;
-      loadBooks();
+      _onUserReady();
     }
     if (event === 'SIGNED_OUT') {
       currentUser = null;
@@ -96,14 +97,21 @@ async function init() {
   }
 
   currentUser = user;
+  _onUserReady();
+}
 
+function _onUserReady() {
   createEditBookModal();
   createCoverPickerModal();
 
-  await loadBooks();
+  loadBooks();
   loadRecentRecipes();
-  setupEventListeners();
-  initIconPicker();
+
+  if (!_setupDone) {
+    _setupDone = true;
+    setupEventListeners();
+    initIconPicker();
+  }
 }
 
 function initIconPicker() {

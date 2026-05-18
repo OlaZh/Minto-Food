@@ -1580,7 +1580,18 @@ function closeNewRecipesDrawer() {
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
-  await initAuth();
+  await initAuth(async (event) => {
+    // Після логіну перебудовуємо фільтри та рецепти з контекстом юзера
+    if (event === 'SIGNED_IN') {
+      buildFilterPanel();
+      loadAndDisplayRecipes();
+    }
+    // Після логауту також оновлюємо
+    if (event === 'SIGNED_OUT') {
+      buildFilterPanel();
+      loadAndDisplayRecipes();
+    }
+  });
   await initBookSelector();
   await initRecipeModal();
   buildFilterPanel();
