@@ -194,7 +194,11 @@ function showBookSkeletons(count = 4) {
 
 async function loadBooks() {
   const version = ++_loadVersion;
-  showBookSkeletons();
+
+  const skeletonTimer = setTimeout(() => {
+    if (version === _loadVersion) showBookSkeletons();
+  }, 200);
+
   try {
     const { data: books, error } = await supabase
       .from('cookbooks')
@@ -203,15 +207,16 @@ async function loadBooks() {
       .order('is_default', { ascending: false })
       .order('created_at', { ascending: true });
 
+    clearTimeout(skeletonTimer);
     if (version !== _loadVersion) return;
     if (error) throw error;
 
     await renderBooks(books || [], version);
   } catch (err) {
+    clearTimeout(skeletonTimer);
     if (version !== _loadVersion) return;
     console.error('Error loading books:', err);
-    const existing = booksGrid?.querySelectorAll('.skeleton-book');
-    existing?.forEach((el) => el.remove());
+    booksGrid?.querySelectorAll('.skeleton-book').forEach((el) => el.remove());
   }
 }
 
