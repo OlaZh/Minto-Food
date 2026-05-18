@@ -1,4 +1,5 @@
 const STORAGE_KEY = 'minto_consent';
+const SEEN_KEY   = 'minto_consent_seen';
 const TTL = 180 * 24 * 60 * 60 * 1000; // 6 місяців
 
 export function getConsent() {
@@ -60,7 +61,9 @@ function buildBanner() {
 
 export function initCookieConsent() {
   if (getConsent()) return;
+  if (localStorage.getItem(SEEN_KEY)) return; // вже показували — не турбуємо знову
 
+  localStorage.setItem(SEEN_KEY, '1'); // фіксуємо що показали
   const banner = buildBanner();
   document.body.appendChild(banner);
 

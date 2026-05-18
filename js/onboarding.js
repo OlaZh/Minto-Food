@@ -16,13 +16,19 @@ let _suggested = '';
 // ── Публічний метод ───────────────────────────────────────────
 
 export async function checkOnboarding(user) {
+  // Швидка перевірка — якщо вже проходив онбординг, не турбуємо
+  if (localStorage.getItem(`minto_onb_${user.id}`)) return;
+
   const { data: profile } = await supabase
     .from('profiles')
     .select('display_name')
     .eq('id', user.id)
     .single();
 
-  if (profile?.display_name) return; // нікнейм вже є
+  if (profile?.display_name) {
+    localStorage.setItem(`minto_onb_${user.id}`, '1'); // більше не питаємо
+    return;
+  }
 
   _suggested = await _generateNickname(user);
 
@@ -90,72 +96,73 @@ function _mount(suggested) {
     }
     @keyframes onb-fade { from { opacity:0; transform:translateY(8px) } to { opacity:1; transform:none } }
     .onb-card {
-      background: #fff; border-radius: 20px;
+      background: var(--color-surface); border-radius: 20px;
       padding: 36px 28px 28px; max-width: 400px; width: 100%;
       text-align: center; box-shadow: 0 12px 48px rgba(15,40,24,.18);
     }
     .onb-logo { font-size: 38px; margin-bottom: 2px; }
-    .onb-brand { font-family: 'Fraunces', serif; font-size: 20px; color: #0f2818; margin: 0 0 18px; }
-    .onb-title { font-family: 'Rubik', sans-serif; font-size: 18px; font-weight: 600; color: #0f2818; margin: 0 0 6px; }
-    .onb-sub { font-size: 13px; color: #3f7558; margin: 0 0 22px; line-height: 1.5; }
+    .onb-brand { font-family: var(--font-logo); font-size: 20px; color: var(--color-text-primary); margin: 0 0 18px; }
+    .onb-title { font-family: var(--font-heading); font-size: 18px; font-weight: 600; color: var(--color-text-primary); margin: 0 0 6px; }
+    .onb-sub { font-size: 13px; color: var(--color-text-secondary); margin: 0 0 22px; line-height: 1.5; }
 
     /* Пропозиція нікнейму */
     .onb-suggestion {
-      background: #f0f9f4; border: 2px solid #4ab584; border-radius: 12px;
+      background: var(--color-bg-secondary); border: 2px solid var(--color-accent); border-radius: 12px;
       padding: 14px 20px; margin-bottom: 20px;
     }
-    .onb-suggestion__label { font-size: 11px; color: #3f7558; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 4px; }
-    .onb-suggestion__name { font-family: 'Rubik', sans-serif; font-size: 22px; font-weight: 600; color: #0f2818; }
+    .onb-suggestion__label { font-size: 11px; color: var(--color-text-secondary); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 4px; }
+    .onb-suggestion__name { font-family: var(--font-heading); font-size: 22px; font-weight: 600; color: var(--color-text-primary); }
 
     .onb-actions { display: flex; gap: 8px; flex-direction: column; }
     .onb-btn-primary {
       width: 100%; padding: 13px; font-size: 15px; font-weight: 600;
-      font-family: 'Mulish', sans-serif;
-      background: #4ab584; color: #fff;
+      font-family: var(--font-body);
+      background: var(--color-accent); color: var(--color-text-inverse);
       border: none; border-radius: 12px; cursor: pointer; transition: background .2s;
     }
-    .onb-btn-primary:hover { background: #3d9d70; }
+    .onb-btn-primary:hover { background: var(--color-accent-hover); }
     .onb-btn-outline {
       width: 100%; padding: 11px; font-size: 14px; font-weight: 500;
-      font-family: 'Mulish', sans-serif;
-      background: transparent; color: #0f2818;
-      border: 2px solid #82bf99; border-radius: 12px; cursor: pointer; transition: border-color .2s;
+      font-family: var(--font-body);
+      background: transparent; color: var(--color-text-primary);
+      border: 2px solid var(--color-border); border-radius: 12px; cursor: pointer; transition: border-color .2s;
     }
-    .onb-btn-outline:hover { border-color: #4ab584; }
+    .onb-btn-outline:hover { border-color: var(--color-accent); }
     .onb-btn-ghost {
       width: 100%; padding: 8px; font-size: 13px;
-      font-family: 'Mulish', sans-serif;
-      background: transparent; color: #82bf99;
+      font-family: var(--font-body);
+      background: transparent; color: var(--color-text-secondary);
       border: none; cursor: pointer; transition: color .2s;
     }
-    .onb-btn-ghost:hover { color: #3f7558; }
+    .onb-btn-ghost:hover { color: var(--color-text-primary); }
 
     /* Режим редагування */
     .onb-edit { display: none; }
     .onb-edit.onb-edit--visible { display: block; }
     .onb-input {
       width: 100%; padding: 12px 16px; font-size: 17px;
-      font-family: 'Mulish', sans-serif; font-weight: 500;
-      border: 2px solid #82bf99; border-radius: 12px; outline: none;
-      text-align: center; color: #0f2818; box-sizing: border-box;
+      font-family: var(--font-body); font-weight: 500;
+      background: var(--color-bg-secondary);
+      border: 2px solid var(--color-border); border-radius: 12px; outline: none;
+      text-align: center; color: var(--color-text-primary); box-sizing: border-box;
       transition: border-color .2s; margin-bottom: 6px;
     }
-    .onb-input:focus { border-color: #4ab584; }
+    .onb-input:focus { border-color: var(--color-accent); }
     .onb-input--error { border-color: #e74c3c !important; }
-    .onb-input--ok    { border-color: #4ab584 !important; }
-    .onb-hint { font-size: 12px; min-height: 16px; margin-bottom: 14px; color: #3f7558; }
+    .onb-input--ok    { border-color: var(--color-accent) !important; }
+    .onb-hint { font-size: 12px; min-height: 16px; margin-bottom: 14px; color: var(--color-text-secondary); }
     .onb-hint--error { color: #e74c3c; }
-    .onb-hint--ok    { color: #4ab584; }
+    .onb-hint--ok    { color: var(--color-accent); }
     .onb-save-btn {
       width: 100%; padding: 13px; font-size: 15px; font-weight: 600;
-      font-family: 'Mulish', sans-serif;
-      background: #4ab584; color: #fff;
+      font-family: var(--font-body);
+      background: var(--color-accent); color: var(--color-text-inverse);
       border: none; border-radius: 12px; cursor: pointer; transition: background .2s;
     }
-    .onb-save-btn:hover:not(:disabled) { background: #3d9d70; }
-    .onb-save-btn:disabled { background: #b8e0c5; cursor: not-allowed; }
-    .onb-back { margin-top: 8px; font-size: 12px; color: #82bf99; cursor: pointer; background: none; border: none; }
-    .onb-back:hover { color: #3f7558; }
+    .onb-save-btn:hover:not(:disabled) { background: var(--color-accent-hover); }
+    .onb-save-btn:disabled { background: var(--color-border); cursor: not-allowed; }
+    .onb-back { margin-top: 8px; font-size: 12px; color: var(--color-text-secondary); cursor: pointer; background: none; border: none; }
+    .onb-back:hover { color: var(--color-text-primary); }
   `;
   document.head.appendChild(style);
 
@@ -299,6 +306,7 @@ async function _save(displayName) {
     .from('profiles')
     .upsert({ id: user.id, display_name: displayName }, { onConflict: 'id' });
 
+  localStorage.setItem(`minto_onb_${user.id}`, '1');
   document.getElementById('onboarding-overlay')?.remove();
   _resolveFn?.();
 }
