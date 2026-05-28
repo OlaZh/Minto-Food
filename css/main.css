@@ -288,6 +288,15 @@ textarea:-webkit-autofill:focus {
   outline-offset: 2px;
 }
 
+/* Inline SVG icons — scale with text, align to baseline */
+svg[viewBox="0 0 24 24"] {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  vertical-align: -0.15em;
+  flex-shrink: 0;
+}
+
 :root {
   /* Backgrounds */
   --color-bg-primary: #a6d6b8;
