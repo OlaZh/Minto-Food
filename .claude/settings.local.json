@@ -40,7 +40,9 @@
       "Bash(findstr /r /i /s \"alias\" supabase\\\\*.sql)",
       "Bash(Get-ChildItem -Path \"c:\\\\Users\\\\violk\\\\Desktop\\\\Minto Food\\\\js\\\\\" -Filter \"*.js\" -Recurse | Select-Object -ExpandProperty FullName)",
       "Bash(node -e ' *)",
-      "PowerShell(npm run build:css)"
+      "PowerShell(npm run build:css)",
+      "PowerShell(npm run build:css 2>$null)",
+      "PowerShell(if \\($?\\) { \"CSS compiled OK\" })"
     ]
   }
 }

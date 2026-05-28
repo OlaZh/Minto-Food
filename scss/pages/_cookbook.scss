@@ -63,12 +63,12 @@
 
 .cookbook-layout {
   display: grid;
-  grid-template-columns: 1fr 256px;
+  grid-template-columns: minmax(0, 1fr) 256px;
   gap: 24px;
   align-items: start;
 
   @media (max-width: 600px) {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
@@ -115,6 +115,7 @@
 .cookbook-sidebar {
   position: sticky;
   top: var(--space-lg);
+  min-width: 0;
 
   @media (max-width: 600px) {
     position: static;
@@ -132,6 +133,7 @@
   display: flex;
   flex-direction: column;
   gap: 6px;
+  min-width: 0;
 
   &__empty {
     font-size: 13px;
