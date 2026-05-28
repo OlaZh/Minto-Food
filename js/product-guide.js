@@ -302,11 +302,11 @@ function renderCombinations(rows) {
   const listBad = accordion?.querySelectorAll('.accordion__list')[1] || null;
   const badSubtitle = accordion?.querySelector('[data-i18n="badComb"]') || null;
 
-  // Ховаємо підзаголовки — немає поділу на добре/погано в БД
+  // Ховаємо підзаголовки і другий список — немає поділу на добре/погано в БД
   const goodSubtitle = accordion?.querySelector('[data-i18n="goodComb"]') || null;
-  if (goodSubtitle) goodSubtitle.hidden = true;
-  if (badSubtitle)  badSubtitle.hidden = true;
-  if (listBad)      listBad.hidden = true;
+  if (goodSubtitle) goodSubtitle.style.display = 'none';
+  if (badSubtitle)  badSubtitle.style.display = 'none';
+  if (listBad)      { listBad.style.display = 'none'; listBad.innerHTML = ''; }
 
   if (!list) return;
 
