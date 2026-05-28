@@ -6149,6 +6149,95 @@ textarea:-webkit-autofill:focus {
   background-color: var(--color-text-inverse);
 }
 
+/* ================= CREATE-PRODUCT MODAL GRID ================= */
+.modal__macros-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.modal__field {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1 1 60px;
+}
+.modal__field input.modal__input--small {
+  width: 0;
+  flex: 1;
+  padding: 10px 8px;
+  font-size: 14px;
+  text-align: center;
+  -moz-appearance: textfield;
+}
+.modal__field input.modal__input--small::-webkit-outer-spin-button,
+.modal__field input.modal__input--small::-webkit-inner-spin-button { -webkit-appearance: none; }
+.modal__unit {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+.modal__label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  margin-bottom: 6px;
+  margin-top: 14px;
+}
+/* label_type toggle */
+.modal__label-type {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 12px;
+  padding: 10px 12px;
+  background: var(--color-bg-secondary);
+  border-radius: 10px;
+  border: 1px solid var(--color-border);
+}
+.modal__label-type-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+.modal__label-type-btns {
+  display: flex;
+  gap: 4px;
+}
+.modal__label-btn {
+  padding: 4px 12px;
+  border-radius: 6px;
+  border: 1.5px solid var(--color-border);
+  background: transparent;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.modal__label-btn.active {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: #fff;
+}
+/* product-guide fiber display */
+.product-modal__fiber {
+  margin-top: 4px;
+  padding-left: 4px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.product-modal__fiber-label {
+  font-size: 11px;
+  color: var(--color-text-secondary);
+}
+.product-modal__fiber-value {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+
 /* ================= MACRO BARS ================= */
 .macro-bars {
   display: flex;

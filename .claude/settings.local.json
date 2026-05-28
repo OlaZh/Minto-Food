@@ -29,7 +29,13 @@
       "Bash(npx tsc *)",
       "Bash(npx shadcn@latest add badge label progress tabs separator --overwrite)",
       "Bash(Select-String -Pattern '\"dev\"|\"start\"|\"port\"')",
-      "Bash(Get-ChildItem -Path \"c:\\\\Users\\\\violk\\\\Desktop\\\\Minto Food\\\\admin-app\\\\src\" -Recurse -Filter \"*.tsx\")"
+      "Bash(Get-ChildItem -Path \"c:\\\\Users\\\\violk\\\\Desktop\\\\Minto Food\\\\admin-app\\\\src\" -Recurse -Filter \"*.tsx\")",
+      "Bash(Get-ChildItem -Path \"c:\\\\Users\\\\violk\\\\Desktop\\\\Minto Food\" -Recurse -Filter \"*.js\")",
+      "Bash(Get-ChildItem -Path \"c:\\\\Users\\\\violk\\\\Desktop\\\\Minto Food\" -Recurse -ErrorAction SilentlyContinue)",
+      "Bash(Select-Object -First 50)",
+      "Bash(Format-Table FullName)",
+      "Bash(Get-ChildItem -Path \"c:\\\\Users\\\\violk\\\\Desktop\\\\Minto Food\" -Recurse -Include *.html, *.js -File)",
+      "Bash(Select-Object FullName)"
     ]
   }
 }

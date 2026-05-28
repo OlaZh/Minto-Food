@@ -385,6 +385,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const scProteinInput = document.getElementById('scProtein');
   const scFatInput = document.getElementById('scFat');
   const scCarbsInput = document.getElementById('scCarbs');
+  const scFiberInput = document.getElementById('scFiber');
 
   function showScannedProductCard(product) {
     if (!scannedCard) return;
@@ -403,6 +404,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     scProteinInput.value = product.protein || 0;
     scFatInput.value = product.fat || 0;
     scCarbsInput.value = product.carbs || 0;
+    if (scFiberInput) scFiberInput.value = product.fiber || 0;
 
     scannedCard.hidden = false;
 
@@ -413,6 +415,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         selectedFood.protein = Number(scProteinInput.value) || 0;
         selectedFood.fat = Number(scFatInput.value) || 0;
         selectedFood.carbs = Number(scCarbsInput.value) || 0;
+        selectedFood.fiber = Number(scFiberInput?.value) || 0;
       }
     };
 
@@ -420,6 +423,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     scProteinInput.oninput = updateSelectedFood;
     scFatInput.oninput = updateSelectedFood;
     scCarbsInput.oninput = updateSelectedFood;
+    if (scFiberInput) scFiberInput.oninput = updateSelectedFood;
 
     // Очищення картки
     clearBtn.onclick = () => {
@@ -437,6 +441,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       scProteinInput.value = '';
       scFatInput.value = '';
       scCarbsInput.value = '';
+      if (scFiberInput) scFiberInput.value = '';
     }
   }
 
@@ -744,35 +749,45 @@ document.addEventListener('DOMContentLoaded', async () => {
   const cpProteinInput = document.getElementById('cpProtein');
   const cpFatInput = document.getElementById('cpFat');
   const cpCarbsInput = document.getElementById('cpCarbs');
+  const cpFiberInput = document.getElementById('cpFiber');
 
   // Флаг: чи користувач вручну редагував ккал
   let kcalManuallyEdited = false;
+  let currentLabelType = 'EU';
 
-  // Авторахунок ккал: Б×4 + Ж×9 + В×4
+  // Перемикач EU/US
+  document.querySelectorAll('.modal__label-btn').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.modal__label-btn').forEach((b) => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentLabelType = btn.dataset.label;
+      autoCalculateKcal();
+    });
+  });
+
+  // Авторахунок ккал: EU = Б×4 + Ж×9 + В×4 + Кл×2 / US = Б×4 + Ж×9 + В×4
   function autoCalculateKcal() {
     if (kcalManuallyEdited) return;
 
     const protein = Number(cpProteinInput?.value) || 0;
     const fat = Number(cpFatInput?.value) || 0;
     const carbs = Number(cpCarbsInput?.value) || 0;
+    const fiber = Number(cpFiberInput?.value) || 0;
 
-    const kcal = Math.round(protein * 4 + fat * 9 + carbs * 4);
+    const kcal = currentLabelType === 'EU'
+      ? Math.round(protein * 4 + fat * 9 + carbs * 4 + fiber * 2)
+      : Math.round(protein * 4 + fat * 9 + carbs * 4);
 
     if (cpKcalInput) {
       cpKcalInput.value = kcal > 0 ? kcal : '';
     }
   }
 
-  // Слухачі для БЖВ — перераховують ккал
-  if (cpProteinInput) {
-    cpProteinInput.addEventListener('input', autoCalculateKcal);
-  }
-  if (cpFatInput) {
-    cpFatInput.addEventListener('input', autoCalculateKcal);
-  }
-  if (cpCarbsInput) {
-    cpCarbsInput.addEventListener('input', autoCalculateKcal);
-  }
+  // Слухачі для БЖВ+Кл — перераховують ккал
+  if (cpProteinInput) cpProteinInput.addEventListener('input', autoCalculateKcal);
+  if (cpFatInput)     cpFatInput.addEventListener('input', autoCalculateKcal);
+  if (cpCarbsInput)   cpCarbsInput.addEventListener('input', autoCalculateKcal);
+  if (cpFiberInput)   cpFiberInput.addEventListener('input', autoCalculateKcal);
 
   // Якщо користувач клікнув на поле ккал і почав вводити — вимикаємо авторахунок
   if (cpKcalInput) {
@@ -787,6 +802,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (!createProductModal) return;
 
     kcalManuallyEdited = false;
+    currentLabelType = 'EU';
     _pendingBarcode = barcode;
 
     cpNameInput.value = prefillName;
@@ -794,6 +810,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     cpProteinInput.value = '';
     cpFatInput.value = '';
     cpCarbsInput.value = '';
+    if (cpFiberInput) cpFiberInput.value = '';
+
+    document.querySelectorAll('.modal__label-btn').forEach((b) => {
+      b.classList.toggle('active', b.dataset.label === 'EU');
+    });
 
     createProductModal.hidden = false;
     cpNameInput.focus();
@@ -813,6 +834,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     const protein = Number(cpProteinInput.value) || 0;
     const fat = Number(cpFatInput.value) || 0;
     const carbs = Number(cpCarbsInput.value) || 0;
+    const fiber = Number(cpFiberInput?.value) || 0;
+    const label_type = currentLabelType;
 
     if (!name) {
       alert(lang === 'ua' ? 'Введіть назву продукту' : 'Enter product name');
@@ -829,7 +852,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       // Barcode-originated manual entry → save to scanned_products (no moderation needed)
       const { data, error } = await supabase
         .from('scanned_products')
-        .upsert([{ barcode: _pendingBarcode, name_ua: name, kcal, protein, fat, carbs, source: 'manual' }], {
+        .upsert([{ barcode: _pendingBarcode, name_ua: name, kcal, protein, fat, carbs, fiber, label_type, source: 'manual' }], {
           onConflict: 'barcode',
         })
         .select()
@@ -845,7 +868,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       // Regular manual product creation → save to products (goes through moderation)
       const { data, error } = await supabase
         .from('products')
-        .insert([{ name_ua: name, kcal, protein, fat, carbs, user_id: user.id, is_verified: false }])
+        .insert([{ name_ua: name, kcal, protein, fat, carbs, fiber, label_type, user_id: user.id, is_verified: false }])
         .select()
         .single();
 

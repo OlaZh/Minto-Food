@@ -1578,6 +1578,69 @@ function initSettings(user) {
 }
 
 // =====================================
+// INLINE CALORIES EDIT
+// =====================================
+
+function initCaloriesInlineEdit() {
+  const displayEl = document.getElementById('dailyCalories');
+  const inputEl = document.getElementById('caloriesInlineInput');
+  if (!displayEl || !inputEl) return;
+
+  let editing = false;
+
+  function startEdit() {
+    if (editing) return;
+    editing = true;
+    const current = parseInt(localStorage.getItem('dailyCaloriesNorm') || '0');
+    inputEl.value = current || '';
+    inputEl.hidden = false;
+    displayEl.hidden = true;
+    inputEl.focus();
+    inputEl.select();
+  }
+
+  async function confirmEdit() {
+    if (!editing) return;
+    editing = false;
+
+    const val = parseInt(inputEl.value);
+    inputEl.hidden = true;
+    displayEl.hidden = false;
+
+    if (!val || val < 500 || val > 10000) return;
+
+    displayEl.textContent = `${val} ккал`;
+    localStorage.setItem('dailyCaloriesNorm', val);
+
+    const user = getCurrentUser();
+    if (user) {
+      await supabase
+        .from('user_profiles')
+        .upsert({ user_id: user.id, calories: val }, { onConflict: 'user_id' });
+    }
+    showToast('Калорії оновлено ✓');
+  }
+
+  function cancelEdit() {
+    if (!editing) return;
+    editing = false;
+    inputEl.hidden = true;
+    displayEl.hidden = false;
+  }
+
+  displayEl.addEventListener('click', startEdit);
+  displayEl.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); startEdit(); }
+  });
+
+  inputEl.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') confirmEdit();
+    if (e.key === 'Escape') cancelEdit();
+  });
+  inputEl.addEventListener('blur', () => { if (editing) setTimeout(confirmEdit, 80); });
+}
+
+// =====================================
 // INIT
 // =====================================
 
@@ -1643,6 +1706,7 @@ async function initProfile() {
   initCustomSelect('activitySelect', 'activityInput');
   initCustomSelect('goalSelect', 'goalInput');
 
+  initCaloriesInlineEdit();
   recordWeightBtn?.addEventListener('click', recordNewWeight);
 
   initSelectsGlobalListener();
@@ -1673,8 +1737,8 @@ if (form) {
 
     let calories = base * parseFloat(activityInput.value);
 
-    if (goalInput.value === 'lose') calories *= 0.9;
-    if (goalInput.value === 'gain') calories *= 1.1;
+    if (goalInput.value === 'lose') calories *= 0.80;
+    if (goalInput.value === 'gain') calories *= 1.15;
 
     calories = Math.round(calories);
 

@@ -486,6 +486,8 @@ async function searchOpenFoodFacts(barcode) {
       carbs: parseFloat(
         (nutriments.carbohydrates_100g || nutriments.carbohydrates || 0).toFixed(1),
       ),
+      fiber: parseFloat((nutriments['fiber_100g'] || nutriments['fibers_100g'] || nutriments.fiber || 0).toFixed(1)),
+      label_type: 'EU',
       image_url: p.image_url || null,
       source: 'openfoodfacts',
     };

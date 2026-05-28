@@ -473,6 +473,7 @@ async function saveRecipe() {
     protein: parseFloat(totals.protein.toFixed(1)) || 0,
     fat: parseFloat(totals.fat.toFixed(1)) || 0,
     carbs: parseFloat(totals.carbs.toFixed(1)) || 0,
+    fiber: parseFloat((totals.fiber || 0).toFixed(1)),
     category: document.getElementById('rm-category')?.value,
     steps: stepsVal,
     image: finalImage,

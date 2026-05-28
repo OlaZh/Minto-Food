@@ -15,6 +15,8 @@ function NutritionEditor({ product, onSaved }: { product: any; onSaved: () => vo
   const [protein, setProtein] = useState(String(product.protein ?? ''))
   const [fat, setFat] = useState(String(product.fat ?? ''))
   const [carbs, setCarbs] = useState(String(product.carbs ?? ''))
+  const [fiber, setFiber] = useState(String(product.fiber ?? ''))
+  const [labelType, setLabelType] = useState<'EU' | 'US'>(product.label_type === 'US' ? 'US' : 'EU')
   const [saving, setSaving] = useState(false)
 
   async function save() {
@@ -25,6 +27,8 @@ function NutritionEditor({ product, onSaved }: { product: any; onSaved: () => vo
         protein: protein !== '' ? parseFloat(protein) : undefined,
         fat: fat !== '' ? parseFloat(fat) : undefined,
         carbs: carbs !== '' ? parseFloat(carbs) : undefined,
+        fiber: fiber !== '' ? parseFloat(fiber) : 0,
+        label_type: labelType,
       })
       onSaved()
     } catch (e: any) {
@@ -50,6 +54,24 @@ function NutritionEditor({ product, onSaved }: { product: any; onSaved: () => vo
       {field('Б', protein, setProtein)}
       {field('Ж', fat, setFat)}
       {field('В', carbs, setCarbs)}
+      {field('Кл', fiber, setFiber)}
+      <div className="flex items-center gap-1 text-xs">
+        <span className="text-gray-500">Стандарт</span>
+        {(['EU', 'US'] as const).map(v => (
+          <button
+            key={v}
+            type="button"
+            onClick={() => setLabelType(v)}
+            className={`px-2 py-1 rounded text-xs font-semibold border transition-colors ${
+              labelType === v
+                ? 'bg-gray-900 text-white border-gray-900'
+                : 'bg-white text-gray-500 border-gray-200 hover:border-gray-400'
+            }`}
+          >
+            {v}
+          </button>
+        ))}
+      </div>
       <button
         onClick={save} disabled={saving}
         className="text-xs h-7 px-2 bg-gray-900 text-white rounded hover:bg-gray-700 disabled:opacity-50">
@@ -105,7 +127,10 @@ export default function ProductsClient({ products }: ProductsClientProps) {
                   <div className="flex flex-wrap gap-x-3 gap-y-0.5 mt-0.5 text-xs text-gray-400">
                     {product.kcal != null && <span>{product.kcal} ккал</span>}
                     {product.protein != null && (
-                      <span>Б:{product.protein} Ж:{product.fat} В:{product.carbs}</span>
+                      <span>Б:{product.protein} Ж:{product.fat} В:{product.carbs}{product.fiber > 0 ? ` Кл:${product.fiber}` : ''}</span>
+                    )}
+                    {product.label_type && product.label_type !== 'EU' && (
+                      <span className="text-amber-500">{product.label_type}</span>
                     )}
                     {product.category_id && <span>{product.category_id}</span>}
                     {product.author && <span>Від: {product.author.full_name ?? '—'}</span>}

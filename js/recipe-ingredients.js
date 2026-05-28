@@ -9,7 +9,6 @@ import { parseIngredientsText, findProductMatch } from './parse-food.js';
 let ingredientsList = [];
 let onIngredientsChange = null;
 let currentLang = 'ua';
-let productsCache = [];
 let productUnitsCache = [];
 
 // ==================== ЛОКАЛІЗАЦІЯ ====================
@@ -131,14 +130,6 @@ export function initIngredientBuilder(containerSelector, onChange, lang = 'ua') 
 
 async function loadProductsCache() {
   try {
-    // Завантажуємо всі продукти
-    const { data: products } = await supabase
-      .from('products')
-      .select('id, name_ua, name_en, name_pl, kcal, protein, fat, carbs');
-
-    productsCache = products || [];
-
-    // Завантажуємо одиниці вимірювання
     const { data: units } = await supabase
       .from('product_units')
       .select('product_id, unit_type, size, grams');
@@ -212,7 +203,7 @@ async function parseAndAddIngredients(text) {
 
     // Для кожного розпізнаного інгредієнта шукаємо в базі
     for (const item of parsed) {
-      const product = findProductMatch(item.name, productsCache);
+      const product = await findProductMatch(item.name);
 
       let grams = item.grams;
 
@@ -241,6 +232,7 @@ async function parseAndAddIngredients(text) {
         protein: product ? parseFloat(((product.protein || 0) * factor).toFixed(1)) : 0,
         fat: product ? parseFloat(((product.fat || 0) * factor).toFixed(1)) : 0,
         carbs: product ? parseFloat(((product.carbs || 0) * factor).toFixed(1)) : 0,
+        fiber: product ? parseFloat(((product.fiber || 0) * factor).toFixed(1)) : 0,
         matched: !!product,
       };
 
@@ -320,9 +312,10 @@ function updateTotals() {
       acc.protein += ing.protein || 0;
       acc.fat += ing.fat || 0;
       acc.carbs += ing.carbs || 0;
+      acc.fiber += ing.fiber || 0;
       return acc;
     },
-    { kcal: 0, protein: 0, fat: 0, carbs: 0 },
+    { kcal: 0, protein: 0, fat: 0, carbs: 0, fiber: 0 },
   );
 
   const valuesEl = totalEl.querySelector('.ingredient-builder__total-values');
@@ -351,9 +344,10 @@ export function getTotals() {
       acc.protein += ing.protein || 0;
       acc.fat += ing.fat || 0;
       acc.carbs += ing.carbs || 0;
+      acc.fiber += ing.fiber || 0;
       return acc;
     },
-    { kcal: 0, protein: 0, fat: 0, carbs: 0 },
+    { kcal: 0, protein: 0, fat: 0, carbs: 0, fiber: 0 },
   );
 }
 

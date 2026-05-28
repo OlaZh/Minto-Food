@@ -148,7 +148,7 @@ export async function approveProduct(productId: number) {
 
 export async function updateProductNutrition(
   productId: number,
-  nutrition: { kcal?: number; protein?: number; fat?: number; carbs?: number }
+  nutrition: { kcal?: number; protein?: number; fat?: number; carbs?: number; fiber?: number; label_type?: string }
 ) {
   const supabase = await createClient()
   await supabase.from('products').update(nutrition).eq('id', productId)

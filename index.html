@@ -287,10 +287,28 @@
                     <span class="day-compact-strip__value" id="kcalCurrentMobile">0</span>
                     <span class="day-compact-strip__norm" id="kcalNormMobile">з 1200 ккал</span>
                   </div>
-                  <div class="day-compact-strip__macros">
-                    <span>Б <span id="pCurrentMobile">0</span>г</span>
-                    <span>Ж <span id="fCurrentMobile">0</span>г</span>
-                    <span>В <span id="cCurrentMobile">0</span>г</span>
+                  <div class="macro-bars">
+                    <div class="macro-bar-row">
+                      <span class="macro-bar-label">Б</span>
+                      <div class="macro-bar-track">
+                        <div class="macro-bar-fill macro-bar-fill--protein" id="barProtein"></div>
+                      </div>
+                      <span class="macro-bar-value"><span id="todayProtein">0</span> / <span id="normProteinBar">0</span>г</span>
+                    </div>
+                    <div class="macro-bar-row">
+                      <span class="macro-bar-label">Ж</span>
+                      <div class="macro-bar-track">
+                        <div class="macro-bar-fill macro-bar-fill--fat" id="barFat"></div>
+                      </div>
+                      <span class="macro-bar-value"><span id="todayFat">0</span> / <span id="normFatBar">0</span>г</span>
+                    </div>
+                    <div class="macro-bar-row">
+                      <span class="macro-bar-label">В</span>
+                      <div class="macro-bar-track">
+                        <div class="macro-bar-fill macro-bar-fill--carbs" id="barCarbs"></div>
+                      </div>
+                      <span class="macro-bar-value"><span id="todayCarbs">0</span> / <span id="normCarbsBar">0</span>г</span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -654,6 +672,10 @@
                 <input type="number" id="scCarbs" min="0" step="0.1" />
                 <span>В</span>
               </div>
+              <div class="scanned-card__field">
+                <input type="number" id="scFiber" min="0" step="0.1" />
+                <span>Кл</span>
+              </div>
             </div>
             <div class="scanned-card__hint">На 100 г · можна редагувати</div>
           </div>
@@ -755,6 +777,26 @@
                   min="0"
                   step="0.1" />
                 <span class="modal__unit" data-i18n="carbsLetter">В</span>
+              </div>
+
+              <div class="modal__field">
+                <input
+                  type="number"
+                  id="cpFiber"
+                  class="modal__input modal__input--small"
+                  placeholder="Клітк."
+                  min="0"
+                  step="0.1" />
+                <span class="modal__unit">Кл</span>
+              </div>
+            </div>
+
+            <!-- Стандарт маркування -->
+            <div class="modal__label-type">
+              <span class="modal__label-type-title">Стандарт маркування</span>
+              <div class="modal__label-type-btns">
+                <button type="button" class="modal__label-btn active" id="cpLabelEU" data-label="EU">EU</button>
+                <button type="button" class="modal__label-btn" id="cpLabelUS" data-label="US">US</button>
               </div>
             </div>
           </div>

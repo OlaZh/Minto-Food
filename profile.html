@@ -320,7 +320,7 @@
                       </div>
                       <div class="custom-select__options">
                         <span class="custom-select__option" data-value="lose" data-i18n="goalLose"
-                          >Схуднути (-10%)</span
+                          >Схуднути (-20%)</span
                         >
                         <span
                           class="custom-select__option selected"
@@ -329,7 +329,7 @@
                           >Підтримка ваги</span
                         >
                         <span class="custom-select__option" data-value="gain" data-i18n="goalGain"
-                          >Набрати (+10%)</span
+                          >Набрати (+15%)</span
                         >
                       </div>
                     </div>
@@ -356,7 +356,17 @@
 
                   <div class="profile-result profile-result--small">
                     <span class="profile-result__label">Калорії 🍃</span>
-                    <strong class="profile-result__value" id="dailyCalories">—</strong>
+                    <div class="calories-inline">
+                      <strong class="profile-result__value calories-inline__display" id="dailyCalories" tabindex="0" title="Натисни щоб змінити">—</strong>
+                      <input
+                        type="number"
+                        class="calories-inline__input"
+                        id="caloriesInlineInput"
+                        min="500"
+                        max="10000"
+                        step="1"
+                        hidden />
+                    </div>
                   </div>
 
                   <div class="profile-macros">

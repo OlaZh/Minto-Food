@@ -34,9 +34,38 @@ const pBarEl = document.getElementById('pBar');
 const fBarEl = document.getElementById('fBar');
 const cBarEl = document.getElementById('cBar');
 
+const barProteinEl = document.getElementById('barProtein');
+const barFatEl = document.getElementById('barFat');
+const barCarbsEl = document.getElementById('barCarbs');
+const todayProteinEl = document.getElementById('todayProtein');
+const todayFatEl = document.getElementById('todayFat');
+const todayCarbsEl = document.getElementById('todayCarbs');
+const normProteinBarEl = document.getElementById('normProteinBar');
+const normFatBarEl = document.getElementById('normFatBar');
+const normCarbsBarEl = document.getElementById('normCarbsBar');
+
 const waterValueEl = document.getElementById('currentWaterText');
 const waterNormEl = document.getElementById('waterNormText');
 const waterFillEl = document.getElementById('waterFill');
+
+function updateMacroBars(protein, fat, carbs) {
+  const proteinNorm = getProteinNorm();
+  const fatNorm = getFatNorm();
+  const carbsNorm = getCarbsNorm();
+  const pct = (val, norm) => norm > 0 ? Math.min(100, Math.round(val / norm * 100)) : 0;
+
+  if (todayProteinEl) todayProteinEl.textContent = Math.round(protein);
+  if (todayFatEl) todayFatEl.textContent = Math.round(fat);
+  if (todayCarbsEl) todayCarbsEl.textContent = Math.round(carbs);
+
+  if (barProteinEl) barProteinEl.style.width = pct(protein, proteinNorm) + '%';
+  if (barFatEl) barFatEl.style.width = pct(fat, fatNorm) + '%';
+  if (barCarbsEl) barCarbsEl.style.width = pct(carbs, carbsNorm) + '%';
+
+  if (normProteinBarEl) normProteinBarEl.textContent = proteinNorm;
+  if (normFatBarEl) normFatBarEl.textContent = fatNorm;
+  if (normCarbsBarEl) normCarbsBarEl.textContent = carbsNorm;
+}
 
 function applyCircleState(circleEl, stateClass) {
   if (!circleEl) return;
@@ -116,6 +145,8 @@ export function updateStats(consumed) {
   if (cBarEl) {
     cBarEl.style.width = `${carbsNorm ? Math.min((carbs / carbsNorm) * 100, 100) : 0}%`;
   }
+
+  updateMacroBars(protein, fat, carbs);
 }
 
 export function updateWaterUI(currentLiters) {

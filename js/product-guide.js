@@ -302,6 +302,14 @@ function openProductModal(product) {
   modal.querySelector('[data-i18n="fat"]').textContent = `${product.fat || 0}Ж`;
   modal.querySelector('[data-i18n="carbs"]').textContent = `${product.carbs || 0}В`;
 
+  const fiberRow = modal.querySelector('#productFiberRow');
+  const fiberVal = modal.querySelector('#productFiberValue');
+  if (fiberRow && fiberVal) {
+    const f = parseFloat(product.fiber || 0);
+    fiberVal.textContent = `${f.toFixed(1)} г`;
+    fiberRow.hidden = f <= 0;
+  }
+
   const updateList = (i18nKey, value) => {
     const list = modal
       .querySelector(`[data-i18n="${i18nKey}"]`)
