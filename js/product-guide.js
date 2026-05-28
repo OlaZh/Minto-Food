@@ -292,26 +292,35 @@ function renderSimpleList(i18nKey, rows) {
   }).join('');
 }
 
-// Поєднання (products_combinations) — один список
+// Поєднання (products_combinations) — один список, "погано" ховаємо
 function renderCombinations(rows) {
-  const list = getAccordionList('combinations', 0);
-  const listBad = getAccordionList('combinations', 1);
+  const accordion = modal
+    ? [...modal.querySelectorAll('.accordion')].find((a) => a.querySelector('[data-i18n="combinations"]'))
+    : null;
+
+  const list    = accordion?.querySelectorAll('.accordion__list')[0] || null;
+  const listBad = accordion?.querySelectorAll('.accordion__list')[1] || null;
+  const badSubtitle = accordion?.querySelector('[data-i18n="badComb"]') || null;
+
+  // Ховаємо підзаголовки — немає поділу на добре/погано в БД
+  const goodSubtitle = accordion?.querySelector('[data-i18n="goodComb"]') || null;
+  if (goodSubtitle) goodSubtitle.hidden = true;
+  if (badSubtitle)  badSubtitle.hidden = true;
+  if (listBad)      listBad.hidden = true;
+
+  if (!list) return;
 
   if (!rows || rows.length === 0) {
-    if (list)    list.innerHTML = '<li class="no-data">Немає інформації</li>';
-    if (listBad) listBad.innerHTML = '';
+    list.innerHTML = '<li class="no-data">Немає інформації</li>';
     return;
   }
 
-  if (list) {
-    list.innerHTML = rows.map((row) => {
-      const name = nameForLang(row);
-      const text = txt(row, 'text');
-      if (name && text) return `<li><strong>${escapeHTML(name)}</strong> — ${escapeHTML(text)}</li>`;
-      return `<li>${escapeHTML(name || text)}</li>`;
-    }).join('');
-  }
-  if (listBad) listBad.innerHTML = '';
+  list.innerHTML = rows.map((row) => {
+    const name = nameForLang(row);
+    const text = txt(row, 'text');
+    if (name && text) return `<li><strong>${escapeHTML(name)}</strong> — ${escapeHTML(text)}</li>`;
+    return `<li>${escapeHTML(name || text)}</li>`;
+  }).join('');
 }
 
 // Міфи: міф + правда парами
@@ -478,7 +487,7 @@ document.addEventListener('click', (e) => {
     e.target.classList.toggle('active');
   }
 
-  if (e.target.matches('[data-modal-close]')) {
+  if (e.target.closest('[data-modal-close]')) {
     if (modal) modal.hidden = true;
   }
 
