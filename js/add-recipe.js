@@ -110,7 +110,44 @@ function showRecipeSkeletons(count = 10) {
   `).join('');
 }
 
-async function loadAndDisplayRecipes() {
+function showRecipesWelcomeState() {
+  const sectionOwn       = document.getElementById('section-own');
+  const sectionCommunity = document.getElementById('section-community');
+  const sectionSearchOwn = document.getElementById('section-search-own');
+  const sectionSearchCommunity = document.getElementById('section-search-community');
+  const communityGrid    = document.getElementById('community-grid');
+
+  if (sectionOwn)            sectionOwn.hidden = true;
+  if (sectionSearchOwn)      sectionSearchOwn.hidden = true;
+  if (sectionSearchCommunity)sectionSearchCommunity.hidden = true;
+  if (sectionCommunity)      sectionCommunity.hidden = false;
+
+  if (communityGrid) {
+    communityGrid.innerHTML = `
+      <div class="recipe-empty-state" style="grid-column:1/-1">
+        <div class="recipe-empty-state__icon">🍽️</div>
+        <p class="recipe-empty-state__title">Знайдіть ідеальну страву</p>
+        <p class="recipe-empty-state__text">Введіть назву або скористайтеся фільтрами</p>
+        <button class="btn btn--secondary" id="welcome-browse-all-btn" style="margin-top:8px">Переглянути всі рецепти</button>
+      </div>`;
+    document.getElementById('welcome-browse-all-btn')?.addEventListener('click', () => {
+      loadAndDisplayRecipes(true);
+    });
+  }
+}
+
+async function loadAndDisplayRecipes(force = false) {
+  const searchQuery = document.getElementById('recipe-search-input')?.value?.trim() || '';
+
+  if (!force && !searchQuery && !hasActiveFilters()) {
+    showRecipesWelcomeState();
+    if (!currentUser) {
+      const { data: { user } } = await supabase.auth.getUser();
+      currentUser = user;
+    }
+    return;
+  }
+
   showRecipeSkeletons();
 
   const {
@@ -989,7 +1026,7 @@ function openDeleteConfirm(recipeId) {
           viewModal.classList.remove('is-active');
           unlockScroll('recipe-view-modal');
         }
-        loadAndDisplayRecipes();
+        loadAndDisplayRecipes(true);
       }
     },
   });
@@ -1478,7 +1515,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
           if (!error) {
             updateStarsUI(newRating);
-            loadAndDisplayRecipes();
+            loadAndDisplayRecipes(true);
             showToast('Оцінку збережено!');
           }
         }
@@ -1490,7 +1527,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 if (addBtn) {
   addBtn.addEventListener('click', () => {
     openRecipeModal(async () => {
-      await loadAndDisplayRecipes();
+      await loadAndDisplayRecipes(true);
     });
   });
 }
@@ -1556,7 +1593,7 @@ if (previewFormElement) {
     if (success) {
       editingRecipeId = null;
       window.tempAiImage = null;
-      await loadAndDisplayRecipes();
+      await loadAndDisplayRecipes(true);
       closeModal();
     }
   });

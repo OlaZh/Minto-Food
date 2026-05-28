@@ -9,6 +9,7 @@ import { getLang } from './storage.js';
 
 let products = [];
 let currentLang = 'ua';
+let categoriesMap = new Map(); // id → name_ua
 
 /* ============================================================
    МОВА
@@ -65,39 +66,39 @@ const subGroups      = document.querySelectorAll('.subfilter-group');
    ЗАВАНТАЖЕННЯ ПРОДУКТІВ
    ============================================================ */
 
-function showProductSkeletons(count = 12) {
+function showWelcomeState() {
   if (!productList) return;
-  productList.innerHTML = Array.from({ length: count }, () => `
-    <div class="skeleton-card">
-      <div class="skeleton-card__image"></div>
-      <div class="skeleton-card__content">
-        <div class="skeleton-card__title"></div>
-        <div class="skeleton-card__subtitle"></div>
-        <div class="skeleton-card__footer">
-          <div class="skeleton-card__badge"></div>
-          <div class="skeleton-card__btn"></div>
-        </div>
-      </div>
-    </div>
-  `).join('');
+  productList.innerHTML = `
+    <div class="no-results" style="grid-column:1/-1">
+      <div class="no-results__icon">🥦</div>
+      <p class="no-results__title">Путівник по продуктах</p>
+      <p class="no-results__text">Введіть назву продукту, щоб дізнатись його властивості та харчову цінність</p>
+    </div>`;
 }
 
 async function loadProducts() {
-  showProductSkeletons();
+  showWelcomeState();
   try {
-    const { data, error } = await supabase
-      .from('products')
-      .select('*')
-      .order('name_ua', { ascending: true });
+    const [{ data: productsData, error }, { data: catsData }] = await Promise.all([
+      supabase.from('products').select('*').order('name_ua', { ascending: true }),
+      supabase.from('categories').select('id, name_ua'),
+    ]);
 
     if (error) throw error;
 
-    products = data || [];
-    renderProducts(products);
+    categoriesMap = new Map((catsData || []).map((c) => [c.id, c.name_ua]));
+
+    products = (productsData || []).map((p) => ({
+      ...p,
+      _cat: categoriesMap.get(p.category_id) || '',
+    }));
+
+    // Дані завантажено, але сітка залишається у welcome-стані
+    // до першого пошуку або вибору фільтру
   } catch (err) {
     console.error('Помилка Supabase:', err.message);
     if (productList) productList.innerHTML = `
-      <div class="no-results">⚠️ Помилка завантаження — перевірте з'єднання</div>`;
+      <div class="no-results" style="grid-column:1/-1">⚠️ Помилка завантаження — перевірте з'єднання</div>`;
   }
 }
 
@@ -159,27 +160,59 @@ const checkCondition = (product, filterValue) => {
   if (!product || !filterValue) return false;
 
   const val = filterValue.toLowerCase().trim();
-  const p = product;
+  const p   = product;
 
-  if (val.includes('високобілкові'))  return (Number(p.protein) || 0) >= 15;
+  // Допоміжна: перевірка наявності val в масиво-подібному полі (рядок "{a,b}" або масив)
+  const inArr = (arr) => {
+    if (!arr) return false;
+    const items = Array.isArray(arr)
+      ? arr
+      : String(arr).replace(/[{}]/g, '').split(',').map((s) => s.trim());
+    return items.some((item) => String(item).toLowerCase().includes(val));
+  };
+
+  // ── Харчова цінність ──
+  if (val.includes('високобілкові'))   return (Number(p.protein) || 0) >= 15;
   if (val.includes('низьковуглеводні'))return (Number(p.carbs)   || 0) <= 10;
-  if (val.includes('високовуглеводні'))return (Number(p.carbs)   || 0) >= 40;
-  if (val.includes('низькокалорійні')) return (Number(p.kcal)    || 0) <= 100;
   if (val.includes('висококалорійні')) return (Number(p.kcal)    || 0) >= 400;
+  if (val.includes('низькокалорійні')) return (Number(p.kcal)    || 0) <= 100;
   if (val.includes('низькожирні'))     return (Number(p.fat)     || 0) <= 3;
+  if (val.includes('високовуглеводні'))return (Number(p.carbs)   || 0) >= 40;
+  if (val.includes('високожирні'))     return (Number(p.fat)     || 0) >= 20;
+  if (val.includes('збалансовані')) {
+    return (Number(p.protein) || 0) >= 3 &&
+           (Number(p.fat)     || 0) >= 1 &&
+           (Number(p.carbs)   || 0) >= 5;
+  }
 
+  // ── Мікронутрієнти — через теги ──
+  if (val.includes('клітковин')) return inArr(p.tags);
+  if (val.includes('омега'))     return inArr(p.tags);
+  if (val.includes('кальці'))    return inArr(p.tags);
+  if (val.includes('залізо') || val.includes('заліз')) return inArr(p.tags);
+
+  // ── Глікемічний індекс ──
   const giVal = parseInt(p.gi) || 0;
-  if (val === 'низький гі')  return giVal > 0  && giVal <= 55;
-  if (val === 'середній гі') return giVal > 55 && giVal <= 69;
-  if (val === 'високий гі')  return giVal >= 70;
+  if (val === 'низький гі')        return giVal > 0 && giVal <= 55;
+  if (val === 'середній гі')       return giVal > 55 && giVal <= 69;
+  if (val === 'високий гі')        return giVal >= 70;
+  if (val.includes('невідом'))     return !p.gi || giVal === 0;
 
-  const searchFields = [p.name_ua, p.category, p.tags, p.purpose, p.time_of_day, p.alt_names];
-  return searchFields.some((field) => field && String(field).toLowerCase().includes(val));
+  // ── Тип продукту — категорія ──
+  if (p._cat && p._cat.toLowerCase().includes(val)) return true;
+
+  // ── Призначення / Обмеження / Час доби ──
+  return inArr(p.purpose) || inArr(p.restrictions) || inArr(p.time_of_day) || inArr(p.tags);
 };
 
 const applyFilters = () => {
   const searchText = (searchInput.value || '').toLowerCase().trim();
   const activeChips = [...document.querySelectorAll('.search-chip')].map((c) => c.dataset.value);
+
+  if (!searchText && activeChips.length === 0) {
+    showWelcomeState();
+    return;
+  }
 
   const filtered = products.filter((p) => {
     const nameStr = String(p.name_ua    || '').toLowerCase();
