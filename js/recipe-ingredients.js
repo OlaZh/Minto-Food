@@ -4,7 +4,7 @@
  */
 
 import { supabase } from './supabaseClient.js';
-import { parseIngredientsText, findProductMatch } from './parse-food.js';
+import { parseIngredientsText, findProductMatch, findAllMatches } from './parse-food.js';
 
 let ingredientsList = [];
 let onIngredientsChange = null;
@@ -247,6 +247,8 @@ async function parseAndAddIngredients(text) {
         carbs: product ? parseFloat(((product.carbs || 0) * factor).toFixed(1)) : 0,
         fiber: product ? parseFloat(((product.fiber || 0) * factor).toFixed(1)) : 0,
         matched: !!product,
+        foodState: product?.food_state || null,
+        originalQuery: item.name,
       };
 
       ingredientsList.push(ingredient);
@@ -293,11 +295,23 @@ function renderIngredientsList() {
       const statusIcon = ing.matched ? '✓' : '?';
       const statusTitle = ing.matched ? t('found') : t('notFound');
 
+      const STATE_LABELS = { raw: 'сирий', dry: 'сухий' };
+      const stateLabel = ing.foodState ? (STATE_LABELS[ing.foodState] ?? null) : null;
+      const stateHtml = stateLabel
+        ? `<em class="ingredient-item__state">${stateLabel}</em>`
+        : '';
+
+      const weightDisplay = ing.weight
+        ? `${ing.weight} ${t('unitG')}`
+        : `${ing.parsedAmount} ${ing.parsedUnit}`;
+
       return `
-      <li class="ingredient-item ${statusClass}">
+      <li class="ingredient-item ${statusClass}" data-index="${index}">
         <span class="ingredient-item__status" title="${statusTitle}">${statusIcon}</span>
-        <span class="ingredient-item__name" title="${ing.original || name}">${name}</span>
-        <span class="ingredient-item__weight">${ing.weight ? `${ing.weight} ${t('unitG')}` : `${ing.parsedAmount} ${ing.parsedUnit}`}</span>
+        <span class="ingredient-item__name" title="Натисніть щоб змінити">
+          ${name}${stateHtml}
+        </span>
+        <span class="ingredient-item__weight">${weightDisplay}</span>
         <span class="ingredient-item__kcal">${ing.kcal} ${t('kcal')}</span>
         <button type="button" class="ingredient-item__remove" data-index="${index}">✕</button>
       </li>
@@ -309,6 +323,77 @@ function renderIngredientsList() {
   listEl.querySelectorAll('.ingredient-item__remove').forEach((btn) => {
     btn.addEventListener('click', () => {
       removeIngredient(parseInt(btn.dataset.index));
+    });
+  });
+
+  // Клік по назві → дропдаун вибору продукту
+  listEl.querySelectorAll('.ingredient-item__name').forEach((nameEl) => {
+    nameEl.style.cursor = 'pointer';
+    nameEl.addEventListener('click', async (e) => {
+      const li = e.target.closest('.ingredient-item');
+      const index = parseInt(li?.dataset.index);
+      if (isNaN(index)) return;
+
+      const ing = ingredientsList[index];
+      const query = ing.originalQuery || ing.name_ua || '';
+      if (!query) return;
+
+      // Закриваємо попередній дропдаун
+      document.querySelectorAll('.ingredient-picker').forEach((d) => d.remove());
+
+      const matches = await findAllMatches(query, 8);
+      if (!matches.length) return;
+
+      const STATE_LABELS = { raw: 'сирий', dry: 'сухий' };
+
+      const dropdown = document.createElement('ul');
+      dropdown.className = 'ingredient-picker';
+      dropdown.innerHTML = matches.map((p) => {
+        const state = p.food_state ? `<em> (${STATE_LABELS[p.food_state] || p.food_state})</em>` : '';
+        return `<li data-pid="${p.id}" data-name="${p.name_ua}">${p.name_ua}${state} — ${p.kcal || 0} ккал/100г</li>`;
+      }).join('');
+
+      li.style.position = 'relative';
+      li.appendChild(dropdown);
+
+      dropdown.querySelectorAll('li').forEach((item) => {
+        item.addEventListener('click', async () => {
+          const pid = parseInt(item.dataset.pid);
+          const chosen = matches.find((p) => p.id === pid);
+          if (!chosen) return;
+
+          const grams = ingredientsList[index].weight;
+          const factor = grams ? grams / 100 : 0;
+          ingredientsList[index] = {
+            ...ingredientsList[index],
+            id: chosen.id,
+            name_ua: chosen.name_ua,
+            name_en: chosen.name_en,
+            name_pl: chosen.name_pl,
+            foodState: chosen.food_state,
+            kcal:    Math.round((chosen.kcal    || 0) * factor),
+            protein: parseFloat(((chosen.protein || 0) * factor).toFixed(1)),
+            fat:     parseFloat(((chosen.fat     || 0) * factor).toFixed(1)),
+            carbs:   parseFloat(((chosen.carbs   || 0) * factor).toFixed(1)),
+            matched: true,
+          };
+
+          dropdown.remove();
+          renderIngredientsList();
+          updateTotals();
+          notifyChange();
+        });
+      });
+
+      // Закрити при кліку поза
+      setTimeout(() => {
+        document.addEventListener('click', function close(ev) {
+          if (!dropdown.contains(ev.target)) {
+            dropdown.remove();
+            document.removeEventListener('click', close);
+          }
+        });
+      }, 10);
     });
   });
 }

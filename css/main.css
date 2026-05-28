@@ -3378,7 +3378,7 @@ textarea:-webkit-autofill:focus {
 #recipe-image-url {
   width: 100%;
   padding: 14px 16px;
-  background: var(--color-bg);
+  background: var(--color-bg-primary);
   border: 1px solid var(--color-border);
   border-radius: 14px;
   color: var(--color-text-primary);
@@ -4440,6 +4440,48 @@ textarea:-webkit-autofill:focus {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+.ingredient-item__name:hover {
+  color: var(--color-accent);
+  text-decoration: underline dotted;
+}
+
+.ingredient-item__state {
+  font-style: italic;
+  font-size: 11px;
+  color: var(--color-text-secondary);
+  font-weight: 400;
+  margin-left: 4px;
+}
+
+.ingredient-picker {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  z-index: 500;
+  min-width: 240px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-3);
+  list-style: none;
+  margin: 0;
+  padding: 4px 0;
+}
+.ingredient-picker li {
+  padding: 8px 14px;
+  font-size: 13px;
+  cursor: pointer;
+  color: var(--color-text-primary);
+  transition: background var(--duration-fast) ease;
+}
+.ingredient-picker li em {
+  font-style: italic;
+  color: var(--color-text-secondary);
+  font-size: 11px;
+}
+.ingredient-picker li:hover {
+  background: var(--color-bg-secondary);
 }
 
 .ingredient-item__weight {

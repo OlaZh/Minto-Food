@@ -54,6 +54,18 @@ const UNIT_RE_SRC = Object.keys(UNIT_CONVERSIONS)
   .sort((a, b) => b.length - a.length)
   .join('|');
 
+// Слова що вказують на термічну обробку — тоді НЕ фільтруємо raw
+const COOKING_WORDS = [
+  'варен', 'смажен', 'жарен', 'тушен', 'запечен',
+  'печен', 'копчен', 'гриль', 'грилен', 'відварен',
+  'пасеров', 'бланшир', 'пропечен',
+];
+
+function hasCookingWords(text) {
+  const t = text.toLowerCase();
+  return COOKING_WORDS.some((w) => t.includes(w));
+}
+
 // Слова для ігнорування при пошуку
 const STOP_WORDS = new Set([
   'великий',
@@ -230,16 +242,19 @@ export function parseFoodInput(input) {
  * @param {number} minSimilarity - мін. схожість (0-1), default 0.3
  * @returns {Object|null} - знайдений продукт або null
  */
-async function searchByTerm(term) {
-  const baseQuery = () =>
-    supabase
+async function searchByTerm(term, preferRaw = false) {
+  const base = () => {
+    let q = supabase
       .from('products')
       .select('*')
       .is('deleted_at', null)
       .is('user_id', null);
+    if (preferRaw) q = q.in('food_state', ['raw', 'dry']);
+    return q;
+  };
 
   // 1. Точний збіг по name_ua
-  const { data: exact } = await baseQuery().ilike('name_ua', term).limit(1);
+  const { data: exact } = await base().ilike('name_ua', term).limit(1);
   if (exact?.length > 0) return { ...exact[0], _matchedVia: 'exact' };
 
   // 2. Точний збіг в аліасах — "яйце" → "яйце куряче"
@@ -251,22 +266,22 @@ async function searchByTerm(term) {
       .limit(1);
 
     if (aliasRows?.length > 0) {
-      const { data: ap } = await baseQuery()
+      const { data: ap } = await base()
         .eq('id', aliasRows[0].product_id)
         .maybeSingle();
       if (ap) return { ...ap, _matchedVia: 'alias' };
     }
   } catch { /* alias search unavailable */ }
 
-  // 3. Назва починається з терміну: "яйце куряче" краще ніж "сушений банан"
-  const { data: starts } = await baseQuery()
+  // 3. Назва починається з терміну
+  const { data: starts } = await base()
     .ilike('name_ua', `${term}%`)
     .order('name_ua', { ascending: true })
     .limit(1);
   if (starts?.length > 0) return { ...starts[0], _matchedVia: 'starts' };
 
   // 4. Містить термін — беремо найкоротшу назву (базовий продукт)
-  const { data: contains } = await baseQuery()
+  const { data: contains } = await base()
     .or(`name_ua.ilike.%${term}%,name_en.ilike.%${term}%`)
     .limit(10);
 
@@ -286,18 +301,29 @@ export async function findProductMatch(query) {
   if (!query || query.length < 2) return null;
 
   const q = normalizeText(query);
+  // Якщо немає слів варена/смажена/тушена — шукаємо сирий продукт
+  const preferRaw = !hasCookingWords(q);
 
   try {
-    // 1. Пошук за повною назвою (напр. "варена картопля")
-    const result = await searchByTerm(q);
+    // 1. Пошук з урахуванням стану (сирий/сухий якщо без кулінарних слів)
+    const result = await searchByTerm(q, preferRaw);
     if (result) return result;
 
-    // 2. Якщо не знайшло — прибираємо стоп-слова і шукаємо ще раз
-    //    "варена картопля" → "картопля"
+    // 2. Якщо з фільтром нічого — шукаємо без обмежень
+    if (preferRaw) {
+      const anyResult = await searchByTerm(q, false);
+      if (anyResult) return anyResult;
+    }
+
+    // 3. Прибираємо стоп-слова і шукаємо ще раз
     const cleaned = removeStopWords(q);
     if (cleaned !== q && cleaned.length >= 2) {
-      const fallback = await searchByTerm(cleaned);
+      const fallback = await searchByTerm(cleaned, preferRaw);
       if (fallback) return fallback;
+      if (preferRaw) {
+        const fallbackAny = await searchByTerm(cleaned, false);
+        if (fallbackAny) return fallbackAny;
+      }
     }
 
     return null;
@@ -329,7 +355,11 @@ export async function findAllMatches(query, limit = 10) {
       .is('user_id', null)
       .limit(limit);
 
-    return data || [];
+    // Сортуємо: сирі/сухі першими, готові — знизу
+    const stateOrder = { raw: 0, dry: 1, cooked: 2 };
+    return (data || []).sort(
+      (a, b) => (stateOrder[a.food_state] ?? 1) - (stateOrder[b.food_state] ?? 1),
+    );
   } catch (err) {
     console.error('Search error:', err);
     return [];
