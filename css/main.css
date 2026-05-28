@@ -10910,6 +10910,10 @@ input:checked + .settings-toggle__track::after {
   min-width: 0;
 }
 
+.cookbook-book {
+  min-width: 0;
+}
+
 /* ================= BOOKS GRID ================= */
 .cookbook-books__grid {
   display: grid;
