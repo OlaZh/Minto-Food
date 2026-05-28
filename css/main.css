@@ -10917,12 +10917,12 @@ input:checked + .settings-toggle__track::after {
 /* ================= BOOKS GRID ================= */
 .cookbook-books__grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 18px;
 }
 @media (max-width: 1100px) {
   .cookbook-books__grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
@@ -11030,6 +11030,8 @@ input:checked + .settings-toggle__track::after {
   position: relative;
   display: flex;
   flex-direction: column;
+  min-width: 0;
+  max-width: 100%;
   border-radius: 22px;
   overflow: hidden;
   cursor: pointer;
@@ -11749,7 +11751,7 @@ input:checked + .settings-toggle__track::after {
 /* ================= RESPONSIVE ================= */
 @media (max-width: 768px) {
   .cookbook-books__grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
   .cookbook-modal {
     width: 95%;
@@ -11797,7 +11799,7 @@ input:checked + .settings-toggle__track::after {
     padding: 0 0 48px;
   }
   .cookbook-books__grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 10px;
   }
   .cookbook-book {
@@ -11856,7 +11858,7 @@ input:checked + .settings-toggle__track::after {
 }
 @media (max-width: 360px) {
   .cookbook-books__grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 /* ============================================================
@@ -14662,3 +14664,5 @@ input[type=date].admin-select {
   font-family: inherit;
   cursor: pointer;
 }
+
+/*# sourceMappingURL=main.css.map */
