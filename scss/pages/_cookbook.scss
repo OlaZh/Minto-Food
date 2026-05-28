@@ -1114,36 +1114,31 @@
   }
 
   .cookbook-books__grid {
-    grid-template-columns: 1fr;
-    gap: 12px;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
   }
 
   .cookbook-book {
     border-radius: 18px;
-    flex-direction: row;
-    align-items: center;
+    flex-direction: column;
 
     &__cover-area {
-      width: 80px;
-      min-width: 80px;
-      height: 80px;
-      border-radius: 14px 0 0 14px;
+      height: 90px;
+      border-radius: 14px 14px 0 0;
     }
 
     &__cover-icon {
-      width: 36px;
-      height: 36px;
+      width: 40px;
+      height: 40px;
     }
 
     &__body {
-      padding: 12px 14px;
-      gap: 4px;
-      flex: 1;
-      min-width: 0;
+      padding: 10px 12px 12px;
+      gap: 6px;
     }
 
     &__name {
-      font-size: 14px;
+      font-size: 13px;
     }
 
     &__count {
