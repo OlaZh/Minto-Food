@@ -1086,8 +1086,7 @@
 }
 
 @media (max-width: 600px) {
-  // Сайдбар "нещодавно переглянуті" на мобільному:
-  // горизонтальний скрол замість вертикального стовпця
+  // Сайдбар "нещодавно переглянуті" на мобільному: 2 колонки
   .cookbook-sidebar {
     &__title {
       font-size: 12px;
@@ -1096,19 +1095,13 @@
   }
 
   .cookbook-recent {
-    flex-direction: row;
-    overflow-x: auto;
-    padding-bottom: 4px;
-    scrollbar-width: none;
-
-    &::-webkit-scrollbar {
-      display: none;
-    }
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
   }
 
   .cookbook-recent-item {
-    flex-shrink: 0;
-    width: 200px;
+    width: auto;
 
     &:hover {
       transform: none;

@@ -11780,17 +11780,12 @@ input:checked + .settings-toggle__track::after {
     margin-bottom: 8px;
   }
   .cookbook-recent {
-    flex-direction: row;
-    overflow-x: auto;
-    padding-bottom: 4px;
-    scrollbar-width: none;
-  }
-  .cookbook-recent::-webkit-scrollbar {
-    display: none;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
   }
   .cookbook-recent-item {
-    flex-shrink: 0;
-    width: 200px;
+    width: auto;
   }
   .cookbook-recent-item:hover {
     transform: none;
