@@ -1113,32 +1113,37 @@
     padding: 0 0 48px;
   }
 
-  // 2 колонки на маленьких екранах теж
   .cookbook-books__grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: 1fr;
     gap: 12px;
   }
 
-  // Картка книги: компактніша обкладинка і body
   .cookbook-book {
     border-radius: 18px;
+    flex-direction: row;
+    align-items: center;
 
     &__cover-area {
-      height: 100px;
+      width: 80px;
+      min-width: 80px;
+      height: 80px;
+      border-radius: 14px 0 0 14px;
     }
 
     &__cover-icon {
-      width: 48px;
-      height: 48px;
+      width: 36px;
+      height: 36px;
     }
 
     &__body {
-      padding: 12px 14px 14px;
-      gap: 8px;
+      padding: 12px 14px;
+      gap: 4px;
+      flex: 1;
+      min-width: 0;
     }
 
     &__name {
-      font-size: 13px;
+      font-size: 14px;
     }
 
     &__count {
@@ -1147,8 +1152,8 @@
     }
 
     &__arrow {
-      width: 24px;
-      height: 24px;
+      width: 20px;
+      height: 20px;
     }
   }
 

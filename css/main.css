@@ -6668,14 +6668,16 @@ svg[viewBox="0 0 24 24"] {
   line-height: 1;
 }
 .recipe-empty-state__title {
-  font-family: var(--font-heading);
+  font-family: var(--font-body);
   font-size: 22px;
-  font-weight: 700;
-  color: var(--color-text-primary);
+  font-weight: 600;
+  color: var(--color-text-secondary);
   margin: 0;
 }
 .recipe-empty-state__text {
+  font-family: var(--font-body);
   font-size: 14px;
+  font-weight: 600;
   color: var(--color-text-secondary);
   margin: 0;
   max-width: 320px;
@@ -8539,7 +8541,7 @@ input:checked + .settings-toggle__track::after {
 /* ================= WEEK MENU ================= */
 .week-menu {
   width: 100%;
-  padding: 8px 0 60px;
+  padding: 8px 0 0;
 }
 
 /* ================= ЗАГОЛОВОК ================= */
@@ -11790,33 +11792,40 @@ input:checked + .settings-toggle__track::after {
     padding: 0 0 48px;
   }
   .cookbook-books__grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: 1fr;
     gap: 12px;
   }
   .cookbook-book {
     border-radius: 18px;
+    flex-direction: row;
+    align-items: center;
   }
   .cookbook-book__cover-area {
-    height: 100px;
+    width: 80px;
+    min-width: 80px;
+    height: 80px;
+    border-radius: 14px 0 0 14px;
   }
   .cookbook-book__cover-icon {
-    width: 48px;
-    height: 48px;
+    width: 36px;
+    height: 36px;
   }
   .cookbook-book__body {
-    padding: 12px 14px 14px;
-    gap: 8px;
+    padding: 12px 14px;
+    gap: 4px;
+    flex: 1;
+    min-width: 0;
   }
   .cookbook-book__name {
-    font-size: 13px;
+    font-size: 14px;
   }
   .cookbook-book__count {
     font-size: 11px;
     padding: 2px 8px;
   }
   .cookbook-book__arrow {
-    width: 24px;
-    height: 24px;
+    width: 20px;
+    height: 20px;
   }
   .cookbook-modal {
     width: 98%;

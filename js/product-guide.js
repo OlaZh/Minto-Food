@@ -72,7 +72,6 @@ function showWelcomeState() {
   productList.innerHTML = `
     <div class="no-results" style="grid-column:1/-1">
       <div class="no-results__icon">${iconVeg}</div>
-      <p class="no-results__title">Путівник по продуктах</p>
       <p class="no-results__text">Введіть назву продукту, щоб дізнатись його властивості та харчову цінність</p>
     </div>`;
 }
