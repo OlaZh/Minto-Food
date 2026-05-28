@@ -119,25 +119,29 @@ export function initIngredientBuilder(containerSelector, onChange, lang = 'ua') 
     </div>
   `;
 
-  // Завантажуємо кеш продуктів
-  loadProductsCache();
-
   initEventListeners();
+
+  // Завантажуємо кеш одиниць в фоні (не блокуємо рендер)
+  loadProductsCache();
   renderIngredientsList();
 }
 
 // ==================== ЗАВАНТАЖЕННЯ КЕШУ ====================
 
-async function loadProductsCache() {
-  try {
-    const { data: units } = await supabase
-      .from('product_units')
-      .select('product_id, unit_type, size, grams');
+let cacheReady = false;
+let cachePromise = null;
 
-    productUnitsCache = units || [];
-  } catch (error) {
-    console.error('Помилка завантаження кешу:', error);
-  }
+function loadProductsCache() {
+  if (cachePromise) return cachePromise;
+  cachePromise = supabase
+    .from('product_units')
+    .select('product_id, unit_type, size, grams')
+    .then(({ data }) => {
+      productUnitsCache = data || [];
+      cacheReady = true;
+    })
+    .catch(() => {});
+  return cachePromise;
 }
 
 // ==================== ОТРИМАННЯ ВАГИ ПРОДУКТУ ====================
@@ -196,6 +200,9 @@ async function parseAndAddIngredients(text) {
   const parseBtn = document.getElementById('parseIngredientsBtn');
   const originalText = parseBtn?.textContent;
   if (parseBtn) parseBtn.textContent = t('parsing');
+
+  // Чекаємо завантаження кешу одиниць (шт→г)
+  if (!cacheReady) await loadProductsCache();
 
   try {
     // Парсимо текст

@@ -581,6 +581,51 @@
   gap: 8px;
 }
 
+.substitute-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 12px;
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  width: 100%;
+
+  &__name {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--color-text);
+  }
+
+  &__desc {
+    font-size: 12px;
+    color: var(--color-text-secondary);
+    line-height: 1.4;
+  }
+}
+
+.myth-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--color-border);
+
+  &:last-child { border-bottom: none; }
+
+  &__myth {
+    font-size: 13px;
+    color: var(--color-text);
+    line-height: 1.4;
+  }
+
+  &__truth {
+    font-size: 13px;
+    color: var(--color-text-secondary);
+    line-height: 1.4;
+  }
+}
+
 .no-data {
   font-size: 13px;
   color: var(--color-text-secondary);

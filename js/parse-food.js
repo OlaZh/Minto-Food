@@ -9,54 +9,50 @@ import { supabase } from './supabaseClient.js';
 
 const UNIT_CONVERSIONS = {
   // Вага
-  г: 1,
-  гр: 1,
-  грам: 1,
-  грамів: 1,
-  g: 1,
-  gram: 1,
-  grams: 1,
-  кг: 1000,
+  г: 1, гр: 1, грам: 1, грами: 1, грамів: 1,
+  g: 1, gram: 1, grams: 1,
+  кг: 1000, кілограм: 1000, кілограма: 1000, кілограми: 1000,
   kg: 1000,
-  oz: 28.35,
-  ounce: 28.35,
-  lb: 453.6,
-  pound: 453.6,
+  oz: 28.35, ounce: 28.35,
+  lb: 453.6, pound: 453.6,
   // Об'єм
-  мл: 1,
-  ml: 1,
-  л: 1000,
-  літр: 1000,
-  літра: 1000,
-  l: 1000,
-  liter: 1000,
-  'ч.л.': 5,
-  'ч.л': 5,
-  чл: 5,
-  tsp: 5,
-  teaspoon: 5,
-  'ст.л.': 15,
-  'ст.л': 15,
-  стл: 15,
-  tbsp: 15,
-  tablespoon: 15,
-  склянка: 250,
-  склянки: 250,
-  cup: 250,
-  cups: 250,
-  // Інше
-  щіпка: 2,
-  щіпки: 2,
+  мл: 1, ml: 1,
+  л: 1000, літр: 1000, літра: 1000, l: 1000, liter: 1000,
+  // Ложки
+  'ч.л.': 5, 'ч.л': 5, чл: 5, tsp: 5, teaspoon: 5,
+  'ст.л.': 15, 'ст.л': 15, стл: 15, tbsp: 15, tablespoon: 15,
+  ложка: 15, ложки: 15, ложок: 15,
+  // Склянки / стакани
+  склянка: 250, склянки: 250, склянок: 250,
+  стакан: 200, стакана: 200, стакани: 200,
+  cup: 250, cups: 250,
+  // Щіпки / дрібки
+  щіпка: 2, щіпки: 2, щіпок: 2,
+  дрібка: 1, дрібки: 1, дрібок: 1,
   pinch: 2,
-  шт: 1,
-  'шт.': 1,
-  штука: 1,
-  штуки: 1,
-  штук: 1,
-  pcs: 1,
-  piece: 1,
-  pieces: 1,
+  // Жмені
+  жменя: 30, жмені: 30, жмень: 30, жменька: 30, жменьки: 30,
+  handful: 30,
+  // Пачки / упаковки
+  пачка: 200, пачки: 200, пачок: 200,
+  упаковка: 200, упаковки: 200,
+  // Штуки (grams=null → шукаємо в product_units)
+  шт: null, 'шт.': null, штука: null, штуки: null, штук: null,
+  pcs: null, piece: null, pieces: null,
 };
+
+// Одиниці що означають "штука" — кількість грамів береться з product_units
+const PIECE_UNITS = new Set(
+  Object.entries(UNIT_CONVERSIONS)
+    .filter(([, v]) => v === null)
+    .map(([k]) => k)
+);
+
+// Регекс для всіх відомих одиниць (довші — першими, щоб "ст.л." не зматчилось як "ст")
+const UNIT_RE_SRC = Object.keys(UNIT_CONVERSIONS)
+  .map((k) => k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
+  .sort((a, b) => b.length - a.length)
+  .join('|');
 
 // Слова для ігнорування при пошуку
 const STOP_WORDS = new Set([
@@ -150,7 +146,10 @@ export function parseFoodInput(input) {
 
   let text = input.toLowerCase().trim();
 
+  // Нормалізуємо багатослівні одиниці перед основним парсингом
   text = text
+    .replace(/столов[иіая]+\s+ложк[иаою]*/gi, 'ст.л.')
+    .replace(/чайн[иіая]+\s+ложк[иаою]*/gi, 'ч.л.')
     .replace(/[—–-]+/g, ' ')
     .replace(/[,;:]+/g, ' ')
     .replace(/\s+/g, ' ')
@@ -161,29 +160,29 @@ export function parseFoodInput(input) {
   let grams = null;
   let name = text;
 
-  // Патерн 1: "200 г курки"
+  // Патерн 1: "200 г курки" / "1 щіпка солі" / "2 жмені горіхів"
   let match = text.match(
-    /^(\d+(?:[.,]\d+)?)\s*(г|гр|грам|кг|мл|л|шт|ст\.?л\.?|ч\.?л\.?|склянк[иа]?)\s+(.+)$/i,
+    new RegExp(`^(\\d+(?:[.,]\\d+)?)\\s*(${UNIT_RE_SRC})\\.?\\s+(.+)$`, 'i'),
   );
   if (match) {
     amount = parseFloat(match[1].replace(',', '.'));
     unit = match[2].toLowerCase();
     name = match[3].trim();
-    grams = amount * (UNIT_CONVERSIONS[unit] || 1);
-    if (unit === 'шт' || unit === 'шт.') grams = null;
+    const conv = UNIT_CONVERSIONS[unit];
+    grams = PIECE_UNITS.has(unit) ? null : amount * (conv ?? 1);
   }
 
-  // Патерн 2: "курка 200 г"
+  // Патерн 2: "курка 200 г" / "сіль 1 щіпка"
   if (!match) {
     match = text.match(
-      /^(.+?)\s+(\d+(?:[.,]\d+)?)\s*(г|гр|грам|кг|мл|л|шт|ст\.?л\.?|ч\.?л\.?|склянк[иа]?)\.?$/i,
+      new RegExp(`^(.+?)\\s+(\\d+(?:[.,]\\d+)?)\\s*(${UNIT_RE_SRC})\\.?$`, 'i'),
     );
     if (match) {
       name = match[1].trim();
       amount = parseFloat(match[2].replace(',', '.'));
       unit = match[3].toLowerCase();
-      grams = amount * (UNIT_CONVERSIONS[unit] || 1);
-      if (unit === 'шт' || unit === 'шт.') grams = null;
+      const conv = UNIT_CONVERSIONS[unit];
+      grams = PIECE_UNITS.has(unit) ? null : amount * (conv ?? 1);
     }
   }
 
@@ -232,35 +231,55 @@ export function parseFoodInput(input) {
  * @returns {Object|null} - знайдений продукт або null
  */
 async function searchByTerm(term) {
+  const baseQuery = () =>
+    supabase
+      .from('products')
+      .select('*')
+      .is('deleted_at', null)
+      .is('user_id', null);
+
+  // 1. Точний збіг по name_ua
+  const { data: exact } = await baseQuery().ilike('name_ua', term).limit(1);
+  if (exact?.length > 0) return { ...exact[0], _matchedVia: 'exact' };
+
+  // 2. Точний збіг в аліасах — "яйце" → "яйце куряче"
   try {
     const { data: aliasRows } = await supabase
       .from('product_aliases')
       .select('product_id')
-      .ilike('alias_normalized', `%${term}%`)
+      .ilike('alias_normalized', term)
       .limit(1);
 
     if (aliasRows?.length > 0) {
-      const { data: aliasProduct } = await supabase
-        .from('products')
-        .select('*')
+      const { data: ap } = await baseQuery()
         .eq('id', aliasRows[0].product_id)
-        .is('deleted_at', null)
         .maybeSingle();
-      if (aliasProduct) return { ...aliasProduct, _matchedVia: 'alias' };
+      if (ap) return { ...ap, _matchedVia: 'alias' };
     }
-  } catch {
-    // alias search unavailable
+  } catch { /* alias search unavailable */ }
+
+  // 3. Назва починається з терміну: "яйце куряче" краще ніж "сушений банан"
+  const { data: starts } = await baseQuery()
+    .ilike('name_ua', `${term}%`)
+    .order('name_ua', { ascending: true })
+    .limit(1);
+  if (starts?.length > 0) return { ...starts[0], _matchedVia: 'starts' };
+
+  // 4. Містить термін — беремо найкоротшу назву (базовий продукт)
+  const { data: contains } = await baseQuery()
+    .or(`name_ua.ilike.%${term}%,name_en.ilike.%${term}%`)
+    .limit(10);
+
+  if (contains?.length > 0) {
+    return {
+      ...contains.reduce((a, b) =>
+        (a.name_ua?.length ?? 999) <= (b.name_ua?.length ?? 999) ? a : b
+      ),
+      _matchedVia: 'contains',
+    };
   }
 
-  const { data: products } = await supabase
-    .from('products')
-    .select('*')
-    .or(`name_ua.ilike.%${term}%,name_en.ilike.%${term}%`)
-    .is('deleted_at', null)
-    .is('user_id', null)
-    .limit(1);
-
-  return products?.[0] ? { ...products[0], _matchedVia: 'product' } : null;
+  return null;
 }
 
 export async function findProductMatch(query) {

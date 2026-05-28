@@ -1,63 +1,68 @@
 /* ============================================================
-   product-guide.js — FIXED VERSION WITH AUTH
+   product-guide.js
    ============================================================ */
 
 import { supabase } from './supabaseClient.js';
 import { initAuth } from './auth.js';
 import { escapeHTML } from './utils.js';
+import { getLang } from './storage.js';
 
 let products = [];
+let currentLang = 'ua';
 
 /* ============================================================
-   2. ДОПОМІЖНІ ФУНКЦІЇ
+   МОВА
+   ============================================================ */
+
+function txt(row, field) {
+  if (!row) return '';
+  if (currentLang === 'en' && row[`${field}_en`]) return row[`${field}_en`];
+  if (currentLang === 'pl' && row[`${field}_pl`]) return row[`${field}_pl`];
+  return row[field] || '';
+}
+
+function nameForLang(row) {
+  if (!row) return '';
+  if (currentLang === 'en' && row.name_en) return row.name_en;
+  if (currentLang === 'pl' && row.name_pl) return row.name_pl;
+  return row.name_ua || '';
+}
+
+/* ============================================================
+   ДОПОМІЖНІ ФУНКЦІЇ
    ============================================================ */
 
 function normalizeIdArray(value) {
   if (!value) return [];
   if (Array.isArray(value)) return value.map(Number);
-
   if (typeof value === 'string' && value.startsWith('{')) {
-    return value
-      .replace('{', '')
-      .replace('}', '')
-      .split(',')
-      .map(Number)
-      .filter((n) => !isNaN(n));
+    return value.replace('{', '').replace('}', '').split(',').map(Number).filter((n) => !isNaN(n));
   }
-
   return [];
 }
 
 function normalizeList(value) {
   if (!value) return [];
-
   if (Array.isArray(value)) return value;
-
   if (typeof value === 'string') {
-    return value
-      .replace('{', '')
-      .replace('}', '')
-      .split(',')
-      .map((s) => s.trim())
-      .filter(Boolean);
+    return value.replace('{', '').replace('}', '').split(',').map((s) => s.trim()).filter(Boolean);
   }
-
   return [];
 }
 
 /* ============================================================
-   3. ЕЛЕМЕНТИ DOM
+   DOM
    ============================================================ */
 
-const productList = document.querySelector('#productList');
-const modal = document.querySelector('[data-modal="product"]');
-const searchInput = document.querySelector('.product-search__input');
-const searchContainer = document.querySelector('.product-search');
-const filterBtns = document.querySelectorAll('.product-filters__item');
-const subGroups = document.querySelectorAll('.subfilter-group');
+const productList    = document.querySelector('#productList');
+const modal          = document.querySelector('[data-modal="product"]');
+const searchInput    = document.querySelector('.product-search__input');
+const searchContainer= document.querySelector('.product-search');
+const filterBtns     = document.querySelectorAll('.product-filters__item');
+const subGroups      = document.querySelectorAll('.subfilter-group');
 
 /* ============================================================
-   4. ЗАВАНТАЖЕННЯ ДАНИХ
+   ЗАВАНТАЖЕННЯ ПРОДУКТІВ
    ============================================================ */
 
 function showProductSkeletons(count = 12) {
@@ -92,14 +97,12 @@ async function loadProducts() {
   } catch (err) {
     console.error('Помилка Supabase:', err.message);
     if (productList) productList.innerHTML = `
-      <div class="no-results">
-        ⚠️ Помилка завантаження — перевірте з'єднання
-      </div>`;
+      <div class="no-results">⚠️ Помилка завантаження — перевірте з'єднання</div>`;
   }
 }
 
 /* ============================================================
-   5. РЕНДЕР КАРТОК
+   РЕНДЕР КАРТОК
    ============================================================ */
 
 function renderProducts(items) {
@@ -113,8 +116,7 @@ function renderProducts(items) {
         <div class="no-results__icon">🌿</div>
         <p class="no-results__title">Продуктів не знайдено</p>
         <p class="no-results__text">Спробуйте змінити фільтри або пошуковий запит</p>
-      </div>
-    `;
+      </div>`;
     return;
   }
 
@@ -127,16 +129,6 @@ function renderProducts(items) {
         ? product.image
         : 'img/placeholder.jpg';
 
-    const attributionHtml = product.photographer_name
-      ? `<div class="product-card__attribution">
-           <a href="${product.photographer_url}?utm_source=MintoFood&utm_medium=referral"
-              target="_blank"
-              onclick="event.stopPropagation()">
-             ${escapeHTML(product.photographer_name)}
-           </a>
-         </div>`
-      : '';
-
     card.innerHTML = `
       <div class="product-card__image-box">
         <img src="${imgSrc}"
@@ -144,7 +136,6 @@ function renderProducts(items) {
              class="product-card__img"
              loading="lazy"
              onerror="this.src='img/placeholder.jpg'">
-        ${attributionHtml}
       </div>
       <div class="product-card__content">
         <h3 class="product-card__name">${escapeHTML(product.name_ua) || 'Без назви'}</h3>
@@ -153,8 +144,7 @@ function renderProducts(items) {
           <span class="product-card__kcal">${product.kcal || 0} ккал</span>
           <button class="product-card__btn">Детальніше</button>
         </div>
-      </div>
-    `;
+      </div>`;
 
     card.addEventListener('click', () => openProductModal(product));
     productList.appendChild(card);
@@ -162,7 +152,7 @@ function renderProducts(items) {
 }
 
 /* ============================================================
-   6. ЛОГІКА ФІЛЬТРАЦІЇ
+   ФІЛЬТРАЦІЯ
    ============================================================ */
 
 const checkCondition = (product, filterValue) => {
@@ -171,40 +161,29 @@ const checkCondition = (product, filterValue) => {
   const val = filterValue.toLowerCase().trim();
   const p = product;
 
-  if (val.includes('високобілкові')) return (Number(p.protein) || 0) >= 15;
-  if (val.includes('низьковуглеводні')) return (Number(p.carbs) || 0) <= 10;
-  if (val.includes('високовуглеводні')) return (Number(p.carbs) || 0) >= 40;
-  if (val.includes('низькокалорійні')) return (Number(p.kcal) || 0) <= 100;
-  if (val.includes('висококалорійні')) return (Number(p.kcal) || 0) >= 400;
-  if (val.includes('низькожирні')) return (Number(p.fat) || 0) <= 3;
+  if (val.includes('високобілкові'))  return (Number(p.protein) || 0) >= 15;
+  if (val.includes('низьковуглеводні'))return (Number(p.carbs)   || 0) <= 10;
+  if (val.includes('високовуглеводні'))return (Number(p.carbs)   || 0) >= 40;
+  if (val.includes('низькокалорійні')) return (Number(p.kcal)    || 0) <= 100;
+  if (val.includes('висококалорійні')) return (Number(p.kcal)    || 0) >= 400;
+  if (val.includes('низькожирні'))     return (Number(p.fat)     || 0) <= 3;
 
   const giVal = parseInt(p.gi) || 0;
-
-  if (val === 'низький гі') return giVal > 0 && giVal <= 55;
+  if (val === 'низький гі')  return giVal > 0  && giVal <= 55;
   if (val === 'середній гі') return giVal > 55 && giVal <= 69;
-  if (val === 'високий гі') return giVal >= 70;
+  if (val === 'високий гі')  return giVal >= 70;
 
-  const searchFields = [
-    p.name_ua,
-    p.category,
-    p.tags,
-    p.purpose,
-    p.time_of_day,
-    p.best_time_to_eat,
-    p.alt_names,
-  ];
-
+  const searchFields = [p.name_ua, p.category, p.tags, p.purpose, p.time_of_day, p.alt_names];
   return searchFields.some((field) => field && String(field).toLowerCase().includes(val));
 };
 
 const applyFilters = () => {
   const searchText = (searchInput.value || '').toLowerCase().trim();
-
   const activeChips = [...document.querySelectorAll('.search-chip')].map((c) => c.dataset.value);
 
   const filtered = products.filter((p) => {
-    const nameStr = String(p.name_ua || '').toLowerCase();
-    const altStr = String(p.alt_names || '').toLowerCase();
+    const nameStr = String(p.name_ua    || '').toLowerCase();
+    const altStr  = String(p.alt_names  || '').toLowerCase();
     const descStr = String(p.short_desc || '').toLowerCase();
 
     const matchesSearch =
@@ -222,7 +201,7 @@ const applyFilters = () => {
 };
 
 /* ============================================================
-   7. ОБРОБКА ПОДІЙ
+   ПОДІЇ ФІЛЬТРІВ
    ============================================================ */
 
 const addNewChip = (label) => {
@@ -231,11 +210,7 @@ const addNewChip = (label) => {
   const chip = document.createElement('span');
   chip.className = 'search-chip';
   chip.dataset.value = label;
-
-  chip.innerHTML = `
-    ${label}
-    <button class="chip-remove">✕</button>
-  `;
+  chip.innerHTML = `${label}<button class="chip-remove">✕</button>`;
 
   chip.querySelector('.chip-remove').onclick = () => {
     chip.remove();
@@ -243,17 +218,14 @@ const addNewChip = (label) => {
   };
 
   searchContainer.insertBefore(chip, searchInput);
-
   applyFilters();
 };
 
 filterBtns.forEach((btn) => {
   btn.addEventListener('click', (e) => {
     e.stopPropagation();
-
     const target = btn.dataset.filter;
-    const group = document.querySelector(`.subfilter-group[data-subfilter="${target}"]`);
-
+    const group  = document.querySelector(`.subfilter-group[data-subfilter="${target}"]`);
     const isAlreadyOpen = group?.classList.contains('active');
 
     subGroups.forEach((g) => g.classList.remove('active'));
@@ -270,9 +242,7 @@ subGroups.forEach((group) => {
   group.addEventListener('click', (e) => {
     const item = e.target.closest('.subfilter-item');
     if (!item) return;
-
     addNewChip(item.textContent.trim());
-
     group.classList.remove('active');
     filterBtns.forEach((b) => b.classList.remove('is-active'));
   });
@@ -283,95 +253,223 @@ if (searchInput) {
 }
 
 /* ============================================================
-   8. МОДАЛКА
+   МОДАЛКА — ХЕЛПЕРИ РЕНДЕРУ
    ============================================================ */
 
-function openProductModal(product) {
-  if (!modal || !product) return;
+function getAccordionList(i18nKey, nth = 0) {
+  const accordions = modal ? [...modal.querySelectorAll('.accordion')] : [];
+  const accordion  = accordions.find((a) => a.querySelector(`[data-i18n="${i18nKey}"]`));
+  if (!accordion) return null;
+  return accordion.querySelectorAll('.accordion__list')[nth] || null;
+}
 
-  modal.querySelector('[data-i18n="productName"]').textContent = product.name_ua || '';
+function setLoadingState() {
+  if (!modal) return;
+  modal.querySelectorAll('.accordion__list').forEach((list) => {
+    list.innerHTML = '<li class="loading-placeholder">Завантаження...</li>';
+  });
+  const subs = modal.querySelector('.substitutes-container');
+  if (subs) subs.innerHTML = '<span class="loading-placeholder">Завантаження...</span>';
+  const sim = modal.querySelector('.similar-products-container');
+  if (sim) sim.innerHTML = '<span class="loading-placeholder">Завантаження...</span>';
+}
 
-  modal.querySelector('.product-modal__image').src =
-    typeof product.image === 'string' && product.image.trim() !== '' && product.image !== 'NULL'
-      ? product.image
-      : 'img/placeholder.jpg';
+// Простий список: name — text
+function renderSimpleList(i18nKey, rows) {
+  const list = getAccordionList(i18nKey);
+  if (!list) return;
 
-  modal.querySelector('[data-i18n="productShortDesc"]').textContent = product.short_desc || '';
-  modal.querySelector('[data-i18n="kcal"]').textContent = `${product.kcal || 0} ккал`;
-  modal.querySelector('[data-i18n="protein"]').textContent = `${product.protein || 0}Б`;
-  modal.querySelector('[data-i18n="fat"]').textContent = `${product.fat || 0}Ж`;
-  modal.querySelector('[data-i18n="carbs"]').textContent = `${product.carbs || 0}В`;
-
-  const fiberRow = modal.querySelector('#productFiberRow');
-  const fiberVal = modal.querySelector('#productFiberValue');
-  if (fiberRow && fiberVal) {
-    const f = parseFloat(product.fiber || 0);
-    fiberVal.textContent = `${f.toFixed(1)} г`;
-    fiberRow.hidden = f <= 0;
+  if (!rows || rows.length === 0) {
+    list.innerHTML = '<li class="no-data">Немає інформації</li>';
+    return;
   }
 
-  const updateList = (i18nKey, value) => {
-    const list = modal
-      .querySelector(`[data-i18n="${i18nKey}"]`)
-      ?.closest('.accordion')
-      ?.querySelector('.accordion__list');
+  list.innerHTML = rows.map((row) => {
+    const name = nameForLang(row);
+    const text = txt(row, 'text');
+    if (name && text) return `<li><strong>${escapeHTML(name)}</strong> — ${escapeHTML(text)}</li>`;
+    return `<li>${escapeHTML(name || text)}</li>`;
+  }).join('');
+}
 
-    if (!list) return;
+// Поєднання (products_combinations) — один список
+function renderCombinations(rows) {
+  const list = getAccordionList('combinations', 0);
+  const listBad = getAccordionList('combinations', 1);
 
-    const items = normalizeList(value);
+  if (!rows || rows.length === 0) {
+    if (list)    list.innerHTML = '<li class="no-data">Немає інформації</li>';
+    if (listBad) listBad.innerHTML = '';
+    return;
+  }
 
-    list.innerHTML =
-      items.length > 0
-        ? items.map((i) => `<li>${escapeHTML(i)}</li>`).join('')
-        : '<li>Немає інформації</li>';
-  };
+  if (list) {
+    list.innerHTML = rows.map((row) => {
+      const name = nameForLang(row);
+      const text = txt(row, 'text');
+      if (name && text) return `<li><strong>${escapeHTML(name)}</strong> — ${escapeHTML(text)}</li>`;
+      return `<li>${escapeHTML(name || text)}</li>`;
+    }).join('');
+  }
+  if (listBad) listBad.innerHTML = '';
+}
 
-  updateList('benefits', product.benefits);
-  updateList('harm', product.harm);
-  updateList('whenToEat', product.best_time_to_eat);
-  updateList('whenNotToEat', product.when_to_avoid);
-  updateList('bodyReaction', product.body_effects);
-  updateList('myths', product.myths_and_truths);
+// Міфи: міф + правда парами
+function renderMyths(rows) {
+  const list = getAccordionList('myths');
+  if (!list) return;
 
-  const updateLinked = (selector, ids) => {
-    const box = modal.querySelector(selector);
-    if (!box) return;
+  if (!rows || rows.length === 0) {
+    list.innerHTML = '<li class="no-data">Немає інформації</li>';
+    return;
+  }
 
-    box.innerHTML = '';
+  list.innerHTML = rows.map((row) => {
+    const myth  = currentLang === 'en' ? (row.myth_en  || row.myth)  :
+                  currentLang === 'pl' ? (row.myth_pl  || row.myth)  : row.myth;
+    const truth = currentLang === 'en' ? (row.truth_en || row.truth) :
+                  currentLang === 'pl' ? (row.truth_pl || row.truth) : row.truth;
 
-    const idList = normalizeIdArray(ids);
+    return `<li class="myth-item">
+      <span class="myth-item__myth">❌ ${escapeHTML(myth  || '')}</span>
+      <span class="myth-item__truth">✅ ${escapeHTML(truth || '')}</span>
+    </li>`;
+  }).join('');
+}
 
-    if (idList.length === 0) {
-      box.innerHTML = '<span class="no-data">Не знайдено</span>';
-      return;
+// Заміни: product_substitutes з назвами і описом
+function renderSubstitutes(rows) {
+  const container = modal ? modal.querySelector('.substitutes-container') : null;
+  if (!container) return;
+
+  container.innerHTML = '';
+
+  if (!rows || rows.length === 0) {
+    container.innerHTML = '<span class="no-data">Немає замін</span>';
+    return;
+  }
+
+  rows.forEach((row) => {
+    const name = currentLang === 'en' ? (row.substitute_name_en || row.substitute_name_ua) :
+                 currentLang === 'pl' ? (row.substitute_name_pl || row.substitute_name_ua) :
+                 row.substitute_name_ua;
+    const desc = currentLang === 'en' ? (row.type_en || row.type_ua) :
+                 currentLang === 'pl' ? (row.type_pl || row.type_ua) :
+                 row.type_ua;
+
+    const item = document.createElement('div');
+    item.className = 'substitute-item';
+    item.innerHTML = `
+      <span class="substitute-item__name">${escapeHTML(name || '')}</span>
+      ${desc ? `<span class="substitute-item__desc">${escapeHTML(desc)}</span>` : ''}
+    `;
+
+    if (row.substitute_id) {
+      item.querySelector('.substitute-item__name').style.cursor = 'pointer';
+      item.querySelector('.substitute-item__name').addEventListener('click', () => {
+        const found = products.find((p) => p.id === row.substitute_id);
+        if (found) openProductModal(found);
+      });
     }
 
-    idList.forEach((id) => {
-      const found = products.find((p) => Number(p.id) === Number(id));
+    container.appendChild(item);
+  });
+}
 
-      if (!found) return;
+// Масив-поле з таблиці products (time_of_day, restrictions)
+function renderArrayList(i18nKey, arr) {
+  const list = getAccordionList(i18nKey);
+  if (!list) return;
 
-      const chip = document.createElement('span');
-      chip.className = 'product-chip';
-      chip.textContent = found.name_ua;
+  const items = normalizeList(arr);
 
-      chip.addEventListener('click', () => {
-        modal.scrollTo(0, 0);
-        openProductModal(found);
-      });
+  if (items.length === 0) {
+    list.innerHTML = '<li class="no-data">Немає інформації</li>';
+    return;
+  }
 
-      box.appendChild(chip);
-    });
-  };
-
-  updateLinked('.substitutes-container', product.substitute_ids);
-  updateLinked('.similar-products-container', product.similar_products);
-
-  modal.hidden = false;
+  list.innerHTML = items.map((i) => `<li>${escapeHTML(String(i))}</li>`).join('');
 }
 
 /* ============================================================
-   9. ГЛОБАЛЬНІ КЛІКИ
+   МОДАЛКА — ВІДКРИТИ
+   ============================================================ */
+
+async function openProductModal(product) {
+  if (!modal || !product) return;
+
+  currentLang = getLang();
+
+  // Базова інфо — відображаємо одразу
+  const nameEl = modal.querySelector('[data-i18n="productName"]');
+  if (nameEl) nameEl.textContent = product.name_ua || '';
+
+  const imgEl = modal.querySelector('.product-modal__image');
+  if (imgEl) {
+    imgEl.src =
+      typeof product.image === 'string' && product.image.trim() && product.image !== 'NULL'
+        ? product.image
+        : 'img/placeholder.jpg';
+    imgEl.onerror = () => { imgEl.src = 'img/placeholder.jpg'; };
+  }
+
+  const descEl = modal.querySelector('[data-i18n="productShortDesc"]');
+  if (descEl) descEl.textContent = product.short_desc || '';
+
+  const kcalEl = modal.querySelector('[data-i18n="kcal"]');
+  if (kcalEl) kcalEl.textContent = `${product.kcal || 0} ккал`;
+
+  const proteinEl = modal.querySelector('[data-i18n="protein"]');
+  if (proteinEl) proteinEl.textContent = `${product.protein || 0}Б`;
+
+  const fatEl = modal.querySelector('[data-i18n="fat"]');
+  if (fatEl) fatEl.textContent = `${product.fat || 0}Ж`;
+
+  const carbsEl = modal.querySelector('[data-i18n="carbs"]');
+  if (carbsEl) carbsEl.textContent = `${product.carbs || 0}В`;
+
+  const fiberRow = modal.querySelector('#productFiberRow');
+  if (fiberRow) fiberRow.hidden = true;
+
+  modal.hidden = false;
+  setLoadingState();
+
+  // Завантажуємо всі деталі паралельно
+  const [
+    { data: benefits },
+    { data: harm },
+    { data: effects },
+    { data: myths },
+    { data: substitutes },
+    { data: combinations },
+  ] = await Promise.all([
+    supabase.from('product_benefits')   .select('name_ua,name_en,name_pl,text,text_en,text_pl').eq('product_id', product.id),
+    supabase.from('product_harm')       .select('name_ua,name_en,name_pl,text,text_en,text_pl').eq('product_id', product.id),
+    supabase.from('product_effects')    .select('name_ua,name_en,name_pl,text,text_en,text_pl').eq('product_id', product.id),
+    supabase.from('product_myths_new')  .select('name_ua,name_en,name_pl,myth,truth,myth_en,truth_en,myth_pl,truth_pl').eq('product_id', product.id),
+    supabase.from('product_substitutes').select('substitute_id,substitute_name_ua,substitute_name_en,substitute_name_pl,type_ua,type_en,type_pl').eq('product_id', product.id),
+    supabase.from('product_combinations').select('name_ua,name_en,name_pl,text,text_en,text_pl').eq('product_id', product.id),
+  ]);
+
+  renderSimpleList('benefits',     benefits);
+  renderSimpleList('harm',         harm);
+  renderSimpleList('bodyReaction', effects);
+  renderMyths(myths);
+  renderSubstitutes(substitutes);
+  renderCombinations(combinations);
+
+  // Час вживання і обмеження — з колонок products
+  renderArrayList('whenToEat',    product.time_of_day);
+  renderArrayList('whenNotToEat', product.restrictions);
+
+  // Схожі продукти — таблиці немає, ховаємо акордеон
+  const simAccordion = [...modal.querySelectorAll('.accordion')]
+    .find((a) => a.querySelector('[data-i18n="similarProducts"]'));
+  if (simAccordion) simAccordion.hidden = true;
+}
+
+/* ============================================================
+   ГЛОБАЛЬНІ КЛІКИ
    ============================================================ */
 
 document.addEventListener('click', (e) => {
@@ -395,6 +493,7 @@ document.addEventListener('click', (e) => {
    ============================================================ */
 
 document.addEventListener('DOMContentLoaded', async () => {
+  currentLang = getLang();
   await initAuth();
   loadProducts();
 });
