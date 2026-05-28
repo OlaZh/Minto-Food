@@ -93,7 +93,7 @@ export async function initAuth(onAuthChange = null) {
 
       if (userId && localStorage.getItem(key) !== today) {
         localStorage.setItem(key, today);
-        showToast('Ласкаво просимо! 👋');
+        showToast('Ласкаво просимо!');
       }
     }
 

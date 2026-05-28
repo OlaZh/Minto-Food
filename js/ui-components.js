@@ -3,6 +3,7 @@
 // =====================================
 
 import { lockScroll, unlockScroll } from './scroll-lock.js';
+import { iconInbox } from './icons.js';
 
 // =====================================
 // CUSTOM SELECT
@@ -339,7 +340,7 @@ export function showLoading(container, message = 'Завантаження...') 
  * @param {string} icon - Емодзі іконка
  * @param {string} message - Повідомлення
  */
-export function showEmpty(container, icon = '📭', message = 'Немає даних') {
+export function showEmpty(container, icon = iconInbox, message = 'Немає даних') {
   const el = typeof container === 'string' ? document.querySelector(container) : container;
   if (!el) return;
 

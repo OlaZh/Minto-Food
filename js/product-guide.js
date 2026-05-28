@@ -6,6 +6,7 @@ import { supabase } from './supabaseClient.js';
 import { initAuth } from './auth.js';
 import { escapeHTML } from './utils.js';
 import { getLang } from './storage.js';
+import { iconVeg, iconLeaf, iconAlert, iconClose, iconXCircle, iconCheckCircle } from './icons.js';
 
 let products = [];
 let currentLang = 'ua';
@@ -70,7 +71,7 @@ function showWelcomeState() {
   if (!productList) return;
   productList.innerHTML = `
     <div class="no-results" style="grid-column:1/-1">
-      <div class="no-results__icon">🥦</div>
+      <div class="no-results__icon">${iconVeg}</div>
       <p class="no-results__title">Путівник по продуктах</p>
       <p class="no-results__text">Введіть назву продукту, щоб дізнатись його властивості та харчову цінність</p>
     </div>`;
@@ -98,7 +99,7 @@ async function loadProducts() {
   } catch (err) {
     console.error('Помилка Supabase:', err.message);
     if (productList) productList.innerHTML = `
-      <div class="no-results" style="grid-column:1/-1">⚠️ Помилка завантаження — перевірте з'єднання</div>`;
+      <div class="no-results" style="grid-column:1/-1">${iconAlert} Помилка завантаження — перевірте з'єднання</div>`;
   }
 }
 
@@ -114,7 +115,7 @@ function renderProducts(items) {
   if (!items || items.length === 0) {
     productList.innerHTML = `
       <div class="no-results">
-        <div class="no-results__icon">🌿</div>
+        <div class="no-results__icon">${iconLeaf}</div>
         <p class="no-results__title">Продуктів не знайдено</p>
         <p class="no-results__text">Спробуйте змінити фільтри або пошуковий запит</p>
       </div>`;
@@ -243,7 +244,7 @@ const addNewChip = (label) => {
   const chip = document.createElement('span');
   chip.className = 'search-chip';
   chip.dataset.value = label;
-  chip.innerHTML = `${label}<button class="chip-remove">✕</button>`;
+  chip.innerHTML = `${label}<button class="chip-remove">${iconClose}</button>`;
 
   chip.querySelector('.chip-remove').onclick = () => {
     chip.remove();
@@ -373,8 +374,8 @@ function renderMyths(rows) {
                   currentLang === 'pl' ? (row.truth_pl || row.truth) : row.truth;
 
     return `<li class="myth-item">
-      <span class="myth-item__myth">❌ ${escapeHTML(myth  || '')}</span>
-      <span class="myth-item__truth">✅ ${escapeHTML(truth || '')}</span>
+      <span class="myth-item__myth">${iconXCircle} ${escapeHTML(myth  || '')}</span>
+      <span class="myth-item__truth">${iconCheckCircle} ${escapeHTML(truth || '')}</span>
     </li>`;
   }).join('');
 }

@@ -5,7 +5,7 @@
 
 import { supabase }                        from './supabaseClient.js';
 import { initAuth, isLoggedIn, openAuthModal } from './auth.js';
-import { iconShare } from './icons.js';
+import { iconShare, iconPlate, iconLeaf, iconBookOpen, iconStar } from './icons.js';
 
 const CATEGORY_LABELS = {
   breakfast: 'Сніданок', lunch: 'Обід',    dinner: 'Вечеря',
@@ -94,7 +94,7 @@ function _renderRecipe(recipe, authorName, ingredients) {
 
   const heroHtml = recipe.image
     ? `<img class="rp-hero" src="${recipe.image}" alt="${_esc(name)}" loading="eager" decoding="async">`
-    : `<div class="rp-hero--empty">🍽</div>`;
+    : `<div class="rp-hero--empty">${iconPlate}</div>`;
 
   const timeParts = [];
   if (recipe.prep_time_min)  timeParts.push(`Підготовка: ${recipe.prep_time_min} хв`);
@@ -106,7 +106,7 @@ function _renderRecipe(recipe, authorName, ingredients) {
     authorName ? `<span>Автор: <b>${_esc(authorName)}</b></span>` : '',
     catLabel   ? `<span class="rp-meta__chip">${catLabel}</span>`  : '',
     recipe.rating > 0
-      ? `<span class="rp-meta__rating">★ ${Number(recipe.rating).toFixed(1)}</span>`
+      ? `<span class="rp-meta__rating">${iconStar} ${Number(recipe.rating).toFixed(1)}</span>`
       : '',
     ...timeParts.map(t => `<span class="rp-meta__dot">${_esc(t)}</span>`),
     `<span>${_formatDate(recipe.created_at)}</span>`,
@@ -202,7 +202,7 @@ function _shareRecipe(recipe) {
       const btn = document.getElementById('rpShareBtn');
       if (!btn) return;
       const orig = btn.innerHTML;
-      btn.textContent = '✓ Посилання скопійовано';
+      btn.textContent = 'Посилання скопійовано';
       btn.disabled = true;
       setTimeout(() => { btn.innerHTML = orig; btn.disabled = false; }, 2000);
     }).catch(() => {});
@@ -217,7 +217,7 @@ function _updateSaveCTA(loggedIn) {
 
   if (loggedIn) {
     el.innerHTML = `
-      <div class="rp-cta__icon">🔖</div>
+      <div class="rp-cta__icon">${iconBookOpen}</div>
       <p class="rp-cta__title">Сподобався рецепт?</p>
       <p class="rp-cta__sub">Збережіть у свою книгу рецептів і повертайтесь коли захочеться приготувати</p>
       <div class="rp-cta__actions">
@@ -226,7 +226,7 @@ function _updateSaveCTA(loggedIn) {
       </div>`;
   } else {
     el.innerHTML = `
-      <div class="rp-cta__icon">🌿</div>
+      <div class="rp-cta__icon">${iconLeaf}</div>
       <p class="rp-cta__title">Готуйте більше з Minto</p>
       <p class="rp-cta__sub">Увійдіть щоб зберегти рецепт у свою книгу, планувати меню на тиждень і рахувати КБЖУ</p>
       <div class="rp-cta__actions">
@@ -244,7 +244,7 @@ function _show404() {
   document.title = 'Рецепт не знайдено — Minto';
   _root.innerHTML = `
     <div class="rp-404">
-      <div class="rp-404__icon">🍃</div>
+      <div class="rp-404__icon">${iconLeaf}</div>
       <h1 class="rp-404__title">Рецепт не знайдено</h1>
       <p class="rp-404__sub">Можливо, його видалено або посилання застаріло.</p>
       <a href="recipes.html" class="btn btn--primary">Переглянути всі рецепти</a>

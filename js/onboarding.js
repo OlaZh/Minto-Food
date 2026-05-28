@@ -3,6 +3,7 @@
 // ============================================================
 
 import { supabase } from './supabaseClient.js';
+import { iconVeg, iconCheck } from './icons.js';
 
 const MIN = 2;
 const MAX = 25;
@@ -170,7 +171,7 @@ function _mount(suggested) {
   wrap.id = 'onboarding-overlay';
   wrap.innerHTML = `
     <div class="onb-card">
-      <div class="onb-logo">🌿</div>
+      <div class="onb-logo">${iconVeg}</div>
       <p class="onb-brand">Minto</p>
 
       <!-- Режим пропозиції -->
@@ -288,7 +289,7 @@ async function _checkUnique(val, silent = false) {
     if (btn) btn.disabled = true;
   } else {
     if (!silent) {
-      _hint(hint, '✓ Це ім\'я вільне', 'ok');
+      _hint(hint, 'Це ім\'я вільне', 'ok');
       input.classList.add('onb-input--ok');
     }
     _isValid = true;

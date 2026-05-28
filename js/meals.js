@@ -1,4 +1,5 @@
 import { updateStats, updateWaterUI } from './stats.js';
+import { iconTrash, iconPlus, iconCheck, iconVeg, iconPlate } from './icons.js';
 import { i18n } from './i18n.js';
 import { supabase } from './supabaseClient.js';
 import { initAuth, requireAuth } from './auth.js';
@@ -199,7 +200,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       return;
     }
     setItem('copied_day', snapshot);
-    showToast('День скопійовано ✓');
+    showToast('День скопійовано');
   }
 
   async function pasteDay() {
@@ -256,7 +257,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const { error: insertError } = await supabase.from('meals').insert(rows);
     if (!insertError) {
       await loadMealsFromSupabase(currentSelectedDate);
-      showToast('День вставлено ✓');
+      showToast('День вставлено');
     } else {
       showToast('Помилка вставки', 'error');
     }
@@ -289,7 +290,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             ${t('carbs')} ${Math.round(item.carbs)}
           </div>
         </div>
-        <button class="meal__delete-btn" data-index="${index}">🗑</button>
+        <button class="meal__delete-btn" data-index="${index}">${iconTrash}</button>
       </div>
     `;
 
@@ -654,7 +655,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (topProducts.length > 0) {
       const headerProducts = document.createElement('li');
       headerProducts.className = 'modal__group-header';
-      headerProducts.textContent = lang === 'ua' ? '🥬 Продукти' : '🥬 Products';
+      headerProducts.textContent = lang === 'ua' ? 'Продукти' : 'Products';
       resultsList.appendChild(headerProducts);
 
       topProducts.forEach((food) => {
@@ -666,7 +667,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (topRecipes.length > 0) {
       const headerRecipes = document.createElement('li');
       headerRecipes.className = 'modal__group-header';
-      headerRecipes.textContent = lang === 'ua' ? '🍽️ Страви' : '🍽️ Dishes';
+      headerRecipes.textContent = lang === 'ua' ? 'Страви' : 'Dishes';
       resultsList.appendChild(headerRecipes);
 
       topRecipes.forEach((recipe) => {
@@ -689,7 +690,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const createBtn = document.createElement('li');
     createBtn.className = 'modal__item modal__item--create';
     createBtn.innerHTML = `
-      <span>➕ ${lang === 'ua' ? 'Створити свій продукт' : 'Create custom product'}</span>
+      <span>${iconPlus} ${lang === 'ua' ? 'Створити свій продукт' : 'Create custom product'}</span>
     `;
     createBtn.addEventListener('click', () => {
       openCreateProductModal(nameInput.value.trim());

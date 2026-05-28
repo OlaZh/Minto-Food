@@ -6,7 +6,7 @@ import { showToast, getLocalDateString } from './utils.js';
 import { showLoading, showEmpty, showConfirmModal } from './ui-components.js';
 import { getLang, setLang, saveWeekShoppingList, setItem, getItem } from './storage.js';
 import { getRecipeDisplayName } from './recipe-utils.js';
-import { iconMoreVertical, iconPlus } from './icons.js';
+import { iconMoreVertical, iconPlus, iconAlert, iconBookOpen, iconGlobe, iconClose } from './icons.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
   // ================== МОВА ==================
@@ -208,7 +208,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       li.innerHTML = `
       <span class="meal-cell__item-name" title="${cleanItemName}">${cleanItemName}</span>
-        <button class="meal-cell__item-delete" title="Видалити">✕</button>
+        <button class="meal-cell__item-delete" title="Видалити">${iconClose}</button>
     `;
 
       // Клік на назву — відкрити картку рецепта
@@ -544,7 +544,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     ]);
 
     if (sharedResponse.error || savedLinksResponse.error) {
-      showEmpty(resultsEl, '⚠️', 'Помилка завантаження');
+      showEmpty(resultsEl, iconAlert, 'Помилка завантаження');
       return;
     }
 
@@ -561,7 +561,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       const { data: savedData, error: savedError } = await savedQuery;
       if (savedError) {
-        showEmpty(resultsEl, '⚠️', 'Помилка завантаження');
+        showEmpty(resultsEl, iconAlert, 'Помилка завантаження');
         return;
       }
 
@@ -582,7 +582,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (savedRecipes.length > 0) {
       const section = document.createElement('div');
       section.className = 'week-modal__section';
-      section.innerHTML = '<p class="week-modal__section-title">📚 Мої книги</p>';
+      section.innerHTML = `<p class="week-modal__section-title">${iconBookOpen} Мої книги</p>`;
       savedRecipes.forEach((recipe) => {
         section.appendChild(createRecipeResultItem(recipe));
       });
@@ -592,7 +592,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (sharedRecipes.length > 0) {
       const section = document.createElement('div');
       section.className = 'week-modal__section';
-      section.innerHTML = '<p class="week-modal__section-title">🌍 Спільна база</p>';
+      section.innerHTML = `<p class="week-modal__section-title">${iconGlobe} Спільна база</p>`;
       sharedRecipes.forEach((recipe) => {
         section.appendChild(createRecipeResultItem(recipe));
       });
@@ -742,7 +742,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     saveWeekShoppingList(shoppingList);
 
-    showToast(`Список покупок сформовано: ${shoppingList.length} продуктів ✓`);
+    showToast(`Список покупок сформовано: ${shoppingList.length} продуктів`);
   }
 
   // ================== КОПІЮВАННЯ ТИЖНЯ ==================
@@ -754,7 +754,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     copyWeekBtn.addEventListener('click', () => {
       const snapshot = JSON.parse(JSON.stringify(weekMealsState));
       setItem('copied_week', snapshot);
-      showToast('Тиждень скопійовано! ✓');
+      showToast('Тиждень скопійовано!');
     });
   }
 
@@ -812,7 +812,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
       }
 
-      showToast('Тиждень вставлено! ✓');
+      showToast('Тиждень вставлено!');
       loadWeekFromSupabase();
     });
   }
@@ -848,7 +848,7 @@ document.addEventListener('DOMContentLoaded', async () => {
               });
             });
             renderAllCells();
-            showToast('Тиждень очищено ✓');
+            showToast('Тиждень очищено');
           }
         },
       });

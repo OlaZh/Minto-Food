@@ -7,6 +7,7 @@
 // ============================================================
 
 import { supabase } from './supabaseClient.js';
+import { iconGym, iconSprout, iconTrophy, iconStar } from './icons.js';
 
 // ============================================================
 //  DOM ELEMENTS
@@ -46,15 +47,15 @@ function getDayWord(count) {
  */
 function getMotivationalText(streak, isActive) {
   if (!isActive || streak === 0) {
-    return 'Почни нову серію! 💪';
+    return `Почни нову серію! ${iconGym}`;
   }
-  if (streak === 1) return 'Класний початок! 🌱';
+  if (streak === 1) return `Класний початок! ${iconSprout}`;
   if (streak < 3) return 'Так тримати!';
   if (streak < 7) return 'Видатні досягнення!';
-  if (streak < 14) return 'Тиждень дисципліни! 🏆';
+  if (streak < 14) return `Тиждень дисципліни! ${iconTrophy}`;
   if (streak < 30) return 'Неймовірна стійкість!';
   if (streak < 100) return 'Місяць поспіль — рекорд!';
-  return 'Ти легенда! 🌟';
+  return `Ти легенда! ${iconStar}`;
 }
 
 // ============================================================
@@ -77,7 +78,7 @@ function updateStreakUI({ current_streak, longest_streak, is_active }) {
 
   // Мотиваційне повідомлення
   if (streakSubEl) {
-    streakSubEl.textContent = getMotivationalText(current_streak, is_active);
+    streakSubEl.innerHTML = getMotivationalText(current_streak, is_active);
   }
 
   // Mobile streak strip
@@ -85,7 +86,7 @@ function updateStreakUI({ current_streak, longest_streak, is_active }) {
     streakCountMobileEl.textContent = `${current_streak} ${getDayWord(current_streak)} поспіль`;
   }
   if (streakSubMobileEl) {
-    streakSubMobileEl.textContent = getMotivationalText(current_streak, is_active);
+    streakSubMobileEl.innerHTML = getMotivationalText(current_streak, is_active);
   }
 
   // Стилізуємо картку залежно від стану

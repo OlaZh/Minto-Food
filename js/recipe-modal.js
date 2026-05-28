@@ -14,6 +14,7 @@ import {
 import { showToast, toBase64, setInputVal } from './utils.js';
 import { getLang } from './storage.js';
 import { lockScroll, unlockScroll } from './scroll-lock.js';
+import { iconCamera, iconLock, iconGlobe, iconBookOpen } from './icons.js';
 import {
   initBookSelector,
   getBooks,
@@ -83,8 +84,8 @@ function createRecipeModalHTML() {
                   <option value="dessert" data-i18n="filterDessert">Десерт</option>
                   <option value="drinks" data-i18n="filterDrinks">Напої</option>
                   <option value="bakery" data-i18n="filterBakery">Випічка</option>
-                  <option value="fast" data-i18n="filterFast">Швидкі рецепти⏳</option>
-                  <option value="no_power" data-i18n="filterNoPower">Без світла⚡</option>
+                  <option value="fast" data-i18n="filterFast">Швидкі рецепти</option>
+                  <option value="no_power" data-i18n="filterNoPower">Без світла</option>
                 </select>
               </div>
 
@@ -107,7 +108,7 @@ function createRecipeModalHTML() {
                     class="btn-upload"
                     onclick="document.getElementById('rm-image-file').click()"
                     data-i18n="uploadPhoto">
-                    Завантажити фото 📸
+                    ${iconCamera} Завантажити фото
                   </button>
                   <div class="form-separator"><span data-i18n="orSeparator">— або —</span></div>
                   <div class="form-group">
@@ -121,11 +122,11 @@ function createRecipeModalHTML() {
                 <label data-i18n="visibilityLabel">Хто бачить рецепт</label>
                 <div class="visibility-toggle" id="visibility-toggle">
                   <button type="button" class="visibility-toggle__option visibility-toggle__option--active" data-visibility="private">
-                    <span class="visibility-toggle__icon">🔒</span>
+                    <span class="visibility-toggle__icon">${iconLock}</span>
                     <span class="visibility-toggle__label" data-i18n="visibilityPrivate">Тільки я</span>
                   </button>
                   <button type="button" class="visibility-toggle__option" data-visibility="public">
-                    <span class="visibility-toggle__icon">🌍</span>
+                    <span class="visibility-toggle__icon">${iconGlobe}</span>
                     <span class="visibility-toggle__label" data-i18n="visibilityPublic">Всі користувачі</span>
                   </button>
                 </div>
@@ -134,7 +135,7 @@ function createRecipeModalHTML() {
               <!-- ВИБІР КНИГИ -->
               <div class="recipe-books-section">
                 <div class="recipe-books-section__header">
-                  <h4><span>📚</span> <span data-i18n="saveToBooks">Зберегти в книгу</span></h4>
+                  <h4><span>${iconBookOpen}</span> <span data-i18n="saveToBooks">Зберегти в книгу</span></h4>
                 </div>
                 <div id="rm-book-selector"></div>
               </div>
@@ -142,7 +143,7 @@ function createRecipeModalHTML() {
 
             <div class="preview-form__footer">
               <button type="button" id="rm-cancel" class="btn-secondary" data-i18n="cancelBtn">Скасувати</button>
-              <button type="submit" class="btn-save" data-i18n="saveRecipe">Зберегти рецепт 🥗</button>
+              <button type="submit" class="btn-save" data-i18n="saveRecipe">Зберегти рецепт</button>
             </div>
           </form>
         </div>
@@ -437,7 +438,7 @@ async function saveRecipe() {
   }
 
   const visibilityText = status === 'pending' ? 'Рецепт надіслано на модерацію!' : 'Рецепт збережено!';
-  showToast(`${visibilityText} ✓`);
+  showToast(visibilityText);
 
   closeRecipeModal();
 

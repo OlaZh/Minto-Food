@@ -7,6 +7,7 @@
  */
 
 import { supabase } from './supabaseClient.js';
+import { iconCheckCircle } from './icons.js';
 
 // ==================== STATE ====================
 let onProductFound = null;
@@ -430,7 +431,7 @@ async function handleBarcodeScan(barcode) {
     // 3. Не знайдено
     if (statusEl) {
       statusEl.innerHTML = `
-        <span>Продукт не знайдено 😔</span>
+        <span>Продукт не знайдено</span>
         <button class="scanner-modal__manual-cta" type="button">Ввести дані вручну</button>
       `;
       statusEl.className = 'scanner-modal__status scanner-modal__status--error';
@@ -516,7 +517,7 @@ function onProductFoundHandler(product) {
 
   if (statusEl) {
     statusEl.innerHTML = `
-      <span class="scanner-modal__success">✅ ${displayName}${brandText}</span>
+      <span class="scanner-modal__success">${iconCheckCircle} ${displayName}${brandText}</span>
       <br>
       <small>${product.kcal} ккал · Б${product.protein} · Ж${product.fat} · В${product.carbs}</small>
     `;

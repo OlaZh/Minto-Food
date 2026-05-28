@@ -38,7 +38,8 @@
       "Bash(Select-Object FullName)",
       "Bash(findstr /r /s /i \"product_aliases\\\\|alias_name\\\\|alt_name\" js\\\\*.js)",
       "Bash(findstr /r /i /s \"alias\" supabase\\\\*.sql)",
-      "Bash(Get-ChildItem -Path \"c:\\\\Users\\\\violk\\\\Desktop\\\\Minto Food\\\\js\\\\\" -Filter \"*.js\" -Recurse | Select-Object -ExpandProperty FullName)"
+      "Bash(Get-ChildItem -Path \"c:\\\\Users\\\\violk\\\\Desktop\\\\Minto Food\\\\js\\\\\" -Filter \"*.js\" -Recurse | Select-Object -ExpandProperty FullName)",
+      "Bash(node -e ' *)"
     ]
   }
 }

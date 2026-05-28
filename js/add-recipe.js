@@ -7,7 +7,15 @@ import { getRecipeDisplayName } from './recipe-utils.js';
 import { lockScroll, unlockScroll } from './scroll-lock.js';
 import { showLoading, showConfirmModal } from './ui-components.js';
 import { initRecipeModal, openRecipeModal } from './recipe-modal.js';
-import { iconSearch, iconGlobe as iconGlobal, iconMoreVertical, iconChevronDown, iconHeart, iconPlus, iconEdit, iconTrash, iconBookmark, iconFlag } from './icons.js';
+import {
+  iconSearch, iconGlobe as iconGlobal, iconMoreVertical, iconChevronDown,
+  iconHeart, iconPlus, iconEdit, iconTrash, iconBookmark, iconFlag,
+  iconSunrise, iconSun, iconMoon, iconApple, iconCakeSlice, iconMug,
+  iconBread, iconPorridge, iconSoup, iconSalad, iconSideDish, iconPlate,
+  iconPasta, iconSauce, iconSandwich, iconCasserole, iconPancakes, iconOmelet,
+  iconSmoothie, iconBoil, iconOven, iconSteam, iconGrill, iconStew, iconSoak,
+  iconLeafRaw, iconAlert, iconScale, iconClose, iconStar, iconStarFilled, iconCalendar,
+} from './icons.js';
 import {
   initBookSelector,
   quickSaveToDefault,
@@ -67,10 +75,10 @@ const updateStarsUI = (rating) => {
     const starValue = Number(star.dataset.value);
     if (starValue <= numericRating) {
       star.classList.add('filled');
-      star.textContent = '★';
+      star.innerHTML = iconStarFilled;
     } else {
       star.classList.remove('filled');
-      star.textContent = '☆';
+      star.innerHTML = iconStar;
     }
   });
 
@@ -125,7 +133,7 @@ function showRecipesWelcomeState() {
   if (communityGrid) {
     communityGrid.innerHTML = `
       <div class="recipe-empty-state" style="grid-column:1/-1">
-        <div class="recipe-empty-state__icon">🍽️</div>
+        <div class="recipe-empty-state__icon">${iconPlate}</div>
         <p class="recipe-empty-state__title">Знайдіть ідеальну страву</p>
         <p class="recipe-empty-state__text">Введіть назву або скористайтеся фільтрами</p>
         <button class="btn btn--secondary" id="welcome-browse-all-btn" style="margin-top:8px">Переглянути всі рецепти</button>
@@ -169,7 +177,7 @@ async function loadAndDisplayRecipes(force = false) {
     const grid = document.getElementById('community-grid');
     if (grid) grid.innerHTML = `
       <div class="recipe-empty-state">
-        <div class="recipe-empty-state__icon">⚠️</div>
+        <div class="recipe-empty-state__icon">${iconAlert}</div>
         <p class="recipe-empty-state__title">Не вдалося завантажити рецепти</p>
         <p class="recipe-empty-state__text">Перевірте з'єднання та спробуйте ще раз</p>
       </div>`;
@@ -206,13 +214,13 @@ const COLUMN_GROUPS = [
     dbColumn: 'category',
     labelKey: 'filterGroupCategory',
     options: [
-      { value: 'breakfast',  ua: 'Сніданок',   en: 'Breakfast', pl: 'Śniadanie',  icon: '🌅' },
-      { value: 'lunch',      ua: 'Обід',        en: 'Lunch',     pl: 'Obiad',      icon: '☀️' },
-      { value: 'dinner',     ua: 'Вечеря',      en: 'Dinner',    pl: 'Kolacja',    icon: '🌙' },
-      { value: 'snack',      ua: 'Перекус',     en: 'Snack',     pl: 'Przekąska',  icon: '🍎' },
-      { value: 'dessert',    ua: 'Десерт',      en: 'Dessert',   pl: 'Deser',      icon: '🍰' },
-      { value: 'drinks',     ua: 'Напої',       en: 'Drinks',    pl: 'Napoje',     icon: '🥤' },
-      { value: 'bakery',     ua: 'Випічка',     en: 'Bakery',    pl: 'Pieczywo',   icon: '🥐' },
+      { value: 'breakfast',  ua: 'Сніданок',   en: 'Breakfast', pl: 'Śniadanie',  icon: iconSunrise },
+      { value: 'lunch',      ua: 'Обід',        en: 'Lunch',     pl: 'Obiad',      icon: iconSun },
+      { value: 'dinner',     ua: 'Вечеря',      en: 'Dinner',    pl: 'Kolacja',    icon: iconMoon },
+      { value: 'snack',      ua: 'Перекус',     en: 'Snack',     pl: 'Przekąska',  icon: iconApple },
+      { value: 'dessert',    ua: 'Десерт',      en: 'Dessert',   pl: 'Deser',      icon: iconCakeSlice },
+      { value: 'drinks',     ua: 'Напої',       en: 'Drinks',    pl: 'Napoje',     icon: iconMug },
+      { value: 'bakery',     ua: 'Випічка',     en: 'Bakery',    pl: 'Pieczywo',   icon: iconBread },
     ],
   },
   {
@@ -220,18 +228,18 @@ const COLUMN_GROUPS = [
     dbColumn: 'type',
     labelKey: 'filterGroupDishType',
     options: [
-      { value: 'porridge',    ua: 'Каша',           en: 'Porridge',   pl: 'Kasza',        icon: '🥣' },
-      { value: 'soup',        ua: 'Суп',            en: 'Soup',       pl: 'Zupa',         icon: '🍲' },
-      { value: 'salad',       ua: 'Салат',          en: 'Salad',      pl: 'Sałatka',      icon: '🥗' },
-      { value: 'side_dish',   ua: 'Гарнір',         en: 'Side dish',  pl: 'Dodatek',      icon: '🍚' },
-      { value: 'main_course', ua: 'Основна страва', en: 'Main course',pl: 'Danie główne', icon: '🍽️' },
-      { value: 'pasta',       ua: 'Паста',          en: 'Pasta',      pl: 'Makaron',      icon: '🍝' },
-      { value: 'sauce',       ua: 'Соус',           en: 'Sauce',      pl: 'Sos',          icon: '🫙' },
-      { value: 'sandwich',    ua: 'Сендвіч',        en: 'Sandwich',   pl: 'Kanapka',      icon: '🥪' },
-      { value: 'casserole',   ua: 'Запіканка',      en: 'Casserole',  pl: 'Zapiekanka',   icon: '🫕' },
-      { value: 'pancakes',    ua: 'Млинці',         en: 'Pancakes',   pl: 'Naleśniki',    icon: '🥞' },
-      { value: 'omelet',      ua: 'Омлет',          en: 'Omelet',     pl: 'Omlet',        icon: '🍳' },
-      { value: 'smoothie',    ua: 'Смузі',          en: 'Smoothie',   pl: 'Smoothie',     icon: '🥤' },
+      { value: 'porridge',    ua: 'Каша',           en: 'Porridge',   pl: 'Kasza',        icon: iconPorridge },
+      { value: 'soup',        ua: 'Суп',            en: 'Soup',       pl: 'Zupa',         icon: iconSoup },
+      { value: 'salad',       ua: 'Салат',          en: 'Salad',      pl: 'Sałatka',      icon: iconSalad },
+      { value: 'side_dish',   ua: 'Гарнір',         en: 'Side dish',  pl: 'Dodatek',      icon: iconSideDish },
+      { value: 'main_course', ua: 'Основна страва', en: 'Main course',pl: 'Danie główne', icon: iconPlate },
+      { value: 'pasta',       ua: 'Паста',          en: 'Pasta',      pl: 'Makaron',      icon: iconPasta },
+      { value: 'sauce',       ua: 'Соус',           en: 'Sauce',      pl: 'Sos',          icon: iconSauce },
+      { value: 'sandwich',    ua: 'Сендвіч',        en: 'Sandwich',   pl: 'Kanapka',      icon: iconSandwich },
+      { value: 'casserole',   ua: 'Запіканка',      en: 'Casserole',  pl: 'Zapiekanka',   icon: iconCasserole },
+      { value: 'pancakes',    ua: 'Млинці',         en: 'Pancakes',   pl: 'Naleśniki',    icon: iconPancakes },
+      { value: 'omelet',      ua: 'Омлет',          en: 'Omelet',     pl: 'Omlet',        icon: iconOmelet },
+      { value: 'smoothie',    ua: 'Смузі',          en: 'Smoothie',   pl: 'Smoothie',     icon: iconSmoothie },
     ],
   },
   {
@@ -239,14 +247,14 @@ const COLUMN_GROUPS = [
     dbColumn: 'cooking_method',
     labelKey: 'filterGroupCookingMethod',
     options: [
-      { value: 'boiling',  ua: 'Варіння',          en: 'Boiling',    pl: 'Gotowanie',   icon: '♨️' },
-      { value: 'frying',   ua: 'Смаження',         en: 'Frying',     pl: 'Smażenie',    icon: '🍳' },
-      { value: 'baking',   ua: 'Запікання',        en: 'Baking',     pl: 'Pieczenie',   icon: '🔥' },
-      { value: 'steaming', ua: 'На парі',          en: 'Steaming',   pl: 'Na parze',    icon: '💨' },
-      { value: 'grilling', ua: 'Гриль',            en: 'Grilling',   pl: 'Grillowanie', icon: '🥩' },
-      { value: 'stewing',  ua: 'Тушкування',       en: 'Stewing',    pl: 'Duszenie',    icon: '🫕' },
-      { value: 'soaking',  ua: 'Замочування',      en: 'Soaking',    pl: 'Namaczanie',  icon: '💧' },
-      { value: 'fresh',    ua: 'Без термообробки', en: 'Fresh/Raw',  pl: 'Bez obróbki', icon: '🥬' },
+      { value: 'boiling',  ua: 'Варіння',          en: 'Boiling',    pl: 'Gotowanie',   icon: iconBoil },
+      { value: 'frying',   ua: 'Смаження',         en: 'Frying',     pl: 'Smażenie',    icon: iconOmelet },
+      { value: 'baking',   ua: 'Запікання',        en: 'Baking',     pl: 'Pieczenie',   icon: iconOven },
+      { value: 'steaming', ua: 'На парі',          en: 'Steaming',   pl: 'Na parze',    icon: iconSteam },
+      { value: 'grilling', ua: 'Гриль',            en: 'Grilling',   pl: 'Grillowanie', icon: iconGrill },
+      { value: 'stewing',  ua: 'Тушкування',       en: 'Stewing',    pl: 'Duszenie',    icon: iconStew },
+      { value: 'soaking',  ua: 'Замочування',      en: 'Soaking',    pl: 'Namaczanie',  icon: iconSoak },
+      { value: 'fresh',    ua: 'Без термообробки', en: 'Fresh/Raw',  pl: 'Bez obróbki', icon: iconLeafRaw },
     ],
   },
 ];
@@ -555,7 +563,7 @@ function buildRecipeCard(recipe, savedRecipeIds) {
     ? `<span class="recipe-card__meta-item recipe-card__meta-item--diff recipe-card__meta-item--diff-${recipe.difficulty}">${getDifficultyLabel(recipe.difficulty)}</span>`
     : '';
   const weightPart = recipe.total_weight
-    ? `<span class="recipe-card__meta-item">⚖ ${recipe.total_weight} ${t('cardG')}</span>`
+    ? `<span class="recipe-card__meta-item">${iconScale} ${recipe.total_weight} ${t('cardG')}</span>`
     : '';
   const metaRow = (timePart || diffPart || weightPart)
     ? `<div class="recipe-card__meta">${timePart}${diffPart}${weightPart}</div>`
@@ -569,10 +577,10 @@ function buildRecipeCard(recipe, savedRecipeIds) {
   <div class="recipe-card__image-box">
     <img src="${cardImage}" alt="${name}" class="recipe-card__img" loading="lazy">
     <div class="recipe-card__rating-badge">
-      <span class="recipe-card__rating-star">★</span>
+      <span class="recipe-card__rating-star">${iconStarFilled}</span>
       <span>${rating > 0 ? Number(rating).toFixed(1) : '0'}</span>
     </div>
-    ${isOwn ? '<button class="btn-delete-recipe js-delete-recipe" aria-label="Видалити рецепт">✕</button>' : ''}
+    ${isOwn ? `<button class="btn-delete-recipe js-delete-recipe" aria-label="Видалити рецепт">${iconClose}</button>` : ''}
     <button class="recipe-card__favorite ${isSaved ? 'recipe-card__favorite--saved' : ''}"
             data-recipe-id="${recipe.id}"
             aria-label="Зберегти в книгу">
@@ -582,7 +590,7 @@ function buildRecipeCard(recipe, savedRecipeIds) {
   <div class="recipe-card__content">
     <h3 class="recipe-card__name">${name}</h3>
     ${recipe.status === 'pending' ? '<div class="recipe-card__pending-badge">На модерації</div>' : ''}
-    ${isOwn && recipe.has_pending_update ? '<div class="recipe-card__update-badge">Оновлення на перевірці 🕓</div>' : ''}
+    ${isOwn && recipe.has_pending_update ? `<div class="recipe-card__update-badge">${iconCalendar} Оновлення на перевірці</div>` : ''}
     ${isOwn && recipe.status === 'draft' && recipe.moderation_note
       ? `<div class="recipe-card__mod-note">${recipe.moderation_note}</div>`
       : ''}
@@ -668,7 +676,7 @@ async function displayRecipes(recipes, isSearch = false) {
       if (communityRecipes.length === 0 && ownRecipes.length === 0) {
         communityGrid.innerHTML = `
           <div class="recipe-empty-state">
-            <div class="recipe-empty-state__icon">🍽️</div>
+            <div class="recipe-empty-state__icon">${iconPlate}</div>
             <p class="recipe-empty-state__title">Рецептів не знайдено</p>
             <p class="recipe-empty-state__text">Спробуйте змінити фільтр або додайте свій перший рецепт</p>
             <button class="btn-add-recipe recipe-empty-state__cta" id="empty-state-add-btn">
@@ -735,7 +743,7 @@ async function displayRecipes(recipes, isSearch = false) {
     if (searchCommunityGrid) {
       searchCommunityGrid.innerHTML = `
         <div class="recipe-empty-state">
-          <div class="recipe-empty-state__icon">🔍</div>
+          <div class="recipe-empty-state__icon">${iconSearch}</div>
           <p class="recipe-empty-state__title">Нічого не знайдено</p>
           <p class="recipe-empty-state__text">Спробуйте інший запит або змініть фільтр</p>
         </div>`;
@@ -1212,7 +1220,7 @@ async function saveRecipe(recipeData) {
           changes: pendingChanges,
         });
         await supabase.from('recipes').update({ has_pending_update: true }).eq('id', editingRecipeId);
-        showToast('Зміни надіслані на перевірку 🌿');
+        showToast('Зміни надіслані на перевірку');
       } else {
         showToast('Рецепт оновлено!');
       }
@@ -1375,7 +1383,7 @@ async function loadNewRecipes() {
 
   if (error || !data || data.length === 0) {
     body.innerHTML =
-      '<p class="new-recipes-drawer__empty">Нових рецептів за останні 24 години немає 🌿</p>';
+      '<p class="new-recipes-drawer__empty">Нових рецептів за останні 24 години немає</p>';
     return;
   }
 
@@ -1422,7 +1430,7 @@ async function loadNewRecipes() {
             <span>${formatTimeAgo(recipe.created_at)}</span>
           </div>
         </div>
-        ${rating > 0 ? `<div class="new-recipe-item__rating"><span>★</span>${rating.toFixed(1)}</div>` : ''}
+        ${rating > 0 ? `<div class="new-recipe-item__rating"><span>${iconStarFilled}</span>${rating.toFixed(1)}</div>` : ''}
       `;
 
       item.addEventListener('click', () => {

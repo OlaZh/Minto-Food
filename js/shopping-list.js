@@ -10,7 +10,7 @@ import { initAuth } from './auth.js';
 import { showToast, escapeHTML } from './utils.js';
 import { lockScroll, unlockScroll } from './scroll-lock.js';
 import { getWeekShoppingList, clearWeekShoppingList } from './storage.js';
-import { iconLock, iconPin, iconMoreVertical, iconChevronRight, iconEdit, iconTrash } from './icons.js';
+import { iconLock, iconPin, iconMoreVertical, iconChevronRight, iconEdit, iconTrash, iconLink, iconBroom } from './icons.js';
 import { showConfirmModal } from './ui-components.js';
 
 /* ============================================================
@@ -190,11 +190,11 @@ function buildListItem(list) {
     </button>
     <div class="shop-list-item__dropdown" hidden>
       ${list.is_pinned
-        ? `<button data-action="unpin">📌 Відкріпити</button>`
-        : `<button data-action="pin">📌 Закріпити</button>`}
-      <button data-action="share">🔗 Поділитися</button>
-      <button data-action="clear">🧹 Очистити список</button>
-      <button data-action="delete">🗑 Видалити список</button>
+        ? `<button data-action="unpin">${iconPin} Відкріпити</button>`
+        : `<button data-action="pin">${iconPin} Закріпити</button>`}
+      <button data-action="share">${iconLink} Поділитися</button>
+      <button data-action="clear">${iconBroom} Очистити список</button>
+      <button data-action="delete">${iconTrash} Видалити список</button>
     </div>` : '';
 
   li.innerHTML = `
@@ -742,7 +742,7 @@ async function shareListById(id) {
     try { await navigator.share({ title: list.name, url }); } catch { }
   } else {
     await navigator.clipboard.writeText(url);
-    showToast('Посилання скопійовано ✓');
+    showToast('Посилання скопійовано');
   }
 }
 
@@ -832,7 +832,7 @@ async function importFromWeekMenu() {
   if (error) { showToast('Помилка імпорту', 'error'); return; }
   clearWeekShoppingList();
   importBannerEl.hidden = true;
-  showToast(`Імпортовано ${rows.length} продуктів ✓`);
+  showToast(`Імпортовано ${rows.length} продуктів`);
   await loadActiveItems();
 }
 
@@ -957,7 +957,7 @@ async function shareList() {
     try { await navigator.share({ title: list.name || 'Список покупок', url }); } catch { }
   } else {
     await navigator.clipboard.writeText(url);
-    showToast('Посилання скопійовано ✓');
+    showToast('Посилання скопійовано');
   }
 }
 

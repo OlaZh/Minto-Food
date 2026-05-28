@@ -3,7 +3,7 @@
 import { initAuth, openAuthModal } from './auth.js';
 import { supabase } from './supabaseClient.js';
 import { showToast, escapeHTML } from './utils.js';
-import { BOOK_ICONS as _BOOK_ICONS, iconClose, iconCheck, iconEdit, iconChevronRight } from './icons.js';
+import { BOOK_ICONS as _BOOK_ICONS, iconClose, iconCheck, iconEdit, iconChevronRight, iconPlate } from './icons.js';
 import { showConfirmModal } from './ui-components.js';
 import { lockScroll, unlockScroll } from './scroll-lock.js';
 
@@ -591,7 +591,7 @@ function renderBookRecipes(recipes) {
 
       const imageHtml = recipe.image
         ? `<img src="${recipe.image}" alt="${escapeHTML(recipe.name_ua)}" loading="lazy">`
-        : `<div class="cookbook-recipe-card__placeholder">🍽️</div>`;
+        : `<div class="cookbook-recipe-card__placeholder">${iconPlate}</div>`;
 
       const stickyNote = recipe.notes?.trim()
         ? `<div class="recipe-sticky-note" role="note" aria-label="Моя нотатка">
@@ -714,7 +714,7 @@ async function loadRecentRecipes() {
         const r = item.recipes;
         const imgHtml = r.image
           ? `<img src="${escapeHTML(r.image)}" alt="${escapeHTML(r.name_ua)}" loading="lazy">`
-          : `<div class="cookbook-recent-item__placeholder">🍽️</div>`;
+          : `<div class="cookbook-recent-item__placeholder">${iconPlate}</div>`;
         return `
         <a class="cookbook-recent-item" href="recipes.html?recipe=${r.id}&from=cookbook">
           <div class="cookbook-recent-item__img">${imgHtml}</div>

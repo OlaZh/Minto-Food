@@ -5,6 +5,7 @@
 import { supabase } from './supabaseClient.js';
 import { showToast, escapeHTML } from './utils.js';
 import { lockScroll, unlockScroll } from './scroll-lock.js';
+import { BOOK_ICONS, iconFlag } from './icons.js';
 
 // =============================================================
 // СТАН
@@ -84,7 +85,7 @@ export async function quickSaveToDefault(recipeId) {
         {
           user_id: currentUserId,
           name: 'Мої рецепти',
-          icon: '📖',
+          icon: 'book',
           is_default: true,
         },
       ])
@@ -134,7 +135,7 @@ export async function saveRecipeToBook(recipeId, bookId, bookName = null) {
     return false;
   }
 
-  showToast(`Збережено в "${bookName || 'книгу'}" ✓`);
+  showToast(`Збережено в "${bookName || 'книгу'}"`);
   return true;
 }
 
@@ -287,7 +288,7 @@ function renderBooksList(showAll = false, preCheckedIds = null) {
       (book) => `
     <label class="book-selector__item ${book.is_default ? 'book-selector__item--default' : ''}">
       <input type="checkbox" value="${book.id}" ${checkedIds.includes(book.id) ? 'checked' : ''}>
-      <span class="book-selector__icon">${book.icon || '📖'}</span>
+      <span class="book-selector__icon">${BOOK_ICONS[book.icon] || book.icon || BOOK_ICONS['book']}</span>
       <span class="book-selector__name">${escapeHTML(book.name)}</span>
       ${book.is_default ? '<span class="book-selector__badge">Головна</span>' : ''}
     </label>
@@ -390,7 +391,7 @@ export function createInlineBookSelector(containerId, preselectedBookIds = []) {
           <label class="inline-book-selector__item">
             <input type="checkbox" name="recipe_books" value="${book.id}" 
               ${defaultSelected.includes(book.id) ? 'checked' : ''}>
-            <span class="inline-book-selector__icon">${book.icon || '📖'}</span>
+            <span class="inline-book-selector__icon">${BOOK_ICONS[book.icon] || book.icon || BOOK_ICONS['book']}</span>
             <span class="inline-book-selector__name">${escapeHTML(book.name)}</span>
           </label>
         `,
@@ -431,9 +432,9 @@ function showFullBookSelector(containerId, currentSelection) {
           <label class="inline-book-selector__item">
             <input type="checkbox" name="recipe_books" value="${book.id}"
               ${currentSelection.includes(book.id) ? 'checked' : ''}>
-            <span class="inline-book-selector__icon">${book.icon || '📖'}</span>
+            <span class="inline-book-selector__icon">${BOOK_ICONS[book.icon] || book.icon || BOOK_ICONS['book']}</span>
             <span class="inline-book-selector__name">${escapeHTML(book.name)}</span>
-            ${book.is_default ? '<span class="inline-book-selector__badge">★</span>' : ''}
+            ${book.is_default ? '<span class="inline-book-selector__badge">·</span>' : ''}
           </label>
         `,
           )
@@ -504,7 +505,7 @@ export function openReportModal(recipeId, recipeName = '') {
         <button class="modal-card__close" id="report-modal-close">&times;</button>
         
         <div class="report-modal__header">
-          <h3>🚩 Поскаржитись на рецепт</h3>
+          <h3>${iconFlag} Поскаржитись на рецепт</h3>
           <p class="report-modal__recipe-name"></p>
         </div>
         

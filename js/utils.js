@@ -1,4 +1,5 @@
 import { getLang } from './storage.js';
+import { iconCheckCircle, iconXCircle, iconAlertCircle, iconInfo } from './icons.js';
 
 // =============================================================
 // UTILS.JS — Спільні утиліти для MintoFood
@@ -22,10 +23,10 @@ export function showToast(message, type = 'success', duration = 3000) {
   toast.className = `toast-notification toast-${type}`;
 
   const icons = {
-    success: '✅',
-    error: '❌',
-    info: 'ℹ️',
-    warning: '⚠️',
+    success: iconCheckCircle,
+    error:   iconXCircle,
+    info:    iconInfo,
+    warning: iconAlertCircle,
   };
 
   const icon = icons[type] || icons.success;

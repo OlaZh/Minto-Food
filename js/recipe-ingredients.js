@@ -5,6 +5,7 @@
 
 import { supabase } from './supabaseClient.js';
 import { parseIngredientsText, findProductMatch, findAllMatches } from './parse-food.js';
+import { iconCheck, iconClose } from './icons.js';
 
 let ingredientsList = [];
 let onIngredientsChange = null;
@@ -292,7 +293,7 @@ function renderIngredientsList() {
     .map((ing, index) => {
       const name = getProductName(ing) || ing.original || ing.name_ua;
       const statusClass = ing.matched ? 'ingredient-item--matched' : 'ingredient-item--unmatched';
-      const statusIcon = ing.matched ? '✓' : '?';
+      const statusIcon = ing.matched ? iconCheck : '?';
       const statusTitle = ing.matched ? t('found') : t('notFound');
 
       const STATE_LABELS = { raw: 'сирий', dry: 'сухий' };
@@ -313,7 +314,7 @@ function renderIngredientsList() {
         </span>
         <span class="ingredient-item__weight">${weightDisplay}</span>
         <span class="ingredient-item__kcal">${ing.kcal} ${t('kcal')}</span>
-        <button type="button" class="ingredient-item__remove" data-index="${index}">✕</button>
+        <button type="button" class="ingredient-item__remove" data-index="${index}">${iconClose}</button>
       </li>
     `;
     })

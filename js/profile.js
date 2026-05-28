@@ -3,6 +3,12 @@
 // =====================================
 
 import { supabase } from './supabaseClient.js';
+import {
+  iconWalk, iconRun, iconBike, iconSwim, iconYoga, iconGym, iconDance,
+  iconHike, iconTennis, iconBall, iconStretch, iconGarden, iconElliptical,
+  iconPlus, iconBarChart, iconCheckCircle, iconAlert, iconXCircle,
+  iconSalad, iconScale, iconCalendar, iconTarget, iconFlame, iconSprout,
+} from './icons.js';
 import { initAuth, requireAuth, getCurrentUser, openAuthModal, signOut } from './auth.js';
 import { showToast } from './utils.js';
 import {
@@ -51,24 +57,24 @@ const ACTIVITY_HISTORY_KEY = 'activityHistory';
 
 // ✅ ВИПРАВЛЕНО: Об'єкт активностей з name та caloriesPerMinute
 const ACTIVITIES = {
-  walking: { name: '🚶 Ходьба', caloriesPerMinute: 4 },
-  running: { name: '🏃 Біг', caloriesPerMinute: 10 },
-  cycling: { name: '🚴 Велосипед', caloriesPerMinute: 8 },
-  swimming: { name: '🏊 Плавання', caloriesPerMinute: 9 },
-  yoga: { name: '🧘 Йога', caloriesPerMinute: 3 },
-  fitness: { name: '💪 Фітнес', caloriesPerMinute: 7 },
-  dancing: { name: '💃 Танці', caloriesPerMinute: 6 },
-  hiking: { name: '🥾 Похід', caloriesPerMinute: 6 },
-  tennis: { name: '🎾 Теніс', caloriesPerMinute: 8 },
-  basketball: { name: '🏀 Баскетбол', caloriesPerMinute: 9 },
-  football: { name: '⚽ Футбол', caloriesPerMinute: 9 },
-  stretching: { name: '🤸 Розтяжка', caloriesPerMinute: 2 },
-  cleaning: { name: '🧹 Прибирання', caloriesPerMinute: 3 },
-  gardening: { name: '🌱 Садівництво', caloriesPerMinute: 4 },
-  gym: { name: '🏋️ Тренування в залі', caloriesPerMinute: 7 },
-  pilates: { name: '🧘 Пілатес', caloriesPerMinute: 3 },
-  elliptical: { name: '🔄 Орбітрек', caloriesPerMinute: 7 },
-  other: { name: '➕ Інша активність', caloriesPerMinute: 5 },
+  walking:    { icon: iconWalk,       label: 'Ходьба',             caloriesPerMinute: 4 },
+  running:    { icon: iconRun,        label: 'Біг',                caloriesPerMinute: 10 },
+  cycling:    { icon: iconBike,       label: 'Велосипед',          caloriesPerMinute: 8 },
+  swimming:   { icon: iconSwim,       label: 'Плавання',           caloriesPerMinute: 9 },
+  yoga:       { icon: iconYoga,       label: 'Йога',               caloriesPerMinute: 3 },
+  fitness:    { icon: iconGym,        label: 'Фітнес',             caloriesPerMinute: 7 },
+  dancing:    { icon: iconDance,      label: 'Танці',              caloriesPerMinute: 6 },
+  hiking:     { icon: iconHike,       label: 'Похід',              caloriesPerMinute: 6 },
+  tennis:     { icon: iconTennis,     label: 'Теніс',              caloriesPerMinute: 8 },
+  basketball: { icon: iconBall,       label: 'Баскетбол',          caloriesPerMinute: 9 },
+  football:   { icon: iconBall,       label: 'Футбол',             caloriesPerMinute: 9 },
+  stretching: { icon: iconStretch,    label: 'Розтяжка',           caloriesPerMinute: 2 },
+  cleaning:   { icon: iconGym,        label: 'Прибирання',         caloriesPerMinute: 3 },
+  gardening:  { icon: iconGarden,     label: 'Садівництво',        caloriesPerMinute: 4 },
+  gym:        { icon: iconGym,        label: 'Тренування в залі',  caloriesPerMinute: 7 },
+  pilates:    { icon: iconYoga,       label: 'Пілатес',            caloriesPerMinute: 3 },
+  elliptical: { icon: iconElliptical, label: 'Орбітрек',           caloriesPerMinute: 7 },
+  other:      { icon: iconPlus,       label: 'Інша активність',    caloriesPerMinute: 5 },
 };
 
 // =====================================
@@ -212,7 +218,7 @@ async function recordNewWeight() {
   }
 
   weightNowInput.value = '';
-  showToast(`Вага ${weight} кг збережена ✓`);
+  showToast(`Вага ${weight} кг збережена`);
 
   await initWeightChart();
 }
@@ -229,7 +235,7 @@ function generateWeightProgress(history) {
 
   let html = `
     <div class="progress-status progress-status--success">
-      <span style="font-size:1.8rem">⚖️</span>
+      <span class="progress-status__icon">${iconScale}</span>
       <div>
         <div style="font-weight:700;font-size:1.1rem;color:var(--color-text-primary)">${latest} кг</div>
         <div style="font-size:12px;color:var(--color-text-secondary)">Останній запис</div>
@@ -372,14 +378,14 @@ async function initStatisticsCharts() {
       const fatPct = tf / total;
       if (protPct < 0.2) tips.push('Додай більше білкових страв — їх частка менше 20%');
       if (fatPct > 0.4) tips.push('Жири займають понад 40% — спробуй легші вечері');
-      if (protPct >= 0.25 && fatPct <= 0.35) tips.push('Чудовий баланс БЖВ цього тижня 🌿');
+      if (protPct >= 0.25 && fatPct <= 0.35) tips.push('Чудовий баланс БЖВ цього тижня');
     }
     const avgKcal = tk / 7;
     if (avgKcal > 0 && avgKcal < 1200)
       tips.push('Середня калорійність дуже низька — стеж за нормою');
     if (mealTypeCounts.breakfast < 3)
       tips.push('Сніданок — найважливіший прийом: цього тижня лише ' + mealTypeCounts.breakfast);
-    if (tips.length === 0) tips.push('Все виглядає збалансовано, продовжуй у тому ж дусі 🎯');
+    if (tips.length === 0) tips.push('Все виглядає збалансовано, продовжуй у тому ж дусі');
     tipsList.innerHTML = tips.map((t) => `<li>${t}</li>`).join('');
   } else if (tipsList) {
     tipsList.innerHTML = "<li>Залоговані страви за останні 7 днів — з'являться рекомендації</li>";
@@ -652,7 +658,7 @@ function updateBMI(weight, height) {
       bmi < 18.5
         ? 'Недостатня вага'
         : bmi < 25
-          ? 'Вага в нормі 🍃'
+          ? 'Вага в нормі'
           : bmi < 30
             ? 'Надмірна вага'
             : 'Ожиріння';
@@ -834,7 +840,7 @@ async function saveProfileToSupabase(data) {
   }
 
   localStorage.setItem('userProfile', JSON.stringify(data));
-  showToast('Профіль збережено ✓');
+  showToast('Профіль збережено');
 }
 
 // =====================================
@@ -872,23 +878,23 @@ function generateWeightAdvice() {
 
   // ІМТ статус
   if (bmi < 18.5) {
-    adviceHTML += `<div class="advice-item advice-item--info"><span class="advice-icon">📊</span><div class="advice-text"><strong>Ваш ІМТ: ${bmi}</strong> — недостатня вага. Рекомендована вага: ${idealWeightMin}–${idealWeightMax} кг.</div></div>`;
+    adviceHTML += `<div class="advice-item advice-item--info"><span class="advice-icon">${iconBarChart}</span><div class="advice-text"><strong>Ваш ІМТ: ${bmi}</strong> — недостатня вага. Рекомендована вага: ${idealWeightMin}–${idealWeightMax} кг.</div></div>`;
   } else if (bmi >= 18.5 && bmi < 25) {
-    adviceHTML += `<div class="advice-item advice-item--success"><span class="advice-icon">✅</span><div class="advice-text"><strong>Ваш ІМТ: ${bmi}</strong> — вага в нормі! Чудово!</div></div>`;
+    adviceHTML += `<div class="advice-item advice-item--success"><span class="advice-icon">${iconCheckCircle}</span><div class="advice-text"><strong>Ваш ІМТ: ${bmi}</strong> — вага в нормі! Чудово!</div></div>`;
   } else if (bmi >= 25 && bmi < 30) {
-    adviceHTML += `<div class="advice-item advice-item--warning"><span class="advice-icon">⚠️</span><div class="advice-text"><strong>Ваш ІМТ: ${bmi}</strong> — надмірна вага. Рекомендована: ${idealWeightMin}–${idealWeightMax} кг.</div></div>`;
+    adviceHTML += `<div class="advice-item advice-item--warning"><span class="advice-icon">${iconAlert}</span><div class="advice-text"><strong>Ваш ІМТ: ${bmi}</strong> — надмірна вага. Рекомендована: ${idealWeightMin}–${idealWeightMax} кг.</div></div>`;
   } else if (bmi >= 30) {
-    adviceHTML += `<div class="advice-item advice-item--alert"><span class="advice-icon">🔴</span><div class="advice-text"><strong>Ваш ІМТ: ${bmi}</strong> — ожиріння. Рекомендуємо консультацію лікаря.</div></div>`;
+    adviceHTML += `<div class="advice-item advice-item--alert"><span class="advice-icon">${iconXCircle}</span><div class="advice-text"><strong>Ваш ІМТ: ${bmi}</strong> — ожиріння. Рекомендуємо консультацію лікаря.</div></div>`;
   }
 
   // Поради по цілі
   if (goal === 'lose') {
-    adviceHTML += `<div class="advice-item"><span class="advice-icon">🥗</span><div class="advice-text"><strong>Ціль — схуднути.</strong> Дефіцит 300-500 ккал/день = 0.5-1 кг/тиждень.</div></div>`;
-    adviceHTML += `<div class="advice-item"><span class="advice-icon">🚶‍♀️</span><div class="advice-text">30 хвилин ходьби = 150-200 ккал додатково.</div></div>`;
+    adviceHTML += `<div class="advice-item"><span class="advice-icon">${iconSalad}</span><div class="advice-text"><strong>Ціль — схуднути.</strong> Дефіцит 300-500 ккал/день = 0.5-1 кг/тиждень.</div></div>`;
+    adviceHTML += `<div class="advice-item"><span class="advice-icon">${iconWalk}</span><div class="advice-text">30 хвилин ходьби = 150-200 ккал додатково.</div></div>`;
   } else if (goal === 'gain') {
-    adviceHTML += `<div class="advice-item"><span class="advice-icon">🍳</span><div class="advice-text"><strong>Ціль — набрати.</strong> +300-500 ккал, акцент на білок.</div></div>`;
+    adviceHTML += `<div class="advice-item"><span class="advice-icon">${iconFlame}</span><div class="advice-text"><strong>Ціль — набрати.</strong> +300-500 ккал, акцент на білок.</div></div>`;
   } else {
-    adviceHTML += `<div class="advice-item"><span class="advice-icon">⚖️</span><div class="advice-text"><strong>Ціль — підтримка.</strong> Дотримуйтесь норми калорій.</div></div>`;
+    adviceHTML += `<div class="advice-item"><span class="advice-icon">${iconScale}</span><div class="advice-text"><strong>Ціль — підтримка.</strong> Дотримуйтесь норми калорій.</div></div>`;
   }
 
   // Прогрес
@@ -907,10 +913,10 @@ function generateWeightAdvice() {
         <div class="progress-bar-container"><div class="progress-bar" style="width: ${progressPercent}%"></div></div>
         <div class="progress-footer"><span>Залишилось ${direction}: <strong>${diff} кг</strong></span><span class="progress-percent">${progressPercent}%</span></div>
       </div>
-      <div class="progress-estimate"><span class="progress-icon">📅</span><div class="progress-text">При 0.5 кг/тиждень — ціль за <strong>${Math.ceil(diff / 0.5)} тижнів</strong>.</div></div>
+      <div class="progress-estimate"><span class="progress-icon">${iconCalendar}</span><div class="progress-text">При 0.5 кг/тиждень — ціль за <strong>${Math.ceil(diff / 0.5)} тижнів</strong>.</div></div>
     `;
   } else {
-    progressHTML = `<div class="progress-status progress-status--empty"><span class="progress-icon">🎯</span><div class="progress-text">Встановіть бажану вагу для відстеження прогресу.</div></div>`;
+    progressHTML = `<div class="progress-status progress-status--empty"><span class="progress-icon">${iconTarget}</span><div class="progress-text">Встановіть бажану вагу для відстеження прогресу.</div></div>`;
   }
 
   adviceContainer.innerHTML = adviceHTML;
@@ -1090,13 +1096,15 @@ function setupActivityForm() {
     // ✅ ВИПРАВЛЕНО: Використовуємо ACTIVITIES
     const activityData = ACTIVITIES[activityType];
     const caloriesPerMin = activityData ? activityData.caloriesPerMinute : 5;
-    const activityName = activityData ? activityData.name : 'Активність';
+    const activityLabel = activityData ? activityData.label : 'Активність';
+    const activityIcon  = activityData ? activityData.icon  : '';
     const caloriesBurned = Math.round(caloriesPerMin * duration);
 
     const activity = {
       id: Date.now(),
       type: activityType,
-      name: activityName,
+      label: activityLabel,
+      icon:  activityIcon,
       duration,
       calories: caloriesBurned,
       date: new Date().toISOString(),
@@ -1124,7 +1132,7 @@ function setupActivityForm() {
     renderActivityHistory(currentPeriod);
     initActivityChart();
 
-    showToast(`${activity.name}: ${caloriesBurned} ккал спалено! 🔥`);
+    showToast(`${activityLabel}: ${caloriesBurned} ккал спалено`);
   });
 }
 
@@ -1206,7 +1214,7 @@ function renderActivityHistory(period) {
   }
 
   if (history.length === 0) {
-    container.innerHTML = `<div class="activity-history-empty"><span class="empty-icon">🏃‍♀️</span><p>Немає записів за цей період.</p></div>`;
+    container.innerHTML = `<div class="activity-history-empty"><span class="empty-icon">${iconRun}</span><p>Немає записів за цей період.</p></div>`;
     return;
   }
 
@@ -1227,16 +1235,16 @@ function renderActivityHistory(period) {
     activities.forEach((activity) => {
       html += `
         <div class="activity-item" data-id="${activity.id}">
-          <div class="activity-item__icon">${activity.name.split(' ')[0]}</div>
+          <div class="activity-item__icon">${activity.icon || ''}</div>
           <div class="activity-item__info">
-            <span class="activity-item__name">${activity.name.split(' ').slice(1).join(' ')}</span>
+            <span class="activity-item__name">${activity.label || activity.name || ''}</span>
             <span class="activity-item__details">${activity.duration} хв • ${activity.time}</span>
           </div>
           <div class="activity-item__calories">
             <span class="activity-item__calories-value">-${activity.calories}</span>
             <span class="activity-item__calories-label">ккал</span>
           </div>
-          <button class="activity-item__delete" onclick="deleteActivity(${activity.id})" title="Видалити">✕</button>
+          <button class="activity-item__delete" onclick="deleteActivity(${activity.id})" title="Видалити">${iconXCircle}</button>
         </div>
       `;
     });
@@ -1451,7 +1459,7 @@ function _initNicknameEditor(user) {
     editor.hidden = true;
     editBtn.hidden = false;
     saveBtn.textContent = 'Зберегти';
-    showToast('Нікнейм збережено ✓');
+    showToast('Нікнейм збережено');
   });
 }
 
@@ -1475,7 +1483,7 @@ async function _checkNbUnique(val, userId) {
     _nbValid = false;
     if (saveBtn) saveBtn.disabled = true;
   } else {
-    _setNbHint(hint, '✓ Це ім\'я вільне', '#4ab584');
+    _setNbHint(hint, 'Це ім\'я вільне', '#4ab584');
     input.style.borderColor = '#4ab584';
     _nbValid = true;
     if (saveBtn) saveBtn.disabled = false;
@@ -1618,7 +1626,7 @@ function initCaloriesInlineEdit() {
         .from('user_profiles')
         .upsert({ user_id: user.id, calories: val }, { onConflict: 'user_id' });
     }
-    showToast('Калорії оновлено ✓');
+    showToast('Калорії оновлено');
   }
 
   function cancelEdit() {
