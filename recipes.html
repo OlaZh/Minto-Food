@@ -258,57 +258,6 @@
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
 
-        <div id="initial-options-view">
-          <div class="modal-card__header">
-            <h2 data-i18n="createMagic">Варіанти створення рецепта ✨</h2>
-            <p data-i18n="createMagicSubtitle">Оцифруйте скриншот або запишіть власну ідею</p>
-          </div>
-
-          <div class="modal-card__options">
-            <label class="option-card option-card--ai" for="ai-upload">
-              <input type="file" id="ai-upload" accept="image/*" hidden />
-              <div class="option-card__icon">📸</div>
-              <div class="option-card__info">
-                <h3 data-i18n="uploadScreenshot">Завантажити скриншот</h3>
-                <p data-i18n="aiRecognize">ШІ сам розпізнає текст та інгредієнти</p>
-              </div>
-            </label>
-
-            <button class="option-card" id="manual-entry-btn" type="button">
-              <div class="option-card__icon">✍️</div>
-              <div class="option-card__info">
-                <h3 data-i18n="manualEntry">Ввести вручну</h3>
-                <p data-i18n="manualEntrySubtitle">Створіть рецепт з нуля самостійно</p>
-              </div>
-            </button>
-          </div>
-
-          <div class="recipe-add__smart-import">
-            <label class="smart-import__label" data-i18n="apiImportLabel">
-              <span>🥗</span> Знайти рецепт у базі
-            </label>
-
-            <div class="smart-import__wrapper">
-              <input
-                type="text"
-                id="api-search"
-                class="smart-import__input"
-                data-i18n-placeholder="apiImportPlaceholder"
-                placeholder="Введіть назву страви..." />
-
-              <button type="button" id="btn-api-search" class="recipe-card__btn smart-import__btn">
-                <span data-i18n="apiImportBtn">Пошук</span>
-              </button>
-            </div>
-
-            <p class="smart-import__hint" data-i18n="apiImportHint">
-              Пошук у відкритій базі рецептів. Оберіть страву та додайте її до своїх рецептів. 🍃
-            </p>
-
-            <div id="api-search-results" class="api-results"></div>
-          </div>
-        </div>
-
         <div id="recipe-preview-form" class="modal-form-wrapper" hidden>
           <div class="modal-card__header">
             <h2 data-i18n="addRecipe">Додати рецепт</h2>

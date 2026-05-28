@@ -41,51 +41,7 @@ function createRecipeModalHTML() {
       <div class="modal-card">
         <button class="modal-card__close" id="recipe-modal-close">&times;</button>
 
-        <div id="recipe-modal-options-view">
-          <div class="modal-card__header">
-            <h2 data-i18n="createMagic">Варіанти створення рецепта ✨</h2>
-            <p data-i18n="createMagicSubtitle">Оцифруйте скриншот або запишіть власну ідею</p>
-          </div>
-
-          <div class="modal-card__options">
-            <label class="option-card option-card--ai" for="recipe-modal-ai-upload">
-              <input type="file" id="recipe-modal-ai-upload" accept="image/*" hidden />
-              <div class="option-card__icon">📸</div>
-              <div class="option-card__info">
-                <h3 data-i18n="uploadScreenshot">Завантажити скриншот</h3>
-                <p data-i18n="aiRecognize">ШІ сам розпізнає текст та інгредієнти</p>
-              </div>
-            </label>
-
-            <button class="option-card" id="recipe-modal-manual-btn" type="button">
-              <div class="option-card__icon">✍️</div>
-              <div class="option-card__info">
-                <h3 data-i18n="manualEntry">Ввести вручну</h3>
-                <p data-i18n="manualEntrySubtitle">Створіть рецепт з нуля самостійно</p>
-              </div>
-            </button>
-          </div>
-
-          <div class="recipe-add__smart-import">
-            <label class="smart-import__label">
-              <span>🥗</span> <span data-i18n="apiImportLabel">Знайти рецепт у базі</span>
-            </label>
-            <div class="smart-import__wrapper">
-              <input
-                type="text"
-                id="recipe-modal-api-search"
-                class="smart-import__input"
-                placeholder="Введіть назву страви..."
-                data-i18n-placeholder="apiImportPlaceholder" />
-              <button type="button" id="recipe-modal-api-btn" class="recipe-card__btn smart-import__btn">
-                <span data-i18n="apiImportBtn">Пошук</span>
-              </button>
-            </div>
-            <div id="recipe-modal-api-results" class="api-results"></div>
-          </div>
-        </div>
-
-        <div id="recipe-modal-preview-form" class="modal-form-wrapper" style="display: none">
+        <div id="recipe-modal-preview-form" class="modal-form-wrapper">
           <div class="modal-card__header">
             <h2 data-i18n="addRecipe">Додати рецепт</h2>
             <p data-i18n="checkBeforeSave">Перевір дані перед збереженням</p>
@@ -215,12 +171,8 @@ export async function initRecipeModal() {
   recipeModalInstance = document.getElementById('recipe-create-modal');
 
   const closeBtn = document.getElementById('recipe-modal-close');
-  const manualBtn = document.getElementById('recipe-modal-manual-btn');
   const cancelBtn = document.getElementById('rm-cancel');
-  const optionsView = document.getElementById('recipe-modal-options-view');
-  const previewForm = document.getElementById('recipe-modal-preview-form');
   const form = document.getElementById('recipe-modal-form');
-  const apiBtn = document.getElementById('recipe-modal-api-btn');
 
   // Закриття
   closeBtn?.addEventListener('click', closeRecipeModal);
@@ -228,23 +180,8 @@ export async function initRecipeModal() {
     if (e.target === recipeModalInstance) closeRecipeModal();
   });
 
-  // Вручну
-  manualBtn?.addEventListener('click', () => showRecipeForm());
-
   // Скасувати у формі
-  cancelBtn?.addEventListener('click', () => {
-    previewForm.style.display = 'none';
-    optionsView.style.display = 'block';
-  });
-
-  // API пошук
-  apiBtn?.addEventListener('click', searchRecipesApi);
-  document.getElementById('recipe-modal-api-search')?.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      searchRecipesApi();
-    }
-  });
+  cancelBtn?.addEventListener('click', closeRecipeModal);
 
   // Авто-ресайз textarea
   recipeModalInstance?.querySelectorAll('textarea').forEach((txt) => {
@@ -323,21 +260,14 @@ function resetVisibilityToggle() {
 export async function openRecipeModal(onSaved = null) {
   onRecipeSavedCallback = onSaved;
 
-  const optionsView = document.getElementById('recipe-modal-options-view');
-  const previewForm = document.getElementById('recipe-modal-preview-form');
-
-  if (optionsView) optionsView.style.display = 'block';
-  if (previewForm) previewForm.style.display = 'none';
-
   resetRecipeForm();
-
-  // Оновлюємо список книг
-  await refreshBooks();
 
   if (recipeModalInstance) {
     recipeModalInstance.classList.add('is-active');
     lockScroll('recipe-create-modal');
   }
+
+  await showRecipeForm();
 }
 
 export function closeRecipeModal() {
@@ -352,12 +282,6 @@ export function closeRecipeModal() {
 function resetRecipeForm() {
   const form = document.getElementById('recipe-modal-form');
   if (form) form.reset();
-
-  const apiResults = document.getElementById('recipe-modal-api-results');
-  if (apiResults) apiResults.innerHTML = '';
-
-  const apiSearch = document.getElementById('recipe-modal-api-search');
-  if (apiSearch) apiSearch.value = '';
 
   // Очищаємо конструктор інгредієнтів
   clearIngredients();
@@ -375,11 +299,6 @@ function resetRecipeForm() {
 // =============================================================
 
 async function showRecipeForm(data = null) {
-  const optionsView = document.getElementById('recipe-modal-options-view');
-  const previewForm = document.getElementById('recipe-modal-preview-form');
-
-  if (optionsView) optionsView.style.display = 'none';
-  if (previewForm) previewForm.style.display = 'block';
 
   // Реініціалізуємо конструктор інгредієнтів при показі форми
   const lang = getLang();
@@ -528,64 +447,3 @@ async function saveRecipe() {
   }
 }
 
-// =============================================================
-// API ПОШУК РЕЦЕПТІВ
-// =============================================================
-
-async function searchRecipesApi() {
-  const input = document.getElementById('recipe-modal-api-search');
-  const resultsEl = document.getElementById('recipe-modal-api-results');
-  if (!input || !resultsEl) return;
-
-  const query = input.value.trim();
-  if (!query) {
-    input.focus();
-    return;
-  }
-
-  resultsEl.innerHTML = '<p style="padding:12px;text-align:center;color:#888;">Шукаємо...</p>';
-
-  try {
-    const resp = await fetch(
-      `https://www.themealdb.com/api/json/v1/1/search.php?s=${encodeURIComponent(query)}`,
-    );
-    const data = await resp.json();
-    const meals = data.meals || [];
-
-    if (meals.length === 0) {
-      resultsEl.innerHTML =
-        '<p style="padding:12px;text-align:center;color:#888;">Нічого не знайдено</p>';
-      return;
-    }
-
-    resultsEl.innerHTML = '';
-
-    meals.slice(0, 8).forEach((m) => {
-      const card = document.createElement('div');
-      card.className = 'api-result-card';
-      card.innerHTML = `
-        <div class="api-result-card__image-box">
-          <img src="${m.strMealThumb || ''}" alt="${m.strMeal}" onerror="this.src=''">
-        </div>
-        <div class="api-result-card__content">
-          <h4>${m.strMeal}</h4>
-          <button type="button" class="recipe-card__btn api-add-btn">Додати цей рецепт</button>
-        </div>
-      `;
-
-      card.querySelector('.api-add-btn').addEventListener('click', () => {
-        showRecipeForm({
-          name: m.strMeal,
-          image: m.strMealThumb,
-          steps: m.strInstructions || '',
-          category: 'lunch',
-        });
-      });
-
-      resultsEl.appendChild(card);
-    });
-  } catch {
-    resultsEl.innerHTML =
-      '<p style="padding:12px;text-align:center;color:#c0392b;">Помилка зв\'язку</p>';
-  }
-}

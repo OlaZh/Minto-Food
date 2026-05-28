@@ -26,10 +26,6 @@ import {
 const addBtn = document.getElementById('open-add-modal');
 const modal = document.getElementById('add-recipe-modal');
 const closeBtn = document.getElementById('close-modal');
-const aiUploadInput = document.getElementById('ai-upload');
-const manualBtn = document.getElementById('manual-entry-btn');
-
-const optionsView = document.getElementById('initial-options-view');
 const previewForm = document.getElementById('recipe-preview-form');
 
 const previewFormElement = document.querySelector('.preview-form');
@@ -1017,11 +1013,6 @@ const closeModal = () => {
     unlockScroll('add-recipe-modal');
     setTimeout(() => {
       if (previewForm) previewForm.hidden = true;
-      if (optionsView) {
-        optionsView.style.display = 'block';
-        optionsView.style.opacity = '1';
-        optionsView.style.pointerEvents = 'all';
-      }
     }, 300);
   }
 };
@@ -1050,16 +1041,7 @@ const autoResizer = (el) => {
 };
 
 const showForm = (data = null) => {
-  if (!optionsView || !previewForm) return;
-
-  optionsView.style.display = 'none';
-
-  const apiSearchView =
-    document.querySelector('.api-search-container') ||
-    document.getElementById('api-search-results')?.parentElement;
-  if (apiSearchView) {
-    apiSearchView.style.display = 'none';
-  }
+  if (!previewForm) return;
 
   previewForm.style.display = 'block';
 
@@ -1220,145 +1202,6 @@ async function saveRecipe(recipeData) {
   return true;
 }
 
-// =============================================================
-// 11. ШІ ТА ФОТО (ІМПОРТ)
-// =============================================================
-
-function initAiUpload() {
-  const aiInput = document.getElementById('ai-upload');
-  if (!aiInput) return;
-
-  aiInput.addEventListener('change', async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    showToast('Зображення отримано! Аналізуємо...', 'info');
-
-    try {
-      const aiImageBase64 = await toBase64(file);
-
-      const optionCard = aiInput.closest('.option-card');
-      const originalContent = optionCard ? optionCard.innerHTML : '';
-
-      if (optionsView) {
-        optionsView.style.opacity = '0.5';
-        optionsView.style.pointerEvents = 'none';
-      }
-
-      if (optionCard) optionCard.innerHTML = `<h3>⏳ Аналізую...</h3>`;
-
-      setTimeout(() => {
-        if (optionCard) {
-          optionCard.innerHTML = originalContent;
-          initAiUpload();
-        }
-
-        if (optionsView) {
-          optionsView.style.opacity = '1';
-          optionsView.style.pointerEvents = 'all';
-        }
-
-        showForm({
-          name: 'Рецепт (AI скан)',
-          image: aiImageBase64,
-          calories: 0,
-          proteins: 0,
-          carbs: 0,
-          fats: 0,
-          category: 'breakfast',
-          ingredients: '',
-          steps: '',
-        });
-      }, 1500);
-    } catch (err) {
-      console.error('Помилка обробки фото:', err);
-      showToast('Не вдалося обробити фото', 'error');
-    }
-  });
-}
-
-// =============================================================
-// 12. ПОШУК РЕЦЕПТІВ ЧЕРЕЗ API
-// =============================================================
-
-async function searchRecipesFromApi() {
-  const queryInput = document.getElementById('api-search');
-  const btn = document.getElementById('btn-api-search');
-  const btnText = btn ? btn.querySelector('span') : null;
-  const resultsContainer = document.getElementById('api-search-results');
-
-  if (!queryInput || !btn || !resultsContainer) return;
-
-  const query = queryInput.value.trim();
-  if (!query) {
-    queryInput.focus();
-    return;
-  }
-
-  const originalText = btnText ? btnText.innerText : 'Пошук';
-  if (btnText) btnText.innerText = '...';
-  btn.disabled = true;
-  resultsContainer.innerHTML = '';
-
-  async function fetchMealDB() {
-    try {
-      const resp = await fetch(
-        `https://www.themealdb.com/api/json/v1/1/search.php?s=${encodeURIComponent(query)}`,
-      );
-      const data = await resp.json();
-      return data.meals || [];
-    } catch {
-      return [];
-    }
-  }
-
-  const mealdb = await fetchMealDB();
-
-  const results = mealdb.map((m) => ({
-    title: m.strMeal,
-    image: m.strMealThumb,
-    ingredients: Object.keys(m)
-      .filter((k) => k.startsWith('strIngredient') && m[k])
-      .map((k, i) => `${m[k]} ${m[`strMeasure${i + 1}`] || ''}`)
-      .join('\n'),
-    steps: m.strInstructions || '',
-  }));
-
-  if (results.length === 0) {
-    resultsContainer.innerHTML = `<p style="padding:20px; text-align:center;">Нічого не знайдено.</p>`;
-    btn.disabled = false;
-    if (btnText) btnText.innerText = originalText;
-    return;
-  }
-
-  results.forEach((r) => {
-    const card = document.createElement('div');
-    card.className = 'api-result-card';
-    card.innerHTML = `
-      <div class="api-result-card__image-box">
-        <img src="${r.image || ''}" alt="${r.title || ''}" onerror="this.src='https://via.placeholder.com/150?text=No+Image'">
-      </div>
-      <div class="api-result-card__content">
-        <h4>${r.title || 'Без назви'}</h4>
-        <button type="button" class="recipe-card__btn api-add-btn">Додати цей рецепт</button>
-      </div>
-    `;
-
-    card.querySelector('.api-add-btn').addEventListener('click', () => {
-      showForm({
-        name: r.title,
-        image: r.image,
-        ingredients: r.ingredients,
-        steps: r.steps,
-        category: 'lunch',
-      });
-    });
-    resultsContainer.appendChild(card);
-  });
-
-  if (btnText) btnText.innerText = originalText;
-  btn.disabled = false;
-}
 
 // =============================================================
 // 13. АВТО-РОЗРАХУНОК КАЛОРІЙ
@@ -1596,7 +1439,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   await initRecipeModal();
   buildFilterPanel();
   loadAndDisplayRecipes();
-  initAiUpload();
 
   // Закриваємо підфільтри при кліку поза панеллю
   document.addEventListener('click', (e) => {
@@ -1671,9 +1513,6 @@ if (saveNotesBtn) {
   });
 }
 
-if (document.getElementById('btn-api-search')) {
-  document.getElementById('btn-api-search').addEventListener('click', searchRecipesFromApi);
-}
 
 window.addEventListener('click', (e) => {
   if (e.target === modal) closeModal();
@@ -1681,13 +1520,8 @@ window.addEventListener('click', (e) => {
 });
 
 if (cancelPreview) {
-  cancelPreview.addEventListener('click', () => {
-    if (previewForm) previewForm.hidden = true;
-    if (optionsView) optionsView.style.display = 'block';
-  });
+  cancelPreview.addEventListener('click', closeModal);
 }
-
-if (manualBtn) manualBtn.addEventListener('click', () => showForm());
 
 if (previewFormElement) {
   previewFormElement.addEventListener('submit', async (e) => {
