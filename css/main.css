@@ -5634,10 +5634,11 @@ textarea:-webkit-autofill:focus {
     line-height: 1.2;
   }
   .macro-bars {
+    flex: 1;
+    min-width: 0;
     display: flex;
     flex-direction: column;
-    gap: 4px;
-    margin-top: 3px;
+    gap: 6px;
   }
   .macro-bar-row {
     display: flex;
