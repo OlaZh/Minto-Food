@@ -141,7 +141,7 @@ export async function isAdmin() {
     .from('profiles')
     .select('is_admin')
     .eq('id', currentUser.id)
-    .single();
+    .maybeSingle();
 
   _isAdminCache = !error && data?.is_admin === true;
   return _isAdminCache;

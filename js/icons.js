@@ -107,7 +107,7 @@ export const iconCandle  = svg('<path d="M12 2.5c1 1.5 2 2.5 2 4a2 2 0 1 1-4 0c0
 
 // ── Meal categories (замість 🌅 🍎 🍰 🥤 🥐 тощо) ────────────
 export const iconEggFried = svg('<path d="M12 3c-3 0-6 4-6 9s3 8 6 8 6-3 6-8-3-9-6-9Z"/><circle cx="12" cy="11" r="2.5"/>');
-export const iconPlate    = svg('<path d="M8 3v5M6 3v3a2 2 0 0 0 4 0V3M8 8v13"/><path d="M16 3c0 3 2 4 2 6v13"/>');
+export const iconPlate    = svg('<path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3zm0 0v7"/>');
 export const iconDinnerBowl = svg('<path d="M3 11h18a9 9 0 0 1-18 0Z"/><path d="M2 11h20"/><path d="M9 6c0 1 1 1.5 1 2.5M13 5c0 1 1 1.5 1 2.5"/>');
 export const iconApple    = svg('<path d="M12 7c-1.5-1.5-4-2-6 0s-1 8 1 10 4 2 5 1 1-1 2-1 1 1 2 1 3 0 5-2 3-8 1-10-4.5-1.5-6 0Z"/><path d="M12 7V5"/><path d="M12 5c1-1.5 2.5-2 4-1.5-.5 1.5-2 2.5-4 1.5Z"/>');
 export const iconCakeSlice = svg('<path d="M4 20 12 5l8 15Z"/><path d="M7 14h10"/><circle cx="12" cy="5" r="1.4"/>');
