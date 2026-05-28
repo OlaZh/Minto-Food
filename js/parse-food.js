@@ -231,41 +231,54 @@ export function parseFoodInput(input) {
  * @param {number} minSimilarity - мін. схожість (0-1), default 0.3
  * @returns {Object|null} - знайдений продукт або null
  */
-export async function findProductMatch(query, minSimilarity = 0.3) {
+async function searchByTerm(term) {
+  try {
+    const { data: aliasRows } = await supabase
+      .from('product_aliases')
+      .select('product_id')
+      .ilike('alias_normalized', `%${term}%`)
+      .limit(1);
+
+    if (aliasRows?.length > 0) {
+      const { data: aliasProduct } = await supabase
+        .from('products')
+        .select('*')
+        .eq('id', aliasRows[0].product_id)
+        .is('deleted_at', null)
+        .maybeSingle();
+      if (aliasProduct) return { ...aliasProduct, _matchedVia: 'alias' };
+    }
+  } catch {
+    // alias search unavailable
+  }
+
+  const { data: products } = await supabase
+    .from('products')
+    .select('*')
+    .or(`name_ua.ilike.%${term}%,name_en.ilike.%${term}%`)
+    .is('deleted_at', null)
+    .is('user_id', null)
+    .limit(1);
+
+  return products?.[0] ? { ...products[0], _matchedVia: 'product' } : null;
+}
+
+export async function findProductMatch(query) {
   if (!query || query.length < 2) return null;
 
   const q = normalizeText(query);
 
   try {
-    // 1. Шукаємо в аліасах (точний збіг або pg_trgm)
-    const { data: aliasMatch, error: aliasError } = await supabase.rpc('search_product_by_alias', {
-      search_query: q,
-      min_similarity: minSimilarity,
-    });
+    // 1. Пошук за повною назвою (напр. "варена картопля")
+    const result = await searchByTerm(q);
+    if (result) return result;
 
-    if (!aliasError && aliasMatch && aliasMatch.length > 0) {
-      return {
-        ...aliasMatch[0],
-        _matchScore: aliasMatch[0].similarity_score,
-        _matchedVia: 'alias',
-      };
-    }
-
-    // 2. Шукаємо напряму в products
-    const { data: productMatch, error: productError } = await supabase.rpc(
-      'search_product_by_name',
-      {
-        search_query: q,
-        min_similarity: minSimilarity,
-      },
-    );
-
-    if (!productError && productMatch && productMatch.length > 0) {
-      return {
-        ...productMatch[0],
-        _matchScore: productMatch[0].similarity_score,
-        _matchedVia: 'product',
-      };
+    // 2. Якщо не знайшло — прибираємо стоп-слова і шукаємо ще раз
+    //    "варена картопля" → "картопля"
+    const cleaned = removeStopWords(q);
+    if (cleaned !== q && cleaned.length >= 2) {
+      const fallback = await searchByTerm(cleaned);
+      if (fallback) return fallback;
     }
 
     return null;
@@ -283,22 +296,19 @@ export async function findProductMatch(query, minSimilarity = 0.3) {
  * @param {number} minSimilarity - мін. схожість (0-1)
  * @returns {Array} - масив продуктів
  */
-export async function findAllMatches(query, limit = 10, minSimilarity = 0.2) {
+export async function findAllMatches(query, limit = 10) {
   if (!query || query.length < 2) return [];
 
   const q = normalizeText(query);
 
   try {
-    const { data, error } = await supabase.rpc('search_products_fuzzy', {
-      search_query: q,
-      result_limit: limit,
-      min_similarity: minSimilarity,
-    });
-
-    if (error) {
-      console.error('Search error:', error);
-      return [];
-    }
+    const { data } = await supabase
+      .from('products')
+      .select('*')
+      .or(`name_ua.ilike.%${q}%,name_en.ilike.%${q}%`)
+      .is('deleted_at', null)
+      .is('user_id', null)
+      .limit(limit);
 
     return data || [];
   } catch (err) {
