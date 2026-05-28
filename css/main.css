@@ -2761,6 +2761,20 @@ textarea:-webkit-autofill:focus {
   align-items: flex-start;
   padding: 20px;
   overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.15) transparent;
+}
+.modal-overlay::-webkit-scrollbar {
+  width: 4px;
+}
+.modal-overlay::-webkit-scrollbar-track {
+  background: transparent;
+}
+.modal-overlay::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 4px;
+}
+.modal-overlay {
   background: rgba(0, 0, 0, 0.7);
   backdrop-filter: blur(8px);
 }
@@ -4393,8 +4407,6 @@ textarea:-webkit-autofill:focus {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  max-height: 200px;
-  overflow-y: auto;
 }
 
 .ingredient-item {

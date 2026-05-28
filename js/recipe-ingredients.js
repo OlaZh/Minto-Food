@@ -214,18 +214,22 @@ async function parseAndAddIngredients(text) {
 
       let grams = item.grams;
 
-      // Якщо знайшли продукт і є кількість але немає грамів — беремо з product_units
+      // Якщо знайшли продукт і є кількість але немає грамів — беремо з product_units.
+      // Розмір не вказано в рецепті → завжди беремо 'medium'
       if (product && item.amount && !grams) {
-        const unitWeight = getProductWeight(product.id);
+        const unitWeight = getProductWeight(product.id, 'medium');
         if (unitWeight) {
           grams = Math.round(item.amount * unitWeight);
         }
       }
 
-      // Якщо все ще немає грамів — ставимо 100 за замовчуванням
-      if (!grams) grams = 100;
+      // Для вагових одиниць без ваги — дефолт 100г
+      // Для штучних (шт, pcs, piece) — НЕ підставляємо вагу, показуємо "N шт"
+      const PIECE_UNIT_LIST = ['шт', 'шт.', 'штука', 'штуки', 'штук', 'pcs', 'piece', 'pieces'];
+      const isPieceUnit = item.unit && PIECE_UNIT_LIST.includes(item.unit.toLowerCase());
+      if (!grams && !isPieceUnit) grams = 100;
 
-      const factor = grams / 100;
+      const factor = grams ? grams / 100 : 0;
 
       const ingredient = {
         id: product?.id || null,
@@ -234,7 +238,9 @@ async function parseAndAddIngredients(text) {
         name_pl: product?.name_pl || null,
         original: item.original,
         weight: grams,
-        unit: 'g',
+        parsedAmount: item.amount || 1,
+        parsedUnit: item.unit || 'шт',
+        unit: grams ? 'g' : 'шт',
         kcal: product ? Math.round((product.kcal || 0) * factor) : 0,
         protein: product ? parseFloat(((product.protein || 0) * factor).toFixed(1)) : 0,
         fat: product ? parseFloat(((product.fat || 0) * factor).toFixed(1)) : 0,
@@ -291,7 +297,7 @@ function renderIngredientsList() {
       <li class="ingredient-item ${statusClass}">
         <span class="ingredient-item__status" title="${statusTitle}">${statusIcon}</span>
         <span class="ingredient-item__name" title="${ing.original || name}">${name}</span>
-        <span class="ingredient-item__weight">${ing.weight} ${t('unitG')}</span>
+        <span class="ingredient-item__weight">${ing.weight ? `${ing.weight} ${t('unitG')}` : `${ing.parsedAmount} ${ing.parsedUnit}`}</span>
         <span class="ingredient-item__kcal">${ing.kcal} ${t('kcal')}</span>
         <button type="button" class="ingredient-item__remove" data-index="${index}">✕</button>
       </li>
