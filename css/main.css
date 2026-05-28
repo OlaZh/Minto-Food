@@ -5632,6 +5632,59 @@ textarea:-webkit-autofill:focus {
     font-weight: 700;
     color: var(--color-text-primary);
   }
+  .day-compact-strip__ring .circle-progress {
+    stroke: #1f6b46;
+  }
+  .day-compact-strip__ring .circle-bg {
+    stroke: rgba(0, 0, 0, 0.1);
+  }
+  .macro-bars {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-top: 3px;
+  }
+  .macro-bar-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .macro-bar-label {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--color-text-secondary);
+    width: 10px;
+    flex-shrink: 0;
+  }
+  .macro-bar-track {
+    flex: 1;
+    height: 4px;
+    background: rgba(0, 0, 0, 0.12);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .macro-bar-fill {
+    height: 100%;
+    width: 0%;
+    border-radius: inherit;
+    transition: width 0.4s ease;
+  }
+  .macro-bar-fill--protein {
+    background: #2d8a5e;
+  }
+  .macro-bar-fill--fat {
+    background: #c08a2a;
+  }
+  .macro-bar-fill--carbs {
+    background: #5a85b8;
+  }
+  .macro-bar-value {
+    font-size: 10px;
+    color: var(--color-text-secondary);
+    white-space: nowrap;
+    min-width: 56px;
+    text-align: right;
+  }
 }
 /* ================= DAY RING CARD ================= */
 .day-ring-card {
@@ -14499,3 +14552,5 @@ input[type=date].admin-select {
   font-family: inherit;
   cursor: pointer;
 }
+
+/*# sourceMappingURL=main.css.map */

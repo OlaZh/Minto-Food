@@ -461,6 +461,62 @@
         color: var(--color-text-primary);
       }
     }
+
+    &__ring .circle-progress {
+      stroke: #1f6b46;
+    }
+
+    &__ring .circle-bg {
+      stroke: rgba(0, 0, 0, 0.1);
+    }
+  }
+
+  .macro-bars {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-top: 3px;
+  }
+
+  .macro-bar-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .macro-bar-label {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--color-text-secondary);
+    width: 10px;
+    flex-shrink: 0;
+  }
+
+  .macro-bar-track {
+    flex: 1;
+    height: 4px;
+    background: rgba(0, 0, 0, 0.12);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .macro-bar-fill {
+    height: 100%;
+    width: 0%;
+    border-radius: inherit;
+    transition: width 0.4s ease;
+
+    &--protein { background: #2d8a5e; }
+    &--fat     { background: #c08a2a; }
+    &--carbs   { background: #5a85b8; }
+  }
+
+  .macro-bar-value {
+    font-size: 10px;
+    color: var(--color-text-secondary);
+    white-space: nowrap;
+    min-width: 56px;
+    text-align: right;
   }
 }
 
