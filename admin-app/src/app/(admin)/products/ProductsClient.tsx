@@ -17,6 +17,7 @@ function NutritionEditor({ product, onSaved }: { product: any; onSaved: () => vo
   const [carbs, setCarbs] = useState(String(product.carbs ?? ''))
   const [fiber, setFiber] = useState(String(product.fiber ?? ''))
   const [labelType, setLabelType] = useState<'EU' | 'US'>(product.label_type === 'US' ? 'US' : 'EU')
+  const [foodState, setFoodState] = useState<'raw' | 'dry' | 'cooked'>(product.food_state ?? 'raw')
   const [saving, setSaving] = useState(false)
 
   async function save() {
@@ -29,6 +30,7 @@ function NutritionEditor({ product, onSaved }: { product: any; onSaved: () => vo
         carbs: carbs !== '' ? parseFloat(carbs) : undefined,
         fiber: fiber !== '' ? parseFloat(fiber) : 0,
         label_type: labelType,
+        food_state: foodState,
       })
       onSaved()
     } catch (e: any) {
@@ -71,6 +73,18 @@ function NutritionEditor({ product, onSaved }: { product: any; onSaved: () => vo
             {v}
           </button>
         ))}
+      </div>
+      <div className="flex items-center gap-1 text-xs">
+        <span className="text-gray-500">Стан</span>
+        <select
+          value={foodState}
+          onChange={e => setFoodState(e.target.value as 'raw' | 'dry' | 'cooked')}
+          className="border border-gray-200 rounded px-1.5 py-1 text-xs outline-none focus:border-gray-400 bg-white"
+        >
+          <option value="raw">Сирий</option>
+          <option value="dry">Сухий</option>
+          <option value="cooked">Готовий</option>
+        </select>
       </div>
       <button
         onClick={save} disabled={saving}
