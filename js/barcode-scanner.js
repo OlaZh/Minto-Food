@@ -400,6 +400,41 @@ async function startFallbackScanner() {
 // ==================== ОБРОБКА ШТРИХ-КОДУ ====================
 // (логіка БД + Open Food Facts — залишена 1 в 1 як було)
 
+// Чи має продукт хоч якісь дані КБЖУ (не порожнє зчитування)
+function hasNutritionData(p) {
+  if (!p) return false;
+  return (
+    Number(p.kcal) > 0 ||
+    Number(p.protein) > 0 ||
+    Number(p.fat) > 0 ||
+    Number(p.carbs) > 0
+  );
+}
+
+// Пропозиція ввести/відредагувати дані вручну.
+// prefillName — назва, яку вдалось зчитати (може бути порожня).
+function promptManualEntry(barcode, prefillName = '', message = 'Продукт не знайдено') {
+  const statusEl = document.getElementById('scannerStatus');
+  if (!statusEl) return;
+
+  const nameLine = prefillName
+    ? `<small class="scanner-modal__manual-name">${prefillName}</small><br>`
+    : '';
+
+  statusEl.innerHTML = `
+    ${nameLine}
+    <span>${message}</span>
+    <button class="scanner-modal__manual-cta" type="button">Ввести дані вручну</button>
+  `;
+  statusEl.className = 'scanner-modal__status scanner-modal__status--error';
+  statusEl.querySelector('.scanner-modal__manual-cta').addEventListener('click', () => {
+    closeScanner();
+    document.dispatchEvent(
+      new CustomEvent('scanner:manualEntry', { detail: { barcode, name: prefillName } }),
+    );
+  });
+}
+
 async function handleBarcodeScan(barcode) {
   const statusEl = document.getElementById('scannerStatus');
 
@@ -413,8 +448,16 @@ async function handleBarcodeScan(barcode) {
     const localProduct = await findInLocalDatabase(barcode);
 
     if (localProduct) {
-      console.log('Знайдено локально:', localProduct);
-      onProductFoundHandler(localProduct);
+      if (hasNutritionData(localProduct)) {
+        console.log('Знайдено локально:', localProduct);
+        onProductFoundHandler(localProduct);
+      } else {
+        // Кешований "порожній" запис (лишок зі старих сканувань) → даємо виправити
+        console.warn('Локальний запис без КБЖУ — пропонуємо ручне введення:', localProduct);
+        const name =
+          localProduct.name_ua || localProduct.name_en || localProduct.name_pl || '';
+        promptManualEntry(barcode, name, 'Дані відсутні — заповніть вручну');
+      }
       return;
     }
 
@@ -422,24 +465,22 @@ async function handleBarcodeScan(barcode) {
     const offProduct = await searchOpenFoodFacts(barcode);
 
     if (offProduct) {
-      console.log('Знайдено в Open Food Facts:', offProduct);
-      await saveToLocalDatabase(offProduct);
-      onProductFoundHandler(offProduct);
+      if (hasNutritionData(offProduct)) {
+        console.log('Знайдено в Open Food Facts:', offProduct);
+        await saveToLocalDatabase(offProduct);
+        onProductFoundHandler(offProduct);
+      } else {
+        // Назва є, але КБЖУ нулі → НЕ зберігаємо сміття, пропонуємо ввести вручну
+        console.warn('OFF повернув продукт без КБЖУ — не кешуємо:', offProduct);
+        const name =
+          offProduct.name_ua || offProduct.name_en || offProduct.name_pl || '';
+        promptManualEntry(barcode, name, 'Дані відсутні — заповніть вручну');
+      }
       return;
     }
 
-    // 3. Не знайдено
-    if (statusEl) {
-      statusEl.innerHTML = `
-        <span>Продукт не знайдено</span>
-        <button class="scanner-modal__manual-cta" type="button">Ввести дані вручну</button>
-      `;
-      statusEl.className = 'scanner-modal__status scanner-modal__status--error';
-      statusEl.querySelector('.scanner-modal__manual-cta').addEventListener('click', () => {
-        closeScanner();
-        document.dispatchEvent(new CustomEvent('scanner:manualEntry', { detail: { barcode } }));
-      });
-    }
+    // 3. Не знайдено зовсім
+    promptManualEntry(barcode, '', 'Продукт не знайдено');
   } catch (error) {
     console.error('Помилка пошуку:', error);
     if (statusEl) {
@@ -488,6 +529,8 @@ async function searchOpenFoodFacts(barcode) {
         (nutriments.carbohydrates_100g || nutriments.carbohydrates || 0).toFixed(1),
       ),
       fiber: parseFloat((nutriments['fiber_100g'] || nutriments['fibers_100g'] || nutriments.fiber || 0).toFixed(1)),
+      sugar: parseFloat((nutriments['sugars_100g'] || nutriments.sugars || 0).toFixed(1)),
+      salt: parseFloat((nutriments['salt_100g'] || nutriments.salt || 0).toFixed(2)),
       label_type: 'EU',
       image_url: p.image_url || null,
       source: 'openfoodfacts',
@@ -499,6 +542,11 @@ async function searchOpenFoodFacts(barcode) {
 }
 
 async function saveToLocalDatabase(product) {
+  // Захист: ніколи не кешуємо "порожні" продукти (усі макро = 0)
+  if (!hasNutritionData(product)) {
+    console.warn('Пропускаємо кешування порожнього продукту:', product);
+    return;
+  }
   try {
     const { error } = await supabase.from('scanned_products').upsert([product], {
       onConflict: 'barcode',

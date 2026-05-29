@@ -387,6 +387,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   const scFatInput = document.getElementById('scFat');
   const scCarbsInput = document.getElementById('scCarbs');
   const scFiberInput = document.getElementById('scFiber');
+  const scSugarInput = document.getElementById('scSugar');
+  const scSaltInput = document.getElementById('scSalt');
 
   function showScannedProductCard(product) {
     if (!scannedCard) return;
@@ -406,6 +408,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     scFatInput.value = product.fat || 0;
     scCarbsInput.value = product.carbs || 0;
     if (scFiberInput) scFiberInput.value = product.fiber || 0;
+    if (scSugarInput) scSugarInput.value = product.sugar || 0;
+    if (scSaltInput) scSaltInput.value = product.salt || 0;
 
     scannedCard.hidden = false;
 
@@ -417,6 +421,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         selectedFood.fat = Number(scFatInput.value) || 0;
         selectedFood.carbs = Number(scCarbsInput.value) || 0;
         selectedFood.fiber = Number(scFiberInput?.value) || 0;
+        selectedFood.sugar = Number(scSugarInput?.value) || 0;
+        selectedFood.salt = Number(scSaltInput?.value) || 0;
       }
     };
 
@@ -425,6 +431,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     scFatInput.oninput = updateSelectedFood;
     scCarbsInput.oninput = updateSelectedFood;
     if (scFiberInput) scFiberInput.oninput = updateSelectedFood;
+    if (scSugarInput) scSugarInput.oninput = updateSelectedFood;
+    if (scSaltInput) scSaltInput.oninput = updateSelectedFood;
 
     // Очищення картки
     clearBtn.onclick = () => {
@@ -443,6 +451,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       scFatInput.value = '';
       scCarbsInput.value = '';
       if (scFiberInput) scFiberInput.value = '';
+      if (scSugarInput) scSugarInput.value = '';
+      if (scSaltInput) scSaltInput.value = '';
     }
   }
 
@@ -751,6 +761,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   const cpFatInput = document.getElementById('cpFat');
   const cpCarbsInput = document.getElementById('cpCarbs');
   const cpFiberInput = document.getElementById('cpFiber');
+  const cpSugarInput = document.getElementById('cpSugar');
+  const cpSaltInput = document.getElementById('cpSalt');
 
   // Флаг: чи користувач вручну редагував ккал
   let kcalManuallyEdited = false;
@@ -812,6 +824,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     cpFatInput.value = '';
     cpCarbsInput.value = '';
     if (cpFiberInput) cpFiberInput.value = '';
+    if (cpSugarInput) cpSugarInput.value = '';
+    if (cpSaltInput) cpSaltInput.value = '';
 
     document.querySelectorAll('.modal__label-btn').forEach((b) => {
       b.classList.toggle('active', b.dataset.label === 'EU');
@@ -836,6 +850,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     const fat = Number(cpFatInput.value) || 0;
     const carbs = Number(cpCarbsInput.value) || 0;
     const fiber = Number(cpFiberInput?.value) || 0;
+    const sugar = Number(cpSugarInput?.value) || 0;
+    const salt = Number(cpSaltInput?.value) || 0;
     const label_type = currentLabelType;
 
     if (!name) {
@@ -853,7 +869,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       // Barcode-originated manual entry → save to scanned_products (no moderation needed)
       const { data, error } = await supabase
         .from('scanned_products')
-        .upsert([{ barcode: _pendingBarcode, name_ua: name, kcal, protein, fat, carbs, fiber, label_type, source: 'manual' }], {
+        .upsert([{ barcode: _pendingBarcode, name_ua: name, kcal, protein, fat, carbs, fiber, sugar, salt, label_type, source: 'manual' }], {
           onConflict: 'barcode',
         })
         .select()
@@ -869,7 +885,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       // Regular manual product creation → save to products (goes through moderation)
       const { data, error } = await supabase
         .from('products')
-        .insert([{ name_ua: name, kcal, protein, fat, carbs, fiber, label_type, user_id: user.id, is_verified: false }])
+        .insert([{ name_ua: name, kcal, protein, fat, carbs, fiber, sugar, salt, label_type, user_id: user.id, is_verified: false }])
         .select()
         .single();
 
@@ -1084,7 +1100,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 
   document.addEventListener('scanner:manualEntry', (e) => {
-    openCreateProductModal('', e.detail?.barcode || null);
+    openCreateProductModal(e.detail?.name || '', e.detail?.barcode || null);
   });
   // Експорт для sidebar-days.js
   window.mealsAPI = {

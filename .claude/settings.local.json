@@ -42,7 +42,10 @@
       "Bash(node -e ' *)",
       "PowerShell(npm run build:css)",
       "PowerShell(npm run build:css 2>$null)",
-      "PowerShell(if \\($?\\) { \"CSS compiled OK\" })"
+      "PowerShell(if \\($?\\) { \"CSS compiled OK\" })",
+      "Bash(grep -iE \"\\\\.html$|\\\\.sql$\")",
+      "Bash(node --check js/barcode-scanner.js)",
+      "Bash(node --check js/meals.js)"
     ]
   }
 }
