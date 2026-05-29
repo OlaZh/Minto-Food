@@ -1,5 +1,4 @@
 import { getTheme, setTheme } from './storage.js';
-import './leaves.js';
 
 document.addEventListener('DOMContentLoaded', () => {
   const themeToggle = document.querySelector('.theme-toggle');

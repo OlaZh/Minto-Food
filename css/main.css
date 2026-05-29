@@ -2044,63 +2044,6 @@ svg[viewBox="0 0 24 24"] {
 }
 
 /* ===============================
-   FALLING MINT LEAVES
-   =============================== */
-:root {
-  --leaf-color: #7ab596;
-}
-
-[data-theme=dark] {
-  --leaf-color: #1b3530;
-}
-
-.leaves-bg {
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  overflow: hidden;
-}
-
-.leaf {
-  position: absolute;
-  top: -60px;
-  color: var(--leaf-color);
-  will-change: transform, opacity;
-  animation: leafFall var(--dur, 14s) var(--delay, 0s) infinite ease-in-out;
-}
-.leaf svg {
-  display: block;
-  width: var(--size, 22px);
-  height: var(--size, 22px);
-}
-
-@keyframes leafFall {
-  0% {
-    transform: translateY(0) translateX(0) rotate(var(--rot, 0deg));
-    opacity: 0;
-  }
-  8% {
-    opacity: var(--opacity, 0.32);
-  }
-  25% {
-    transform: translateY(25vh) translateX(calc(var(--sway) * 0.6)) rotate(calc(var(--rot) + 55deg));
-  }
-  50% {
-    transform: translateY(52vh) translateX(var(--sway)) rotate(calc(var(--rot) + 115deg));
-  }
-  75% {
-    transform: translateY(76vh) translateX(calc(var(--sway) * 0.3)) rotate(calc(var(--rot) + 170deg));
-  }
-  88% {
-    opacity: var(--opacity, 0.32);
-  }
-  100% {
-    transform: translateY(110vh) translateX(calc(var(--sway) * 0.7)) rotate(calc(var(--rot) + 230deg));
-    opacity: 0;
-  }
-}
-/* ===============================
    SKELETON LOADERS
    =============================== */
 @keyframes content-fade-in {
