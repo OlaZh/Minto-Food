@@ -503,7 +503,7 @@
 .scanner-modal {
   position: fixed;
   inset: 0;
-  z-index: 1001; // трохи вище, щоб перекривав addFoodModal
+  z-index: 2100; // вище за addFoodModal і за модалку рецепта (.modal-overlay z2000)
   display: flex;
   align-items: center;
   justify-content: center;
@@ -524,6 +524,9 @@
     position: relative;
     width: 100%;
     max-width: 400px;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
     background: linear-gradient(180deg, var(--color-surface) 0%, var(--color-bg-secondary) 100%);
     border-radius: 20px;
     border: 1px solid var(--color-border);
@@ -532,6 +535,7 @@
   }
 
   &__header {
+    flex-shrink: 0;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -560,6 +564,7 @@
   }
 
   &__body {
+    flex: 1;
     padding: 20px;
     overflow-y: auto;
     min-height: 0;
@@ -567,7 +572,8 @@
 
   &__reader {
     width: 100%;
-    min-height: 200px;
+    height: 300px;
+    max-height: 45vh;
     background: #000;
     border-radius: 12px;
     overflow: hidden;
