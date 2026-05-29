@@ -372,7 +372,7 @@
 .visibility-toggle {
   display: flex;
   gap: 8px;
-  margin-bottom: 14px;
+  margin-bottom: 0;
 
   &__option {
     flex: 1;
@@ -425,8 +425,8 @@
 // =============================================================
 
 .recipe-books-section {
-  margin-top: 20px;
-  padding-top: 20px;
+  margin-top: 0; // відстань дає gap контейнера; тут лише роздільник
+  padding-top: 16px;
   border-top: 1px solid var(--color-border);
 
   &__header {

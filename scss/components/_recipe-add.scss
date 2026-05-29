@@ -5,13 +5,26 @@
 /* ================= FORM WRAPPER ================= */
 
 .preview-form {
-  .form-group {
-    margin-bottom: 14px;
+  // ── ЄДИНИЙ ВЕРТИКАЛЬНИЙ РИТМ ──────────────────────────────
+  // Один контейнер задає відстань між усіма секціями форми.
+  // Окремі блоки НЕ ставлять власних margin — лише цей gap.
+  &__content {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  // Усі секції = однаковий внутрішній ритм (label ↔ контрол),
+  // нульові зовнішні відступи (відстань між секціями дає gap контейнера).
+  .form-group,
+  .visibility-section,
+  .form-media-box {
+    margin: 0;
     display: flex;
     flex-direction: column;
     gap: 6px;
 
-    label {
+    > label {
       font-weight: 700;
       font-size: 12px;
       color: #7a9a9a;
@@ -26,21 +39,24 @@
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 8px;
-    margin-bottom: 14px;
+    margin: 0;
 
-    .form-group {
-      margin-bottom: 0;
-
-      input {
-        text-align: center;
-        padding: 9px 6px;
-        font-family: inherit;
-      }
+    .form-group input {
+      text-align: center;
+      padding: 9px 6px;
+      font-family: inherit;
     }
 
     @media (max-width: 480px) {
       grid-template-columns: repeat(2, 1fr);
     }
+  }
+
+  // Внутрішній стек блоку фото (кнопка / роздільник / URL)
+  .form-media-inner {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
   }
 
   .form-row {
@@ -249,9 +265,9 @@
 
 .preview-form__footer {
   display: flex;
-  gap: var(--space-sm);
-  margin-top: var(--space-xl);
-  padding-top: var(--space-md);
+  gap: 10px;
+  margin-top: 16px;
+  padding-top: 16px;
   border-top: 1px solid var(--color-border);
 
   .btn-save {
