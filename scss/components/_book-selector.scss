@@ -371,19 +371,19 @@
 
 .visibility-toggle {
   display: flex;
-  gap: 10px;
-  margin-bottom: 20px;
+  gap: 8px;
+  margin-bottom: 14px;
 
   &__option {
     flex: 1;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
-    padding: 14px 16px;
+    gap: 6px;
+    padding: 9px 12px;
     background: var(--color-bg-secondary);
     border: 2px solid transparent;
-    border-radius: 12px;
+    border-radius: 10px;
     cursor: pointer;
     transition: all 0.2s ease;
 
@@ -411,11 +411,11 @@
   }
 
   &__icon {
-    font-size: 1.25rem;
+    font-size: 1rem;
   }
 
   &__label {
-    font-size: 0.9rem;
+    font-size: 0.8rem;
     color: var(--color-text-secondary);
   }
 }
