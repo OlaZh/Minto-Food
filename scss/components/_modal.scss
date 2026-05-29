@@ -223,6 +223,56 @@
   color: var(--color-text-secondary);
 }
 
+/* ---------- Label-type toggle (EU / US) ---------- */
+.modal__label-type {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.modal__label-type-title {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+}
+
+.modal__label-type-btns {
+  display: inline-flex;
+  padding: 3px;
+  gap: 3px;
+
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+}
+
+.modal__label-btn {
+  padding: 6px 16px;
+
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+
+  &:hover:not(.active) {
+    color: var(--color-text-primary);
+  }
+
+  &.active {
+    background: var(--color-accent);
+    color: var(--color-text-inverse);
+  }
+}
+
 /* ---------- Results ---------- */
 .modal__results {
   min-height: 200px;
