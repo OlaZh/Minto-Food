@@ -756,6 +756,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   const createProductConfirm = createProductModal?.querySelector('.modal__confirm');
 
   const cpNameInput = document.getElementById('cpName');
+  const cpBrandInput = document.getElementById('cpBrand');
+  const cpBrandField = document.getElementById('cpBrandField');
   const cpKcalInput = document.getElementById('cpKcal');
   const cpProteinInput = document.getElementById('cpProtein');
   const cpFatInput = document.getElementById('cpFat');
@@ -811,7 +813,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   let _pendingBarcode = null;
 
-  function openCreateProductModal(prefillName = '', barcode = null) {
+  function openCreateProductModal(prefillName = '', barcode = null, prefillBrand = '') {
     if (!createProductModal) return;
 
     kcalManuallyEdited = false;
@@ -819,6 +821,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     _pendingBarcode = barcode;
 
     cpNameInput.value = prefillName;
+    // Бренд лише для продуктів зі штрихкодом (scanned_products); сирі products його не мають
+    if (cpBrandField) cpBrandField.hidden = !barcode;
+    if (cpBrandInput) cpBrandInput.value = prefillBrand;
     cpKcalInput.value = '';
     cpProteinInput.value = '';
     cpFatInput.value = '';
@@ -845,6 +850,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (!requireAuth()) return;
 
     const name = cpNameInput.value.trim();
+    const brand = cpBrandInput?.value.trim() || null;
     const kcal = Number(cpKcalInput.value) || 0;
     const protein = Number(cpProteinInput.value) || 0;
     const fat = Number(cpFatInput.value) || 0;
@@ -869,7 +875,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       // Barcode-originated manual entry → save to scanned_products (no moderation needed)
       const { data, error } = await supabase
         .from('scanned_products')
-        .upsert([{ barcode: _pendingBarcode, name_ua: name, kcal, protein, fat, carbs, fiber, sugar, salt, label_type, source: 'manual' }], {
+        .upsert([{ barcode: _pendingBarcode, name_ua: name, brand, kcal, protein, fat, carbs, fiber, sugar, salt, label_type, source: 'manual' }], {
           onConflict: 'barcode',
         })
         .select()
@@ -1100,7 +1106,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 
   document.addEventListener('scanner:manualEntry', (e) => {
-    openCreateProductModal(e.detail?.name || '', e.detail?.barcode || null);
+    openCreateProductModal(e.detail?.name || '', e.detail?.barcode || null, e.detail?.brand || '');
   });
   // Експорт для sidebar-days.js
   window.mealsAPI = {

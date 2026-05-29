@@ -413,7 +413,7 @@ function hasNutritionData(p) {
 
 // Пропозиція ввести/відредагувати дані вручну.
 // prefillName — назва, яку вдалось зчитати (може бути порожня).
-function promptManualEntry(barcode, prefillName = '', message = 'Продукт не знайдено') {
+function promptManualEntry(barcode, prefillName = '', message = 'Продукт не знайдено', prefillBrand = '') {
   const statusEl = document.getElementById('scannerStatus');
   if (!statusEl) return;
 
@@ -430,7 +430,9 @@ function promptManualEntry(barcode, prefillName = '', message = 'Продукт 
   statusEl.querySelector('.scanner-modal__manual-cta').addEventListener('click', () => {
     closeScanner();
     document.dispatchEvent(
-      new CustomEvent('scanner:manualEntry', { detail: { barcode, name: prefillName } }),
+      new CustomEvent('scanner:manualEntry', {
+        detail: { barcode, name: prefillName, brand: prefillBrand },
+      }),
     );
   });
 }
@@ -456,7 +458,7 @@ async function handleBarcodeScan(barcode) {
         console.warn('Локальний запис без КБЖУ — пропонуємо ручне введення:', localProduct);
         const name =
           localProduct.name_ua || localProduct.name_en || localProduct.name_pl || '';
-        promptManualEntry(barcode, name, 'Дані відсутні — заповніть вручну');
+        promptManualEntry(barcode, name, 'Дані відсутні — заповніть вручну', localProduct.brand || '');
       }
       return;
     }
@@ -474,7 +476,7 @@ async function handleBarcodeScan(barcode) {
         console.warn('OFF повернув продукт без КБЖУ — не кешуємо:', offProduct);
         const name =
           offProduct.name_ua || offProduct.name_en || offProduct.name_pl || '';
-        promptManualEntry(barcode, name, 'Дані відсутні — заповніть вручну');
+        promptManualEntry(barcode, name, 'Дані відсутні — заповніть вручну', offProduct.brand || '');
       }
       return;
     }
