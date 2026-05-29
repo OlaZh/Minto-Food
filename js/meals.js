@@ -411,6 +411,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (scSugarInput) scSugarInput.value = product.sugar || 0;
     if (scSaltInput) scSaltInput.value = product.salt || 0;
 
+    // Підказка: якщо показуємо збережену правку самого користувача
+    const hintEl = scannedCard.querySelector('.scanned-card__hint');
+    if (hintEl) {
+      hintEl.textContent = product._hasPersonalCorrection
+        ? 'Ваші збережені значення · на 100 г · можна редагувати'
+        : 'На 100 г · можна редагувати';
+    }
+
     scannedCard.hidden = false;
 
     // Слухачі для оновлення selectedFood при редагуванні
@@ -927,6 +935,35 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // ================== ADD FOOD ==================
 
+  // Якщо користувач відредагував КБЖУ сканованого продукту — зберігаємо
+  // ОСОБИСТУ правку (не чіпаємо спільну scanned_products). Пишемо лише
+  // коли значення реально відрізняються від канонічних.
+  async function maybeSaveBarcodeCorrection(food, user) {
+    if (!user || !food || food.source !== 'barcode' || !food.barcode) return;
+
+    const canon = food._canonical;
+    if (!canon) return;
+
+    const keys = ['kcal', 'protein', 'fat', 'carbs', 'fiber', 'sugar', 'salt'];
+    const current = {};
+    keys.forEach((k) => {
+      current[k] = Number(food[k]) || 0;
+    });
+
+    const changed = keys.some((k) => Math.abs(current[k] - (Number(canon[k]) || 0)) > 0.05);
+    if (!changed) return;
+
+    try {
+      await supabase
+        .from('scanned_product_corrections')
+        .upsert([{ barcode: food.barcode, user_id: user.id, ...current, updated_at: new Date().toISOString() }], {
+          onConflict: 'barcode,user_id',
+        });
+    } catch (err) {
+      console.warn('Не вдалося зберегти правку продукту:', err);
+    }
+  }
+
   async function addSelectedFood() {
     if (!requireAuth()) return;
     if (!activeMealKey || !selectedFood) return;
@@ -978,6 +1015,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     if (!error) {
+      await maybeSaveBarcodeCorrection(selectedFood, user);
       closeModal();
       await loadMealsFromSupabase(currentSelectedDate);
     }

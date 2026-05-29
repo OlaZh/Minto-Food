@@ -45,7 +45,13 @@
       "PowerShell(if \\($?\\) { \"CSS compiled OK\" })",
       "Bash(grep -iE \"\\\\.html$|\\\\.sql$\")",
       "Bash(node --check js/barcode-scanner.js)",
-      "Bash(node --check js/meals.js)"
+      "Bash(node --check js/meals.js)",
+      "Bash(node -e \"const l=require\\('lucide-react'\\); console.log\\('ScanBarcode' in l ? 'ScanBarcode OK' : 'MISSING'\\)\")",
+      "Bash(echo \"exit: $?\")",
+      "Bash(npx eslint *)",
+      "Bash(node --check js/recipe-ingredients.js)",
+      "Bash(node --check js/recipe-modal.js)",
+      "Bash(echo \"compiled, exit: $?\")"
     ]
   }
 }

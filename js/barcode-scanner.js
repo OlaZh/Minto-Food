@@ -11,6 +11,8 @@ import { iconCheckCircle } from './icons.js';
 
 // ==================== STATE ====================
 let onProductFound = null;
+let askWeightMode = false; // true → після скану просимо вагу і повертаємо (product, grams)
+let modalBound = false; // чи вже навісили слухачі на модалку
 
 // Native detector state
 let nativeDetector = null;
@@ -30,12 +32,43 @@ let torchOn = false;
 // Формати ШК, які підтримуємо (grocery barcodes)
 const BARCODE_FORMATS = ['ean_13', 'ean_8', 'upc_a', 'upc_e', 'code_128', 'code_39'];
 
-// ==================== ІНІЦІАЛІЗАЦІЯ ====================
+// ==================== РОЗМІТКА МОДАЛКИ (для будь-якої сторінки) ====================
 
-export function initBarcodeScanner(callback) {
-  onProductFound = callback;
+const SCANNER_MODAL_HTML = `
+  <div id="scannerModal" class="scanner-modal" hidden>
+    <div class="scanner-modal__overlay"></div>
+    <div class="scanner-modal__content">
+      <header class="scanner-modal__header">
+        <h3 class="scanner-modal__title">📷 Сканер штрих-коду</h3>
+        <button id="closeScannerBtn" class="scanner-modal__close" type="button" aria-label="Закрити">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </header>
+      <div class="scanner-modal__body">
+        <div id="barcode-reader" class="scanner-modal__reader"></div>
+        <p id="scannerStatus" class="scanner-modal__status">Наведіть камеру на штрих-код</p>
+        <div class="scanner-modal__manual">
+          <p class="scanner-modal__manual-label">Або введіть код вручну:</p>
+          <div class="scanner-modal__manual-row">
+            <input type="text" id="manualBarcodeInput" class="scanner-modal__input" placeholder="Введіть штрих-код" inputmode="numeric" pattern="[0-9]*" />
+            <button id="manualBarcodeBtn" class="scanner-modal__submit" type="button">Знайти</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+`;
 
-  const barcodeBtn = document.getElementById('barcodeBtn');
+// Гарантує наявність модалки сканера в DOM + навішує внутрішні слухачі (1 раз).
+// Працює на будь-якій сторінці (recipes.html, week-menu.html тощо).
+function ensureScannerModal() {
+  if (!document.getElementById('scannerModal')) {
+    document.body.insertAdjacentHTML('beforeend', SCANNER_MODAL_HTML);
+  }
+
+  if (modalBound) return;
+  modalBound = true;
+
   const scannerModal = document.getElementById('scannerModal');
   const closeScannerBtn = document.getElementById('closeScannerBtn');
   const scannerOverlay = scannerModal?.querySelector('.scanner-modal__overlay');
@@ -43,40 +76,45 @@ export function initBarcodeScanner(callback) {
   const manualBarcodeBtn = document.getElementById('manualBarcodeBtn');
   const torchBtn = document.getElementById('torchBtn');
 
-  if (barcodeBtn) {
-    barcodeBtn.addEventListener('click', openScanner);
-  }
+  if (closeScannerBtn) closeScannerBtn.addEventListener('click', closeScanner);
+  if (scannerOverlay) scannerOverlay.addEventListener('click', closeScanner);
+  if (torchBtn) torchBtn.addEventListener('click', toggleTorch);
 
-  if (closeScannerBtn) {
-    closeScannerBtn.addEventListener('click', closeScanner);
-  }
-
-  if (scannerOverlay) {
-    scannerOverlay.addEventListener('click', closeScanner);
-  }
-
-  if (torchBtn) {
-    torchBtn.addEventListener('click', toggleTorch);
-  }
-
-  // Ручне введення штрих-коду
   if (manualBarcodeBtn && manualBarcodeInput) {
-    manualBarcodeBtn.addEventListener('click', () => {
+    const submitManual = () => {
       const barcode = manualBarcodeInput.value.trim();
-      if (barcode) {
-        handleBarcodeScan(barcode);
-      }
-    });
-
+      if (barcode) handleBarcodeScan(barcode);
+    };
+    manualBarcodeBtn.addEventListener('click', submitManual);
     manualBarcodeInput.addEventListener('keypress', (e) => {
-      if (e.key === 'Enter') {
-        const barcode = manualBarcodeInput.value.trim();
-        if (barcode) {
-          handleBarcodeScan(barcode);
-        }
-      }
+      if (e.key === 'Enter') submitManual();
     });
   }
+}
+
+// ==================== ІНІЦІАЛІЗАЦІЯ ====================
+
+// Для сторінки щоденника (index.html): кнопка #barcodeBtn → продукт у callback.
+export function initBarcodeScanner(callback) {
+  onProductFound = callback;
+  ensureScannerModal();
+
+  const barcodeBtn = document.getElementById('barcodeBtn');
+  if (barcodeBtn) {
+    barcodeBtn.addEventListener('click', () => {
+      askWeightMode = false;
+      openScanner();
+    });
+  }
+}
+
+// Універсальний виклик сканера з будь-якого місця.
+// callback отримує (product) або (product, grams) якщо askWeight=true.
+export function scanBarcode(callback, { askWeight = false } = {}) {
+  onProductFound = callback;
+  askWeightMode = askWeight;
+  ensureScannerModal();
+  openScanner();
 }
 
 // ==================== ВІДКРИТТЯ/ЗАКРИТТЯ СКАНЕРА ====================
@@ -156,6 +194,7 @@ export async function closeScanner() {
   }
 
   torchTrack = null;
+  askWeightMode = false;
 
   if (scannerModal) {
     scannerModal.hidden = true;
@@ -400,6 +439,59 @@ async function startFallbackScanner() {
 // ==================== ОБРОБКА ШТРИХ-КОДУ ====================
 // (логіка БД + Open Food Facts — залишена 1 в 1 як було)
 
+// Канонічні макро продукту (як у спільній БД), для порівняння з правками
+function canonicalMacros(p) {
+  return {
+    kcal: Number(p.kcal) || 0,
+    protein: Number(p.protein) || 0,
+    fat: Number(p.fat) || 0,
+    carbs: Number(p.carbs) || 0,
+    fiber: Number(p.fiber) || 0,
+    sugar: Number(p.sugar) || 0,
+    salt: Number(p.salt) || 0,
+  };
+}
+
+// Підтягуємо ОСОБИСТУ правку користувача (якщо є) і прикріплюємо канон.
+// Спільна scanned_products не змінюється — лише показ для цього юзера.
+async function resolveScannedProduct(product) {
+  const canonical = canonicalMacros(product);
+  const result = { ...product, _canonical: canonical };
+
+  if (!product.barcode) return result;
+
+  try {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return result;
+
+    const { data } = await supabase
+      .from('scanned_product_corrections')
+      .select('kcal, protein, fat, carbs, fiber, sugar, salt')
+      .eq('barcode', product.barcode)
+      .eq('user_id', user.id)
+      .maybeSingle();
+
+    if (data) {
+      Object.assign(result, {
+        kcal: data.kcal,
+        protein: data.protein,
+        fat: data.fat,
+        carbs: data.carbs,
+        fiber: data.fiber,
+        sugar: data.sugar,
+        salt: data.salt,
+        _hasPersonalCorrection: true,
+      });
+    }
+  } catch (err) {
+    console.debug('Не вдалося підтягнути особисту правку:', err);
+  }
+
+  return result;
+}
+
 // Чи має продукт хоч якісь дані КБЖУ (не порожнє зчитування)
 function hasNutritionData(p) {
   if (!p) return false;
@@ -416,6 +508,15 @@ function hasNutritionData(p) {
 function promptManualEntry(barcode, prefillName = '', message = 'Продукт не знайдено', prefillBrand = '') {
   const statusEl = document.getElementById('scannerStatus');
   if (!statusEl) return;
+
+  // У режимі ваги (рецепт) модалки ручного створення продукту немає —
+  // показуємо лише повідомлення, без кнопки.
+  if (askWeightMode) {
+    const nm = prefillName ? `<small class="scanner-modal__manual-name">${prefillName}</small><br>` : '';
+    statusEl.innerHTML = `${nm}<span>${message}. Спробуйте інший код або додайте інгредієнт текстом.</span>`;
+    statusEl.className = 'scanner-modal__status scanner-modal__status--error';
+    return;
+  }
 
   const nameLine = prefillName
     ? `<small class="scanner-modal__manual-name">${prefillName}</small><br>`
@@ -452,7 +553,7 @@ async function handleBarcodeScan(barcode) {
     if (localProduct) {
       if (hasNutritionData(localProduct)) {
         console.log('Знайдено локально:', localProduct);
-        onProductFoundHandler(localProduct);
+        onProductFoundHandler(await resolveScannedProduct(localProduct));
       } else {
         // Кешований "порожній" запис (лишок зі старих сканувань) → даємо виправити
         console.warn('Локальний запис без КБЖУ — пропонуємо ручне введення:', localProduct);
@@ -470,7 +571,7 @@ async function handleBarcodeScan(barcode) {
       if (hasNutritionData(offProduct)) {
         console.log('Знайдено в Open Food Facts:', offProduct);
         await saveToLocalDatabase(offProduct);
-        onProductFoundHandler(offProduct);
+        onProductFoundHandler(await resolveScannedProduct(offProduct));
       } else {
         // Назва є, але КБЖУ нулі → НЕ зберігаємо сміття, пропонуємо ввести вручну
         console.warn('OFF повернув продукт без КБЖУ — не кешуємо:', offProduct);
@@ -561,8 +662,15 @@ async function saveToLocalDatabase(product) {
 }
 
 function onProductFoundHandler(product) {
-  const statusEl = document.getElementById('scannerStatus');
   const displayName = product.name_ua || product.name_en || product.name_pl || 'Без назви';
+
+  // Режим ваги (рецепт): показуємо поле ваги, повертаємо (product, grams)
+  if (askWeightMode) {
+    renderWeightPrompt({ ...product, name: displayName, name_ua: product.name_ua || displayName });
+    return;
+  }
+
+  const statusEl = document.getElementById('scannerStatus');
   const brandText = product.brand ? ` (${product.brand})` : '';
 
   if (statusEl) {
@@ -585,4 +693,46 @@ function onProductFoundHandler(product) {
       });
     }
   }, 1000);
+}
+
+// Поле вводу ваги прямо в сканері (для рецептів). Камеру призупиняємо.
+function renderWeightPrompt(product) {
+  // Призупиняємо live-детекцію (native вже зупинено в detectLoop; fallback — pause)
+  if (html5QrCode && isFallbackScanning) {
+    try { html5QrCode.pause(true); } catch {}
+  }
+
+  const statusEl = document.getElementById('scannerStatus');
+  if (!statusEl) return;
+
+  const brandText = product.brand ? ` · ${product.brand}` : '';
+  statusEl.innerHTML = `
+    <span class="scanner-modal__success">${iconCheckCircle} ${product.name}${brandText}</span>
+    <small>${product.kcal} ккал · Б${product.protein} · Ж${product.fat} · В${product.carbs} (на 100 г)</small>
+    <div class="scanner-modal__weight-row">
+      <input type="number" id="scanWeightInput" class="scanner-modal__input" placeholder="Вага, г" inputmode="numeric" min="1" step="1" />
+      <button id="scanWeightAddBtn" class="scanner-modal__submit" type="button">Додати</button>
+    </div>
+  `;
+  statusEl.className = 'scanner-modal__status scanner-modal__status--success';
+
+  const input = document.getElementById('scanWeightInput');
+  const addBtn = document.getElementById('scanWeightAddBtn');
+
+  const submit = () => {
+    const grams = Number(input.value);
+    if (!grams || grams <= 0) {
+      input.focus();
+      return;
+    }
+    const cb = onProductFound;
+    closeScanner();
+    if (typeof cb === 'function') cb(product, grams);
+  };
+
+  addBtn.addEventListener('click', submit);
+  input.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') submit();
+  });
+  setTimeout(() => input.focus(), 50);
 }

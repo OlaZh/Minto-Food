@@ -10,11 +10,11 @@
 .smart-import__input,             /* Пошук у базі */
 #recipe-image,
 #recipe-image-url {
-  width: 100%; 
-  padding: 14px 16px;
+  width: 100%;
+  padding: 10px 14px;
   background: var(--color-bg-primary);
   border: 1px solid var(--color-border);
-  border-radius: 14px;
+  border-radius: 12px;
   color: var(--color-text-primary);
   font-family: inherit;
   outline: none;
@@ -36,13 +36,13 @@
 .preview-form textarea,
 .recipe-section--notes textarea {
   width: 100%;
-  min-height: 160px;
-  line-height: 1.6;
+  min-height: 90px;
+  line-height: 1.5;
   background-color: var(--color-bg-secondary);
   border: 1px solid var(--color-border);
   border-left: 4px solid #7a9a9a;
-  font-size: 15px;
-  padding: 18px;
+  font-size: 14px;
+  padding: 12px 14px;
   box-sizing: border-box;
   display: block;
   border-radius: 12px;

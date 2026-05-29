@@ -118,6 +118,9 @@
 }
 
 .modal__barcode-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   padding: 10px 12px;
 
   border-radius: 12px;
@@ -428,20 +431,20 @@
 .modal-card {
   position: relative;
   width: 100%;
-  max-width: 650px;
+  max-width: 460px;
   height: auto;
 
-  margin: 20px auto 40px;
-  padding: 40px;
+  margin: 16px auto 24px;
+  padding: 24px;
 
   background: var(--color-surface);
-  border-radius: 24px;
+  border-radius: 18px;
   box-shadow: 0 20px 50px rgba(46, 204, 113, 0.1);
 
   &__close {
     position: absolute;
-    top: 20px;
-    right: 20px;
+    top: 16px;
+    right: 16px;
 
     background: none;
     border: none;
@@ -457,25 +460,26 @@
 
   &__header {
     text-align: center;
-    margin-bottom: 32px;
+    margin-bottom: 18px;
 
     h2 {
-      font-size: 24px;
-      margin-bottom: 8px;
+      font-size: 19px;
+      margin-bottom: 4px;
     }
 
     p {
+      font-size: 13px;
       color: var(--color-text-secondary);
     }
   }
 
   textarea {
     width: 100%;
-    min-height: 160px;
+    min-height: 90px;
 
-    padding: 18px;
-    line-height: 1.6;
-    font-size: 15px;
+    padding: 12px 14px;
+    line-height: 1.5;
+    font-size: 14px;
 
     background-color: var(--color-bg-secondary);
     border: 1px solid var(--color-border);
@@ -615,6 +619,14 @@
   &__success {
     font-weight: 600;
     font-size: 15px;
+  }
+
+  // Рядок вводу ваги (режим додавання інгредієнта в рецепт)
+  &__weight-row {
+    display: flex;
+    gap: 8px;
+    width: 100%;
+    margin-top: 10px;
   }
 
   &__manual-cta {

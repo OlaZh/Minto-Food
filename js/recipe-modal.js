@@ -7,6 +7,7 @@ import { supabase } from './supabaseClient.js';
 import {
   initIngredientBuilder,
   getIngredients,
+  getIngredientsText,
   getTotals,
   clearIngredients,
   setLanguage,
@@ -395,6 +396,7 @@ async function saveRecipe() {
     carbs: parseFloat(totals.carbs.toFixed(1)) || 0,
     fiber: parseFloat((totals.fiber || 0).toFixed(1)),
     category: document.getElementById('rm-category')?.value,
+    ingredients: getIngredientsText(),
     steps: stepsVal,
     image: finalImage,
     user_id: user.id,

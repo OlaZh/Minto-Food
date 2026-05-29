@@ -6,6 +6,54 @@
   gap: 12px;
 }
 
+.ingredient-builder__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.ingredient-builder__parse-btn,
+.ingredient-builder__scan-btn,
+.ingredient-builder__clear-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 9px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
+
+  &:hover {
+    border-color: var(--color-accent);
+  }
+
+  &:active {
+    transform: translateY(1px);
+  }
+}
+
+.ingredient-builder__parse-btn {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: var(--color-text-inverse);
+}
+
+.ingredient-builder__scan-btn {
+  flex: 1;
+  min-width: 120px;
+}
+
+.ingredient-builder__clear-btn {
+  color: var(--color-text-secondary);
+}
+
 .ingredient-builder__search-row {
   display: flex;
   gap: 8px;

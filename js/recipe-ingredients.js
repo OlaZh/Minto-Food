@@ -5,7 +5,8 @@
 
 import { supabase } from './supabaseClient.js';
 import { parseIngredientsText, findProductMatch, findAllMatches } from './parse-food.js';
-import { iconCheck, iconClose } from './icons.js';
+import { iconCheck, iconClose, iconScan } from './icons.js';
+import { scanBarcode } from './barcode-scanner.js';
 
 let ingredientsList = [];
 let onIngredientsChange = null;
@@ -19,6 +20,7 @@ const i18nIngredients = {
     pasteIngredients: 'Вставте список інгредієнтів...',
     parseBtn: 'Розпізнати',
     parsing: 'Розпізнаю...',
+    scanBtn: 'Сканувати',
     unitG: 'г',
     kcal: 'ккал',
     total: 'Разом:',
@@ -37,6 +39,7 @@ const i18nIngredients = {
     pasteIngredients: 'Paste ingredient list...',
     parseBtn: 'Parse',
     parsing: 'Parsing...',
+    scanBtn: 'Scan',
     unitG: 'g',
     kcal: 'kcal',
     total: 'Total:',
@@ -55,6 +58,7 @@ const i18nIngredients = {
     pasteIngredients: 'Wklej listę składników...',
     parseBtn: 'Rozpoznaj',
     parsing: 'Rozpoznaję...',
+    scanBtn: 'Skanuj',
     unitG: 'g',
     kcal: 'kcal',
     total: 'Razem:',
@@ -104,6 +108,9 @@ export function initIngredientBuilder(containerSelector, onChange, lang = 'ua') 
         <div class="ingredient-builder__actions">
           <button type="button" class="ingredient-builder__parse-btn" id="parseIngredientsBtn">
             ${t('parseBtn')}
+          </button>
+          <button type="button" class="ingredient-builder__scan-btn" id="scanIngredientBtn">
+            ${iconScan} ${t('scanBtn')}
           </button>
           <button type="button" class="ingredient-builder__clear-btn" id="clearIngredientsBtn">
             ${t('clearAll')}
@@ -170,10 +177,16 @@ function getProductWeight(productId, size = 'medium') {
 function initEventListeners() {
   const parseBtn = document.getElementById('parseIngredientsBtn');
   const clearBtn = document.getElementById('clearIngredientsBtn');
+  const scanBtn = document.getElementById('scanIngredientBtn');
   const textarea = document.getElementById('ingredientTextarea');
 
   parseBtn?.addEventListener('click', () => {
     parseAndAddIngredients(textarea?.value || '');
+  });
+
+  // Сканування штрихкоду → вага → інгредієнт із бренд-специфічними КБЖУ
+  scanBtn?.addEventListener('click', () => {
+    scanBarcode(addScannedIngredient, { askWeight: true });
   });
 
   clearBtn?.addEventListener('click', () => {
@@ -267,6 +280,44 @@ async function parseAndAddIngredients(text) {
   } finally {
     if (parseBtn) parseBtn.textContent = originalText || t('parseBtn');
   }
+}
+
+// ==================== ДОДАВАННЯ ВІДСКАНОВАНОГО ІНГРЕДІЄНТА ====================
+
+// product — об'єкт зі сканера (КБЖУ на 100 г), grams — введена вага
+function addScannedIngredient(product, grams) {
+  if (!product || !grams || grams <= 0) return;
+
+  const factor = grams / 100;
+  const displayName = getProductName(product) || product.name || product.name_ua || 'Продукт';
+  const brandSuffix = product.brand ? ` ${product.brand}` : '';
+
+  const ingredient = {
+    id: null, // не з таблиці products → не пишемо в product_recipe, лише текст + КБЖУ
+    name_ua: product.name_ua || displayName,
+    name_en: product.name_en || null,
+    name_pl: product.name_pl || null,
+    original: `${displayName}${brandSuffix} — ${grams} ${t('unitG')}`,
+    weight: grams,
+    parsedAmount: grams,
+    parsedUnit: t('unitG'),
+    unit: 'g',
+    kcal: Math.round((product.kcal || 0) * factor),
+    protein: parseFloat(((product.protein || 0) * factor).toFixed(1)),
+    fat: parseFloat(((product.fat || 0) * factor).toFixed(1)),
+    carbs: parseFloat(((product.carbs || 0) * factor).toFixed(1)),
+    fiber: parseFloat(((product.fiber || 0) * factor).toFixed(1)),
+    matched: true,
+    fromBarcode: true,
+    barcode: product.barcode || null,
+    brand: product.brand || null,
+    originalQuery: displayName,
+  };
+
+  ingredientsList.push(ingredient);
+  renderIngredientsList();
+  updateTotals();
+  notifyChange();
 }
 
 // ==================== ВИДАЛЕННЯ ІНГРЕДІЄНТА ====================
@@ -436,6 +487,24 @@ export function getIngredients() {
   return ingredientsList;
 }
 
+// Текстовий список інгредієнтів для збереження в recipes.ingredients
+// (зберігає оригінальні рядки, відскановані бренд-продукти — окремими рядками)
+export function getIngredientsText() {
+  return ingredientsList
+    .map((ing) => {
+      if (ing.fromBarcode) {
+        const brand = ing.brand ? ` ${ing.brand}` : '';
+        const name = getProductName(ing) || ing.name_ua || '';
+        return `${name}${brand} — ${ing.weight} ${t('unitG')}`;
+      }
+      if (ing.original) return ing.original;
+      const name = getProductName(ing) || ing.name_ua || '';
+      return ing.weight ? `${name} — ${ing.weight} ${t('unitG')}` : name;
+    })
+    .filter(Boolean)
+    .join('\n');
+}
+
 export function getTotals() {
   return ingredientsList.reduce(
     (acc, ing) => {
@@ -474,6 +543,9 @@ export function setLanguage(lang) {
 
     const parseBtn = document.getElementById('parseIngredientsBtn');
     if (parseBtn) parseBtn.textContent = t('parseBtn');
+
+    const scanBtn = document.getElementById('scanIngredientBtn');
+    if (scanBtn) scanBtn.innerHTML = `${iconScan} ${t('scanBtn')}`;
 
     const clearBtn = document.getElementById('clearIngredientsBtn');
     if (clearBtn) clearBtn.textContent = t('clearAll');
