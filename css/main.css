@@ -2672,15 +2672,27 @@ svg[viewBox="0 0 24 24"] {
   outline-offset: 2px;
 }
 
-/* ---------- Create-product macros grid ---------- */
+/* ---------- Create-product form ---------- */
+/* Поле назви — на всю ширину, лейбл над інпутом */
+.modal__form > .modal__field {
+  display: block;
+  margin-bottom: 14px;
+}
+.modal__form > .modal__field .modal__label {
+  display: block;
+  margin-bottom: 6px;
+}
+.modal__form > .modal__field .modal__input {
+  width: 100%;
+}
+
 .modal__macros-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px 12px;
   margin: 6px 0 16px;
 }
-
-.modal__field {
+.modal__macros-grid .modal__field {
   display: flex;
   align-items: center;
   gap: 6px;
