@@ -1319,7 +1319,7 @@ function initActivityChart() {
       animations: { enabled: true, speed: 400 },
       dropShadow: { enabled: true, top: 4, blur: 8, opacity: 0.12 },
     },
-    plotOptions: { bar: { borderRadius: 5, columnWidth: '70%' } },
+    plotOptions: { bar: { borderRadius: 5, columnWidth: '55%' } },
     fill: {
       type: 'gradient',
       gradient: { shade: 'light', type: 'vertical', shadeIntensity: 0.12, opacityFrom: 1, opacityTo: 0.75, stops: [0, 100] },
@@ -1344,7 +1344,7 @@ function initActivityChart() {
         style: { colors: '#9ca3af', fontSize: '10px' },
       },
     },
-    grid: { borderColor: 'rgba(156,163,175,0.12)', strokeDashArray: 3 },
+    grid: { borderColor: 'rgba(156,163,175,0.12)', strokeDashArray: 3, padding: { right: 24, left: 8 } },
     legend: { show: false },
     tooltip: { theme: isDark ? 'dark' : 'light', y: { formatter: (v) => v + ' ккал' } },
     noData: { text: 'Немає активностей', style: { color: '#9ca3af', fontSize: '14px' } },

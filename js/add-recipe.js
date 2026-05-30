@@ -15,6 +15,9 @@ import {
   iconPasta, iconSauce, iconSandwich, iconCasserole, iconPancakes, iconOmelet,
   iconSmoothie, iconBoil, iconOven, iconSteam, iconGrill, iconStew, iconSoak,
   iconLeafRaw, iconAlert, iconScale, iconClose, iconStar, iconStarFilled, iconCalendar,
+  iconProtein, iconLowCarb, iconLowCal, iconLowFat, iconVeg, iconSprout,
+  iconNoGluten, iconNoLactose, iconAvocado, iconDiabetic, iconHealthy,
+  iconBolt, iconKid, iconWallet, iconNoCook, iconBento, iconCandle,
 } from './icons.js';
 import {
   initBookSelector,
@@ -279,6 +282,32 @@ const selectedFilters = {};
 // id вкладки, яка зараз відкрита (зберігається між перебудовами панелі)
 let _activeFilterTab = null;
 
+const TAG_ICON_MAP = {
+  high_protein: iconProtein,
+  low_carb: iconLowCarb,
+  low_calorie: iconLowCal,
+  low_fat: iconLowFat,
+  vegetarian: iconVeg,
+  vegan: iconSprout,
+  gluten_free: iconNoGluten,
+  lactose_free: iconNoLactose,
+  keto: iconAvocado,
+  diabetic: iconDiabetic,
+  pp: iconHealthy,
+  quick: iconBolt,
+  kids: iconKid,
+  budget: iconWallet,
+  no_cook: iconNoCook,
+  meal_prep: iconBento,
+  no_power: iconCandle,
+};
+
+function getTagIconMarkup(tag) {
+  const mappedIcon = TAG_ICON_MAP[tag.code];
+  if (mappedIcon) return mappedIcon;
+  return typeof tag.icon === 'string' && tag.icon.includes('<svg') ? tag.icon : '';
+}
+
 function hasActiveFilters() {
   return Object.values(selectedFilters).some((s) => s.size > 0);
 }
@@ -473,11 +502,12 @@ async function buildFilterPanel() {
           const count = tagCounts[tag.id] || 0;
           const isChecked = selectedFilters[groupInfo.id]?.has(tag.id) || false;
           const tagName = tag[nameField] || tag.name_ua;
+          const tagIcon = getTagIconMarkup(tag);
 
           const item = document.createElement('button');
           item.type = 'button';
           item.className = 'subfilter-item' + (isChecked ? ' is-active' : '');
-          item.innerHTML = `${tag.icon ? tag.icon + ' ' : ''}${tagName}${count > 0 ? ` <span style="opacity:.55;font-size:11px;font-weight:600">${count}</span>` : ''}`;
+          item.innerHTML = `${tagIcon ? tagIcon + ' ' : ''}${tagName}${count > 0 ? ` <span style="opacity:.55;font-size:11px;font-weight:600">${count}</span>` : ''}`;
 
           item.addEventListener('click', (e) => {
             e.stopPropagation();
