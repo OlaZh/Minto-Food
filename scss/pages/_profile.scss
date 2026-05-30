@@ -2214,15 +2214,21 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      background: var(--color-accent-soft);
-      color: var(--color-accent);
+      /* насичений фон + білий текст для чіткого контрасту на блідому фоні */
+      background: var(--color-accent);
+      color: #fff;
       border-radius: 10px;
+
+      .nav-icon {
+        color: #fff;
+      }
 
       &::after {
         content: '▾';
         font-size: 16px;
         margin-left: 8px;
         display: inline;
+        color: #fff;
         transition: transform 0.2s;
       }
     }
@@ -2233,11 +2239,12 @@
     position: absolute;
     top: 0;
     left: 0;
-    right: 0;
+    width: 100%;
+    box-sizing: border-box;
     background: var(--color-surface);
     border: 1px solid var(--color-border);
     border-radius: 12px;
-    padding: 6px 8px;
+    padding: 6px;
     box-shadow: 0 12px 32px rgba(0, 0, 0, 0.18);
     z-index: 100;
 
