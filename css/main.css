@@ -299,15 +299,15 @@ svg[viewBox="0 0 24 24"] {
 
 :root {
   /* Backgrounds */
-  --color-bg-primary: #8ebea3;
-  --color-bg-secondary: #bce3cb;
+  --color-bg-primary: #a6d6b8;
+  --color-bg-secondary: #c8ead5;
   --color-bg-sidebar: #89b89c;
   --color-bg-hover: rgba(74, 181, 132, 0.15);
   /* Gradient bg stops (light theme) */
-  --color-bg-gradient-mid: #79ab91;
-  --color-bg-gradient-end: #5d9278;
+  --color-bg-gradient-mid: #5d9e78;
+  --color-bg-gradient-end: #2d6b4a;
   /* Surface */
-  --color-surface: #bce3cb;
+  --color-surface: #c8ead5;
   /* Accent (МʼЯТНИЙ, НЕ СИНІЙ) */
   --color-accent: #4ab584;
   --color-accent-hover: #3d9d70;
