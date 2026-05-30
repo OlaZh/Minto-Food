@@ -8,6 +8,7 @@ import {
   iconHike, iconTennis, iconBall, iconStretch, iconGarden, iconElliptical,
   iconPlus, iconBarChart, iconCheckCircle, iconAlert, iconXCircle,
   iconSalad, iconScale, iconCalendar, iconTarget, iconFlame, iconSprout,
+  iconUser, iconSettings,
 } from './icons.js';
 import { initAuth, requireAuth, getCurrentUser, openAuthModal, signOut } from './auth.js';
 import { showToast } from './utils.js';
@@ -760,7 +761,7 @@ async function updateProfileHeader(user) {
     .from('profiles')
     .select('display_name, full_name')
     .eq('id', user.id)
-    .single();
+    .maybeSingle();
 
   const name =
     profileData?.display_name ||
@@ -1323,6 +1324,20 @@ function initActivityChart() {
 // PROFILE TABS
 // =====================================
 
+function initSidebarIcons() {
+  const map = {
+    profileData:   { icon: iconUser,     label: 'Мої дані' },
+    weightControl: { icon: iconScale,    label: 'Контроль ваги' },
+    activity:      { icon: iconRun,      label: 'Активність' },
+    statistics:    { icon: iconBarChart, label: 'Статистика' },
+    settings:      { icon: iconSettings, label: 'Налаштування' },
+  };
+  document.querySelectorAll('.profile-sidebar__item[data-tab]').forEach(btn => {
+    const entry = map[btn.dataset.tab];
+    if (entry) btn.innerHTML = `<span class="nav-icon">${entry.icon}</span>${entry.label}`;
+  });
+}
+
 function initProfileTabs() {
   const buttons = document.querySelectorAll('.profile-sidebar__item');
   const sections = document.querySelectorAll('[data-profile-section]');
@@ -1331,6 +1346,10 @@ function initProfileTabs() {
     console.warn('initProfileTabs: не знайдено кнопок або секцій');
     return;
   }
+
+  // Захист від подвійної ініціалізації
+  if (buttons[0]?.dataset.tabInit) return;
+  buttons.forEach(b => b.dataset.tabInit = '1');
 
   function showSection(section) {
     section.removeAttribute('hidden');
@@ -1346,6 +1365,10 @@ function initProfileTabs() {
     else hideSection(section);
   });
 
+  buttons.forEach(b => {
+    b.classList.remove('active');
+    b.setAttribute('aria-selected', 'false');
+  });
   buttons[0]?.classList.add('active');
   buttons[0]?.setAttribute('aria-selected', 'true');
 
@@ -1743,6 +1766,7 @@ async function initProfile() {
   await loadProfileStreak(user.id);
 
   initWeightChart();
+  initSidebarIcons();
   initProfileTabs();
   initSettings(user);
 }
