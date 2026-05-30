@@ -19,7 +19,7 @@
   </head>
 
   <body class="page page--profile">
-                                        <header class="header">
+                                        ﻿    ﻿    ﻿    <header class="header">
       <div class="header__container">
         <a href="index.html" class="header__logo"
           ><img src="img/logo.svg" alt="Logo" data-i18n="logo" class="logo--default"
@@ -752,59 +752,99 @@
             <h2 class="profile-section-title" data-i18n="statisticsTitle">Статистика</h2>
 
             <div class="profile-statistics-grid">
-              <div class="profile-card" aria-labelledby="balanceTitle">
-                <h3 id="balanceTitle" class="profile-card__title" data-i18n="statsBalanceTitle">
-                  Баланс страв
-                </h3>
+
+              <!-- 1. Баланс страв -->
+              <div class="profile-card stats-card" aria-labelledby="balanceTitle">
+                <div class="stats-card__header">
+                  <h3 id="balanceTitle" class="stats-card__title">Баланс страв</h3>
+                  <span class="stats-card__badge">за тиждень</span>
+                </div>
                 <div id="balancePieChart"></div>
-              </div>
-
-              <div class="profile-card" aria-labelledby="kbjuTitle">
-                <h3 id="kbjuTitle" class="profile-card__title" data-i18n="statsKbjuTitle">
-                  Динаміка КБЖУ
-                </h3>
-                <div id="kbjuLineChart"></div>
-              </div>
-
-              <div class="profile-card" aria-labelledby="usefulnessTitle">
-                <h3
-                  id="usefulnessTitle"
-                  class="profile-card__title"
-                  data-i18n="statsUsefulnessTitle">
-                  Корисність страв
-                </h3>
-                <div id="usefulnessBarChart"></div>
-              </div>
-
-              <div class="profile-card" aria-labelledby="compareTitle">
-                <h3 id="compareTitle" class="profile-card__title" data-i18n="statsCompareTitle">
-                  Порівняння тижнів
-                </h3>
-                <div class="profile-compare">
-                  <div id="lastWeekChart"></div>
-                  <div id="thisWeekChart"></div>
+                <div class="stats-macro-legend" id="balanceLegend">
+                  <span class="stats-macro-dot" style="--dot-color:#6fcfba"></span><span class="stats-macro-name">Білки</span><span class="stats-macro-val" id="legendProtein">—</span>
+                  <span class="stats-macro-dot" style="--dot-color:#f5a623"></span><span class="stats-macro-name">Жири</span><span class="stats-macro-val" id="legendFat">—</span>
+                  <span class="stats-macro-dot" style="--dot-color:#7b9cda"></span><span class="stats-macro-name">Вуглеводи</span><span class="stats-macro-val" id="legendCarbs">—</span>
                 </div>
               </div>
 
-              <div class="profile-card" aria-labelledby="topsTitle">
-                <h3 id="topsTitle" class="profile-card__title" data-i18n="statsTopsTitle">
-                  Топи тижня
-                </h3>
-                <ul class="profile-tops">
-                  <li><span class="profile-tops__label"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg></span>Найчастіше готувала:</span> <span id="topCooked">—</span></li>
-                  <li><span class="profile-tops__label"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3C8.93 6.86 9.78 4.95 12 3c.5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.15.43-2.29 1-3a2.5 2.5 0 0 0 2.5 2.5z"></path></svg></span>Найкалорійніша страва:</span> <span id="topCaloric">—</span></li>
-                  <li><span class="profile-tops__label"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 13h18a9 9 0 0 1-18 0Z"></path><path d="M7 13c-1-3 1-5 4-5M12 13c0-3 2-5 5-4"></path><path d="M14 9c.7-.5 1.5-.5 2.5 0"></path></svg></span>Найкорисніша страва:</span> <span id="topHealthy">—</span></li>
+              <!-- 2. Динаміка КБЖУ -->
+              <div class="profile-card stats-card" aria-labelledby="kbjuTitle">
+                <div class="stats-card__header">
+                  <h3 id="kbjuTitle" class="stats-card__title">Динаміка КБЖУ</h3>
+                  <span class="stats-card__badge">ккал / день</span>
+                </div>
+                <div id="kbjuLineChart"></div>
+              </div>
+
+              <!-- 3. Корисність страв -->
+              <div class="profile-card stats-card" aria-labelledby="usefulnessTitle">
+                <div class="stats-card__header">
+                  <h3 id="usefulnessTitle" class="stats-card__title">Корисність страв</h3>
+                  <span class="stats-card__badge">за прийомами</span>
+                </div>
+                <div id="usefulnessBarChart"></div>
+              </div>
+
+              <!-- 4. Порівняння тижнів -->
+              <div class="profile-card stats-card" aria-labelledby="compareTitle">
+                <div class="stats-card__header">
+                  <h3 id="compareTitle" class="stats-card__title">Порівняння тижнів</h3>
+                </div>
+                <div class="profile-compare">
+                  <div class="profile-compare__item">
+                    <div id="lastWeekChart"></div>
+                    <div class="profile-compare__label">Минулий тиждень</div>
+                  </div>
+                  <div class="profile-compare__center">
+                    <div class="profile-compare__delta" id="compareDelta">—</div>
+                    <div class="profile-compare__pct" id="comparePct">—</div>
+                  </div>
+                  <div class="profile-compare__item">
+                    <div id="thisWeekChart"></div>
+                    <div class="profile-compare__label">Цей тиждень</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 5. Топи тижня -->
+              <div class="profile-card stats-card" aria-labelledby="topsTitle">
+                <div class="stats-card__header">
+                  <h3 id="topsTitle" class="stats-card__title">Топи тижня</h3>
+                </div>
+                <ol class="stats-tops" id="statsTopsListEl">
+                  <li class="stats-tops__item">
+                    <span class="stats-tops__rank stats-tops__rank--gold">★</span>
+                    <span class="stats-tops__name" id="topCooked">—</span>
+                    <span class="stats-tops__count" id="topCookedCount"></span>
+                  </li>
+                  <li class="stats-tops__item">
+                    <span class="stats-tops__rank">2</span>
+                    <span class="stats-tops__name" id="topCaloric">—</span>
+                    <span class="stats-tops__count" id="topCaloricCount"></span>
+                  </li>
+                  <li class="stats-tops__item">
+                    <span class="stats-tops__rank">3</span>
+                    <span class="stats-tops__name" id="topHealthy">—</span>
+                    <span class="stats-tops__count" id="topHealthyCount"></span>
+                  </li>
+                </ol>
+              </div>
+
+              <!-- 6. Рекомендації -->
+              <div class="profile-card stats-card" aria-labelledby="tipsTitle">
+                <div class="stats-card__header">
+                  <h3 id="tipsTitle" class="stats-card__title">Рекомендації</h3>
+                </div>
+                <ul class="stats-tips" id="statsTipsList">
+                  <li class="stats-tips__item">
+                    <span class="stats-tips__icon">
+                      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="m9 12 2 2 4-4"/></svg>
+                    </span>
+                    <span class="stats-tips__text">Дані завантажуються...</span>
+                  </li>
                 </ul>
               </div>
 
-              <div class="profile-card" aria-labelledby="tipsTitle">
-                <h3 id="tipsTitle" class="profile-card__title" data-i18n="statsTipsTitle">
-                  Рекомендації
-                </h3>
-                <ul class="profile-tips" id="statsTipsList">
-                  <li>Дані завантажуються...</li>
-                </ul>
-              </div>
             </div>
 
             <p class="medical-disclaimer">
@@ -947,7 +987,7 @@
     </div>
     </main>
 
-                                        <footer class="site-footer">
+                                        ﻿    ﻿    ﻿    <footer class="site-footer">
       <div class="site-footer__inner">
 
         <div class="site-footer__brand">

@@ -348,94 +348,138 @@ async function initStatisticsCharts() {
   thisWeek.forEach((r) => {
     if (r.name) nameCounts[r.name] = (nameCounts[r.name] || 0) + 1;
   });
-  const topCooked = Object.entries(nameCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || '—';
-  const topCaloric =
-    thisWeek.reduce((best, r) => (Number(r.kcal) > Number(best?.kcal || 0) ? r : best), null)
-      ?.name || '—';
-  const topHealthy =
-    thisWeek
-      .filter((r) => r.kcal > 0)
-      .reduce((best, r) => {
-        const ratio = Number(r.protein) / Number(r.kcal);
-        return ratio > (best.ratio || 0) ? { name: r.name, ratio } : best;
-      }, {})?.name || '—';
+  const topCookedEntry = Object.entries(nameCounts).sort((a, b) => b[1] - a[1])[0];
+  const topCookedName = topCookedEntry?.[0] || '—';
+  const topCookedCount = topCookedEntry?.[1] || 0;
+
+  const topCaloricRow = thisWeek.reduce(
+    (best, r) => (Number(r.kcal) > Number(best?.kcal || 0) ? r : best),
+    null,
+  );
+  const topCaloricName = topCaloricRow?.name || '—';
+  const topCaloricKcal = topCaloricRow ? Math.round(Number(topCaloricRow.kcal)) : 0;
+
+  const topHealthyRow = thisWeek
+    .filter((r) => r.kcal > 0)
+    .reduce((best, r) => {
+      const ratio = Number(r.protein) / Number(r.kcal);
+      return ratio > (best.ratio || 0) ? { name: r.name, ratio, kcal: r.kcal } : best;
+    }, {});
+  const topHealthyName = topHealthyRow?.name || '—';
 
   const setEl = (id, val) => {
     const el = document.getElementById(id);
     if (el) el.textContent = val;
   };
-  setEl('topCooked', topCooked);
-  setEl('topCaloric', topCaloric);
-  setEl('topHealthy', topHealthy);
+  setEl('topCooked', topCookedName);
+  setEl('topCaloric', topCaloricName);
+  setEl('topHealthy', topHealthyName);
+  if (topCookedCount > 0) setEl('topCookedCount', topCookedCount + '×');
+  if (topCaloricKcal > 0) setEl('topCaloricCount', topCaloricKcal + ' ккал');
+
+  // ─── Легенда макро ───────────────────────────────────────
+  const { protein: tp, fat: tf, carbs: tc } = thisTotals;
+  setEl('legendProtein', Math.round(tp) + ' г');
+  setEl('legendFat', Math.round(tf) + ' г');
+  setEl('legendCarbs', Math.round(tc) + ' г');
+
+  // ─── Дельта порівняння ───────────────────────────────────
+  const thisTotal = thisTotals.kcal;
+  const lastTotal = lastTotals.kcal;
+  const deltaKcal = Math.round(thisTotal - lastTotal);
+  const deltaPct = lastTotal > 0 ? Math.round((deltaKcal / lastTotal) * 100) : 0;
+  const deltaEl = document.getElementById('compareDelta');
+  const pctEl = document.getElementById('comparePct');
+  if (deltaEl) {
+    deltaEl.textContent = (deltaKcal >= 0 ? '+' : '') + deltaKcal + ' г';
+    deltaEl.className = 'profile-compare__delta ' + (deltaKcal >= 0 ? 'pos' : 'neg');
+  }
+  if (pctEl) {
+    pctEl.textContent = (deltaPct >= 0 ? '+' : '') + deltaPct + '%';
+  }
 
   // ─── Рекомендації ────────────────────────────────────────
   const tipsList = document.getElementById('statsTipsList');
   if (tipsList && thisWeek.length > 0) {
     const tips = [];
-    const { protein: tp, fat: tf, carbs: tc, kcal: tk } = thisTotals;
-    const total = tp + tf + tc;
-    if (total > 0) {
-      const protPct = tp / total;
-      const fatPct = tf / total;
-      if (protPct < 0.2) tips.push('Додай більше білкових страв — їх частка менше 20%');
-      if (fatPct > 0.4) tips.push('Жири займають понад 40% — спробуй легші вечері');
-      if (protPct >= 0.25 && fatPct <= 0.35) tips.push('Чудовий баланс БЖВ цього тижня');
+    const { protein: tp2, fat: tf2, carbs: tc2, kcal: tk2 } = thisTotals;
+    const macroTotal = tp2 + tf2 + tc2;
+    if (macroTotal > 0) {
+      const protPct = tp2 / macroTotal;
+      const fatPct = tf2 / macroTotal;
+      if (protPct >= 0.25 && fatPct <= 0.35)
+        tips.push({ title: 'Чудовий баланс БЖВ цього тижня', sub: 'Білки, жири та вуглеводи у здоровому співвідношенні' });
+      if (protPct < 0.2)
+        tips.push({ title: 'Додай більше білкових страв', sub: 'Їх частка менше 20% — спробуй м\'ясо, яйця, бобові' });
+      if (fatPct > 0.4)
+        tips.push({ title: 'Жири займають понад 40%', sub: 'Спробуй легші вечері або менше олії' });
     }
-    const avgKcal = tk / 7;
+    const avgKcal = tk2 / 7;
     if (avgKcal > 0 && avgKcal < 1200)
-      tips.push('Середня калорійність дуже низька — стеж за нормою');
-    if (mealTypeCounts.breakfast < 3)
-      tips.push('Сніданок — найважливіший прийом: цього тижня лише ' + mealTypeCounts.breakfast);
-    if (tips.length === 0) tips.push('Все виглядає збалансовано, продовжуй у тому ж дусі');
-    tipsList.innerHTML = tips.map((t) => `<li>${t}</li>`).join('');
+      tips.push({ title: 'Калорійність дуже низька', sub: 'Середнє ' + Math.round(avgKcal) + ' ккал/день — стеж за нормою' });
+    if (mealTypeCounts.dinner < 3)
+      tips.push({ title: 'Додайте овочі до вечері', sub: 'Це підвищить кількість клітковини' });
+    tips.push({ title: 'Пийте більше води зранку', sub: 'Ваша норма — 2.0 л на день' });
+
+    const iconSvg = `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="m9 12 2 2 4-4"/></svg>`;
+    tipsList.innerHTML = tips
+      .map(
+        (t) =>
+          `<li class="stats-tips__item"><span class="stats-tips__icon">${iconSvg}</span><span class="stats-tips__text"><strong>${t.title}</strong>${t.sub ? '<br><small>' + t.sub + '</small>' : ''}</span></li>`,
+      )
+      .join('');
   } else if (tipsList) {
-    tipsList.innerHTML = "<li>Залоговані страви за останні 7 днів — з'являться рекомендації</li>";
+    const iconSvg = `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4m0 4h.01"/></svg>`;
+    tipsList.innerHTML = `<li class="stats-tips__item"><span class="stats-tips__icon">${iconSvg}</span><span class="stats-tips__text">Залогуй страви за тиждень — з'являться рекомендації</span></li>`;
   }
 
-  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-  const COLORS = ['#6fcfba', '#f5a623', '#7b9cda', '#a78bfa'];
+  const COLORS = ['#6fcfba', '#f5a623', '#7b9cda'];
   const LABELS = ['Білки', 'Жири', 'Вуглеводи'];
-  const APEX_GRID = { borderColor: 'rgba(156,163,175,0.12)', strokeDashArray: 3 };
-  const APEX_TEXT = { colors: '#9ca3af', fontSize: '11px' };
+  const APEX_GRID = { borderColor: 'rgba(156,163,175,0.08)', strokeDashArray: 4 };
+  const APEX_TEXT = { colors: '#9ca3af', fontSize: '11px', fontFamily: 'inherit' };
+  const NO_DATA = { text: 'Немає даних', style: { color: '#9ca3af', fontSize: '14px' } };
 
-  // ─── 1. Баланс макро (цей тиждень) ───────────────────────
-  const balanceEl = document.getElementById('balancePieChart');
-  if (balanceEl) {
-    const { protein: p, fat: f, carbs: c } = thisTotals;
-    statisticsCharts.balancePieChart = new ApexCharts(balanceEl, {
-      series: p + f + c > 0 ? [Math.round(p), Math.round(f), Math.round(c)] : [],
+  function donutConfig(series, height, totalLabel) {
+    return {
+      series,
       chart: {
         type: 'donut',
-        height: 280,
+        height,
         toolbar: { show: false },
         background: 'transparent',
-        animations: { speed: 500 },
+        animations: {
+          enabled: true,
+          easing: 'easeinout',
+          speed: 700,
+          animateGradually: { enabled: true, delay: 80 },
+          dynamicAnimation: { enabled: true, speed: 400 },
+        },
+        dropShadow: { enabled: true, top: 0, blur: 20, opacity: 0.18, color: '#6fcfba' },
       },
       labels: LABELS,
       colors: COLORS,
       plotOptions: {
         pie: {
           donut: {
-            size: '52%',
+            size: '58%',
             labels: {
               show: true,
-              name: { show: true, offsetY: -8, fontSize: '12px', color: '#9ca3af' },
+              name: { show: true, offsetY: -10, fontSize: '12px', color: '#9ca3af', fontFamily: 'inherit' },
               value: {
                 show: true,
                 offsetY: 6,
-                fontSize: '22px',
+                fontSize: height >= 260 ? '28px' : '22px',
                 fontWeight: '700',
-                color: '#4ab584',
-                formatter: (v, opts) => {
-                  const total = opts.w.globals.seriesTotals.reduce((a, b) => a + b, 0);
-                  return total > 0 ? Math.round((v / total) * 100) + '%' : '0%';
-                },
+                color: '#e2e8f0',
+                fontFamily: 'inherit',
+                formatter: (v) => Math.round(v) + ' г',
               },
               total: {
                 show: true,
-                label: 'БЖВ',
-                color: '#9ca3af',
+                label: totalLabel || 'БЖВ',
+                color: '#6b7280',
                 fontSize: '12px',
+                fontFamily: 'inherit',
                 formatter: (w) =>
                   Math.round(w.globals.seriesTotals.reduce((a, b) => a + b, 0)) + ' г',
               },
@@ -443,12 +487,24 @@ async function initStatisticsCharts() {
           },
         },
       },
-      stroke: { width: 0 },
+      stroke: { width: 3, colors: ['#1a2332'] },
       dataLabels: { enabled: false },
       legend: { show: false },
-      tooltip: { y: { formatter: (v) => v + ' г' } },
-      noData: { text: 'Немає даних', style: { color: '#9ca3af', fontSize: '14px' } },
-    });
+      tooltip: {
+        theme: 'dark',
+        style: { fontSize: '13px', fontFamily: 'inherit' },
+        y: { formatter: (v) => Math.round(v) + ' г' },
+      },
+      noData: NO_DATA,
+    };
+  }
+
+  // ─── 1. Баланс макро (цей тиждень) ───────────────────────
+  const balanceEl = document.getElementById('balancePieChart');
+  if (balanceEl) {
+    const { protein: p, fat: f, carbs: c } = thisTotals;
+    const series = p + f + c > 0 ? [Math.round(p), Math.round(f), Math.round(c)] : [1, 1, 1];
+    statisticsCharts.balancePieChart = new ApexCharts(balanceEl, donutConfig(series, 260, 'БЖВ'));
     statisticsCharts.balancePieChart.render();
   }
 
@@ -459,18 +515,31 @@ async function initStatisticsCharts() {
       series: [{ name: 'Калорії', data: dayKcal }],
       chart: {
         type: 'area',
-        height: 280,
+        height: 260,
         toolbar: { show: false },
         background: 'transparent',
         fontFamily: 'inherit',
-        animations: { speed: 500 },
-        dropShadow: { enabled: true, top: 6, left: 0, blur: 12, opacity: 0.2, color: '#4ab584' },
+        animations: {
+          enabled: true,
+          easing: 'easeinout',
+          speed: 900,
+          animateGradually: { enabled: true, delay: 100 },
+        },
+        dropShadow: { enabled: true, top: 8, left: 0, blur: 16, opacity: 0.25, color: '#4ab584' },
+        sparkline: { enabled: false },
       },
       fill: {
         type: 'gradient',
-        gradient: { shadeIntensity: 1, opacityFrom: 0.35, opacityTo: 0.02 },
+        gradient: {
+          shadeIntensity: 1,
+          type: 'vertical',
+          colorStops: [
+            { offset: 0, color: '#4ab584', opacity: 0.4 },
+            { offset: 100, color: '#4ab584', opacity: 0.02 },
+          ],
+        },
       },
-      stroke: { curve: 'smooth', width: 2.5, colors: ['#4ab584'] },
+      stroke: { curve: 'smooth', width: 3, colors: ['#4ab584'] },
       colors: ['#4ab584'],
       dataLabels: { enabled: false },
       xaxis: {
@@ -479,10 +548,24 @@ async function initStatisticsCharts() {
         axisTicks: { show: false },
         labels: { style: APEX_TEXT },
       },
-      yaxis: { min: 0, labels: { formatter: (v) => Math.round(v), style: APEX_TEXT } },
+      yaxis: {
+        min: 0,
+        labels: { formatter: (v) => Math.round(v), style: APEX_TEXT },
+      },
       grid: APEX_GRID,
-      markers: { size: 4, colors: ['#4ab584'], strokeColors: '#fff', strokeWidth: 2 },
-      tooltip: { theme: isDark ? 'dark' : 'light', y: { formatter: (v) => v + ' ккал' } },
+      markers: {
+        size: 5,
+        colors: ['#4ab584'],
+        strokeColors: '#1a2332',
+        strokeWidth: 2,
+        hover: { size: 7 },
+      },
+      tooltip: {
+        theme: 'dark',
+        style: { fontSize: '13px', fontFamily: 'inherit' },
+        y: { formatter: (v) => Math.round(v) + ' ккал' },
+      },
+      noData: NO_DATA,
     });
     statisticsCharts.kbjuLineChart.render();
   }
@@ -491,23 +574,43 @@ async function initStatisticsCharts() {
   const usefulnessEl = document.getElementById('usefulnessBarChart');
   if (usefulnessEl) {
     const counts = Object.values(mealTypeCounts);
+    const maxCount = Math.max(...counts, 1);
     statisticsCharts.usefulnessBarChart = new ApexCharts(usefulnessEl, {
       series: [{ name: 'Разів', data: counts }],
       chart: {
         type: 'bar',
-        height: 280,
+        height: 260,
         toolbar: { show: false },
         background: 'transparent',
         fontFamily: 'inherit',
-        animations: { speed: 500 },
-        dropShadow: { enabled: true, top: 4, blur: 8, opacity: 0.12 },
+        animations: {
+          enabled: true,
+          easing: 'easeinout',
+          speed: 700,
+          animateGradually: { enabled: true, delay: 120 },
+        },
+        dropShadow: { enabled: true, top: 6, blur: 10, opacity: 0.15 },
       },
-      plotOptions: { bar: { borderRadius: 8, distributed: true, columnWidth: '55%' } },
+      plotOptions: {
+        bar: {
+          borderRadius: 10,
+          borderRadiusApplication: 'end',
+          distributed: true,
+          columnWidth: '50%',
+        },
+      },
       fill: {
         type: 'gradient',
-        gradient: { shade: 'light', type: 'vertical', shadeIntensity: 0.15, opacityFrom: 1, opacityTo: 0.72, stops: [0, 100] },
+        gradient: {
+          shade: 'dark',
+          type: 'vertical',
+          shadeIntensity: 0.3,
+          opacityFrom: 1,
+          opacityTo: 0.65,
+          stops: [0, 100],
+        },
       },
-      colors: COLORS,
+      colors: COLORS.concat(['#a78bfa']),
       dataLabels: { enabled: false },
       xaxis: {
         categories: Object.values(mealTypeLabels),
@@ -517,125 +620,40 @@ async function initStatisticsCharts() {
       },
       yaxis: {
         min: 0,
-        tickAmount: Math.max(1, Math.max(...counts)),
+        tickAmount: Math.min(maxCount, 10),
         labels: { formatter: (v) => Math.round(v), style: APEX_TEXT },
       },
       grid: APEX_GRID,
       legend: { show: false },
-      tooltip: { y: { formatter: (v) => v + ' разів' } },
-      noData: { text: 'Немає даних', style: { color: '#9ca3af', fontSize: '14px' } },
+      tooltip: {
+        theme: 'dark',
+        style: { fontSize: '13px', fontFamily: 'inherit' },
+        y: { formatter: (v) => Math.round(v) + ' разів' },
+      },
+      noData: NO_DATA,
     });
     statisticsCharts.usefulnessBarChart.render();
   }
 
-  // ─── 4. Минулий тиждень ───────────────────────────────────
+  // ─── 4 & 5. Порівняння тижнів ────────────────────────────
   const lastWeekEl = document.getElementById('lastWeekChart');
   if (lastWeekEl) {
     const { protein: p, fat: f, carbs: c } = lastTotals;
-    statisticsCharts.lastWeekChart = new ApexCharts(lastWeekEl, {
-      series: p + f + c > 0 ? [Math.round(p), Math.round(f), Math.round(c)] : [],
-      chart: {
-        type: 'donut',
-        height: 200,
-        toolbar: { show: false },
-        background: 'transparent',
-        animations: { speed: 500 },
-      },
-      labels: LABELS,
-      colors: COLORS,
-      stroke: { width: 0 },
-      dataLabels: { enabled: false },
-      legend: { show: false },
-      plotOptions: {
-        pie: {
-          donut: {
-            size: '52%',
-            labels: {
-              show: true,
-              name: { show: true, offsetY: -6, fontSize: '11px', color: '#9ca3af' },
-              value: {
-                show: true,
-                offsetY: 4,
-                fontSize: '18px',
-                fontWeight: '700',
-                color: '#6fcfba',
-                formatter: (v, opts) => {
-                  const total = opts.w.globals.seriesTotals.reduce((a, b) => a + b, 0);
-                  return total > 0 ? Math.round((v / total) * 100) + '%' : '0%';
-                },
-              },
-              total: {
-                show: true,
-                label: 'БЖВ',
-                color: '#9ca3af',
-                fontSize: '10px',
-                formatter: (w) =>
-                  Math.round(w.globals.seriesTotals.reduce((a, b) => a + b, 0)) + ' г',
-              },
-            },
-          },
-        },
-      },
-      tooltip: { y: { formatter: (v) => v + ' г' } },
-      noData: { text: 'Немає даних', style: { color: '#9ca3af', fontSize: '14px' } },
-    });
+    const series = p + f + c > 0 ? [Math.round(p), Math.round(f), Math.round(c)] : [1, 1, 1];
+    statisticsCharts.lastWeekChart = new ApexCharts(lastWeekEl, donutConfig(series, 190, 'БЖВ'));
     statisticsCharts.lastWeekChart.render();
   }
 
-  // ─── 5. Цей тиждень ──────────────────────────────────────
   const thisWeekEl = document.getElementById('thisWeekChart');
   if (thisWeekEl) {
     const { protein: p, fat: f, carbs: c } = thisTotals;
-    statisticsCharts.thisWeekChart = new ApexCharts(thisWeekEl, {
-      series: p + f + c > 0 ? [Math.round(p), Math.round(f), Math.round(c)] : [],
-      chart: {
-        type: 'donut',
-        height: 200,
-        toolbar: { show: false },
-        background: 'transparent',
-        animations: { speed: 500 },
-      },
-      labels: LABELS,
-      colors: COLORS,
-      stroke: { width: 0 },
-      dataLabels: { enabled: false },
-      legend: { show: false },
-      plotOptions: {
-        pie: {
-          donut: {
-            size: '52%',
-            labels: {
-              show: true,
-              name: { show: true, offsetY: -6, fontSize: '11px', color: '#9ca3af' },
-              value: {
-                show: true,
-                offsetY: 4,
-                fontSize: '18px',
-                fontWeight: '700',
-                color: '#6fcfba',
-                formatter: (v, opts) => {
-                  const total = opts.w.globals.seriesTotals.reduce((a, b) => a + b, 0);
-                  return total > 0 ? Math.round((v / total) * 100) + '%' : '0%';
-                },
-              },
-              total: {
-                show: true,
-                label: 'БЖВ',
-                color: '#9ca3af',
-                fontSize: '10px',
-                formatter: (w) =>
-                  Math.round(w.globals.seriesTotals.reduce((a, b) => a + b, 0)) + ' г',
-              },
-            },
-          },
-        },
-      },
-      tooltip: { y: { formatter: (v) => v + ' г' } },
-      noData: { text: 'Немає даних', style: { color: '#9ca3af', fontSize: '14px' } },
-    });
+    const series = p + f + c > 0 ? [Math.round(p), Math.round(f), Math.round(c)] : [1, 1, 1];
+    statisticsCharts.thisWeekChart = new ApexCharts(thisWeekEl, donutConfig(series, 190, 'БЖВ'));
     statisticsCharts.thisWeekChart.render();
   }
 }
+
+
 
 // =====================================
 // BMI CALCULATIONS
