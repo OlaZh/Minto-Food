@@ -96,6 +96,7 @@ export const iconFlag     = svg('<path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4
 // ── Sparkles / Scan ───────────────────────────────────────────
 export const iconSparkles = svg('<path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/>');
 export const iconScan     = svg('<path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><line x1="7" y1="12" x2="7" y2="12"/><line x1="17" y1="12" x2="17" y2="12"/><line x1="12" y1="7" x2="12" y2="17"/>');
+export const iconBarcode  = svg('<rect x="2" y="4" width="1.5" height="15" rx="0.3" fill="currentColor" stroke="none"/><rect x="5" y="4" width="1" height="15" rx="0.3" fill="currentColor" stroke="none"/><rect x="7" y="4" width="2.5" height="15" rx="0.3" fill="currentColor" stroke="none"/><rect x="11.5" y="4" width="1" height="15" rx="0.3" fill="currentColor" stroke="none"/><rect x="14" y="4" width="1" height="15" rx="0.3" fill="currentColor" stroke="none"/><rect x="16.5" y="4" width="2.5" height="15" rx="0.3" fill="currentColor" stroke="none"/><rect x="20.5" y="4" width="1" height="15" rx="0.3" fill="currentColor" stroke="none"/>');
 
 // ── Quick meal filters (замість ⚡ тощо) ──────────────────────
 export const iconBolt    = svg('<path d="M13 2 4 14h6l-1 8 9-12h-6l1-8Z"/>');

@@ -4,8 +4,8 @@
  */
 
 import { supabase } from './supabaseClient.js';
-import { parseIngredientsText, findProductMatch, findAllMatches } from './parse-food.js';
-import { iconCheck, iconClose, iconScan } from './icons.js';
+import { parseIngredientsText, findProductMatch, findAllMatches, resolveScannedProduct } from './parse-food.js';
+import { iconCheck, iconClose, iconScan, iconBarcode } from './icons.js';
 import { scanBarcode } from './barcode-scanner.js';
 
 let ingredientsList = [];
@@ -401,8 +401,19 @@ function renderIngredientsList() {
       const dropdown = document.createElement('ul');
       dropdown.className = 'ingredient-picker';
       dropdown.innerHTML = matches.map((p) => {
-        const state = p.food_state ? `<em> (${STATE_LABELS[p.food_state] || p.food_state})</em>` : '';
-        return `<li data-pid="${p.id}" data-name="${p.name_ua}">${p.name_ua}${state} — ${p.kcal || 0} ккал/100г</li>`;
+        const isBarcode = p._source === 'barcode';
+        const badge = isBarcode
+          ? `<span class="ingredient-picker__barcode-icon">${iconBarcode}</span>`
+          : '';
+        let label = '';
+        if (p.raw_edible === 'sometimes') {
+          label = '<em class="ingredient-picker__raw"> (сире)</em>';
+        } else if (!isBarcode && p.food_state && STATE_LABELS[p.food_state]) {
+          label = `<em> (${STATE_LABELS[p.food_state]})</em>`;
+        }
+        const pid = isBarcode ? '0' : p.id;
+        const barcodeAttr = isBarcode ? ` data-barcode="${p.barcode}"` : '';
+        return `<li data-pid="${pid}" data-name="${escapeHTML(p.name_ua || '')}"${barcodeAttr}>${badge}${escapeHTML(p.name_ua || p.name_en || '')}${label} — ${p.kcal || 0} ккал/100г</li>`;
       }).join('');
 
       li.style.position = 'relative';
@@ -410,8 +421,20 @@ function renderIngredientsList() {
 
       dropdown.querySelectorAll('li').forEach((item) => {
         item.addEventListener('click', async () => {
-          const pid = parseInt(item.dataset.pid);
-          const chosen = matches.find((p) => p.id === pid);
+          const barcode = item.dataset.barcode;
+          let chosen;
+
+          if (barcode) {
+            const scanned = matches.find((p) => p._source === 'barcode' && p.barcode === barcode);
+            if (!scanned) return;
+            const productId = await resolveScannedProduct(scanned);
+            if (!productId) return;
+            chosen = { ...scanned, id: productId };
+          } else {
+            const pid = parseInt(item.dataset.pid);
+            chosen = matches.find((p) => p.id === pid);
+          }
+
           if (!chosen) return;
 
           const grams = ingredientsList[index].weight;

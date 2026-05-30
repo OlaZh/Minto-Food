@@ -95,10 +95,17 @@ function NutritionEditor({ product, onSaved }: { product: any; onSaved: () => vo
   )
 }
 
+const RAW_EDIBLE_OPTIONS = [
+  { value: 'always',    label: 'Завжди показувати' },
+  { value: 'sometimes', label: 'Показувати як сире' },
+  { value: 'never',     label: 'Не показувати' },
+]
+
 export default function ProductsClient({ products }: ProductsClientProps) {
   const router = useRouter()
   const [search, setSearch] = useState('')
   const [editingId, setEditingId] = useState<number | null>(null)
+  const [rawEdibleMap, setRawEdibleMap] = useState<Record<number, string>>({})
 
   const filtered = search
     ? products.filter(p =>
@@ -132,6 +139,7 @@ export default function ProductsClient({ products }: ProductsClientProps) {
         {filtered.map(product => {
           const name = product.name_ua || product.name_en || 'Без назви'
           const isEditing = editingId === product.id
+          const rawEdible = rawEdibleMap[product.id]
 
           return (
             <div key={product.id} className="px-4 md:px-8 py-4 hover:bg-gray-50">
@@ -151,6 +159,28 @@ export default function ProductsClient({ products }: ProductsClientProps) {
                     <span suppressHydrationWarning>{product.created_at?.slice(0, 10)}</span>
                   </div>
 
+                  <div className="flex items-center gap-2 mt-2">
+                    <span className="text-xs text-gray-400">Відображення:</span>
+                    <select
+                      value={rawEdible ?? ''}
+                      onChange={e => {
+                        const v = e.target.value
+                        if (v) setRawEdibleMap(m => ({ ...m, [product.id]: v }))
+                      }}
+                      className={`text-xs border rounded px-1.5 py-1 outline-none bg-white ${
+                        rawEdible ? 'border-gray-400' : 'border-orange-300 text-orange-600'
+                      }`}
+                    >
+                      <option value="">— вибери —</option>
+                      {RAW_EDIBLE_OPTIONS.map(o => (
+                        <option key={o.value} value={o.value}>{o.label}</option>
+                      ))}
+                    </select>
+                    {product.raw_edible && !rawEdible && (
+                      <span className="text-xs text-gray-400">зараз: {product.raw_edible}</span>
+                    )}
+                  </div>
+
                   {isEditing && (
                     <NutritionEditor
                       product={product}
@@ -161,13 +191,23 @@ export default function ProductsClient({ products }: ProductsClientProps) {
               </div>
 
               <div className="flex flex-wrap gap-2 mt-3">
-                <ActionButton
-                  label="Схвалити"
-                  confirmText="Зробити загальним продуктом?"
-                  variant="default"
-                  action={() => approveProduct(product.id)}
-                  onDone={() => router.refresh()}
-                />
+                {rawEdible ? (
+                  <ActionButton
+                    label="Схвалити"
+                    confirmText="Зробити загальним продуктом?"
+                    variant="default"
+                    action={() => approveProduct(product.id, rawEdible)}
+                    onDone={() => router.refresh()}
+                  />
+                ) : (
+                  <button
+                    disabled
+                    title="Спочатку вибери статус відображення"
+                    className="h-7 text-xs px-2.5 border border-gray-200 rounded-md opacity-40 cursor-not-allowed"
+                  >
+                    Схвалити
+                  </button>
+                )}
                 <button
                   onClick={() => setEditingId(isEditing ? null : product.id)}
                   className="h-7 text-xs px-2.5 border border-gray-200 rounded-md hover:border-gray-400 transition-colors">

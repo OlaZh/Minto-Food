@@ -249,7 +249,10 @@ async function searchByTerm(term, preferRaw = false) {
       .select('*')
       .is('deleted_at', null)
       .is('user_id', null);
-    if (preferRaw) q = q.in('food_state', ['raw', 'dry']);
+    if (preferRaw) {
+      q = q.in('food_state', ['raw', 'dry']);
+      q = q.neq('raw_edible', 'never');
+    }
     return q;
   };
 
@@ -347,23 +350,78 @@ export async function findAllMatches(query, limit = 10) {
   const q = normalizeText(query);
 
   try {
-    const { data } = await supabase
-      .from('products')
-      .select('*')
-      .or(`name_ua.ilike.%${q}%,name_en.ilike.%${q}%`)
-      .is('deleted_at', null)
-      .is('user_id', null)
-      .limit(limit);
+    const [{ data: productsData }, { data: scannedData }] = await Promise.all([
+      supabase
+        .from('products')
+        .select('id, name_ua, name_en, name_pl, kcal, protein, fat, carbs, fiber, food_state, raw_edible, category_id')
+        .or(`name_ua.ilike.%${q}%,name_en.ilike.%${q}%`)
+        .is('deleted_at', null)
+        .is('user_id', null)
+        .limit(limit),
+      supabase
+        .from('scanned_products')
+        .select('barcode, name_ua, name_en, name_pl, kcal, protein, fat, carbs, fiber')
+        .or(`name_ua.ilike.%${q}%,name_en.ilike.%${q}%`)
+        .not('kcal', 'is', null)
+        .limit(5),
+    ]);
 
-    // Сортуємо: сирі/сухі першими, готові — знизу
+    // Сортуємо products: сирі/сухі першими, готові — знизу
     const stateOrder = { raw: 0, dry: 1, cooked: 2 };
-    return (data || []).sort(
+    const sorted = (productsData || []).sort(
       (a, b) => (stateOrder[a.food_state] ?? 1) - (stateOrder[b.food_state] ?? 1),
     );
+
+    // Scanned_products: маркуємо джерело
+    const scanned = (scannedData || []).map((s) => ({
+      ...s,
+      _source: 'barcode',
+      raw_edible: 'always',
+      food_state: null,
+    }));
+
+    return [...sorted, ...scanned];
   } catch (err) {
     console.error('Search error:', err);
     return [];
   }
+}
+
+/**
+ * Повертає products.id для scanned-продукту.
+ * Шукає існуючий запис за іменем, якщо немає — створює глобальний продукт.
+ */
+export async function resolveScannedProduct(scanned) {
+  const { data: existing } = await supabase
+    .from('products')
+    .select('id')
+    .eq('name_ua', scanned.name_ua || '')
+    .is('user_id', null)
+    .is('deleted_at', null)
+    .maybeSingle();
+
+  if (existing) return existing.id;
+
+  const { data: newProd, error } = await supabase
+    .from('products')
+    .insert({
+      name_ua:    scanned.name_ua,
+      name_en:    scanned.name_en,
+      name_pl:    scanned.name_pl,
+      kcal:       scanned.kcal,
+      protein:    scanned.protein,
+      fat:        scanned.fat,
+      carbs:      scanned.carbs,
+      fiber:      scanned.fiber,
+      food_state: 'cooked',
+      raw_edible: 'always',
+      user_id:    null,
+    })
+    .select('id')
+    .single();
+
+  if (error) { console.error('resolveScannedProduct:', error); return null; }
+  return newProd?.id ?? null;
 }
 
 /**

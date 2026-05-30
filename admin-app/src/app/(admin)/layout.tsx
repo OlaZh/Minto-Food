@@ -11,6 +11,7 @@ import {
   Archive,
   UserCheck,
   ScanBarcode,
+  Database,
 } from 'lucide-react';
 import MobileNav from '@/components/MobileNav';
 
@@ -26,6 +27,7 @@ const moderationNav = [
   { href: '/moderation', label: 'Модерація', icon: Shield },
   { href: '/users', label: 'Юзери', icon: Users },
   { href: '/products', label: 'Продукти', icon: Package },
+  { href: '/catalog', label: 'Каталог', icon: Database },
   { href: '/corrections', label: 'Правки ШК', icon: ScanBarcode },
   { href: '/archive', label: 'Архів', icon: Archive },
 ];

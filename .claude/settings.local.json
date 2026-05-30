@@ -52,7 +52,8 @@
       "Bash(node --check js/recipe-ingredients.js)",
       "Bash(node --check js/recipe-modal.js)",
       "Bash(echo \"compiled, exit: $?\")",
-      "Bash(echo \"compiled, exit $?\")"
+      "Bash(echo \"compiled, exit $?\")",
+      "Bash(xargs wc -l)"
     ]
   }
 }

@@ -139,10 +139,10 @@ export async function toggleAdmin(userId: string, current: boolean) {
 
 // ─── PRODUCTS ─────────────────────────────────────────────────
 
-export async function approveProduct(productId: number) {
+export async function approveProduct(productId: number, rawEdible: string) {
   const supabase = await createClient()
-  await supabase.from('products').update({ user_id: null }).eq('id', productId)
-  await logAction(supabase, 'products', String(productId), 'approve')
+  await supabase.from('products').update({ user_id: null, raw_edible: rawEdible }).eq('id', productId)
+  await logAction(supabase, 'products', String(productId), 'approve', { raw_edible: rawEdible })
   revalidatePath('/products')
 }
 
