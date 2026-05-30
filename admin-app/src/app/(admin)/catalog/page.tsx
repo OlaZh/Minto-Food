@@ -7,7 +7,7 @@ export default async function CatalogPage() {
   const [{ data: products }, { data: categories }] = await Promise.all([
     supabase
       .from('products')
-      .select('id, name_ua, name_en, name_pl, category_id, kcal, protein, fat, carbs, fiber, food_state, raw_edible, label_type')
+      .select('id, name_ua, name_en, name_pl, category_id, kcal, protein, fat, carbs, fiber, food_state, raw_edible')
       .is('deleted_at', null)
       .order('name_ua', { ascending: true }),
     supabase

@@ -17,7 +17,6 @@ interface Product {
   fiber: number | null
   food_state: string | null
   raw_edible: string
-  label_type: string | null
 }
 
 interface Category {
@@ -50,7 +49,6 @@ function ProductEditor({
   const [catId, setCatId]         = useState(String(product.category_id ?? ''))
   const [rawEdible, setRawEdible] = useState(product.raw_edible)
   const [foodState, setFoodState] = useState(product.food_state ?? 'raw')
-  const [labelType, setLabelType] = useState(product.label_type ?? 'EU')
   const [kcal, setKcal]           = useState(String(product.kcal ?? ''))
   const [protein, setProtein]     = useState(String(product.protein ?? ''))
   const [fat, setFat]             = useState(String(product.fat ?? ''))
@@ -68,7 +66,6 @@ function ProductEditor({
         category_id: catId ? Number(catId) : null,
         raw_edible:  rawEdible,
         food_state:  foodState,
-        label_type:  labelType,
         kcal:        kcal    ? parseFloat(kcal)    : null,
         protein:     protein ? parseFloat(protein) : null,
         fat:         fat     ? parseFloat(fat)     : null,
@@ -136,13 +133,6 @@ function ProductEditor({
             <option value="raw">Сирий</option>
             <option value="dry">Сухий</option>
             <option value="cooked">Готовий</option>
-          </select>
-        </label>
-        <label className="flex flex-col gap-0.5 text-xs">
-          <span className="text-gray-500">Стандарт</span>
-          <select value={labelType} onChange={e => setLabelType(e.target.value)} className={inputCls}>
-            <option value="EU">EU</option>
-            <option value="US">US</option>
           </select>
         </label>
       </div>

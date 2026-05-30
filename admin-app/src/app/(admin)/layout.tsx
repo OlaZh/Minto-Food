@@ -14,6 +14,7 @@ import {
   Database,
 } from 'lucide-react';
 import MobileNav from '@/components/MobileNav';
+import LogoutButton from '@/components/LogoutButton';
 
 const editorialNav = [
   { href: '/dashboard', label: 'Дашборд', icon: LayoutDashboard },
@@ -101,8 +102,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </nav>
 
         <div
-          className="px-4 py-3 text-xs"
-          style={{ borderTop: '1px solid #82bf99', color: '#3f7558' }}
+          className="px-2 py-2"
+          style={{ borderTop: '1px solid #82bf99' }}
+        >
+          <LogoutButton />
+        </div>
+        <div
+          className="px-4 py-2 text-xs"
+          style={{ color: '#3f7558' }}
         >
           Minto Food © {new Date().getFullYear()}
         </div>
