@@ -477,24 +477,26 @@ async function initStatisticsCharts() {
         },
         dropShadow: {
           enabled: true,
-          top: 4,
+          top: 3,
           left: 0,
-          blur: 14,
-          opacity: 0.22,
-          color: '#6fcfba',
+          blur: 12,
+          opacity: 0.18,
+          color: '#000',
         },
       },
       labels: LABELS,
       colors: COLORS,
-      // Пастельні градієнти на сегментах (як у референсі)
+      // Кожен сегмент — власний вертикальний градієнт від насиченого до пастельного
       fill: {
         type: 'gradient',
         gradient: {
-          type: 'horizontal',
-          shadeIntensity: 0.2,
+          type: 'vertical',
+          shade: 'light',
+          shadeIntensity: 0,
+          inverseColors: false,
           gradientToColors: ['#a8e6d6', '#ffd089', '#aec5ee'],
-          opacityFrom: 0.92,
-          opacityTo: 0.78,
+          opacityFrom: 1,
+          opacityTo: 1,
           stops: [0, 100],
         },
       },
@@ -536,8 +538,8 @@ async function initStatisticsCharts() {
           },
         },
       },
-      // Зазори між сегментами кольором фону картки, заокруглені кінці
-      stroke: { width: 5, colors: [CARD_BG], lineCap: 'round' },
+      // Тонкі зазори між сегментами кольором фону картки
+      stroke: { width: 2, colors: [CARD_BG], lineCap: 'round' },
       dataLabels: { enabled: false },
       legend: { show: false },
       states: {
