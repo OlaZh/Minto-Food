@@ -9,7 +9,8 @@ export default async function CatalogPage() {
       .from('products')
       .select('id, name_ua, name_en, name_pl, category_id, kcal, protein, fat, carbs, fiber, food_state, raw_edible')
       .is('deleted_at', null)
-      .order('name_ua', { ascending: true }),
+      .order('name_ua', { ascending: true })
+      .limit(5000),
     supabase
       .from('categories')
       .select('id, name_ua')

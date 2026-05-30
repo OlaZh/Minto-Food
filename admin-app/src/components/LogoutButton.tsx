@@ -10,7 +10,7 @@ export default function LogoutButton() {
   async function handleLogout() {
     const supabase = createClient()
     await supabase.auth.signOut()
-    router.push('/login')
+    window.location.href = process.env.NEXT_PUBLIC_MAIN_SITE_URL ?? '/login'
   }
 
   return (
