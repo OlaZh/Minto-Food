@@ -183,6 +183,8 @@
   font-weight: 700;
   color: var(--color-text-primary);
   line-height: 1;
+  /* Резервуємо місце до того як JS вставить число — запобігає layout shift */
+  min-height: 15px;
 }
 
 /* ================= TODAY (підсвічений день) ================= */
