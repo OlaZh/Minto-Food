@@ -8916,19 +8916,17 @@ input:checked + .settings-toggle__track::after {
     gap: 0;
     position: relative;
   }
-  /* Sidebar → dropdown-таб на мобільному */
+  /* Sidebar → dropdown-таб на мобільному (контейнер невидимий, видно лише селектор) */
   .profile-sidebar {
     position: relative;
     top: 0;
+    border: none;
     border-radius: 0;
-    border-left: none;
-    border-right: none;
-    border-top: none;
-    border-bottom: 1px solid var(--color-border);
-    padding: 10px 16px;
+    padding: 0;
     flex-direction: column;
     overflow: visible;
     gap: 0;
+    background: transparent;
     box-shadow: none;
   }
   /* Хедер (аватар + ім'я) ховаємо */
