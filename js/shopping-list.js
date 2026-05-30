@@ -411,7 +411,7 @@ async function addPanelItem(name, qty, unit, listId, container, formLi, note = n
       user_id: currentUser.id,
       name, amount: qty || null, unit: unit || null,
       note: note || null,
-      category: guessCategory(name), is_checked: false,
+      category: await lookupCategory(name), is_checked: false,
     }])
     .select().single();
 
@@ -461,7 +461,7 @@ async function copyToActiveList(item) {
     .insert([{
       list_id: mainListId, user_id: currentUser.id,
       name: item.name, amount: item.amount || null,
-      unit: item.unit || null, category: item.category || guessCategory(item.name),
+      unit: item.unit || null, category: item.category || await lookupCategory(item.name),
       is_checked: false,
     }])
     .select().single();
@@ -610,7 +610,7 @@ async function addItem(name, amount, unit) {
     .insert([{
       list_id: mainListId, user_id: currentUser.id,
       name, amount: amount || null, unit: unit || null,
-      category: guessCategory(name), is_checked: false,
+      category: await lookupCategory(name), is_checked: false,
     }])
     .select().single();
 
@@ -1266,4 +1266,40 @@ function guessCategory(name) {
     if (rule.words.some(w => lower.includes(w))) return rule.name;
   }
   return 'Інше';
+}
+
+// Шукає категорію через БД продуктів.
+// Стратегія: starts-with (без провідного %) щоб уникнути хибних спрацювань
+// типу "молочко" → "Пташине молочко" (цукерки).
+// Якщо результатів декілька — бере найкоротшу назву (найпряміший збіг).
+// Fallback: guessCategory (ключові слова).
+async function lookupCategory(name) {
+  const term = name.trim().toLowerCase();
+  if (term.length < 3) return guessCategory(name);
+
+  const tryPrefix = async (prefix) => {
+    const { data } = await supabase
+      .from('products')
+      .select('name_ua, category_id, categories!inner(name_ua)')
+      .ilike('name_ua', `${prefix}%`)
+      .not('category_id', 'is', null)
+      .limit(5);
+    if (!data?.length) return null;
+    // Найкоротша назва = найпряміший збіг
+    data.sort((a, b) => a.name_ua.length - b.name_ua.length);
+    return data[0].categories.name_ua;
+  };
+
+  // 1. Повний термін як префікс: "молочко%"
+  const full = await tryPrefix(term);
+  if (full) return full;
+
+  // 2. Перші 5 символів: "молоч%"
+  if (term.length > 5) {
+    const short = await tryPrefix(term.slice(0, 5));
+    if (short) return short;
+  }
+
+  // 3. Ключові слова — fallback
+  return guessCategory(name);
 }

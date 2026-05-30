@@ -244,8 +244,8 @@
   }
 
   &__progress-bar {
-    height: 3px;
-    background: var(--color-border);
+    height: 4px;
+    background: rgba(15, 40, 24, 0.15);
     border-radius: 999px;
     margin-bottom: var(--space-lg);
     overflow: hidden;
@@ -262,6 +262,7 @@
     border-radius: 999px;
     transition: width 0.4s var(--ease-out);
     width: 0%;
+    box-shadow: 0 0 6px rgba(74, 181, 132, 0.6);
   }
 }
 
@@ -320,11 +321,17 @@
     opacity var(--duration-fast) var(--ease-out);
 
   &--checked {
-    opacity: 0.5;
+    background: rgba(255, 255, 255, 0.35);
+    border-color: rgba(130, 191, 153, 0.2);
 
     .shop-item__name {
       text-decoration: line-through;
-      color: var(--color-text-secondary);
+      opacity: 0.5;
+    }
+
+    .shop-item__note,
+    .shop-item__amount {
+      opacity: 0.4;
     }
   }
 
