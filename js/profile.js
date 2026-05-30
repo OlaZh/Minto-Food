@@ -1349,8 +1349,22 @@ function initProfileTabs() {
   buttons[0]?.classList.add('active');
   buttons[0]?.setAttribute('aria-selected', 'true');
 
+  const nav = buttons[0]?.closest('.profile-sidebar');
+  const isMobile = () => window.innerWidth <= 1000;
+
   buttons.forEach((btn) => {
     btn.addEventListener('click', () => {
+      const alreadyActive = btn.classList.contains('active');
+
+      // На мобільному: тап на активний таб = відкрити/закрити список
+      if (isMobile() && alreadyActive) {
+        nav?.classList.toggle('open');
+        return;
+      }
+
+      // Закриваємо dropdown і перемикаємо таб
+      nav?.classList.remove('open');
+
       buttons.forEach((b) => {
         b.classList.remove('active');
         b.setAttribute('aria-selected', 'false');
@@ -1381,6 +1395,13 @@ function initProfileTabs() {
         setTimeout(initStatisticsCharts, 150);
       }
     });
+  });
+
+  // Закриваємо якщо тапнули поза навом
+  document.addEventListener('click', (e) => {
+    if (isMobile() && nav && !nav.contains(e.target)) {
+      nav.classList.remove('open');
+    }
   });
 
   syncWeightInputs();

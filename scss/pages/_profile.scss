@@ -1848,59 +1848,83 @@
     gap: 0;
   }
 
-  /* Sidebar → горизонтальний таб-бар */
+  /* Sidebar → dropdown-таб на мобільному */
   .profile-sidebar {
-    position: static;
+    position: relative;
     border-radius: 0;
     border-left: none;
     border-right: none;
     border-top: none;
     border-bottom: 1px solid var(--color-border);
-    padding: 12px 16px;
-    flex-direction: row;
-    overflow-x: auto;
-    overflow-y: hidden;
-    gap: 6px;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
+    padding: 10px 16px;
+    flex-direction: column;
+    overflow: visible;
+    gap: 0;
     box-shadow: none;
-
-    &::-webkit-scrollbar {
-      display: none;
-    }
   }
 
-  /* Хедер (аватар + ім'я) ховаємо всередині таб-бару — там немає місця */
+  /* Хедер (аватар + ім'я) ховаємо */
   .profile-sidebar .profile-header {
     display: none;
   }
 
-  /* Сайдбар айтеми → компактні пігулки */
+  /* За замовчуванням — всі таби приховані крім активного */
   .profile-sidebar__item {
-    flex-shrink: 0;
-    padding: 8px 14px;
-    border-radius: 20px;
-    font-size: 13px;
+    display: none;
+    padding: 10px 14px;
+    border-radius: 10px;
+    font-size: 14px;
     white-space: nowrap;
-    border: 1px solid transparent;
-
-    &:hover {
-      background: var(--color-bg-secondary);
-      border-color: var(--color-border);
-    }
+    border: none;
+    text-align: left;
+    width: 100%;
 
     &.active {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
       background: var(--color-accent-soft);
       color: var(--color-accent);
-      border-color: var(--color-accent);
-    }
+      border-radius: 10px;
 
-    &.active::after {
-      display: none;
+      &::after {
+        content: '▾';
+        font-size: 16px;
+        margin-left: 8px;
+        display: inline;
+        transition: transform 0.2s;
+      }
     }
   }
 
-  /* Streak і sign-out ховаємо в таб-барі — вони не помістяться */
+  /* Коли відкрито — показуємо всі таби як список */
+  .profile-sidebar.open {
+    background: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+    padding: 6px 8px;
+    z-index: 100;
+
+    .profile-sidebar__item {
+      display: flex;
+      align-items: center;
+      border-radius: 8px;
+      padding: 10px 12px;
+      margin: 2px 0;
+
+      &:hover {
+        background: var(--color-bg-secondary);
+      }
+
+      &.active {
+        &::after {
+          transform: rotate(180deg);
+        }
+      }
+    }
+  }
+
+  /* Streak і sign-out ховаємо */
   .profile-streak,
   .profile-signout-btn {
     display: none;
