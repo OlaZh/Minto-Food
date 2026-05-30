@@ -999,7 +999,31 @@ function initActivityTracker() {
   activityTrackerInitialized = true;
 }
 
+function injectActivityIcons() {
+  const iconMap = {
+    walking:    iconWalk,
+    running:    iconRun,
+    cycling:    iconBike,
+    gym:        iconGym,
+    bodyweight: iconStretch,
+    yoga:       iconYoga,
+    dancing:    iconDance,
+    swimming:   iconSwim,
+    stretching: iconStretch,
+    pilates:    iconYoga,
+    elliptical: iconElliptical,
+    other:      iconPlus,
+  };
+
+  document.querySelectorAll('#activityTypeSelect .custom-select__option').forEach(opt => {
+    const icon = iconMap[opt.dataset.value];
+    const label = ACTIVITIES[opt.dataset.value]?.label ?? opt.textContent.replace(/^\S+\s*/, '').trim();
+    if (icon) opt.innerHTML = `<span class="nav-icon">${icon}</span>${label}`;
+  });
+}
+
 function setupActivitySelect() {
+  injectActivityIcons();
   const select = document.getElementById('activityTypeSelect');
   const input = document.getElementById('activityTypeInput');
   const durationInput = document.getElementById('activityDuration');
@@ -1039,7 +1063,7 @@ function setupActivitySelect() {
         .querySelectorAll('.custom-select__option')
         .forEach((o) => o.classList.remove('selected'));
       newOption.classList.add('selected');
-      select.querySelector('.custom-select__trigger span').textContent = newOption.textContent;
+      select.querySelector('.custom-select__trigger span').innerHTML = newOption.innerHTML;
       input.value = newOption.dataset.value;
       select.classList.remove('open');
       const otherInput = document.getElementById('otherActivityInput');
@@ -1302,7 +1326,12 @@ function initActivityChart() {
     dataLabels: { enabled: false },
     xaxis: {
       categories: days,
-      labels: { rotate: -45, style: { colors: '#9ca3af', fontSize: '9px' } },
+      tickAmount: 10,
+      labels: {
+        rotate: -45,
+        hideOverlappingLabels: true,
+        style: { colors: '#9ca3af', fontSize: '9px' },
+      },
       axisBorder: { show: false },
       axisTicks: { show: false },
     },
