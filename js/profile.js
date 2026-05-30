@@ -453,7 +453,14 @@ async function initStatisticsCharts() {
   const APEX_TEXT = { colors: '#9ca3af', fontSize: '11px', fontFamily: 'inherit' };
   const NO_DATA = { text: 'Немає даних', style: { color: '#9ca3af', fontSize: '14px' } };
 
+  // Колір зазорів = фон картки (світла/темна тема)
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  const CARD_BG = isDark ? '#162e28' : '#c8ead5';
+  const VALUE_COLOR = isDark ? '#eaf4ee' : '#1c3a2e';
+  const LABEL_COLOR = isDark ? '#9bb3a8' : '#5b7468';
+
   function donutConfig(series, height, totalLabel) {
+    const big = height >= 260;
     return {
       series,
       chart: {
@@ -464,46 +471,63 @@ async function initStatisticsCharts() {
         animations: {
           enabled: true,
           easing: 'easeinout',
-          speed: 700,
-          animateGradually: { enabled: true, delay: 80 },
+          speed: 750,
+          animateGradually: { enabled: true, delay: 90 },
           dynamicAnimation: { enabled: true, speed: 400 },
         },
-        dropShadow: { enabled: true, top: 0, blur: 20, opacity: 0.18, color: '#6fcfba' },
+        dropShadow: {
+          enabled: true,
+          top: 4,
+          left: 0,
+          blur: 14,
+          opacity: 0.22,
+          color: '#6fcfba',
+        },
       },
       labels: LABELS,
       colors: COLORS,
+      // Пастельні градієнти на сегментах (як у референсі)
+      fill: {
+        type: 'gradient',
+        gradient: {
+          type: 'horizontal',
+          shadeIntensity: 0.2,
+          gradientToColors: ['#a8e6d6', '#ffd089', '#aec5ee'],
+          opacityFrom: 0.92,
+          opacityTo: 0.78,
+          stops: [0, 100],
+        },
+      },
       plotOptions: {
         pie: {
+          // менший % = товще кільце
           donut: {
-            size: '64%',
+            size: big ? '60%' : '62%',
             labels: {
               show: true,
-              // "БЖВ" — маленький підпис зверху
               name: {
                 show: true,
-                offsetY: height >= 260 ? -16 : -12,
-                fontSize: height >= 260 ? '13px' : '11px',
-                fontWeight: '500',
-                color: '#9ca3af',
+                offsetY: big ? -14 : -11,
+                fontSize: big ? '13px' : '11px',
+                fontWeight: '600',
+                color: LABEL_COLOR,
                 fontFamily: 'inherit',
               },
-              // велике число + " г" меншим хвостиком
               value: {
                 show: true,
-                offsetY: height >= 260 ? 8 : 6,
-                fontSize: height >= 260 ? '32px' : '24px',
-                fontWeight: '700',
-                color: '#e2e8f0',
+                offsetY: big ? 8 : 6,
+                fontSize: big ? '36px' : '26px',
+                fontWeight: '800',
+                color: VALUE_COLOR,
                 fontFamily: 'inherit',
                 formatter: (v) => Math.round(v) + ' г',
               },
-              // total показує суму постійно (не лише при наведенні)
               total: {
                 show: true,
                 label: totalLabel || 'БЖВ',
-                color: '#9ca3af',
-                fontSize: height >= 260 ? '13px' : '11px',
-                fontWeight: '500',
+                color: LABEL_COLOR,
+                fontSize: big ? '13px' : '11px',
+                fontWeight: '600',
                 fontFamily: 'inherit',
                 formatter: (w) =>
                   Math.round(w.globals.seriesTotals.reduce((a, b) => a + b, 0)) + ' г',
@@ -512,13 +536,34 @@ async function initStatisticsCharts() {
           },
         },
       },
-      stroke: { width: 3, colors: ['#1a2332'] },
+      // Зазори між сегментами кольором фону картки, заокруглені кінці
+      stroke: { width: 5, colors: [CARD_BG], lineCap: 'round' },
       dataLabels: { enabled: false },
       legend: { show: false },
+      states: {
+        hover: { filter: { type: 'lighten', value: 0.06 } },
+        active: { filter: { type: 'none' } },
+      },
+      // Кастомний тултіп: ● Назва · 250 г · 28 %
       tooltip: {
-        theme: 'dark',
-        style: { fontSize: '13px', fontFamily: 'inherit' },
-        y: { formatter: (v) => Math.round(v) + ' г' },
+        enabled: true,
+        custom: ({ series, seriesIndex, w }) => {
+          const total = series.reduce((a, b) => a + b, 0);
+          const val = Math.round(series[seriesIndex]);
+          const pct = total > 0 ? Math.round((series[seriesIndex] / total) * 100) : 0;
+          const label = w.globals.labels[seriesIndex];
+          const color = w.globals.colors[seriesIndex];
+          return (
+            '<div class="stats-donut-tip">' +
+            `<span class="stats-donut-tip__dot" style="background:${color}"></span>` +
+            `<span class="stats-donut-tip__name">${label}</span>` +
+            `<span class="stats-donut-tip__sep">·</span>` +
+            `<span class="stats-donut-tip__val">${val} г</span>` +
+            `<span class="stats-donut-tip__sep">·</span>` +
+            `<span class="stats-donut-tip__pct">${pct} %</span>` +
+            '</div>'
+          );
+        },
       },
       noData: NO_DATA,
     };

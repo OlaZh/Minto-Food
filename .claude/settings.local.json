@@ -54,7 +54,8 @@
       "Bash(echo \"compiled, exit: $?\")",
       "Bash(echo \"compiled, exit $?\")",
       "Bash(xargs wc -l)",
-      "Bash(grep -v \"^\\\\s*$\")"
+      "Bash(grep -v \"^\\\\s*$\")",
+      "Bash(node --check js/profile.js)"
     ]
   }
 }

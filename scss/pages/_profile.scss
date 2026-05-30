@@ -727,6 +727,68 @@
   white-space: nowrap;
 }
 
+// ─── Donut: м'яке світіння сегментів (як у референсі) ──────
+#balancePieChart,
+#lastWeekChart,
+#thisWeekChart {
+  .apexcharts-pie {
+    filter: drop-shadow(0 4px 14px rgba(111, 207, 186, 0.25));
+  }
+
+  .apexcharts-pie-series path {
+    filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.18));
+  }
+}
+
+// ─── Donut: кастомний тултіп ──────────────────────────────
+.apexcharts-tooltip.apexcharts-theme-light,
+.apexcharts-tooltip.apexcharts-theme-dark {
+  &:has(.stats-donut-tip) {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+  }
+}
+
+.stats-donut-tip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 14px;
+  border-radius: 12px;
+  background: #1c2b27;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  font-size: 13px;
+  font-family: inherit;
+  white-space: nowrap;
+
+  &__dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  &__name {
+    color: #f1f5f3;
+    font-weight: 600;
+  }
+
+  &__sep {
+    color: #6b7d76;
+  }
+
+  &__val {
+    color: #d4ded9;
+    font-weight: 500;
+  }
+
+  &__pct {
+    color: #9bb3a8;
+    font-weight: 600;
+  }
+}
+
 // ─── Macro legend (Баланс страв) ──────────────────────────
 .stats-macro-legend {
   display: flex;
