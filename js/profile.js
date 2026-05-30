@@ -15,9 +15,6 @@ import { showToast } from './utils.js';
 import {
   getWeightHistory,
   addWeightRecord,
-  getActivityHistory,
-  saveActivity,
-  deleteActivity as deleteActivityFromStorage,
   setTheme,
   getLang,
   setLang,
@@ -86,6 +83,7 @@ let weightChart = null;
 let weightChart2 = null;
 let activityChart = null;
 let currentPeriod = 'week'; // Додано: змінна для періоду
+let activityCache = []; // дзеркало user_activities з Supabase (синхронний доступ для рендера)
 
 let statisticsCharts = {
   balancePieChart: null,
@@ -123,6 +121,83 @@ async function loadWeightFromSupabase(userId) {
     return null;
   }
   return data || [];
+}
+
+// =====================================
+// ACTIVITY — SUPABASE HELPERS
+// =====================================
+
+// Рядок БД → формат, який очікують рендер-функції (date/dateFormatted/time)
+function mapActivityRow(row) {
+  const d = new Date(row.performed_at);
+  return {
+    id: row.id,
+    type: row.type,
+    label: row.label,
+    icon: row.icon,
+    duration: row.duration,
+    calories: row.calories,
+    date: row.performed_at,
+    dateFormatted: d.toLocaleDateString('uk-UA', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+    }),
+    time: d.toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' }),
+  };
+}
+
+async function loadActivitiesFromSupabase(userId) {
+  const { data, error } = await supabase
+    .from('user_activities')
+    .select('id, type, label, icon, duration, calories, performed_at')
+    .eq('user_id', userId)
+    .order('performed_at', { ascending: false });
+  if (error) {
+    console.warn('user_activities fetch:', error.message);
+    return false;
+  }
+  activityCache = (data || []).map(mapActivityRow);
+  return true;
+}
+
+async function saveActivityToSupabase(activity) {
+  const user = await getCurrentUser();
+  if (!user) return false;
+  const { data, error } = await supabase
+    .from('user_activities')
+    .insert({
+      user_id: user.id,
+      type: activity.type,
+      label: activity.label,
+      icon: activity.icon,
+      duration: activity.duration,
+      calories: activity.calories,
+      performed_at: activity.date,
+    })
+    .select('id, type, label, icon, duration, calories, performed_at')
+    .single();
+  if (error) {
+    console.warn('user_activities insert:', error.message);
+    return false;
+  }
+  activityCache.unshift(mapActivityRow(data));
+  return true;
+}
+
+async function deleteActivityFromSupabase(activityId) {
+  const { error } = await supabase.from('user_activities').delete().eq('id', activityId);
+  if (error) {
+    console.warn('user_activities delete:', error.message);
+    return false;
+  }
+  activityCache = activityCache.filter((a) => a.id !== activityId);
+  return true;
+}
+
+// Синхронний доступ до історії для рендер-функцій (читає кеш)
+function getActivityHistory() {
+  return activityCache;
 }
 
 function buildWeightChart(canvasId, history, chartRef) {
@@ -1179,7 +1254,10 @@ function syncWeightInputs() {
 
 let activityTrackerInitialized = false;
 
-function initActivityTracker() {
+async function initActivityTracker() {
+  const user = await getCurrentUser();
+  if (user) await loadActivitiesFromSupabase(user.id);
+
   if (activityTrackerInitialized) {
     updateTodayStats();
     renderActivityHistory(currentPeriod);
@@ -1310,7 +1388,7 @@ function setupActivityForm() {
   const newBtn = addBtn.cloneNode(true);
   addBtn.parentNode.replaceChild(newBtn, addBtn);
 
-  newBtn.addEventListener('click', () => {
+  newBtn.addEventListener('click', async () => {
     const activityType = document.getElementById('activityTypeInput')?.value;
     const durationEl = document.getElementById('activityDuration');
     const duration = parseInt(durationEl?.value || 0);
@@ -1341,7 +1419,11 @@ function setupActivityForm() {
       time: new Date().toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' }),
     };
 
-    saveActivity(activity);
+    const saved = await saveActivityToSupabase(activity);
+    if (!saved) {
+      showToast('Помилка збереження активності', 'error');
+      return;
+    }
 
     // Clear form
     if (durationEl) durationEl.value = '';
@@ -1361,8 +1443,12 @@ function setupActivityForm() {
   });
 }
 
-function deleteActivity(activityId) {
-  deleteActivityFromStorage(activityId);
+async function deleteActivity(activityId) {
+  const ok = await deleteActivityFromSupabase(activityId);
+  if (!ok) {
+    showToast('Помилка видалення', 'error');
+    return;
+  }
 
   updateTodayStats();
   renderActivityHistory(currentPeriod);
