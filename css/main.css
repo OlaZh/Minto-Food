@@ -8948,20 +8948,21 @@ input:checked + .settings-toggle__track::after {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    /* насичений фон + білий текст для чіткого контрасту на блідому фоні */
-    background: var(--color-accent);
-    color: #fff;
+    /* виглядає як звичайна картка: той самий фон і колір тексту */
+    background: var(--color-surface);
+    color: var(--color-text-primary);
+    border: 1px solid var(--color-border);
     border-radius: 10px;
   }
   .profile-sidebar__item.active .nav-icon {
-    color: #fff;
+    color: var(--color-text-primary);
   }
   .profile-sidebar__item.active::after {
     content: "▾";
     font-size: 16px;
     margin-left: 8px;
     display: inline;
-    color: #fff;
+    color: var(--color-text-secondary);
     transition: transform 0.2s;
   }
   /* Коли відкрито — список плаває поверх контенту, не розштовхує його */
