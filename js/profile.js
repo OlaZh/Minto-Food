@@ -288,7 +288,7 @@ async function initStatisticsCharts() {
 
   const { data: meals } = await supabase
     .from('meals')
-    .select('date, meal_type, kcal, protein, fat, carbs, name')
+    .select('date, meal_type, kcal, protein, fat, carbs, name, weight')
     .eq('user_id', user.id)
     .gte('date', dateFrom)
     .lte('date', dateTo)
@@ -343,39 +343,53 @@ async function initStatisticsCharts() {
     if (r.meal_type in mealTypeCounts) mealTypeCounts[r.meal_type]++;
   });
 
-  // ─── Топи тижня ──────────────────────────────────────────
-  const nameCounts = {};
+  // ─── Топи тижня (топ-3 найчастіших страв) ────────────────
+  const dishStats = {};
   thisWeek.forEach((r) => {
-    if (r.name) nameCounts[r.name] = (nameCounts[r.name] || 0) + 1;
+    if (!r.name) return;
+    if (!dishStats[r.name]) dishStats[r.name] = { count: 0, weight: Number(r.weight) || 0 };
+    dishStats[r.name].count++;
   });
-  const topCookedEntry = Object.entries(nameCounts).sort((a, b) => b[1] - a[1])[0];
-  const topCookedName = topCookedEntry?.[0] || '—';
-  const topCookedCount = topCookedEntry?.[1] || 0;
-
-  const topCaloricRow = thisWeek.reduce(
-    (best, r) => (Number(r.kcal) > Number(best?.kcal || 0) ? r : best),
-    null,
-  );
-  const topCaloricName = topCaloricRow?.name || '—';
-  const topCaloricKcal = topCaloricRow ? Math.round(Number(topCaloricRow.kcal)) : 0;
-
-  const topHealthyRow = thisWeek
-    .filter((r) => r.kcal > 0)
-    .reduce((best, r) => {
-      const ratio = Number(r.protein) / Number(r.kcal);
-      return ratio > (best.ratio || 0) ? { name: r.name, ratio, kcal: r.kcal } : best;
-    }, {});
-  const topHealthyName = topHealthyRow?.name || '—';
+  const topDishes = Object.entries(dishStats)
+    .map(([name, s]) => ({ name, count: s.count, weight: s.weight }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 3);
+  const maxTopCount = topDishes[0]?.count || 1;
 
   const setEl = (id, val) => {
     const el = document.getElementById(id);
     if (el) el.textContent = val;
   };
-  setEl('topCooked', topCookedName);
-  setEl('topCaloric', topCaloricName);
-  setEl('topHealthy', topHealthyName);
-  if (topCookedCount > 0) setEl('topCookedCount', topCookedCount + '×');
-  if (topCaloricKcal > 0) setEl('topCaloricCount', topCaloricKcal + ' ккал');
+
+  const topsListEl = document.getElementById('statsTopsListEl');
+  if (topsListEl) {
+    if (topDishes.length > 0) {
+      topsListEl.innerHTML = topDishes
+        .map((d, i) => {
+          const rankClass = i === 0 ? 'stats-tops__rank--gold' : '';
+          const rankContent = i === 0 ? '★' : i + 1;
+          const pct = Math.round((d.count / maxTopCount) * 100);
+          const weightLabel = d.weight > 0 ? ` · ${Math.round(d.weight)} гр` : '';
+          return `
+            <li class="stats-tops__item">
+              <span class="stats-tops__rank ${rankClass}">${rankContent}</span>
+              <div class="stats-tops__body">
+                <div class="stats-tops__row">
+                  <span class="stats-tops__name">${d.name}${weightLabel}</span>
+                  <span class="stats-tops__count">${d.count}×</span>
+                </div>
+                <div class="stats-tops__bar">
+                  <span class="stats-tops__fill" style="width:${pct}%"></span>
+                </div>
+              </div>
+            </li>`;
+        })
+        .join('');
+    } else {
+      topsListEl.innerHTML =
+        '<li class="stats-tops__empty">Залогуй страви за тиждень — тут зʼявляться твої топи</li>';
+    }
+  }
 
   // ─── Легенда макро ───────────────────────────────────────
   const { protein: tp, fat: tf, carbs: tc } = thisTotals;
@@ -461,24 +475,35 @@ async function initStatisticsCharts() {
       plotOptions: {
         pie: {
           donut: {
-            size: '58%',
+            size: '64%',
             labels: {
               show: true,
-              name: { show: true, offsetY: -10, fontSize: '12px', color: '#9ca3af', fontFamily: 'inherit' },
+              // "БЖВ" — маленький підпис зверху
+              name: {
+                show: true,
+                offsetY: height >= 260 ? -16 : -12,
+                fontSize: height >= 260 ? '13px' : '11px',
+                fontWeight: '500',
+                color: '#9ca3af',
+                fontFamily: 'inherit',
+              },
+              // велике число + " г" меншим хвостиком
               value: {
                 show: true,
-                offsetY: 6,
-                fontSize: height >= 260 ? '28px' : '22px',
+                offsetY: height >= 260 ? 8 : 6,
+                fontSize: height >= 260 ? '32px' : '24px',
                 fontWeight: '700',
                 color: '#e2e8f0',
                 fontFamily: 'inherit',
                 formatter: (v) => Math.round(v) + ' г',
               },
+              // total показує суму постійно (не лише при наведенні)
               total: {
                 show: true,
                 label: totalLabel || 'БЖВ',
-                color: '#6b7280',
-                fontSize: '12px',
+                color: '#9ca3af',
+                fontSize: height >= 260 ? '13px' : '11px',
+                fontWeight: '500',
                 fontFamily: 'inherit',
                 formatter: (w) =>
                   Math.round(w.globals.seriesTotals.reduce((a, b) => a + b, 0)) + ' г',
@@ -539,7 +564,7 @@ async function initStatisticsCharts() {
           ],
         },
       },
-      stroke: { curve: 'smooth', width: 3, colors: ['#4ab584'] },
+      stroke: { curve: 'straight', width: 3, colors: ['#4ab584'] },
       colors: ['#4ab584'],
       dataLabels: { enabled: false },
       xaxis: {
