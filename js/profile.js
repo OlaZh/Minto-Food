@@ -611,15 +611,23 @@ async function initStatisticsCharts() {
         `</linearGradient>`;
 
       arcs +=
-        `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" ` +
+        `<circle class="svg-donut__seg" data-i="${i}" cx="${cx}" cy="${cy}" r="${r}" fill="none" ` +
         `stroke="url(#${gid})" stroke-width="${sw}" stroke-linecap="round" ` +
         `stroke-dasharray="${arcLen} ${C}" ` +
         `transform="rotate(${rot} ${cx} ${cy})" ` +
-        `style="filter:drop-shadow(0 0 6px ${grads[i][0]}66)"/>`;
+        `style="filter:drop-shadow(0 0 6px ${grads[i][0]}66);cursor:pointer;transition:opacity .2s"/>`;
 
       angle += sweep;
     });
 
+    // розміри тексту пропорційні до розміру донату (база 260px)
+    const k = size / 260;
+    const labelFs = Math.round(13 * k);
+    const valueFs = Math.round(34 * k);
+    const labelDy = 8 * k;
+    const valueDy = 24 * k;
+
+    el.style.position = 'relative';
     el.innerHTML =
       `<svg viewBox="0 0 ${size} ${size}" width="${size}" height="${size}" ` +
       `style="display:block;margin:0 auto;overflow:visible">` +
@@ -627,11 +635,51 @@ async function initStatisticsCharts() {
       // легке загальне світіння під кільцем
       `<g style="filter:drop-shadow(0 0 14px rgba(111,207,186,.3))">${arcs}</g>` +
       // центральний текст
-      `<text x="${cx}" y="${cy - 8}" text-anchor="middle" ` +
-      `fill="${LABEL_COLOR}" font-size="13" font-weight="600" font-family="inherit">${totalLabel}</text>` +
-      `<text x="${cx}" y="${cy + 24}" text-anchor="middle" ` +
-      `fill="${VALUE_COLOR}" font-size="34" font-weight="800" font-family="inherit">${Math.round(total)} г</text>` +
-      `</svg>`;
+      `<text x="${cx}" y="${cy - labelDy}" text-anchor="middle" ` +
+      `fill="${LABEL_COLOR}" font-size="${labelFs}" font-weight="600" font-family="inherit">${totalLabel}</text>` +
+      `<text x="${cx}" y="${cy + valueDy}" text-anchor="middle" ` +
+      `fill="${VALUE_COLOR}" font-size="${valueFs}" font-weight="800" font-family="inherit">${Math.round(total)} г</text>` +
+      `</svg>` +
+      `<div class="svg-donut-tip" hidden></div>`;
+
+    // ── інтерактив: hover / tap по сегменту показує плашку ──
+    const tip = el.querySelector('.svg-donut-tip');
+    const segs = el.querySelectorAll('.svg-donut__seg');
+    const baseColors = ['#6fcfba', '#f5a623', '#7b9cda'];
+
+    const showTip = (i, clientX, clientY) => {
+      const val = Math.round(series[i]);
+      const pct = Math.round((series[i] / total) * 100);
+      tip.innerHTML =
+        '<div class="stats-donut-tip">' +
+        `<span class="stats-donut-tip__dot" style="background:${baseColors[i]}"></span>` +
+        `<span class="stats-donut-tip__name">${LABELS[i]}</span>` +
+        `<span class="stats-donut-tip__sep">·</span>` +
+        `<span class="stats-donut-tip__val">${val} г</span>` +
+        `<span class="stats-donut-tip__sep">·</span>` +
+        `<span class="stats-donut-tip__pct">${pct} %</span>` +
+        '</div>';
+      const rect = el.getBoundingClientRect();
+      tip.style.left = clientX - rect.left + 'px';
+      tip.style.top = clientY - rect.top + 'px';
+      tip.hidden = false;
+      segs.forEach((s) => (s.style.opacity = s.dataset.i == i ? '1' : '0.35'));
+    };
+    const hideTip = () => {
+      tip.hidden = true;
+      segs.forEach((s) => (s.style.opacity = '1'));
+    };
+
+    segs.forEach((seg) => {
+      const i = +seg.dataset.i;
+      seg.addEventListener('pointermove', (e) => showTip(i, e.clientX, e.clientY));
+      seg.addEventListener('pointerenter', (e) => showTip(i, e.clientX, e.clientY));
+      seg.addEventListener('pointerleave', hideTip);
+    });
+    // тап поза сегментами ховає плашку (для тачу)
+    el.addEventListener('pointerdown', (e) => {
+      if (!e.target.classList.contains('svg-donut__seg')) hideTip();
+    });
   }
 
   // ─── 1. Баланс макро (цей тиждень) ───────────────────────
@@ -774,16 +822,14 @@ async function initStatisticsCharts() {
   if (lastWeekEl) {
     const { protein: p, fat: f, carbs: c } = lastTotals;
     const series = p + f + c > 0 ? [Math.round(p), Math.round(f), Math.round(c)] : [1, 1, 1];
-    statisticsCharts.lastWeekChart = new ApexCharts(lastWeekEl, donutConfig(series, 190, 'БЖВ'));
-    statisticsCharts.lastWeekChart.render();
+    renderSvgDonut(lastWeekEl, series, 190, 'БЖВ');
   }
 
   const thisWeekEl = document.getElementById('thisWeekChart');
   if (thisWeekEl) {
     const { protein: p, fat: f, carbs: c } = thisTotals;
     const series = p + f + c > 0 ? [Math.round(p), Math.round(f), Math.round(c)] : [1, 1, 1];
-    statisticsCharts.thisWeekChart = new ApexCharts(thisWeekEl, donutConfig(series, 190, 'БЖВ'));
-    statisticsCharts.thisWeekChart.render();
+    renderSvgDonut(thisWeekEl, series, 190, 'БЖВ');
   }
 }
 

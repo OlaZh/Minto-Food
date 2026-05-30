@@ -7640,6 +7640,18 @@ svg[viewBox="0 0 24 24"] {
   font-weight: 600;
 }
 
+/* Плашка кастомного SVG-донату (слідує за курсором/тапом) */
+.svg-donut-tip {
+  position: absolute;
+  z-index: 5;
+  pointer-events: none;
+  transform: translate(-50%, calc(-100% - 12px));
+  transition: opacity 0.15s;
+}
+.svg-donut-tip[hidden] {
+  display: none;
+}
+
 .stats-macro-legend {
   display: flex;
   align-items: center;
