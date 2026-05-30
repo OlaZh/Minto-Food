@@ -56,7 +56,7 @@ const recordWeightBtn = document.getElementById('saveWeightBtn');
 const WEIGHT_HISTORY_KEY = 'weightHistory';
 const ACTIVITY_HISTORY_KEY = 'activityHistory';
 
-// ✅ ВИПРАВЛЕНО: Об'єкт активностей з name та caloriesPerMinute
+// Виправлено: об'єкт активностей з name та caloriesPerMinute
 const ACTIVITIES = {
   walking:    { icon: iconWalk,       label: 'Ходьба',             caloriesPerMinute: 4 },
   running:    { icon: iconRun,        label: 'Біг',                caloriesPerMinute: 10 },
@@ -85,7 +85,7 @@ const ACTIVITIES = {
 let weightChart = null;
 let weightChart2 = null;
 let activityChart = null;
-let currentPeriod = 'week'; // ✅ ДОДАНО: змінна для періоду
+let currentPeriod = 'week'; // Додано: змінна для періоду
 
 let statisticsCharts = {
   balancePieChart: null,
@@ -1018,7 +1018,9 @@ function injectActivityIcons() {
   document.querySelectorAll('#activityTypeSelect .custom-select__option').forEach(opt => {
     const icon = iconMap[opt.dataset.value];
     const label = ACTIVITIES[opt.dataset.value]?.label ?? opt.textContent.replace(/^\S+\s*/, '').trim();
-    if (icon) opt.innerHTML = `<span class="nav-icon">${icon}</span>${label}`;
+    if (icon && !opt.querySelector('.nav-icon')) {
+      opt.innerHTML = `<span class="nav-icon">${icon}</span>${label}`;
+    }
   });
 }
 
@@ -1089,7 +1091,7 @@ function updateCaloriesPreview() {
   if (!previewEl) return;
 
   if (activityType && duration > 0) {
-    // ✅ ВИПРАВЛЕНО: Використовуємо ACTIVITIES
+    // Виправлено: використовуємо ACTIVITIES
     const activity = ACTIVITIES[activityType];
     const caloriesPerMin = activity ? activity.caloriesPerMinute : 5;
     const totalCalories = Math.round(caloriesPerMin * duration);
@@ -1118,7 +1120,7 @@ function setupActivityForm() {
     if (!activityType) return showToast('Оберіть вид активності', 'error');
     if (!duration || duration < 1) return showToast('Введіть тривалість', 'error');
 
-    // ✅ ВИПРАВЛЕНО: Використовуємо ACTIVITIES
+    // Виправлено: використовуємо ACTIVITIES
     const activityData = ACTIVITIES[activityType];
     const caloriesPerMin = activityData ? activityData.caloriesPerMinute : 5;
     const activityLabel = activityData ? activityData.label : 'Активність';
@@ -1363,7 +1365,9 @@ function initSidebarIcons() {
   };
   document.querySelectorAll('.profile-sidebar__item[data-tab]').forEach(btn => {
     const entry = map[btn.dataset.tab];
-    if (entry) btn.innerHTML = `<span class="nav-icon">${entry.icon}</span>${entry.label}`;
+    if (entry && !btn.querySelector('.nav-icon')) {
+      btn.innerHTML = `<span class="nav-icon">${entry.icon}</span>${entry.label}`;
+    }
   });
 }
 

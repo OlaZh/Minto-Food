@@ -373,6 +373,15 @@
   }
 }
 
+#activityTypeSelect {
+  .custom-select__trigger > span,
+  .custom-select__option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+}
+
 /* ================= РЕЗУЛЬТАТИ ================= */
 
 .profile-result {
@@ -802,6 +811,46 @@
   }
 }
 
+.profile-sidebar__item .nav-icon,
+#activityTypeSelect .nav-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
+
+  svg {
+    width: 100%;
+    height: 100%;
+  }
+}
+
+.profile-card__title--icon {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.profile-inline-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.profile-tops__label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.settings-theme-btn,
+.settings-lang-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
 .profile-signout-btn {
   @extend %button-ghost;
 
@@ -1137,6 +1186,9 @@
 
 /* Кнопка записати */
 .activity-btn-add {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   padding: 10px 20px;
   background: var(--color-accent);
   color: var(--color-text-inverse);
@@ -1493,9 +1545,17 @@
   color: var(--color-text-secondary);
 
   .empty-icon {
-    font-size: 2.5rem;
-    display: block;
-    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    margin: 0 auto 10px;
+
+    svg {
+      width: 100%;
+      height: 100%;
+    }
   }
 
   p {

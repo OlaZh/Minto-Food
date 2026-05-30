@@ -138,7 +138,7 @@
             role="tab"
             aria-selected="true"
             aria-controls="profileDataSection">
-            👤 Мої дані
+            <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg></span>Мої дані
           </button>
 
           <button
@@ -147,17 +147,17 @@
             role="tab"
             aria-selected="false"
             aria-controls="weightControlSection">
-            ⚖️ Контроль ваги
+            <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="12" rx="2.5"></rect><path d="M8.5 4.5a3.5 3.5 0 0 1 7 0"></path><circle cx="12" cy="14" r="2.5"></circle></svg></span>Контроль ваги
           </button>
 
-          <!-- ✅ НОВИЙ ТАБ: Активність -->
+          <!-- Новий таб: Активність -->
           <button
             class="profile-sidebar__item"
             data-tab="activity"
             role="tab"
             aria-selected="false"
             aria-controls="activitySection">
-            🏃 Активність
+            <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="14" cy="4" r="2"></circle><path d="M6 21l3.5-6.5L8 11l3.5-1.5L14 12l2.5 4"></path><path d="M6 8.5l3 2.5M16 6l3.5-1"></path></svg></span>Активність
           </button>
 
           <button
@@ -166,7 +166,7 @@
             role="tab"
             aria-selected="false"
             aria-controls="statisticsSection">
-            📊 Статистика
+            <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="13" width="4" height="8" rx="0.5"></rect><rect x="10" y="8" width="4" height="13" rx="0.5"></rect><rect x="17" y="4" width="4" height="17" rx="0.5"></rect><line x1="3" y1="21" x2="21" y2="21"></line></svg></span>Статистика
           </button>
 
           <button
@@ -175,12 +175,12 @@
             role="tab"
             aria-selected="false"
             aria-controls="settingsSection">
-            ⚙️ Налаштування
+            <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg></span>Налаштування
           </button>
 
           <div class="profile-streak" id="profileStreakBlock">
             <div class="profile-streak__row">
-              <span class="profile-streak__fire">🔥</span>
+              <span class="profile-streak__fire" aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3C8.93 6.86 9.78 4.95 12 3c.5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.15.43-2.29 1-3a2.5 2.5 0 0 0 2.5 2.5z"></path></svg></span>
               <div class="profile-streak__counts">
                 <span class="profile-streak__current" id="profileCurrentStreak">—</span>
                 <span class="profile-streak__label" id="profileStreakWord">днів поспіль</span>
@@ -356,7 +356,7 @@
                   </h2>
 
                   <div class="profile-result profile-result--small">
-                    <span class="profile-result__label">Калорії 🍃</span>
+                    <span class="profile-result__label profile-inline-label"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10z"></path><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"></path></svg></span>Калорії</span>
                     <div class="calories-inline">
                       <strong class="profile-result__value calories-inline__display" id="dailyCalories" tabindex="0" title="Натисни щоб змінити">—</strong>
                       <input
@@ -502,7 +502,7 @@
 
                 <!-- Персональні поради -->
                 <section class="profile-card" aria-labelledby="weightAdviceTitle">
-                  <h2 id="weightAdviceTitle" class="profile-card__title">💡 Персональні поради</h2>
+                  <h2 id="weightAdviceTitle" class="profile-card__title profile-card__title--icon"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg></span>Персональні поради</h2>
                   <div id="weightAdviceContent" class="weight-advice"></div>
                 </section>
               </div>
@@ -519,7 +519,7 @@
 
                 <!-- Прогрес до цілі -->
                 <section class="profile-card" aria-labelledby="weightProgressTitle">
-                  <h2 id="weightProgressTitle" class="profile-card__title">🎯 Прогрес до цілі</h2>
+                  <h2 id="weightProgressTitle" class="profile-card__title profile-card__title--icon"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2" fill="currentColor" stroke="none"></circle></svg></span>Прогрес до цілі</h2>
                   <div id="weightProgressContent" class="weight-progress"></div>
                 </section>
               </div>
@@ -545,7 +545,7 @@
               <section
                 class="profile-card activity-card--compact"
                 aria-labelledby="addActivityTitle">
-                <h2 id="addActivityTitle" class="profile-card__title">🏃‍♀️ Додати активність</h2>
+                <h2 id="addActivityTitle" class="profile-card__title profile-card__title--icon"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="14" cy="4" r="2"></circle><path d="M6 21l3.5-6.5L8 11l3.5-1.5L14 12l2.5 4"></path><path d="M6 8.5l3 2.5M16 6l3.5-1"></path></svg></span>Додати активність</h2>
 
                 <div class="activity-form activity-form--compact">
                   <div class="activity-form__row">
@@ -559,55 +559,55 @@
                         </div>
                         <div class="custom-select__options">
                           <span class="custom-select__option" data-value="walking" data-calories="4"
-                            >🚶 Ходьба</span
+                            ><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="4.5" r="2"></circle><path d="M8 9.5h8M12 9.5v5M9 20l3-5 3 5"></path><path d="M7.5 12.5l-1.5 3M16.5 12.5l1.5 3"></path></svg></span>Ходьба</span
                           >
                           <span
                             class="custom-select__option"
                             data-value="running"
                             data-calories="10"
-                            >🏃 Біг</span
+                            ><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="14" cy="4" r="2"></circle><path d="M6 21l3.5-6.5L8 11l3.5-1.5L14 12l2.5 4"></path><path d="M6 8.5l3 2.5M16 6l3.5-1"></path></svg></span>Біг</span
                           >
                           <span class="custom-select__option" data-value="cycling" data-calories="8"
-                            >🚴 Велосипед</span
+                            ><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="15" r="4"></circle><circle cx="18" cy="15" r="4"></circle><path d="M18 15l-4-8h-4M6 15l4-8M9 7h4l2 4"></path></svg></span>Велосипед</span
                           >
                           <span class="custom-select__option" data-value="gym" data-calories="7"
-                            >🏋️ Тренування в залі</span
+                            ><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="10.5" width="20" height="3" rx="1"></rect><rect x="0" y="8" width="4" height="8" rx="1"></rect><rect x="20" y="8" width="4" height="8" rx="1"></rect></svg></span>Тренування в залі</span
                           >
                           <span
                             class="custom-select__option"
                             data-value="bodyweight"
                             data-calories="5"
-                            >🤸 Вправи з власною вагою</span
+                            ><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="4" r="2"></circle><path d="M12 6v7M8 21l4-8 4 8M4 13h16"></path></svg></span>Вправи з власною вагою</span
                           >
                           <span class="custom-select__option" data-value="yoga" data-calories="3"
-                            >🧘 Йога</span
+                            ><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="4" r="2"></circle><path d="M6 21c0-4 2.5-7 6-7s6 3 6 7"></path><path d="M4 14c2-1.5 4.5-2 8-2s6 .5 8 2"></path></svg></span>Йога</span
                           >
                           <span class="custom-select__option" data-value="dancing" data-calories="6"
-                            >💃 Танці</span
+                            ><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="13" cy="4" r="2"></circle><path d="M8 22l2.5-5L9 13l3-1 2.5 4 3 4"></path><path d="M9 13l-3-2M14.5 9l3-1"></path></svg></span>Танці</span
                           >
                           <span
                             class="custom-select__option"
                             data-value="swimming"
                             data-calories="9"
-                            >🏊 Плавання</span
+                            ><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2 11c1-2 3-3 5-3s4 2 6 2 4-1 5-2"></path><path d="M2 16c1-2 3-3 5-3s4 2 6 2 4-1 5-2"></path><circle cx="19" cy="5.5" r="2.5"></circle><path d="M14 8l5-2.5"></path></svg></span>Плавання</span
                           >
                           <span
                             class="custom-select__option"
                             data-value="stretching"
                             data-calories="2"
-                            >🤸 Розтяжка</span
+                            ><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="4" r="2"></circle><path d="M12 6v7M8 21l4-8 4 8M4 13h16"></path></svg></span>Розтяжка</span
                           >
                           <span class="custom-select__option" data-value="pilates" data-calories="3"
-                            >🧘 Пілатес</span
+                            ><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="4" r="2"></circle><path d="M6 21c0-4 2.5-7 6-7s6 3 6 7"></path><path d="M4 14c2-1.5 4.5-2 8-2s6 .5 8 2"></path></svg></span>Пілатес</span
                           >
                           <span
                             class="custom-select__option"
                             data-value="elliptical"
                             data-calories="7"
-                            >🔄 Орбітрек</span
+                            ><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="7" cy="17" r="3"></circle><circle cx="17" cy="7" r="3"></circle><path d="M10 17h7a3 3 0 0 0 0-6h-7M7 14V7a3 3 0 0 1 6 0"></path></svg></span>Орбітрек</span
                           >
                           <span class="custom-select__option" data-value="other" data-calories="5"
-                            >➕ Інша активність</span
+                            ><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"></path></svg></span>Інша активність</span
                           >
                         </div>
                       </div>
@@ -637,13 +637,13 @@
                     <!-- Preview + кнопка -->
                     <div class="activity-form__action">
                       <div class="activity-preview-mini" id="activityPreview">
-                        <span class="activity-preview-mini__icon">🔥</span>
+                        <span class="activity-preview-mini__icon nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3C8.93 6.86 9.78 4.95 12 3c.5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.15.43-2.29 1-3a2.5 2.5 0 0 0 2.5 2.5z"></path></svg></span>
                         <span class="activity-preview-mini__value" id="previewCalories"
                           >— ккал</span
                         >
                       </div>
                       <button type="button" id="addActivityBtn" class="activity-btn-add">
-                        ✓ Записати
+                        <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></span>Записати
                       </button>
                     </div>
                   </div>
@@ -654,22 +654,22 @@
               <section
                 class="profile-card activity-card--today"
                 aria-labelledby="todayActivityTitle">
-                <h2 id="todayActivityTitle" class="profile-card__title">📊 Сьогодні</h2>
+                <h2 id="todayActivityTitle" class="profile-card__title profile-card__title--icon"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="13" width="4" height="8" rx="0.5"></rect><rect x="10" y="8" width="4" height="13" rx="0.5"></rect><rect x="17" y="4" width="4" height="17" rx="0.5"></rect><line x1="3" y1="21" x2="21" y2="21"></line></svg></span>Сьогодні</h2>
 
                 <div class="activity-today-compact">
                   <div class="activity-stat-mini">
                     <span class="activity-stat-mini__value" id="todayCaloriesBurned">0</span>
-                    <span class="activity-stat-mini__label">🔥 ккал</span>
+                    <span class="activity-stat-mini__label profile-inline-label"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3C8.93 6.86 9.78 4.95 12 3c.5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.15.43-2.29 1-3a2.5 2.5 0 0 0 2.5 2.5z"></path></svg></span>ккал</span>
                   </div>
 
                   <div class="activity-stat-mini">
                     <span class="activity-stat-mini__value" id="todayActiveMinutes">0</span>
-                    <span class="activity-stat-mini__label">⏱️ хв</span>
+                    <span class="activity-stat-mini__label">хв</span>
                   </div>
 
                   <div class="activity-stat-mini">
                     <span class="activity-stat-mini__value" id="todayActivitiesCount">0</span>
-                    <span class="activity-stat-mini__label">🏆 тренувань</span>
+                    <span class="activity-stat-mini__label profile-inline-label"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 21h10M12 17v4"></path><path d="M17 4H7v7a5 5 0 0 0 10 0V4Z"></path><path d="M7 8H4a2 2 0 0 0 0 4c0 2 1.5 3 3 3M17 8h3a2 2 0 0 1 0 4c0 2-1.5 3-3 3"></path></svg></span>тренувань</span>
                   </div>
                 </div>
 
@@ -706,9 +706,7 @@
               class="profile-card activity-card--history"
               aria-labelledby="activityHistoryTitle">
               <div class="activity-history-header">
-                <h2 id="activityHistoryTitle" class="profile-card__title">
-                  📅 Історія активностей
-                </h2>
+                <h2 id="activityHistoryTitle" class="profile-card__title profile-card__title--icon"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg></span>Історія активностей</h2>
 
                 <!-- Фільтр періоду -->
                 <div class="activity-period-filter">
@@ -723,7 +721,7 @@
                 class="activity-history-list activity-history-list--horizontal"
                 id="activityHistoryList">
                 <div class="activity-history-empty">
-                  <span class="empty-icon">🏃‍♀️</span>
+                  <span class="empty-icon nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="14" cy="4" r="2"></circle><path d="M6 21l3.5-6.5L8 11l3.5-1.5L14 12l2.5 4"></path><path d="M6 8.5l3 2.5M16 6l3.5-1"></path></svg></span>
                   <p>Поки що немає записів. Додай свою першу активність!</p>
                 </div>
               </div>
@@ -731,7 +729,7 @@
 
             <!-- ДИНАМІКА ЗА МІСЯЦЬ (на всю ширину, 30 днів) -->
             <section class="profile-card activity-card--chart" aria-labelledby="activityChartTitle">
-              <h2 id="activityChartTitle" class="profile-card__title">📈 Динаміка за місяць</h2>
+              <h2 id="activityChartTitle" class="profile-card__title profile-card__title--icon"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="13" width="4" height="8" rx="0.5"></rect><rect x="10" y="8" width="4" height="13" rx="0.5"></rect><rect x="17" y="4" width="4" height="17" rx="0.5"></rect><line x1="3" y1="21" x2="21" y2="21"></line></svg></span>Динаміка за місяць</h2>
               <div class="activity-chart-box activity-chart-box--full">
                 <div id="activityChartCanvas"></div>
               </div>
@@ -793,9 +791,9 @@
                   Топи тижня
                 </h3>
                 <ul class="profile-tops">
-                  <li>⭐ Найчастіше готувала: <span id="topCooked">—</span></li>
-                  <li>🔥 Найкалорійніша страва: <span id="topCaloric">—</span></li>
-                  <li>🥗 Найкорисніша страва: <span id="topHealthy">—</span></li>
+                  <li><span class="profile-tops__label"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg></span>Найчастіше готувала:</span> <span id="topCooked">—</span></li>
+                  <li><span class="profile-tops__label"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3C8.93 6.86 9.78 4.95 12 3c.5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.15.43-2.29 1-3a2.5 2.5 0 0 0 2.5 2.5z"></path></svg></span>Найкалорійніша страва:</span> <span id="topCaloric">—</span></li>
+                  <li><span class="profile-tops__label"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 13h18a9 9 0 0 1-18 0Z"></path><path d="M7 13c-1-3 1-5 4-5M12 13c0-3 2-5 5-4"></path><path d="M14 9c.7-.5 1.5-.5 2.5 0"></path></svg></span>Найкорисніша страва:</span> <span id="topHealthy">—</span></li>
                 </ul>
               </div>
 
@@ -826,7 +824,7 @@
             <div class="settings-grid">
               <!-- ЗАГАЛЬНІ -->
               <div class="profile-card">
-                <h2 class="profile-card__title">🌐 Загальні</h2>
+                <h2 class="profile-card__title profile-card__title--icon"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M2 12h20M12 2a15.3 15.3 0 0 1 0 20 15.3 15.3 0 0 1 0-20"></path></svg></span>Загальні</h2>
 
                 <div class="settings-row">
                   <div class="settings-row__label">
@@ -835,10 +833,10 @@
                   </div>
                   <div class="settings-theme-btns">
                     <button class="settings-theme-btn" data-theme-set="light" id="setThemeLight">
-                      ☀️ Світла
+                      <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"></circle><line x1="12" y1="2" x2="12" y2="4"></line><line x1="12" y1="20" x2="12" y2="22"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="2" y1="12" x2="4" y2="12"></line><line x1="20" y1="12" x2="22" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg></span>Світла
                     </button>
                     <button class="settings-theme-btn" data-theme-set="dark" id="setThemeDark">
-                      🌙 Темна
+                      <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg></span>Темна
                     </button>
                   </div>
                 </div>
@@ -849,9 +847,9 @@
                     <span class="settings-row__sub">Мова інтерфейсу</span>
                   </div>
                   <div class="settings-lang-btns">
-                    <button class="settings-lang-btn" data-lang="ua">🇺🇦 UA</button>
-                    <button class="settings-lang-btn" data-lang="pl">🇵🇱 PL</button>
-                    <button class="settings-lang-btn" data-lang="en">🇬🇧 EN</button>
+                    <button class="settings-lang-btn" data-lang="ua">UA</button>
+                    <button class="settings-lang-btn" data-lang="pl">PL</button>
+                    <button class="settings-lang-btn" data-lang="en">EN</button>
                   </div>
                 </div>
 
@@ -869,7 +867,7 @@
 
               <!-- АКАУНТ -->
               <div class="profile-card">
-                <h2 class="profile-card__title">👤 Акаунт</h2>
+                <h2 class="profile-card__title profile-card__title--icon"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg></span>Акаунт</h2>
 
                 <div class="settings-row">
                   <div class="settings-row__label">
@@ -908,7 +906,7 @@
 
               <!-- СПОВІЩЕННЯ -->
               <div class="profile-card">
-                <h2 class="profile-card__title">🔔 Сповіщення</h2>
+                <h2 class="profile-card__title profile-card__title--icon"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg></span>Сповіщення</h2>
 
                 <div class="settings-row">
                   <div class="settings-row__label">
@@ -935,7 +933,7 @@
 
               <!-- НЕБЕЗПЕЧНА ЗОНА -->
               <div class="profile-card settings-card--danger">
-                <h2 class="profile-card__title">⚠️ Небезпечна зона</h2>
+                <h2 class="profile-card__title profile-card__title--icon"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg></span>Небезпечна зона</h2>
                 <p class="settings-danger__text">
                   Видалення акаунту є незворотною дією. Всі ваші дані, рецепти та меню будуть
                   видалені назавжди.
