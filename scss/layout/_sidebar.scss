@@ -90,14 +90,21 @@
   stroke-width: 3;
   stroke-linecap: round;
 
-  stroke: var(--color-accent);
+  /* Gradient для кільця калорій через CSS custom property;
+     решта кілець успадковує color-accent */
+  stroke: var(--_ring-stroke, var(--color-accent));
   transform: rotate(-90deg);
   transform-origin: center;
 
   transition:
-    stroke-dasharray 0.3s ease,
-    stroke 0.3s ease,
-    opacity 0.3s ease;
+    stroke-dasharray 0.8s var(--ease-smooth),
+    stroke 0.25s ease,
+    opacity 0.25s ease;
+}
+
+/* Кільце калорій — градієнтна заливка через SVG linearGradient */
+.circle-progress--calorie {
+  --_ring-stroke: url(#kcalRingGradient);
 }
 
 /* WARNING — 80–99% */
@@ -228,6 +235,22 @@
     transform: translateY(-1px);
     opacity: 1;
   }
+}
+
+/* Хвилеподібна анімація заповнення при кліку на кнопку "+вода".
+   Клас додається JS-ом і прибирається після animationend.
+   Вимкнути легко: прибрати .water-meter__fill--ripple з JS. */
+@keyframes waterRipple {
+  0%   { transform: scaleX(1);    opacity: 1;   }
+  20%  { transform: scaleX(1.06); opacity: 0.9; }
+  50%  { transform: scaleX(0.97); opacity: 1;   }
+  75%  { transform: scaleX(1.03); opacity: 0.95; }
+  100% { transform: scaleX(1);    opacity: 1;   }
+}
+
+.water-meter__fill--ripple {
+  animation: waterRipple 0.55s cubic-bezier(0.4, 0, 0.2, 1);
+  transform-origin: bottom center;
 }
 
 /* Прибираємо вертикальний текст всередині — тепер число зверху */

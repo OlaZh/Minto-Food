@@ -63,12 +63,16 @@
   --duration-slow: 350ms;
   --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
   --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+
+  // ---------- CARD BORDER (soft, without harsh outline) ----------
+  --color-border-card: rgba(130, 191, 153, 0.3);
 }
 
 // ---------- DARK THEME OVERRIDES ----------
 // Тіні мають бути глибшими в темній темі, бо на тлі темного фону
 // стандартна rgba(0,0,0,.08) не читається
 [data-theme='dark'] {
+  --color-border-card: rgba(111, 207, 186, 0.12);
   --shadow-1: 0 2px 4px rgba(0, 0, 0, 0.3), 0 4px 12px rgba(0, 0, 0, 0.35);
 
   --shadow-2: 0 8px 24px rgba(0, 0, 0, 0.4), 0 16px 40px rgba(0, 0, 0, 0.45);
@@ -135,12 +139,12 @@
 
   &:hover:not(:disabled) {
     background: var(--color-accent-hover);
-    transform: translateY(-1px);
+    transform: scale(1.02);
     box-shadow: var(--shadow-2);
   }
 
   &:active:not(:disabled) {
-    transform: translateY(0);
+    transform: scale(0.99);
     box-shadow: var(--shadow-1);
   }
 }
@@ -344,11 +348,11 @@
 //  6. CARD (base surface for all content blocks)
 // ============================================================
 
-// Базова "преміум" картка — поверхня з бордером, тінню і hover-підйомом
+// Базова "преміум" картка — поверхня без жорстких контурів, тінь робить глибину
 // Приклад: day-ring-card, streak-card, macros-card, meal-block
 %premium-card {
   background: var(--color-surface);
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--color-border-card);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-1);
 

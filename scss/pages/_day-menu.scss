@@ -700,16 +700,23 @@
   }
 }
 
-/* === ANIMATION FOR LEGEND TIER === */
+/* === ANIMATIONS === */
 
+/* Легенда — динамічне мерехтіння (нескінченне) */
 @keyframes flameFlicker {
-  0%,
-  100% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.15);
-  }
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.15); }
+}
+
+/* Звичайний активний стрік — повільна пульсація opacity при завантаженні
+   animation-iteration-count: 3 → пульсує 3 рази і зупиняється */
+@keyframes flamePulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.78; }
+}
+
+.streak-card--active:not([data-tier='legend']) .streak-card__flame {
+  animation: flamePulse 2.2s ease-in-out 3 both;
 }
 
 /* ================= MENU CARD (спільна обгортка) ================= */

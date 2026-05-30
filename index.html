@@ -111,6 +111,16 @@
       <div class="header__nav-overlay"></div>
     </header>
 
+    <!-- SVG defs — глобальні градієнти для кілець -->
+    <svg aria-hidden="true" focusable="false" style="position:absolute;width:0;height:0;overflow:hidden">
+      <defs>
+        <linearGradient id="kcalRingGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%"   stop-color="#7de8bf"/>
+          <stop offset="100%" stop-color="#2d9e6e"/>
+        </linearGradient>
+      </defs>
+    </svg>
+
     <main class="main">
         <div class="container">
           <!-- ===== PAGE TITLE ===== -->
@@ -190,7 +200,7 @@
                       class="circle-bg"
                       d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
                     <path
-                      class="circle-progress"
+                      class="circle-progress circle-progress--calorie"
                       id="kcalCircle"
                       stroke-dasharray="0, 100"
                       d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
@@ -277,7 +287,7 @@
                         class="circle-bg"
                         d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
                       <path
-                        class="circle-progress"
+                        class="circle-progress circle-progress--calorie"
                         id="kcalCircleMobile"
                         stroke-dasharray="0, 100"
                         d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />

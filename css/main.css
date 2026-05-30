@@ -190,8 +190,8 @@ html {
   box-sizing: border-box;
   overflow-x: hidden;
   font-size: 16px;
-  /* theme smoothness (НЕ transition!) */
-  background-color: var(--color-bg-primary);
+  /* Вертикальний градієнт фону — зверху світліший, донизу насиченіший зелений */
+  background: linear-gradient(180deg, var(--color-bg-primary) 0%, var(--color-bg-gradient-mid) 50%, var(--color-bg-gradient-end) 100%) fixed;
   color: var(--color-text-primary);
 }
 
@@ -208,7 +208,7 @@ body {
   font-family: var(--font-body);
   font-weight: 400;
   line-height: 1.6;
-  background-color: var(--color-bg-primary);
+  background: transparent;
   color: var(--color-text-primary);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -299,12 +299,15 @@ svg[viewBox="0 0 24 24"] {
 
 :root {
   /* Backgrounds */
-  --color-bg-primary: #a6d6b8;
-  --color-bg-secondary: #b8e0c5;
-  --color-bg-sidebar: #9fd1b1;
+  --color-bg-primary: #8ebea3;
+  --color-bg-secondary: #bce3cb;
+  --color-bg-sidebar: #89b89c;
   --color-bg-hover: rgba(74, 181, 132, 0.15);
+  /* Gradient bg stops (light theme) */
+  --color-bg-gradient-mid: #79ab91;
+  --color-bg-gradient-end: #5d9278;
   /* Surface */
-  --color-surface: #b8e0c5;
+  --color-surface: #bce3cb;
   /* Accent (МʼЯТНИЙ, НЕ СИНІЙ) */
   --color-accent: #4ab584;
   --color-accent-hover: #3d9d70;
@@ -334,6 +337,9 @@ svg[viewBox="0 0 24 24"] {
   --color-bg-secondary: #162e28;
   --color-bg-sidebar: #122722;
   --color-bg-hover: rgba(111, 207, 186, 0.12);
+  /* Gradient bg stops (dark theme — без різкого градієнту) */
+  --color-bg-gradient-mid: #111e1a;
+  --color-bg-gradient-end: #0c1714;
   --color-surface: #162e28;
   --color-accent: #6fcfba;
   --color-accent-hover: #8adbc9;
@@ -379,9 +385,11 @@ svg[viewBox="0 0 24 24"] {
   --duration-slow: 350ms;
   --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
   --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+  --color-border-card: rgba(130, 191, 153, 0.3);
 }
 
 [data-theme=dark] {
+  --color-border-card: rgba(111, 207, 186, 0.12);
   --shadow-1: 0 2px 4px rgba(0, 0, 0, 0.3), 0 4px 12px rgba(0, 0, 0, 0.35);
   --shadow-2: 0 8px 24px rgba(0, 0, 0, 0.4), 0 16px 40px rgba(0, 0, 0, 0.45);
   --shadow-3: 0 16px 40px rgba(0, 0, 0, 0.5), 0 40px 80px rgba(0, 0, 0, 0.55);
@@ -424,11 +432,11 @@ svg[viewBox="0 0 24 24"] {
 }
 .shop-newlist__create-btn:hover:not(:disabled), .shop-wishlist__btn:hover:not(:disabled), .shop-add-form__btn:hover:not(:disabled), .cookbook-empty__cta:hover:not(:disabled), .nickname-editor__save:hover:not(:disabled), .preview-form__footer .btn-save:hover:not(:disabled), .btn-confirm:hover:not(:disabled), .btn-primary:hover:not(:disabled), .button--primary:hover:not(:disabled) {
   background: var(--color-accent-hover);
-  transform: translateY(-1px);
+  transform: scale(1.02);
   box-shadow: var(--shadow-2);
 }
 .shop-newlist__create-btn:active:not(:disabled), .shop-wishlist__btn:active:not(:disabled), .shop-add-form__btn:active:not(:disabled), .cookbook-empty__cta:active:not(:disabled), .nickname-editor__save:active:not(:disabled), .preview-form__footer .btn-save:active:not(:disabled), .btn-confirm:active:not(:disabled), .btn-primary:active:not(:disabled), .button--primary:active:not(:disabled) {
-  transform: translateY(0);
+  transform: scale(0.99);
   box-shadow: var(--shadow-1);
 }
 
@@ -488,7 +496,7 @@ svg[viewBox="0 0 24 24"] {
 .shop-panel, .shop-actions-card, .shop-add-card, .shop-progress-card, .product-card, .week-mobile__day, .macros-card,
 .quick-actions-card, .menu-card, .streak-card, .day-ring-card, .recipe-card, .card {
   background: var(--color-surface);
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--color-border-card);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-1);
   transition: box-shadow var(--duration-base) var(--ease-out), transform var(--duration-base) var(--ease-out), border-color var(--duration-base) var(--ease-out);
@@ -1596,10 +1604,17 @@ svg[viewBox="0 0 24 24"] {
   fill: none;
   stroke-width: 3;
   stroke-linecap: round;
-  stroke: var(--color-accent);
+  /* Gradient для кільця калорій через CSS custom property;
+     решта кілець успадковує color-accent */
+  stroke: var(--_ring-stroke, var(--color-accent));
   transform: rotate(-90deg);
   transform-origin: center;
-  transition: stroke-dasharray 0.3s ease, stroke 0.3s ease, opacity 0.3s ease;
+  transition: stroke-dasharray 0.8s var(--ease-smooth), stroke 0.25s ease, opacity 0.25s ease;
+}
+
+/* Кільце калорій — градієнтна заливка через SVG linearGradient */
+.circle-progress--calorie {
+  --_ring-stroke: url(#kcalRingGradient);
 }
 
 /* WARNING — 80–99% */
@@ -1708,6 +1723,36 @@ svg[viewBox="0 0 24 24"] {
     opacity: 1;
   }
 }
+/* Хвилеподібна анімація заповнення при кліку на кнопку "+вода".
+   Клас додається JS-ом і прибирається після animationend.
+   Вимкнути легко: прибрати .water-meter__fill--ripple з JS. */
+@keyframes waterRipple {
+  0% {
+    transform: scaleX(1);
+    opacity: 1;
+  }
+  20% {
+    transform: scaleX(1.06);
+    opacity: 0.9;
+  }
+  50% {
+    transform: scaleX(0.97);
+    opacity: 1;
+  }
+  75% {
+    transform: scaleX(1.03);
+    opacity: 0.95;
+  }
+  100% {
+    transform: scaleX(1);
+    opacity: 1;
+  }
+}
+.water-meter__fill--ripple {
+  animation: waterRipple 0.55s cubic-bezier(0.4, 0, 0.2, 1);
+  transform-origin: bottom center;
+}
+
 /* Прибираємо вертикальний текст всередині — тепер число зверху */
 .water-meter__value {
   display: none;
@@ -4610,6 +4655,18 @@ svg[viewBox="0 0 24 24"] {
   color: var(--color-text-secondary);
   font-size: 11px;
 }
+.ingredient-picker li em.ingredient-picker__raw {
+  color: var(--color-warning, #b45309);
+}
+.ingredient-picker li .ingredient-picker__barcode-icon {
+  display: inline-flex;
+  align-items: center;
+  vertical-align: middle;
+  margin-right: 4px;
+  opacity: 0.45;
+  font-size: 0.85em;
+  color: var(--color-text-secondary);
+}
 .ingredient-picker li:hover {
   background: var(--color-bg-secondary);
 }
@@ -6027,7 +6084,8 @@ svg[viewBox="0 0 24 24"] {
   animation: flameFlicker 2s ease-in-out infinite;
 }
 
-/* === ANIMATION FOR LEGEND TIER === */
+/* === ANIMATIONS === */
+/* Легенда — динамічне мерехтіння (нескінченне) */
 @keyframes flameFlicker {
   0%, 100% {
     transform: scale(1);
@@ -6036,6 +6094,20 @@ svg[viewBox="0 0 24 24"] {
     transform: scale(1.15);
   }
 }
+/* Звичайний активний стрік — повільна пульсація opacity при завантаженні
+   animation-iteration-count: 3 → пульсує 3 рази і зупиняється */
+@keyframes flamePulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.78;
+  }
+}
+.streak-card--active:not([data-tier=legend]) .streak-card__flame {
+  animation: flamePulse 2.2s ease-in-out 3 both;
+}
+
 /* ================= MENU CARD (спільна обгортка) ================= */
 .menu-card {
   padding: 22px 0 0;

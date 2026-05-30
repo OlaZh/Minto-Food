@@ -9,8 +9,13 @@ html {
 
   font-size: 16px;
 
-  /* theme smoothness (НЕ transition!) */
-  background-color: var(--color-bg-primary);
+  /* Вертикальний градієнт фону — зверху світліший, донизу насиченіший зелений */
+  background: linear-gradient(
+    180deg,
+    var(--color-bg-primary) 0%,
+    var(--color-bg-gradient-mid) 50%,
+    var(--color-bg-gradient-end) 100%
+  ) fixed;
   color: var(--color-text-primary);
 }
 
@@ -30,7 +35,7 @@ body {
   font-weight: 400;
   line-height: 1.6;
 
-  background-color: var(--color-bg-primary);
+  background: transparent;
   color: var(--color-text-primary);
 
   -webkit-font-smoothing: antialiased;

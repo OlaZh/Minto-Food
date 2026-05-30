@@ -48,6 +48,25 @@ const waterValueEl = document.getElementById('currentWaterText');
 const waterNormEl = document.getElementById('waterNormText');
 const waterFillEl = document.getElementById('waterFill');
 
+function animateCounter(el, from, to, duration = 650) {
+  if (!el) return;
+  const startTime = performance.now();
+  const diff = to - from;
+  if (diff === 0) { el.textContent = to; return; }
+
+  const tick = (now) => {
+    const elapsed = now - startTime;
+    const progress = Math.min(elapsed / duration, 1);
+    // ease-out cubic
+    const ease = 1 - Math.pow(1 - progress, 3);
+    el.textContent = Math.round(from + diff * ease);
+    if (progress < 1) requestAnimationFrame(tick);
+    else el.textContent = to;
+  };
+
+  requestAnimationFrame(tick);
+}
+
 function updateMacroBars(protein, fat, carbs) {
   const proteinNorm = getProteinNorm();
   const fatNorm = getFatNorm();
@@ -110,7 +129,7 @@ export function updateStats(consumed) {
   const fat = consumed.fat ?? 0;
   const carbs = consumed.carbs ?? 0;
 
-  if (kcalCurrentEl) kcalCurrentEl.textContent = Math.round(kcal);
+  if (kcalCurrentEl) animateCounter(kcalCurrentEl, parseInt(kcalCurrentEl.textContent) || 0, Math.round(kcal));
   if (kcalNormLabelEl) kcalNormLabelEl.textContent = `з ${dailyCaloriesNorm} ккал`;
   if (goalValueEl) goalValueEl.textContent = `${dailyCaloriesNorm} ккал`;
 
@@ -129,7 +148,7 @@ export function updateStats(consumed) {
   setCirclePercent(fCircleEl, fat, fatNorm);
   setCirclePercent(cCircleEl, carbs, carbsNorm);
 
-  if (kcalCurrentMobileEl) kcalCurrentMobileEl.textContent = Math.round(kcal);
+  if (kcalCurrentMobileEl) animateCounter(kcalCurrentMobileEl, parseInt(kcalCurrentMobileEl.textContent) || 0, Math.round(kcal));
   if (kcalNormMobileEl) kcalNormMobileEl.textContent = `з ${dailyCaloriesNorm} ккал`;
   if (pCurrentMobileEl) pCurrentMobileEl.textContent = Math.round(protein);
   if (fCurrentMobileEl) fCurrentMobileEl.textContent = Math.round(fat);

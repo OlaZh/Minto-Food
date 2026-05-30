@@ -1040,6 +1040,15 @@ document.addEventListener('DOMContentLoaded', async () => {
       const amount = parseFloat(btn.dataset.amount);
       if (!isNaN(amount)) {
         addWaterToSupabase(amount);
+
+        // Хвилеподібна анімація стовпчика.
+        // Щоб вимкнути — просто видали цей блок.
+        const fill = document.getElementById('waterFill');
+        if (fill) {
+          fill.classList.remove('water-meter__fill--ripple');
+          requestAnimationFrame(() => fill.classList.add('water-meter__fill--ripple'));
+          fill.addEventListener('animationend', () => fill.classList.remove('water-meter__fill--ripple'), { once: true });
+        }
       }
     });
   });

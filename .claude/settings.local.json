@@ -53,7 +53,8 @@
       "Bash(node --check js/recipe-modal.js)",
       "Bash(echo \"compiled, exit: $?\")",
       "Bash(echo \"compiled, exit $?\")",
-      "Bash(xargs wc -l)"
+      "Bash(xargs wc -l)",
+      "Bash(grep -v \"^\\\\s*$\")"
     ]
   }
 }
