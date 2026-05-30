@@ -306,8 +306,8 @@
                   <option value="dessert" data-i18n="filterDessert">Десерт</option>
                   <option value="drinks" data-i18n="filterDrinks">Напої</option>
                   <option value="bakery" data-i18n="filterBakery">Випічка</option>
-                  <option value="fast" data-i18n="filterFast">Швидкі рецепти⏳</option>
-                  <option value="no_power" data-i18n="filterNoPower">Без світла⚡</option>
+                  <option value="fast" data-i18n="filterFast">Швидкі рецепти</option>
+                  <option value="no_power" data-i18n="filterNoPower">Без світла</option>
                 </select>
               </div>
 
@@ -336,7 +336,8 @@
                     class="btn-upload"
                     onclick="document.getElementById('recipe-image').click()"
                     data-i18n="uploadPhoto">
-                    Завантажити фото 📸
+                    <svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+                    Завантажити фото
                   </button>
                   <div class="form-separator">
                     <span data-i18n="orSeparator">— або —</span>
@@ -353,7 +354,8 @@
                 Скасувати
               </button>
               <button type="submit" class="btn-save" data-i18n="saveRecipe">
-                Зберегти рецепт 🥗
+                <svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 13h18a9 9 0 0 1-18 0Z"></path><path d="M7 13c-1-3 1-5 4-5M12 13c0-3 2-5 5-4"></path><path d="M14 9c.7-.5 1.5-.5 2.5 0"></path></svg>
+                Зберегти рецепт
               </button>
             </div>
           </form>
@@ -374,16 +376,17 @@
 
         <div class="recipe-view__actions">
           <button class="btn-primary" id="edit-recipe-btn" data-i18n="editRecipe">
-            Редагувати рецепт ✏️
+            <svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+            Редагувати рецепт
           </button>
         </div>
 
         <div class="recipe-rating">
-          <span class="star" data-value="1">★</span>
-          <span class="star" data-value="2">★</span>
-          <span class="star" data-value="3">★</span>
-          <span class="star" data-value="4">☆</span>
-          <span class="star" data-value="5">☆</span>
+          <span class="star" data-value="1"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" fill="currentColor"></polygon></svg></span>
+          <span class="star" data-value="2"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" fill="currentColor"></polygon></svg></span>
+          <span class="star" data-value="3"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" fill="currentColor"></polygon></svg></span>
+          <span class="star" data-value="4"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg></span>
+          <span class="star" data-value="5"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg></span>
           <span class="rating-value">3.0</span>
         </div>
 
@@ -410,20 +413,20 @@
         <div class="recipe-detail__body">
           <section class="recipe-section">
             <h3>
-              <span class="icon">🌱</span> <span data-i18n="ingredientsTitle">Інгредієнти</span>
+              <span class="icon"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21v-9"></path><path d="M12 13c-2-1-5 0-6-2 1-2 5-2 6 1"></path><path d="M12 11c2-1 5 0 6-2-1-2-5-2-6 1"></path></svg></span> <span data-i18n="ingredientsTitle">Інгредієнти</span>
             </h3>
             <ul id="view-ingredients-list" class="ingredients-list"></ul>
           </section>
 
           <section class="recipe-section">
             <h3>
-              <span class="icon">👨‍🍳</span> <span data-i18n="stepsTitle">Спосіб приготування</span>
+              <span class="icon"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"></path><path d="M7 2v20"></path><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3zm0 0v7"></path></svg></span> <span data-i18n="stepsTitle">Спосіб приготування</span>
             </h3>
             <div id="view-steps" class="steps-content"></div>
           </section>
 
           <section class="recipe-section recipe-section--notes">
-            <h3><span class="icon">📝</span> <span data-i18n="notesTitle">Мої нотатки</span></h3>
+            <h3><span class="icon"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></span> <span data-i18n="notesTitle">Мої нотатки</span></h3>
             <textarea
               id="view-notes"
               placeholder="Додай свої зауваження до рецепта..."
