@@ -8926,10 +8926,12 @@ input:checked + .settings-toggle__track::after {
   .profile-layout {
     grid-template-columns: 1fr;
     gap: 0;
+    position: relative;
   }
   /* Sidebar → dropdown-таб на мобільному */
   .profile-sidebar {
     position: relative;
+    top: 0;
     border-radius: 0;
     border-left: none;
     border-right: none;
@@ -8971,12 +8973,17 @@ input:checked + .settings-toggle__track::after {
     display: inline;
     transition: transform 0.2s;
   }
-  /* Коли відкрито — показуємо всі таби як список */
+  /* Коли відкрито — список плаває поверх контенту, не розштовхує його */
   .profile-sidebar.open {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
     background: var(--color-bg);
     border: 1px solid var(--color-border);
     border-radius: 12px;
     padding: 6px 8px;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.18);
     z-index: 100;
   }
   .profile-sidebar.open .profile-sidebar__item {
