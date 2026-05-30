@@ -477,24 +477,24 @@ async function initStatisticsCharts() {
         },
         dropShadow: {
           enabled: true,
-          top: 3,
+          top: 0,
           left: 0,
-          blur: 12,
-          opacity: 0.18,
-          color: '#000',
+          blur: 18,
+          opacity: 0.35,
+          color: '#6fcfba',
         },
       },
       labels: LABELS,
       colors: COLORS,
-      // Кожен сегмент — власний вертикальний градієнт від насиченого до пастельного
+      // Кожен сегмент — м'який вертикальний градієнт від насиченого до трохи світлішого
       fill: {
         type: 'gradient',
         gradient: {
           type: 'vertical',
-          shade: 'light',
+          shade: 'dark',
           shadeIntensity: 0,
           inverseColors: false,
-          gradientToColors: ['#a8e6d6', '#ffd089', '#aec5ee'],
+          gradientToColors: ['#8fdcc6', '#f7bc5a', '#9bb6e6'],
           opacityFrom: 1,
           opacityTo: 1,
           stops: [0, 100],
@@ -504,7 +504,7 @@ async function initStatisticsCharts() {
         pie: {
           // менший % = товще кільце
           donut: {
-            size: big ? '60%' : '62%',
+            size: big ? '54%' : '58%',
             labels: {
               show: true,
               name: {
@@ -571,13 +571,75 @@ async function initStatisticsCharts() {
     };
   }
 
+  // Кастомний SVG-донат: заокруглені кінці сегментів, що накладаються (як у дизайні)
+  function renderSvgDonut(el, series, size, totalLabel) {
+    const total = series.reduce((a, b) => a + b, 0) || 1;
+    const cx = size / 2;
+    const cy = size / 2;
+    const sw = size * 0.16; // товщина кільця
+    const r = (size - sw) / 2 - 2; // радіус по центру штриха
+    const C = 2 * Math.PI * r;
+    const gapDeg = 4; // візуальний зазор між сегментами
+    const overlapDeg = 7; // на скільки кінець наповзає на сусіда
+
+    // м'які градієнти на сегмент (насичений → трохи світліший)
+    const grads = [
+      ['#6fcfba', '#8fdcc6'],
+      ['#f5a623', '#f7bc5a'],
+      ['#7b9cda', '#9bb6e6'],
+    ];
+
+    let defs = '';
+    let arcs = '';
+    let angle = -90; // старт зверху
+
+    series.forEach((val, i) => {
+      const frac = val / total;
+      const sweep = frac * 360;
+      // ефективні кути дуги: подовжуємо на overlap, лишаючи зазор
+      const start = angle + gapDeg / 2 - overlapDeg;
+      const end = angle + sweep - gapDeg / 2 + overlapDeg;
+      const arcLen = ((end - start) / 360) * C;
+
+      // dash: малюємо тільки потрібну дугу, решта прозора
+      const rot = start; // поворот старту дуги
+      const gid = `donutGrad${i}`;
+      defs +=
+        `<linearGradient id="${gid}" x1="0" y1="0" x2="0" y2="1">` +
+        `<stop offset="0%" stop-color="${grads[i][0]}"/>` +
+        `<stop offset="100%" stop-color="${grads[i][1]}"/>` +
+        `</linearGradient>`;
+
+      arcs +=
+        `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" ` +
+        `stroke="url(#${gid})" stroke-width="${sw}" stroke-linecap="round" ` +
+        `stroke-dasharray="${arcLen} ${C}" ` +
+        `transform="rotate(${rot} ${cx} ${cy})" ` +
+        `style="filter:drop-shadow(0 0 6px ${grads[i][0]}66)"/>`;
+
+      angle += sweep;
+    });
+
+    el.innerHTML =
+      `<svg viewBox="0 0 ${size} ${size}" width="${size}" height="${size}" ` +
+      `style="display:block;margin:0 auto;overflow:visible">` +
+      `<defs>${defs}</defs>` +
+      // легке загальне світіння під кільцем
+      `<g style="filter:drop-shadow(0 0 14px rgba(111,207,186,.3))">${arcs}</g>` +
+      // центральний текст
+      `<text x="${cx}" y="${cy - 8}" text-anchor="middle" ` +
+      `fill="${LABEL_COLOR}" font-size="13" font-weight="600" font-family="inherit">${totalLabel}</text>` +
+      `<text x="${cx}" y="${cy + 24}" text-anchor="middle" ` +
+      `fill="${VALUE_COLOR}" font-size="34" font-weight="800" font-family="inherit">${Math.round(total)} г</text>` +
+      `</svg>`;
+  }
+
   // ─── 1. Баланс макро (цей тиждень) ───────────────────────
   const balanceEl = document.getElementById('balancePieChart');
   if (balanceEl) {
     const { protein: p, fat: f, carbs: c } = thisTotals;
     const series = p + f + c > 0 ? [Math.round(p), Math.round(f), Math.round(c)] : [1, 1, 1];
-    statisticsCharts.balancePieChart = new ApexCharts(balanceEl, donutConfig(series, 260, 'БЖВ'));
-    statisticsCharts.balancePieChart.render();
+    renderSvgDonut(balanceEl, series, 260, 'БЖВ');
   }
 
   // ─── 2. Динаміка калорій (7 днів) ────────────────────────
