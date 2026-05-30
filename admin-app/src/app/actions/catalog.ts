@@ -9,7 +9,6 @@ export async function updateProduct(productId: number, data: Record<string, unkn
     .from('products')
     .update(data)
     .eq('id', productId)
-    .is('user_id', null)
   if (error) throw new Error(error.message)
 
   const { data: { session } } = await supabase.auth.getSession()

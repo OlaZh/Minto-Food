@@ -30,7 +30,18 @@
 .header__logo img {
   height: 40px;
   width: auto;
-  filter: drop-shadow(0 0 8px rgba(47, 99, 88, 0.35));
+}
+
+.header__logo .logo--light {
+  display: none;
+}
+
+[data-theme='dark'] .header__logo .logo--default {
+  display: none;
+}
+
+[data-theme='dark'] .header__logo .logo--light {
+  display: block;
 }
 
 /* ---------- NAVIGATION ---------- */

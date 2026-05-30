@@ -13,13 +13,18 @@ const STATUS_LABELS: Record<string, { label: string; class: string }> = {
   rejected:  { label: 'Відхилено', class: 'bg-red-100 text-red-700' },
 }
 
+const PAGE_SIZE = 100
+
 export default async function RecipesPage({
   searchParams,
 }: {
-  searchParams: Promise<{ status?: string; q?: string }>
+  searchParams: Promise<{ status?: string; q?: string; page?: string }>
 }) {
   const params = await searchParams
   const supabase = await createClient()
+  const page = Math.max(1, parseInt(params.page ?? '1', 10))
+  const from = (page - 1) * PAGE_SIZE
+  const to = from + PAGE_SIZE - 1
 
   let query = supabase
     .from('recipes')
@@ -27,10 +32,10 @@ export default async function RecipesPage({
       id, name_ua, name_en, image, status, created_at, is_public,
       kcal, category, type, available_locales, author_profile_id,
       author_profile:recipe_author_profiles(display_name)
-    `)
+    `, { count: 'exact' })
     .is('deleted_at', null)
     .order('created_at', { ascending: false })
-    .limit(100)
+    .range(from, to)
 
   if (params.status && params.status !== 'all') {
     query = query.eq('status', params.status)
@@ -39,7 +44,8 @@ export default async function RecipesPage({
     query = query.or(`name_ua.ilike.%${params.q}%,name_en.ilike.%${params.q}%`)
   }
 
-  const { data: recipes, error } = await query
+  const { data: recipes, error, count } = await query
+  const totalPages = Math.ceil((count ?? 0) / PAGE_SIZE)
 
   const statuses = ['all', 'draft', 'scheduled', 'published', 'pending']
 
@@ -105,6 +111,13 @@ export default async function RecipesPage({
         </div>
       )}
 
+      {/* Count + pagination info */}
+      {!error && count != null && (
+        <div className="px-4 md:px-8 py-2 text-xs text-gray-400 border-b border-gray-100">
+          {count} рецептів · сторінка {page} з {totalPages}
+        </div>
+      )}
+
       <div className="divide-y divide-gray-100">
         {recipes?.map(recipe => {
           const st = STATUS_LABELS[recipe.status] ?? STATUS_LABELS.draft
@@ -159,6 +172,31 @@ export default async function RecipesPage({
           )
         })}
       </div>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="px-4 md:px-8 py-4 border-t border-gray-100 flex items-center justify-between gap-2">
+          <Link
+            href={`/recipes?${new URLSearchParams({ ...(params.status ? { status: params.status } : {}), ...(params.q ? { q: params.q } : {}), page: String(page - 1) }).toString()}`}
+            className={`text-xs px-3 py-1.5 rounded-md border transition-colors ${page <= 1 ? 'pointer-events-none opacity-30 border-gray-200' : 'border-gray-200 hover:border-gray-400'}`}
+            aria-disabled={page <= 1}
+          >
+            ← Попередня
+          </Link>
+
+          <span className="text-xs text-gray-400">
+            {from + 1}–{Math.min(to + 1, count ?? 0)} з {count}
+          </span>
+
+          <Link
+            href={`/recipes?${new URLSearchParams({ ...(params.status ? { status: params.status } : {}), ...(params.q ? { q: params.q } : {}), page: String(page + 1) }).toString()}`}
+            className={`text-xs px-3 py-1.5 rounded-md border transition-colors ${page >= totalPages ? 'pointer-events-none opacity-30 border-gray-200' : 'border-gray-200 hover:border-gray-400'}`}
+            aria-disabled={page >= totalPages}
+          >
+            Наступна →
+          </Link>
+        </div>
+      )}
     </div>
   )
 }

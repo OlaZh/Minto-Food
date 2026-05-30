@@ -1280,15 +1280,15 @@ async function filterRecipes(query) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  let dbQuery = supabase
-    .from('recipes')
-    .select('*')
-    .or(
-      `name_ua.ilike.%${query}%,name_en.ilike.%${query}%,name_pl.ilike.%${query}%,ingredients.ilike.%${query}%`,
-    );
+  // Будуємо запит з одним .or() для статусу — так само як applyRecipeFilters.
+  // Текстовий пошук робимо клієнтськи, щоб уникнути проблеми з двома .or() у Supabase JS,
+  // де другий виклик може перезаписати перший замість AND.
+  let dbQuery = supabase.from('recipes').select('*');
 
   if (user) {
     dbQuery = dbQuery.or(`status.eq.published,user_id.eq.${user.id}`);
+  } else {
+    dbQuery = dbQuery.eq('status', 'published');
   }
 
   const { data, error } = await dbQuery;
@@ -1298,10 +1298,18 @@ async function filterRecipes(query) {
     return;
   }
 
-  // Скидаємо "показати всі" при новому запиті
+  // Клієнтський текстовий фільтр
+  const q = query.toLowerCase();
+  const filtered = (data || []).filter((r) =>
+    (r.name_ua   || '').toLowerCase().includes(q) ||
+    (r.name_en   || '').toLowerCase().includes(q) ||
+    (r.name_pl   || '').toLowerCase().includes(q) ||
+    (r.ingredients || '').toLowerCase().includes(q)
+  );
+
   searchOwnShowAll = false;
   searchCommunityShowAll = false;
-  displayRecipes(data || [], true);
+  displayRecipes(filtered, true);
 }
 
 if (searchInput) {
