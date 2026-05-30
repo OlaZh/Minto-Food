@@ -532,7 +532,7 @@ svg[viewBox="0 0 24 24"] {
    ============================================================= */
 .page {
   min-height: 100vh;
-  background-color: var(--color-bg-primary);
+  background-color: transparent;
   display: flex;
   flex-direction: column;
 }
