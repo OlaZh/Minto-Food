@@ -54,11 +54,19 @@ const UNIT_RE_SRC = Object.keys(UNIT_CONVERSIONS)
   .sort((a, b) => b.length - a.length)
   .join('|');
 
-// Слова що вказують на термічну обробку — тоді НЕ фільтруємо raw
+// Слова, що вказують на термічну/кулінарну обробку (стан).
+// Наявність стану → шукаємо готову страву в `recipes`, а не сирий продукт.
 const COOKING_WORDS = [
-  'варен', 'смажен', 'жарен', 'тушен', 'запечен',
-  'печен', 'копчен', 'гриль', 'грилен', 'відварен',
-  'пасеров', 'бланшир', 'пропечен',
+  'варен', 'відварен', 'зварен', 'проварен',
+  'смажен', 'жарен', 'обсмажен', 'підсмажен', 'засмажен',
+  'тушен', 'затушен',
+  'запечен', 'печен', 'пропечен', 'спечен',
+  'копчен', 'підкопчен',
+  'гриль', 'грилен', 'грильован',
+  'пасеров', 'бланшир', 'припущен',
+  'маринован', 'квашен', 'солен', 'засолен', 'мочен',
+  'фарширован', 'панірован', 'клярі',
+  'на пару', 'парен', 'парован',
 ];
 
 function hasCookingWords(text) {
@@ -84,22 +92,9 @@ const STOP_WORDS = new Set([
   'свіжа',
   'свіжі',
   'свіжих',
-  'сушений',
-  'сушена',
-  'сушені',
-  'сушених',
-  'заморожений',
-  'заморожена',
-  'заморожені',
   'нарізаний',
   'нарізана',
   'нарізані',
-  'варений',
-  'варена',
-  'варені',
-  'смажений',
-  'смажена',
-  'смажені',
   'для',
   'або',
   'та',
@@ -242,19 +237,70 @@ export function parseFoodInput(input) {
  * @param {number} minSimilarity - мін. схожість (0-1), default 0.3
  * @returns {Object|null} - знайдений продукт або null
  */
-async function searchByTerm(term, preferRaw = false) {
-  const base = () => {
-    let q = supabase
-      .from('products')
-      .select('*')
-      .is('deleted_at', null)
-      .is('user_id', null);
-    if (preferRaw) {
-      q = q.in('food_state', ['raw', 'dry']);
-      q = q.neq('raw_edible', 'never');
-    }
-    return q;
+// Розбиває нормалізований запит на значущі слова (≥2 символів).
+function termWords(term) {
+  return term.split(' ').filter((w) => w.length >= 2);
+}
+
+// Чи схожий запит на штрихкод (8–14 цифр).
+function isBarcode(query) {
+  const digits = query.replace(/\D/g, '');
+  return digits.length >= 8 && digits.length <= 14 && /^\d+$/.test(query.trim());
+}
+
+// =====================================
+// ПОШУК У RECIPES (для інгредієнтів зі станом)
+// =====================================
+
+// Нормалізує КБЖУ страви до значень на 100 г (recipes.kcal — на всю страву).
+function recipeToPer100(recipe) {
+  const w = Number(recipe.total_weight) || 0;
+  const factor = w > 0 ? 100 / w : 1; // якщо ваги немає — припускаємо, що значення вже на 100 г
+  return {
+    ...recipe,
+    kcal: Math.round((recipe.kcal || 0) * factor),
+    protein: parseFloat(((recipe.protein || 0) * factor).toFixed(1)),
+    fat: parseFloat(((recipe.fat || 0) * factor).toFixed(1)),
+    carbs: parseFloat(((recipe.carbs || 0) * factor).toFixed(1)),
+    fiber: parseFloat(((recipe.fiber || 0) * factor).toFixed(1)),
+    food_state: 'cooked',
+    _source: 'recipe',
   };
+}
+
+// Шукає готову страву в recipes за всіма словами запиту (AND).
+async function searchRecipe(term) {
+  // 1. Точний збіг
+  const { data: exact } = await supabase
+    .from('recipes')
+    .select('*')
+    .ilike('name_ua', term)
+    .limit(1);
+  if (exact?.length > 0) return { ...recipeToPer100(exact[0]), _matchedVia: 'recipe-exact' };
+
+  // 2. Усі слова присутні (AND), у будь-якому порядку
+  let q = supabase.from('recipes').select('*');
+  for (const w of termWords(term)) {
+    q = q.ilike('name_ua', `%${w}%`);
+  }
+  const { data: all } = await q.limit(10);
+  if (all?.length > 0) {
+    const best = all.reduce((a, b) =>
+      (a.name_ua?.length ?? 999) <= (b.name_ua?.length ?? 999) ? a : b,
+    );
+    return { ...recipeToPer100(best), _matchedVia: 'recipe-and' };
+  }
+
+  return null;
+}
+
+// =====================================
+// ПОШУК У PRODUCTS (для інгредієнтів без стану)
+// =====================================
+
+async function searchProduct(term) {
+  const base = () =>
+    supabase.from('products').select('*').is('deleted_at', null).is('user_id', null);
 
   // 1. Точний збіг по name_ua
   const { data: exact } = await base().ilike('name_ua', term).limit(1);
@@ -269,9 +315,7 @@ async function searchByTerm(term, preferRaw = false) {
       .limit(1);
 
     if (aliasRows?.length > 0) {
-      const { data: ap } = await base()
-        .eq('id', aliasRows[0].product_id)
-        .maybeSingle();
+      const { data: ap } = await base().eq('id', aliasRows[0].product_id).maybeSingle();
       if (ap) return { ...ap, _matchedVia: 'alias' };
     }
   } catch { /* alias search unavailable */ }
@@ -283,53 +327,77 @@ async function searchByTerm(term, preferRaw = false) {
     .limit(1);
   if (starts?.length > 0) return { ...starts[0], _matchedVia: 'starts' };
 
-  // 4. Містить термін — беремо найкоротшу назву (базовий продукт)
-  const { data: contains } = await base()
-    .or(`name_ua.ilike.%${term}%,name_en.ilike.%${term}%`)
-    .limit(10);
-
-  if (contains?.length > 0) {
+  // 4. Усі слова присутні (AND) — беремо найкоротшу назву (базовий продукт)
+  let q = base();
+  for (const w of termWords(term)) {
+    q = q.ilike('name_ua', `%${w}%`);
+  }
+  const { data: andMatch } = await q.limit(10);
+  if (andMatch?.length > 0) {
     return {
-      ...contains.reduce((a, b) =>
-        (a.name_ua?.length ?? 999) <= (b.name_ua?.length ?? 999) ? a : b
+      ...andMatch.reduce((a, b) =>
+        (a.name_ua?.length ?? 999) <= (b.name_ua?.length ?? 999) ? a : b,
       ),
-      _matchedVia: 'contains',
+      _matchedVia: 'and',
     };
   }
 
   return null;
 }
 
+// Відкат: відсканований продукт за штрихкодом або за назвою.
+async function searchScanned(query, term) {
+  // За штрихкодом
+  if (isBarcode(query)) {
+    const { data } = await supabase
+      .from('scanned_products')
+      .select('*')
+      .eq('barcode', query.replace(/\D/g, ''))
+      .not('kcal', 'is', null)
+      .maybeSingle();
+    if (data) return { ...data, _source: 'barcode', _matchedVia: 'barcode' };
+  }
+
+  // За назвою (точний збіг)
+  const { data: exact } = await supabase
+    .from('scanned_products')
+    .select('*')
+    .ilike('name_ua', term)
+    .not('kcal', 'is', null)
+    .limit(1);
+  if (exact?.length > 0) return { ...exact[0], _source: 'barcode', _matchedVia: 'scanned-exact' };
+
+  return null;
+}
+
+/**
+ * Знаходить інгредієнт для рецепта.
+ * - Є слова стану (варений/смажений/…) → шукаємо ГОТОВУ страву в recipes.
+ *   Не знайдено → null (інгредієнт лишиться нерозпізнаним / червоним).
+ * - Немає стану → шукаємо БАЗОВИЙ продукт у products, далі у scanned_products
+ *   (за назвою або штрихкодом).
+ */
 export async function findProductMatch(query) {
   if (!query || query.length < 2) return null;
 
-  const q = normalizeText(query);
-  // Якщо немає слів варена/смажена/тушена — шукаємо сирий продукт
-  const preferRaw = !hasCookingWords(q);
+  const term = normalizeText(query);
 
   try {
-    // 1. Пошук з урахуванням стану (сирий/сухий якщо без кулінарних слів)
-    const result = await searchByTerm(q, preferRaw);
-    if (result) return result;
-
-    // 2. Якщо з фільтром нічого — шукаємо без обмежень
-    if (preferRaw) {
-      const anyResult = await searchByTerm(q, false);
-      if (anyResult) return anyResult;
+    // Зі станом → лише recipes, без відкату на products.
+    if (hasCookingWords(term)) {
+      return await searchRecipe(term);
     }
 
-    // 3. Прибираємо стоп-слова і шукаємо ще раз
-    const cleaned = removeStopWords(q);
-    if (cleaned !== q && cleaned.length >= 2) {
-      const fallback = await searchByTerm(cleaned, preferRaw);
-      if (fallback) return fallback;
-      if (preferRaw) {
-        const fallbackAny = await searchByTerm(cleaned, false);
-        if (fallbackAny) return fallbackAny;
-      }
+    // Штрихкод → одразу scanned_products.
+    if (isBarcode(query)) {
+      return await searchScanned(query, term);
     }
 
-    return null;
+    // Без стану → products, потім scanned_products як відкат.
+    const product = await searchProduct(term);
+    if (product) return product;
+
+    return await searchScanned(query, term);
   } catch (err) {
     console.error('Search error:', err);
     return null;

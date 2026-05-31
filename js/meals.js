@@ -542,6 +542,9 @@ document.addEventListener('DOMContentLoaded', async () => {
       .select('*')
       .or(`name_ua.ilike.${query}%,name_en.ilike.${query}%,name_pl.ilike.${query}%`)
       .not('category_id', 'in', `(${EXCLUDED_CATEGORY_IDS.join(',')})`)
+      // Не показуємо продукти, які не їдять сирими (raw_edible = 'never').
+      // NULL (власні продукти без стану) лишаємо у видачі.
+      .or('raw_edible.is.null,raw_edible.neq.never')
       .limit(10);
 
     // Фільтр: загальні (user_id IS NULL) АБО власні (user_id = current)
@@ -559,6 +562,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       .select('*')
       .or(`name_ua.ilike.%${query}%,name_en.ilike.%${query}%,name_pl.ilike.%${query}%`)
       .not('category_id', 'in', `(${EXCLUDED_CATEGORY_IDS.join(',')})`)
+      .or('raw_edible.is.null,raw_edible.neq.never')
       .limit(20);
 
     if (user) {
@@ -765,9 +769,14 @@ document.addEventListener('DOMContentLoaded', async () => {
       ? ` <span class="modal__badge modal__badge--scanned" title="${lang === 'ua' ? 'Раніше відсканований продукт' : 'Previously scanned product'}">${iconBarcode}</span>`
       : '';
 
+    // Продукт, який зазвичай готують, але інколи їдять сирим → позначка "(сире)".
+    const rawHint = type === 'product' && food.raw_edible === 'sometimes'
+      ? ` <em class="modal__raw-hint">(${lang === 'ua' ? 'сире' : lang === 'pl' ? 'surowe' : 'raw'})</em>`
+      : '';
+
     li.innerHTML = `
       <div>
-        <strong>${name}</strong>${isOwn ? ' <span class="modal__badge">Мій</span>' : ''}${scannedBadge}
+        <strong>${name}</strong>${rawHint}${isOwn ? ' <span class="modal__badge">Мій</span>' : ''}${scannedBadge}
         <div style="font-size:12px; opacity:0.7;">
           ${kcal} ${t('kcal')} / ${t('per100')}
         </div>

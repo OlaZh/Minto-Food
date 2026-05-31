@@ -382,6 +382,19 @@
   background: rgba(255, 255, 255, 0.22);
 }
 
+/* Позначка "(сире)" для продуктів raw_edible = sometimes */
+.modal__raw-hint {
+  font-size: 12px;
+  font-style: italic;
+  color: var(--color-text-secondary);
+}
+
+.modal__item--active .modal__raw-hint,
+.modal__item.active .modal__raw-hint {
+  color: var(--color-text-inverse);
+  opacity: 0.85;
+}
+
 /* ---------- Footer ---------- */
 .modal__footer {
   padding: 16px 20px;

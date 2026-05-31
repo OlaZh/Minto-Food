@@ -2858,6 +2858,19 @@ svg[viewBox="0 0 24 24"] {
   background: rgba(255, 255, 255, 0.22);
 }
 
+/* Позначка "(сире)" для продуктів raw_edible = sometimes */
+.modal__raw-hint {
+  font-size: 12px;
+  font-style: italic;
+  color: var(--color-text-secondary);
+}
+
+.modal__item--active .modal__raw-hint,
+.modal__item.active .modal__raw-hint {
+  color: var(--color-text-inverse);
+  opacity: 0.85;
+}
+
 /* ---------- Footer ---------- */
 .modal__footer {
   padding: 16px 20px;
@@ -4654,6 +4667,19 @@ svg[viewBox="0 0 24 24"] {
   color: var(--color-text-secondary);
   font-style: italic;
   border-style: dashed;
+}
+.ingredient-item {
+  /* Нерозпізнаний інгредієнт — не врахований у КБЖУ */
+}
+.ingredient-item--unmatched {
+  border-color: var(--color-danger);
+  background: var(--color-danger-soft);
+}
+.ingredient-item--unmatched .ingredient-item__name {
+  color: var(--color-danger);
+}
+.ingredient-item--unmatched .ingredient-item__status {
+  color: var(--color-danger);
 }
 
 .ingredient-item__name {
@@ -12664,8 +12690,8 @@ input:checked + .settings-toggle__track::after {
 }
 .shop-main__count {
   font-size: 13px;
-  font-weight: 600;
-  color: var(--color-accent);
+  font-weight: 700;
+  color: var(--color-accent-hover);
   white-space: nowrap;
   flex-shrink: 0;
 }

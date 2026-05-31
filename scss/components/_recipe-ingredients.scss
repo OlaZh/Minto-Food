@@ -245,6 +245,20 @@
     font-style: italic;
     border-style: dashed;
   }
+
+  /* Нерозпізнаний інгредієнт — не врахований у КБЖУ */
+  &--unmatched {
+    border-color: var(--color-danger);
+    background: var(--color-danger-soft);
+
+    .ingredient-item__name {
+      color: var(--color-danger);
+    }
+
+    .ingredient-item__status {
+      color: var(--color-danger);
+    }
+  }
 }
 
 .ingredient-item__name {
