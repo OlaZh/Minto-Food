@@ -1,5 +1,5 @@
 import { updateStats, updateWaterUI } from './stats.js';
-import { iconTrash, iconPlus, iconCheck, iconVeg, iconPlate } from './icons.js';
+import { iconTrash, iconPlus, iconCheck, iconVeg, iconPlate, iconBarcode } from './icons.js';
 import { i18n } from './i18n.js';
 import { supabase } from './supabaseClient.js';
 import { initAuth, requireAuth } from './auth.js';
@@ -569,6 +569,22 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const { data: productsContains } = await productsContainsQuery;
 
+    // ========== 1b. ПОШУК У SCANNED_PRODUCTS ==========
+    // Раніше скановані продукти (кеш Open Food Facts) — щоб не сканувати вдруге.
+    const { data: scannedStartsWith } = await supabase
+      .from('scanned_products')
+      .select('*')
+      .or(`name_ua.ilike.${query}%,name_en.ilike.${query}%,name_pl.ilike.${query}%`)
+      .not('kcal', 'is', null)
+      .limit(10);
+
+    const { data: scannedContains } = await supabase
+      .from('scanned_products')
+      .select('*')
+      .or(`name_ua.ilike.%${query}%,name_en.ilike.%${query}%,name_pl.ilike.%${query}%`)
+      .not('kcal', 'is', null)
+      .limit(20);
+
     // ========== 2. ПОШУК В RECIPES ==========
     const { data: recipesStartsWith } = await supabase
       .from('recipes')
@@ -598,6 +614,25 @@ document.addEventListener('DOMContentLoaded', async () => {
         seenProductIds.add(p.id);
         allProducts.push(p);
       }
+    });
+
+    // Скановані продукти — додаємо з позначкою сканера.
+    // Дедуплікуємо за штрихкодом та назвою, щоб не дублювати те, що вже є в products.
+    const seenScannedNames = new Set(
+      allProducts.map((p) => (p.name_ua || p.name_en || p.name_pl || '').toLowerCase())
+    );
+    const seenScannedBarcodes = new Set(
+      allProducts.map((p) => p.barcode).filter(Boolean)
+    );
+
+    [...(scannedStartsWith || []), ...(scannedContains || [])].forEach((p) => {
+      const nameKey = (p.name_ua || p.name_en || p.name_pl || '').toLowerCase();
+      if (!nameKey) return;
+      if (p.barcode && seenScannedBarcodes.has(p.barcode)) return;
+      if (seenScannedNames.has(nameKey)) return;
+      seenScannedNames.add(nameKey);
+      if (p.barcode) seenScannedBarcodes.add(p.barcode);
+      allProducts.push({ ...p, _isScanned: true });
     });
 
     const seenRecipeIds = new Set();
@@ -721,13 +756,18 @@ document.addEventListener('DOMContentLoaded', async () => {
     const li = document.createElement('li');
     li.className = 'modal__item';
 
-    const name = food.name_ua || food.name || '';
+    const name = food.name_ua || food.name_en || food.name_pl || food.name || '';
     const kcal = food.kcal || 0;
     const isOwn = food.user_id ? true : false;
+    const isScanned = food._isScanned ? true : false;
+
+    const scannedBadge = isScanned
+      ? ` <span class="modal__badge modal__badge--scanned" title="${lang === 'ua' ? 'Раніше відсканований продукт' : 'Previously scanned product'}">${iconBarcode}</span>`
+      : '';
 
     li.innerHTML = `
       <div>
-        <strong>${name}</strong>${isOwn ? ' <span class="modal__badge">Мій</span>' : ''}
+        <strong>${name}</strong>${isOwn ? ' <span class="modal__badge">Мій</span>' : ''}${scannedBadge}
         <div style="font-size:12px; opacity:0.7;">
           ${kcal} ${t('kcal')} / ${t('per100')}
         </div>
