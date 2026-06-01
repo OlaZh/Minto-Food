@@ -1,5 +1,7 @@
 import { supabase } from './supabaseClient.js';
 
+const THEME_HINT_KEY = 'minto-theme-hint';
+
 const DEFAULT_PREFERENCES = Object.freeze({
   language: 'ua',
   theme: 'light',
@@ -25,7 +27,21 @@ const DEFAULT_HEALTH_PROFILE = Object.freeze({
   target_weight: null,
 });
 
-let preferencesCache = { ...DEFAULT_PREFERENCES };
+function readThemeHint() {
+  try {
+    return normalizeTheme(localStorage.getItem(THEME_HINT_KEY));
+  } catch {
+    return DEFAULT_PREFERENCES.theme;
+  }
+}
+
+function writeThemeHint(theme) {
+  try {
+    localStorage.setItem(THEME_HINT_KEY, normalizeTheme(theme));
+  } catch {}
+}
+
+let preferencesCache = { ...DEFAULT_PREFERENCES, theme: readThemeHint() };
 let healthProfileCache = { ...DEFAULT_HEALTH_PROFILE };
 let loadedUserId = null;
 let hasLoaded = false;
@@ -64,6 +80,7 @@ function applyPreferences(data = {}) {
     welcome_intro_seen: Boolean(data.welcome_intro_seen ?? preferencesCache.welcome_intro_seen),
     welcome_seen_on: data.welcome_seen_on ?? preferencesCache.welcome_seen_on,
   };
+  writeThemeHint(preferencesCache.theme);
 }
 
 function applyHealthProfile(data = {}) {
@@ -74,7 +91,7 @@ function applyHealthProfile(data = {}) {
 }
 
 function resetCaches() {
-  preferencesCache = { ...DEFAULT_PREFERENCES };
+  preferencesCache = { ...DEFAULT_PREFERENCES, theme: readThemeHint() };
   healthProfileCache = { ...DEFAULT_HEALTH_PROFILE };
 }
 

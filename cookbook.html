@@ -5,6 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Книга рецептів</title>
 
+    <script>
+      document.documentElement.classList.add('no-transition');
+      try {
+        if (localStorage.getItem('minto-theme-hint') === 'dark') {
+          document.documentElement.setAttribute('data-theme', 'dark');
+        }
+      } catch {}
+    </script>
+
     <link rel="stylesheet" href="./css/main.css" />
   </head>
 

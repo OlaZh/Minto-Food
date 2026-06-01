@@ -6,6 +6,11 @@
 
     <script>
       document.documentElement.classList.add('no-transition');
+      try {
+        if (localStorage.getItem('minto-theme-hint') === 'dark') {
+          document.documentElement.setAttribute('data-theme', 'dark');
+        }
+      } catch {}
     </script>
 
     <!-- Dynamic SEO — оновлюється через JS -->
