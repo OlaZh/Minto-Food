@@ -4,6 +4,7 @@
 
 import { supabase } from './supabaseClient.js';
 import { iconVeg, iconCheck } from './icons.js';
+import { saveProfileFields } from './storage.js';
 import { showToast } from './utils.js';
 
 const MIN = 2;
@@ -20,7 +21,7 @@ let _suggested = '';
 export async function checkOnboarding(user) {
   const { data: profile, error } = await supabase
     .from('profiles')
-    .select('display_name, welcome_seen_on')
+    .select('display_name, welcome_intro_seen')
     .eq('id', user.id)
     .maybeSingle();
 
@@ -29,20 +30,17 @@ export async function checkOnboarding(user) {
     return;
   }
 
-  if (profile?.welcome_seen_on || profile?.display_name) {
+  if (profile?.welcome_intro_seen || profile?.display_name) {
     return;
   }
 
-  const { error: markSeenError } = await supabase.from('profiles').upsert(
-    {
-      id: user.id,
-      welcome_seen_on: new Date().toISOString().slice(0, 10),
-    },
-    { onConflict: 'id' },
-  );
+  const markSeenError = !(await saveProfileFields(
+    { welcome_intro_seen: true },
+    user,
+  ));
 
   if (markSeenError) {
-    console.error('[onboarding] failed to mark welcome as shown:', markSeenError);
+    console.error('[onboarding] failed to mark welcome as shown');
     showToast('Не вдалося підготувати вітання. Спробуйте ще раз.', 'error');
     return;
   }
@@ -320,17 +318,14 @@ async function _save(displayName) {
   if (!user) return;
 
   const payload = {
-    id: user.id,
     display_name: displayName,
-    welcome_seen_on: new Date().toISOString().slice(0, 10),
+    welcome_intro_seen: true,
   };
 
-  const { error } = await supabase
-    .from('profiles')
-    .upsert(payload, { onConflict: 'id' });
+  const ok = await saveProfileFields(payload, user);
 
-  if (error) {
-    console.error('[onboarding] failed to save nickname:', error);
+  if (!ok) {
+    console.error('[onboarding] failed to save nickname');
     showToast('Не вдалося зберегти нікнейм. Спробуйте ще раз.', 'error');
     return;
   }
@@ -343,16 +338,13 @@ async function _dismiss() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return;
 
-  const { error } = await supabase.from('profiles').upsert(
-    {
-      id: user.id,
-      welcome_seen_on: new Date().toISOString().slice(0, 10),
-    },
-    { onConflict: 'id' },
+  const ok = await saveProfileFields(
+    { welcome_intro_seen: true },
+    user,
   );
 
-  if (error) {
-    console.error('[onboarding] failed to dismiss welcome:', error);
+  if (!ok) {
+    console.error('[onboarding] failed to dismiss welcome');
     showToast('Не вдалося закрити вітання. Спробуйте ще раз.', 'error');
     return;
   }

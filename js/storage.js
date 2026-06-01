@@ -6,6 +6,7 @@ const DEFAULT_PREFERENCES = Object.freeze({
   unit_system: 'metric',
   copied_day: null,
   copied_week: null,
+  welcome_intro_seen: false,
   welcome_seen_on: null,
 });
 
@@ -60,6 +61,7 @@ function applyPreferences(data = {}) {
     unit_system: normalizeUnitSystem(data.unit_system ?? preferencesCache.unit_system),
     copied_day: clone(data.copied_day ?? preferencesCache.copied_day),
     copied_week: clone(data.copied_week ?? preferencesCache.copied_week),
+    welcome_intro_seen: Boolean(data.welcome_intro_seen ?? preferencesCache.welcome_intro_seen),
     welcome_seen_on: data.welcome_seen_on ?? preferencesCache.welcome_seen_on,
   };
 }
@@ -84,19 +86,40 @@ async function resolveUser(user = null) {
   return currentUser ?? null;
 }
 
-async function upsertProfileFields(fields) {
-  const user = await resolveUser();
-  if (!user) return false;
+async function saveProfileFields(fields, user = null) {
+  const resolvedUser = await resolveUser(user);
+  if (!resolvedUser) return false;
 
-  const payload = { id: user.id, ...fields };
-  const { error } = await supabase.from('profiles').upsert(payload, { onConflict: 'id' });
+  const { data: existingProfile, error: profileLookupError } = await supabase
+    .from('profiles')
+    .select('id')
+    .eq('id', resolvedUser.id)
+    .maybeSingle();
+
+  if (profileLookupError) {
+    console.warn('[storage] profiles lookup failed:', profileLookupError.message);
+    return false;
+  }
+
+  const payload = { id: resolvedUser.id, ...fields };
+  const query = existingProfile
+    ? supabase.from('profiles').update(fields).eq('id', resolvedUser.id)
+    : supabase.from('profiles').insert(payload);
+
+  const { error } = await query;
 
   if (error) {
-    console.warn('[storage] profiles upsert failed:', error.message);
+    console.warn('[storage] profiles save failed:', error.message);
     return false;
   }
 
   return true;
+}
+
+async function upsertProfileFields(fields) {
+  const user = await resolveUser();
+  if (!user) return false;
+  return saveProfileFields(fields, user);
 }
 
 async function upsertHealthProfileFields(fields) {
@@ -144,7 +167,9 @@ export async function loadUserStorage(user = null, { force = false } = {}) {
     const [profileRes, healthRes] = await Promise.all([
       supabase
         .from('profiles')
-        .select('language, theme, unit_system, copied_day, copied_week, welcome_seen_on')
+        .select(
+          'language, theme, unit_system, copied_day, copied_week, welcome_intro_seen, welcome_seen_on',
+        )
         .eq('id', userId)
         .maybeSingle(),
       supabase
@@ -306,17 +331,33 @@ export async function clearCopiedState() {
   await upsertProfileFields({ copied_day: null, copied_week: null });
 }
 
+export function hasCompletedWelcomeIntro() {
+  return preferencesCache.welcome_intro_seen === true;
+}
+
+export async function markWelcomeIntroSeen() {
+  if (preferencesCache.welcome_intro_seen) {
+    return true;
+  }
+
+  applyPreferences({ welcome_intro_seen: true });
+  return upsertProfileFields({ welcome_intro_seen: true });
+}
+
 export function hasSeenWelcomeToday() {
-  return Boolean(preferencesCache.welcome_seen_on);
+  return preferencesCache.welcome_seen_on === todayIsoDate();
 }
 
 export async function markWelcomeSeenToday() {
-  if (preferencesCache.welcome_seen_on) {
-    return preferencesCache.welcome_seen_on;
+  const value = todayIsoDate();
+
+  if (preferencesCache.welcome_seen_on === value) {
+    return null;
   }
 
-  const value = todayIsoDate();
   applyPreferences({ welcome_seen_on: value });
   await upsertProfileFields({ welcome_seen_on: value });
   return value;
 }
+
+export { saveProfileFields };

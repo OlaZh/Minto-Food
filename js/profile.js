@@ -23,6 +23,7 @@ import {
   setLang,
   setUnitSystem,
 } from './storage.js';
+import { saveProfileFields } from './storage.js';
 import { initCustomSelect, setSelectValue, initSelectsGlobalListener, showConfirmModal } from './ui-components.js';
 
 // =====================================
@@ -1807,11 +1808,9 @@ function _initNicknameEditor(user) {
     saveBtn.disabled = true;
     saveBtn.textContent = 'Збереження…';
 
-    const { error } = await supabase
-      .from('profiles')
-      .upsert({ id: user.id, display_name: val }, { onConflict: 'id' });
+    const ok = await saveProfileFields({ display_name: val }, user);
 
-    if (error) {
+    if (!ok) {
       _setNbHint(hint, 'Помилка збереження', '#e74c3c');
       saveBtn.disabled = false;
       saveBtn.textContent = 'Зберегти';
@@ -1903,16 +1902,7 @@ async function syncReminderPreference(field, enabled) {
   const user = getCurrentUser();
   if (!user) return false;
 
-  const { error } = await supabase
-    .from('profiles')
-    .upsert({ id: user.id, [field]: enabled }, { onConflict: 'id' });
-
-  if (error) {
-    console.warn(`profiles ${field} upsert:`, error.message);
-    return false;
-  }
-
-  return true;
+  return saveProfileFields({ [field]: enabled }, user);
 }
 
 function bindReminderToggle(inputId, field, initialValue, successMessage) {

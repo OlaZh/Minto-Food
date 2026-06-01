@@ -65,10 +65,11 @@
 
 .site-footer__tagline {
   font-size: 12px;
-  color: rgba(255, 255, 255, 0.55);
+  color: var(--color-text-inverse);
   line-height: 1.4;
   max-width: 200px;
   margin: 0;
+  opacity: 0.78;
 }
 
 /* ---- Column ---- */
@@ -84,8 +85,9 @@
   font-weight: 500;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--color-text-inverse);
   margin: 0 0 6px;
+  opacity: 0.7;
 }
 
 .site-footer__links {
@@ -99,12 +101,14 @@
   a {
     font-size: 13px;
     font-weight: 400;
-    color: rgba(255, 255, 255, 0.75);
+    color: var(--color-text-inverse);
     text-decoration: none;
     transition: color 0.15s ease;
+    opacity: 0.88;
 
     &:hover {
-      color: #ffffff;
+      color: var(--color-text-inverse);
+      opacity: 1;
     }
   }
 }
@@ -137,8 +141,8 @@
     font-weight: 500;
     letter-spacing: 0.1em;
     text-transform: uppercase;
-    color: var(--color-text-secondary);
-    opacity: 0.6;
+    color: var(--color-text-inverse);
+    opacity: 0.74;
     cursor: pointer;
     list-style: none;
     user-select: none;
@@ -170,12 +174,12 @@
     a {
       font-size: 14px;
       font-weight: 400;
-      color: var(--color-text-primary);
+      color: var(--color-text-inverse);
       text-decoration: none;
-      opacity: 0.82;
+      opacity: 0.88;
 
       &:hover {
-        color: var(--color-accent);
+        color: var(--color-text-inverse);
         opacity: 1;
       }
     }
@@ -205,8 +209,9 @@
 
 .site-footer__copyright {
   font-size: 12px;
-  color: rgba(255, 255, 255, 0.45);
+  color: var(--color-text-inverse);
   margin: 0;
+  opacity: 0.7;
 }
 
 /* ---- Language switcher ---- */
@@ -218,7 +223,8 @@
 
   span {
     font-size: 11px;
-    color: rgba(255, 255, 255, 0.3);
+    color: var(--color-text-inverse);
+    opacity: 0.6;
   }
 }
 
@@ -229,18 +235,21 @@
   font-weight: 600;
   font-family: var(--font-body);
   letter-spacing: 0.05em;
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--color-text-inverse);
   cursor: pointer;
   padding: 2px 4px;
   border-radius: 3px;
   transition: opacity 0.15s ease, color 0.15s ease;
+  opacity: 0.72;
 
   &:hover {
-    color: rgba(255, 255, 255, 0.9);
+    color: var(--color-text-inverse);
+    opacity: 1;
   }
 
   &.is-active {
-    color: #ffffff;
+    color: var(--color-text-inverse);
+    opacity: 1;
   }
 }
 
@@ -248,8 +257,8 @@
 
 .site-footer__made {
   font-size: 11px;
-  color: var(--color-text-secondary);
+  color: var(--color-text-inverse);
   margin: 0;
-  opacity: 0.55;
+  opacity: 0.7;
   white-space: nowrap;
 }

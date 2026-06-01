@@ -9,6 +9,7 @@ import { lockScroll, unlockScroll } from './scroll-lock.js';
 import {
   clearStorageCache,
   getLang,
+  hasCompletedWelcomeIntro,
   hasSeenWelcomeToday,
   loadUserStorage,
   markWelcomeSeenToday,
@@ -95,8 +96,8 @@ export async function initAuth(onAuthChange = null) {
       await loadUserStorage(session.user, { force: true });
 
       // Показуємо onboarding лише один раз після підвантаження DB-backed прапорця
-      if (session?.user && !hasSeenWelcomeToday()) {
-        const { checkOnboarding } = await import('./onboarding.js?v=20260601-3');
+      if (session?.user && !hasCompletedWelcomeIntro()) {
+        const { checkOnboarding } = await import('./onboarding.js?v=20260601-5');
         await checkOnboarding(session.user);
         await loadUserStorage(session.user, { force: true });
       }
