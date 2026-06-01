@@ -4,6 +4,7 @@
 
 import { supabase } from './supabaseClient.js';
 import { iconVeg, iconCheck } from './icons.js';
+import { showToast } from './utils.js';
 
 const MIN = 2;
 const MAX = 25;
@@ -17,13 +18,18 @@ let _suggested = '';
 // ── Публічний метод ───────────────────────────────────────────
 
 export async function checkOnboarding(user) {
-  const { data: profile } = await supabase
+  const { data: profile, error } = await supabase
     .from('profiles')
-    .select('display_name')
+    .select('display_name, welcome_seen_on')
     .eq('id', user.id)
-    .single();
+    .maybeSingle();
 
-  if (profile?.display_name) {
+  if (error) {
+    console.warn('[onboarding] failed to load profile:', error.message);
+    return;
+  }
+
+  if (profile?.welcome_seen_on || profile?.display_name) {
     return;
   }
 
@@ -205,7 +211,7 @@ function _mount(suggested) {
 
 function _bindSuggestView() {
   document.getElementById('onbAcceptBtn')?.addEventListener('click', () => _save(_suggested));
-  document.getElementById('onbLaterBtn')?.addEventListener('click', () => _save(_suggested));
+  document.getElementById('onbLaterBtn')?.addEventListener('click', () => _dismiss());
   document.getElementById('onbEditBtn')?.addEventListener('click', _showEditView);
 }
 
@@ -299,9 +305,43 @@ async function _save(displayName) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return;
 
-  await supabase
+  const payload = {
+    id: user.id,
+    display_name: displayName,
+    welcome_seen_on: new Date().toISOString().slice(0, 10),
+  };
+
+  const { error } = await supabase
     .from('profiles')
-    .upsert({ id: user.id, display_name: displayName }, { onConflict: 'id' });
+    .upsert(payload, { onConflict: 'id' });
+
+  if (error) {
+    console.error('[onboarding] failed to save nickname:', error);
+    showToast('Не вдалося зберегти нікнейм. Спробуйте ще раз.', 'error');
+    return;
+  }
+
+  document.getElementById('onboarding-overlay')?.remove();
+  _resolveFn?.();
+}
+
+async function _dismiss() {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return;
+
+  const { error } = await supabase.from('profiles').upsert(
+    {
+      id: user.id,
+      welcome_seen_on: new Date().toISOString().slice(0, 10),
+    },
+    { onConflict: 'id' },
+  );
+
+  if (error) {
+    console.error('[onboarding] failed to dismiss welcome:', error);
+    showToast('Не вдалося закрити вітання. Спробуйте ще раз.', 'error');
+    return;
+  }
 
   document.getElementById('onboarding-overlay')?.remove();
   _resolveFn?.();

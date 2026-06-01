@@ -307,11 +307,16 @@ export async function clearCopiedState() {
 }
 
 export function hasSeenWelcomeToday() {
-  return preferencesCache.welcome_seen_on === todayIsoDate();
+  return Boolean(preferencesCache.welcome_seen_on);
 }
 
 export async function markWelcomeSeenToday() {
+  if (preferencesCache.welcome_seen_on) {
+    return preferencesCache.welcome_seen_on;
+  }
+
   const value = todayIsoDate();
   applyPreferences({ welcome_seen_on: value });
   await upsertProfileFields({ welcome_seen_on: value });
+  return value;
 }
