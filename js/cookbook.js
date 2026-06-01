@@ -24,6 +24,12 @@ function getCoverSrc(filename) {
   return `img/covers/${filename}.avif`;
 }
 
+function recipesLabel(n) {
+  if (n % 10 === 1 && n % 100 !== 11) return `${n} Ń€ĐµŃ†ĐµĐżŃ‚`;
+  if ([2, 3, 4].includes(n % 10) && ![12, 13, 14].includes(n % 100)) return `${n} Ń€ĐµŃ†ĐµĐżŃ‚Đ¸`;
+  return `${n} Ń€ĐµŃ†ĐµĐżŃ‚Ń–Đ˛`;
+}
+
 function renderIconPickerHTML(activeIcon = 'book') {
   return Object.entries(BOOK_ICONS)
     .map(
@@ -212,11 +218,16 @@ async function loadBooks() {
     if (error) throw error;
 
     const safeBooks = books || [];
-    const recipeCounts = await loadRecipeCounts(safeBooks);
+    renderBooks(safeBooks, new Map(), version);
 
-    if (version !== _loadVersion) return;
-
-    renderBooks(safeBooks, recipeCounts, version);
+    loadRecipeCounts(safeBooks)
+      .then((recipeCounts) => {
+        if (version !== _loadVersion) return;
+        applyRecipeCounts(recipeCounts);
+      })
+      .catch((countsError) => {
+        console.error('Error loading recipe counts:', countsError);
+      });
   } catch (err) {
     clearTimeout(skeletonTimer);
     if (version !== _loadVersion) return;
@@ -268,6 +279,17 @@ function renderBooks(books, recipeCounts, version) {
     if (version !== _loadVersion) return;
     booksGrid.appendChild(bookEl);
   }
+}
+
+function applyRecipeCounts(recipeCounts) {
+  if (!booksGrid) return;
+
+  booksGrid.querySelectorAll('.cookbook-book').forEach((bookEl) => {
+    const bookId = bookEl.dataset.bookId;
+    const countEl = bookEl.querySelector('.cookbook-book__count');
+    if (!bookId || !countEl) return;
+    countEl.textContent = recipesLabel(recipeCounts.get(bookId) || 0);
+  });
 }
 
 // Замінити функцію createBookElement в cookbook.js
