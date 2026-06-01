@@ -96,7 +96,7 @@ export async function initAuth(onAuthChange = null) {
 
       // Показуємо onboarding лише один раз після підвантаження DB-backed прапорця
       if (session?.user && !hasSeenWelcomeToday()) {
-        const { checkOnboarding } = await import('./onboarding.js?v=20260601-2');
+        const { checkOnboarding } = await import('./onboarding.js?v=20260601-3');
         await checkOnboarding(session.user);
         await loadUserStorage(session.user, { force: true });
       }

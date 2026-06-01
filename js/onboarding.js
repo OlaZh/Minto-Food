@@ -33,6 +33,20 @@ export async function checkOnboarding(user) {
     return;
   }
 
+  const { error: markSeenError } = await supabase.from('profiles').upsert(
+    {
+      id: user.id,
+      welcome_seen_on: new Date().toISOString().slice(0, 10),
+    },
+    { onConflict: 'id' },
+  );
+
+  if (markSeenError) {
+    console.error('[onboarding] failed to mark welcome as shown:', markSeenError);
+    showToast('Не вдалося підготувати вітання. Спробуйте ще раз.', 'error');
+    return;
+  }
+
   _suggested = await _generateNickname(user);
 
   return new Promise(resolve => {
