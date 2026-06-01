@@ -92,17 +92,20 @@ export async function initAuth(onAuthChange = null) {
 
       const userId = session?.user?.id;
 
-      // Перевіряємо чи обраний нікнейм — якщо ні, показуємо onboarding
-      if (session?.user) {
-        const { checkOnboarding } = await import('./onboarding.js');
-        await checkOnboarding(session.user);
-      }
-
       await loadUserStorage(session.user, { force: true });
 
+      // Показуємо onboarding лише один раз після підвантаження DB-backed прапорця
+      if (session?.user && !hasSeenWelcomeToday()) {
+        const { checkOnboarding } = await import('./onboarding.js?v=20260601-2');
+        await checkOnboarding(session.user);
+        await loadUserStorage(session.user, { force: true });
+      }
+
       if (userId && !hasSeenWelcomeToday()) {
-        await markWelcomeSeenToday();
-        showToast('Ласкаво просимо!');
+        const markedOn = await markWelcomeSeenToday();
+        if (markedOn) {
+          showToast('Ласкаво просимо!');
+        }
       }
     }
 
