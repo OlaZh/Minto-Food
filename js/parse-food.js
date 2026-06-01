@@ -2,6 +2,7 @@
 // Парсер продуктів з pg_trgm пошуком через Supabase
 
 import { supabase } from './supabaseClient.js';
+import { formatAmount as formatDisplayAmount } from './utils.js';
 
 // =====================================
 // КОНСТАНТИ
@@ -515,17 +516,5 @@ export function parseIngredientsText(text) {
  */
 export function formatAmount(amount, unit) {
   if (!amount) return '';
-
-  const num = parseFloat(amount);
-  if (isNaN(num)) return '';
-
-  if (unit === 'г' && num >= 1000) {
-    return `${(num / 1000).toFixed(1)} кг`;
-  }
-  if (unit === 'мл' && num >= 1000) {
-    return `${(num / 1000).toFixed(1)} л`;
-  }
-
-  const formatted = num % 1 === 0 ? num.toString() : num.toFixed(1);
-  return `${formatted} ${unit || 'шт'}`;
+  return formatDisplayAmount(parseFloat(amount), unit || 'шт');
 }

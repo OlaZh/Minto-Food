@@ -1,39 +1,47 @@
 import { createClient } from '@/lib/supabase/server'
 import UsersClient from './UsersClient'
 
-export default async function UsersPage() {
+const PAGE_SIZE = 50
+
+export default async function UsersPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string; page?: string }>
+}) {
+  const params = await searchParams
   const supabase = await createClient()
 
-  const { data: users } = await supabase
-    .from('profiles')
-    .select('id, full_name, is_admin, is_banned, is_shadow_banned, strikes, freeze_until, created_at')
-    .order('created_at', { ascending: false })
-    .limit(100)
+  const query = params.q?.trim() ?? ''
+  const page = Math.max(1, parseInt(params.page ?? '1', 10))
+  const offset = (page - 1) * PAGE_SIZE
 
-  const userIds = (users ?? []).map((u: any) => u.id)
+  const [
+    { data: users, error },
+    { count: adminCount },
+    { data: { session } },
+  ] = await Promise.all([
+    supabase.rpc('admin_search_users', {
+      p_query: query || null,
+      p_offset: offset,
+      p_limit: PAGE_SIZE,
+    }),
+    supabase.from('profiles').select('id', { count: 'exact', head: true }).eq('is_admin', true),
+    supabase.auth.getSession(),
+  ])
 
-  let recipeCounts: Record<string, number> = {}
-  let lastActiveMap: Record<string, string> = {}
+  const rows = users ?? []
+  const totalCount = rows[0]?.total_count ?? 0
 
-  if (userIds.length) {
-    const [{ data: recipeRows }, { data: mealRows }] = await Promise.all([
-      supabase.from('recipes').select('user_id').in('user_id', userIds).is('deleted_at', null),
-      supabase.from('meals').select('user_id, created_at').in('user_id', userIds).order('created_at', { ascending: false }).limit(500),
-    ])
-
-    recipeRows?.forEach((r: any) => {
-      recipeCounts[r.user_id] = (recipeCounts[r.user_id] ?? 0) + 1
-    })
-    mealRows?.forEach((m: any) => {
-      if (!lastActiveMap[m.user_id]) lastActiveMap[m.user_id] = m.created_at
-    })
-  }
-
-  const enriched = (users ?? []).map((u: any) => ({
-    ...u,
-    recipeCount: recipeCounts[u.id] ?? 0,
-    lastActive: lastActiveMap[u.id] ?? null,
-  }))
-
-  return <UsersClient users={enriched} />
+  return (
+    <UsersClient
+      users={rows}
+      errorMessage={error?.message ?? null}
+      searchQuery={query}
+      page={page}
+      pageSize={PAGE_SIZE}
+      totalCount={totalCount}
+      currentUserId={session?.user?.id ?? null}
+      adminCount={adminCount ?? 0}
+    />
+  )
 }

@@ -11,13 +11,16 @@ import {
   iconUser, iconSettings,
 } from './icons.js';
 import { initAuth, requireAuth, getCurrentUser, openAuthModal, signOut } from './auth.js';
-import { showToast } from './utils.js';
+import { getDayWord, showToast } from './utils.js';
 import {
-  getWeightHistory,
-  addWeightRecord,
+  getDailyCaloriesNorm,
+  getUnitSystem,
+  loadUserStorage,
+  mergeUserProfileCache,
   setTheme,
   getLang,
   setLang,
+  setUnitSystem,
 } from './storage.js';
 import { initCustomSelect, setSelectValue, initSelectsGlobalListener, showConfirmModal } from './ui-components.js';
 
@@ -84,6 +87,7 @@ let weightChart2 = null;
 let activityChart = null;
 let currentPeriod = 'week'; // Додано: змінна для періоду
 let activityCache = []; // дзеркало user_activities з Supabase (синхронний доступ для рендера)
+let weightHistoryCache = [];
 
 let statisticsCharts = {
   balancePieChart: null,
@@ -120,7 +124,8 @@ async function loadWeightFromSupabase(userId) {
     console.warn('weight_records fetch:', error.message);
     return null;
   }
-  return data || [];
+  weightHistoryCache = data || [];
+  return weightHistoryCache;
 }
 
 // =====================================
@@ -959,15 +964,7 @@ function renderAll(data) {
   if (normWaterEl) normWaterEl.textContent = data.water;
 
   updateBMI(data.weight, data.height);
-
-  localStorage.setItem('dailyCaloriesNorm', data.calories);
-  localStorage.setItem('userProtein', data.protein);
-  localStorage.setItem('userFat', data.fat);
-  localStorage.setItem('userCarbs', data.carbs);
-  localStorage.setItem('userWater', data.water);
-  localStorage.setItem('userWeight', data.weight);
-  localStorage.setItem('userHeight', data.height);
-  localStorage.setItem('userGoal', data.goal);
+  mergeUserProfileCache(data);
 }
 
 // =====================================
@@ -976,11 +973,7 @@ function renderAll(data) {
 
 async function loadProfileFromSupabase() {
   const user = getCurrentUser();
-
-  if (!user) {
-    loadFromLocalStorage();
-    return;
-  }
+  if (!user) return null;
 
   const { data, error } = await supabase
     .from('user_profiles')
@@ -988,22 +981,12 @@ async function loadProfileFromSupabase() {
     .eq('user_id', user.id)
     .maybeSingle();
 
-  if (error || !data) {
-    loadFromLocalStorage();
-    return;
-  }
+  if (error || !data) return null;
 
   fillForm(data);
   renderAll(data);
   updateProfileHeader(user);
-}
-
-function loadFromLocalStorage() {
-  const saved = JSON.parse(localStorage.getItem('userProfile') || 'null');
-  if (saved) {
-    fillForm(saved);
-    renderAll(saved);
-  }
+  return data;
 }
 
 function fillForm(data) {
@@ -1080,11 +1063,7 @@ async function updateProfileHeader(user) {
 
 async function saveProfileToSupabase(data) {
   const user = getCurrentUser();
-
-  if (!user) {
-    localStorage.setItem('userProfile', JSON.stringify(data));
-    return;
-  }
+  if (!user) return;
 
   const payload = {
     user_id: user.id,
@@ -1113,7 +1092,7 @@ async function saveProfileToSupabase(data) {
     return;
   }
 
-  localStorage.setItem('userProfile', JSON.stringify(data));
+  mergeUserProfileCache(data);
   showToast('Профіль збережено');
 }
 
@@ -1128,13 +1107,13 @@ function generateWeightAdvice() {
   if (!adviceContainer) return;
 
   const weight = parseFloat(
-    localStorage.getItem('userWeight') || document.getElementById('weight')?.value || 0,
+    document.getElementById('weight')?.value || 0,
   );
   const height = parseFloat(
-    localStorage.getItem('userHeight') || document.getElementById('height')?.value || 0,
+    document.getElementById('height')?.value || 0,
   );
   const goal =
-    localStorage.getItem('userGoal') || document.getElementById('goalInput')?.value || 'maintain';
+    document.getElementById('goalInput')?.value || 'maintain';
   const targetWeight = parseFloat(
     document.getElementById('targetWeight')?.value ||
       document.getElementById('targetWeight2')?.value ||
@@ -1175,7 +1154,7 @@ function generateWeightAdvice() {
   if (targetWeight > 0 && weight > 0) {
     const diff = Math.abs(weightDiff);
     const direction = weightDiff > 0 ? 'скинути' : 'набрати';
-    const startWeight = parseFloat(localStorage.getItem('startWeight') || weight);
+    const startWeight = parseFloat(weightHistoryCache[0]?.weight || weight);
     const totalToLose = Math.abs(startWeight - targetWeight);
     const alreadyLost = Math.abs(startWeight - weight);
     const progressPercent =
@@ -1455,8 +1434,6 @@ async function deleteActivity(activityId) {
   initActivityChart();
 }
 
-window.deleteActivity = deleteActivity;
-
 function updateTodayStats() {
   const history = getActivityHistory();
   const today = new Date().toDateString();
@@ -1476,11 +1453,10 @@ function updateTodayStats() {
   if (countEl) countEl.textContent = totalCount;
 
   updateCalorieImpact(totalCalories);
-  localStorage.setItem('todayBurnedCalories', totalCalories);
 }
 
 function updateCalorieImpact(burnedCalories) {
-  const baseCalories = parseInt(localStorage.getItem('dailyCaloriesNorm') || 0);
+  const baseCalories = getDailyCaloriesNorm();
   const totalCalories = baseCalories + burnedCalories;
 
   const baseEl = document.getElementById('impactBaseCalories');
@@ -1555,7 +1531,7 @@ function renderActivityHistory(period) {
             <span class="activity-item__calories-value">-${activity.calories}</span>
             <span class="activity-item__calories-label">ккал</span>
           </div>
-          <button class="activity-item__delete" onclick="deleteActivity(${activity.id})" title="Видалити">${iconXCircle}</button>
+          <button class="activity-item__delete" data-activity-id="${activity.id}" title="Видалити">${iconXCircle}</button>
         </div>
       `;
     });
@@ -1564,6 +1540,12 @@ function renderActivityHistory(period) {
   }
 
   container.innerHTML = html;
+  container.querySelectorAll('.activity-item__delete').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const activityId = Number(btn.dataset.activityId);
+      if (activityId) deleteActivity(activityId);
+    });
+  });
 }
 
 function initActivityChart() {
@@ -1913,14 +1895,13 @@ function initSettings(user) {
     });
   });
 
-  // Unit buttons (UI only — no backend yet)
-  const savedUnit = localStorage.getItem('units') || 'metric';
+  const savedUnit = getUnitSystem();
   document.querySelectorAll('.settings-unit-btn').forEach((btn) => {
     btn.classList.toggle('active', btn.dataset.unit === savedUnit);
     btn.addEventListener('click', () => {
       document.querySelectorAll('.settings-unit-btn').forEach((b) => b.classList.remove('active'));
       btn.classList.add('active');
-      localStorage.setItem('units', btn.dataset.unit);
+      setUnitSystem(btn.dataset.unit);
     });
   });
 
@@ -1960,7 +1941,7 @@ function initCaloriesInlineEdit() {
   function startEdit() {
     if (editing) return;
     editing = true;
-    const current = parseInt(localStorage.getItem('dailyCaloriesNorm') || '0');
+    const current = getDailyCaloriesNorm();
     inputEl.value = current || '';
     inputEl.hidden = false;
     displayEl.hidden = true;
@@ -1979,7 +1960,7 @@ function initCaloriesInlineEdit() {
     if (!val || val < 500 || val > 10000) return;
 
     displayEl.textContent = `${val} ккал`;
-    localStorage.setItem('dailyCaloriesNorm', val);
+    mergeUserProfileCache({ calories: val });
 
     const user = getCurrentUser();
     if (user) {
@@ -2013,15 +1994,6 @@ function initCaloriesInlineEdit() {
 // INIT
 // =====================================
 
-function getDayWord(n) {
-  const l2 = n % 100,
-    l1 = n % 10;
-  if (l2 >= 11 && l2 <= 14) return 'днів';
-  if (l1 === 1) return 'день';
-  if (l1 >= 2 && l1 <= 4) return 'дні';
-  return 'днів';
-}
-
 async function loadProfileStreak(userId) {
   const currentEl = document.getElementById('profileCurrentStreak');
   const longestEl = document.getElementById('profileLongestStreak');
@@ -2044,13 +2016,10 @@ async function loadProfileStreak(userId) {
 async function initProfile() {
   const user = await initAuth(async (event, user) => {
     if (event === 'SIGNED_IN') {
+      await loadUserStorage(user, { force: true });
       await loadProfileFromSupabase();
       updateProfileHeader(user);
       initProfileTabs();
-    }
-
-    if (event === 'SIGNED_OUT') {
-      loadFromLocalStorage();
     }
   });
 
@@ -2079,6 +2048,7 @@ async function initProfile() {
   recordWeightBtn?.addEventListener('click', recordNewWeight);
 
   initSelectsGlobalListener();
+  await loadUserStorage(user, { force: true });
   await loadProfileFromSupabase();
   await loadProfileStreak(user.id);
 

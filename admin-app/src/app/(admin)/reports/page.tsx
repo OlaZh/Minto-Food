@@ -1,6 +1,36 @@
 import { createClient } from '@/lib/supabase/server'
 import ReportsClient from './ReportsClient'
 
+interface ReportRecipeRow {
+  id: string
+  slug: string | null
+  name_ua: string | null
+  name_en: string | null
+  image: string | null
+  status: string
+  user_id: string | null
+  category: string | null
+}
+
+interface ReportRow {
+  id: string
+  reason: string | null
+  admin_notes: string | null
+  created_at: string
+  status: string
+  recipe_id: string | null
+  reporter_id: string | null
+  recipe: ReportRecipeRow | null
+}
+
+interface ProfileSummary {
+  id: string
+  full_name: string | null
+  is_banned: boolean
+  strikes: number
+  created_at: string
+}
+
 export default async function ReportsPage({
   searchParams,
 }: {
@@ -21,12 +51,13 @@ export default async function ReportsPage({
   if (status !== 'all') query = query.eq('status', status)
 
   const { data: reports } = await query
+  const rows = (reports ?? []) as ReportRow[]
 
-  const authorIds = [...new Set((reports ?? []).map((r: any) => r.recipe?.user_id).filter(Boolean))]
-  const reporterIds = [...new Set((reports ?? []).map((r: any) => r.reporter_id).filter(Boolean))]
+  const authorIds = [...new Set(rows.map((r) => r.recipe?.user_id).filter(Boolean))] as string[]
+  const reporterIds = [...new Set(rows.map((r) => r.reporter_id).filter(Boolean))] as string[]
   const allIds = [...new Set([...authorIds, ...reporterIds])]
 
-  let profilesMap: Record<string, any> = {}
+  let profilesMap: Record<string, ProfileSummary & { recipe_count: number; report_count: number }> = {}
 
   if (allIds.length) {
     const [{ data: profiles }, { data: recipesData }] = await Promise.all([
@@ -62,7 +93,7 @@ export default async function ReportsPage({
     }
 
     profilesMap = Object.fromEntries(
-      (profiles ?? []).map((p: any) => [p.id, {
+      ((profiles ?? []) as ProfileSummary[]).map((p) => [p.id, {
         ...p,
         recipe_count: recipeCountMap[p.id] ?? 0,
         report_count: reportCountMap[p.id] ?? 0,
@@ -70,7 +101,7 @@ export default async function ReportsPage({
     )
   }
 
-  const enriched = (reports ?? []).map((r: any) => ({
+  const enriched = rows.map((r) => ({
     ...r,
     recipe: r.recipe ? { ...r.recipe, author: profilesMap[r.recipe.user_id] ?? null } : null,
     reporter: profilesMap[r.reporter_id] ?? null,

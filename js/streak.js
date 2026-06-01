@@ -8,6 +8,7 @@
 
 import { supabase } from './supabaseClient.js';
 import { iconGym, iconSprout, iconTrophy, iconStar } from './icons.js';
+import { getDayWord } from './utils.js';
 
 // ============================================================
 //  DOM ELEMENTS
@@ -23,20 +24,6 @@ const streakSubMobileEl   = document.getElementById('streakSubMobile');
 // ============================================================
 //  УКРАЇНСЬКА ПЛЮРАЛІЗАЦІЯ
 // ============================================================
-
-/**
- * Повертає правильну форму слова "день" для українського числа
- * 1 день, 2-4 дні, 5+ днів
- */
-function getDayWord(count) {
-  const lastTwo = count % 100;
-  const lastOne = count % 10;
-
-  if (lastTwo >= 11 && lastTwo <= 14) return 'днів';
-  if (lastOne === 1) return 'день';
-  if (lastOne >= 2 && lastOne <= 4) return 'дні';
-  return 'днів';
-}
 
 // ============================================================
 //  МОТИВАЦІЙНІ ПОВІДОМЛЕННЯ

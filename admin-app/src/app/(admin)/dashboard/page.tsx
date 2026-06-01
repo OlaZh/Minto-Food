@@ -4,12 +4,11 @@ import { AlertTriangle, Shield, Users, Package } from 'lucide-react'
 
 export default async function DashboardPage() {
   const supabase = await createClient()
-  const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
 
   const [reportsRes, pendingRecipesRes, activeUsersRes, userProductsRes] = await Promise.all([
     supabase.from('recipe_reports').select('id', { count: 'exact', head: true }).eq('status', 'pending'),
     supabase.from('recipes').select('id', { count: 'exact', head: true }).eq('status', 'pending').is('deleted_at', null),
-    supabase.from('meals').select('user_id', { count: 'exact', head: true }).gte('created_at', sevenDaysAgo),
+    supabase.rpc('admin_count_active_users_last_7d'),
     supabase.from('products').select('id', { count: 'exact', head: true }).not('user_id', 'is', null).is('deleted_at', null),
   ])
 
@@ -30,7 +29,7 @@ export default async function DashboardPage() {
     },
     {
       label: 'Активних (7д)',
-      value: activeUsersRes.count ?? 0,
+      value: activeUsersRes.data ?? 0,
       href: '/users',
       icon: Users,
       alert: false,

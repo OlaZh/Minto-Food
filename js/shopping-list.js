@@ -9,7 +9,6 @@ import { supabase } from './supabaseClient.js';
 import { initAuth } from './auth.js';
 import { showToast, escapeHTML } from './utils.js';
 import { lockScroll, unlockScroll } from './scroll-lock.js';
-import { getWeekShoppingList, clearWeekShoppingList } from './storage.js';
 import { iconLock, iconPin, iconMoreVertical, iconChevronRight, iconEdit, iconTrash, iconLink, iconBroom } from './icons.js';
 import { showConfirmModal } from './ui-components.js';
 
@@ -49,7 +48,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     await initLists();
     subscribeToMainList();
     startPolling();
-    checkWeekMenuImport();
   }
   bindEvents();
 
@@ -813,27 +811,12 @@ async function saveEdit() {
    ============================================================ */
 
 function checkWeekMenuImport() {
-  const items = getWeekShoppingList();
-  if (items?.length > 0) importBannerEl.hidden = false;
+  if (importBannerEl) importBannerEl.hidden = true;
 }
 
 async function importFromWeekMenu() {
-  if (!mainListId) return;
-  const items = getWeekShoppingList();
-  if (!items?.length) return;
-
-  const rows = items.map(i => ({
-    list_id: mainListId, user_id: currentUser.id,
-    name: i.name, amount: i.amount || null,
-    unit: i.unit || null, category: i.category || 'Інше', is_checked: false,
-  }));
-
-  const { error } = await supabase.from('shopping_items').insert(rows);
-  if (error) { showToast('Помилка імпорту', 'error'); return; }
-  clearWeekShoppingList();
-  importBannerEl.hidden = true;
-  showToast(`Імпортовано ${rows.length} продуктів`);
-  await loadActiveItems();
+  if (importBannerEl) importBannerEl.hidden = true;
+  showToast('Тепер меню тижня додає покупки напряму в БД', 'info');
 }
 
 /* ============================================================
@@ -987,7 +970,6 @@ function bindEvents() {
   document.getElementById('shop-import-confirm').addEventListener('click', importFromWeekMenu);
   document.getElementById('shop-import-dismiss').addEventListener('click', () => {
     importBannerEl.hidden = true;
-    clearWeekShoppingList();
   });
 
   // Редагування модалка

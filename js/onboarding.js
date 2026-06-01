@@ -17,9 +17,6 @@ let _suggested = '';
 // ── Публічний метод ───────────────────────────────────────────
 
 export async function checkOnboarding(user) {
-  // Швидка перевірка — якщо вже проходив онбординг, не турбуємо
-  if (localStorage.getItem(`minto_onb_${user.id}`)) return;
-
   const { data: profile } = await supabase
     .from('profiles')
     .select('display_name')
@@ -27,7 +24,6 @@ export async function checkOnboarding(user) {
     .single();
 
   if (profile?.display_name) {
-    localStorage.setItem(`minto_onb_${user.id}`, '1'); // більше не питаємо
     return;
   }
 
@@ -307,7 +303,6 @@ async function _save(displayName) {
     .from('profiles')
     .upsert({ id: user.id, display_name: displayName }, { onConflict: 'id' });
 
-  localStorage.setItem(`minto_onb_${user.id}`, '1');
   document.getElementById('onboarding-overlay')?.remove();
   _resolveFn?.();
 }

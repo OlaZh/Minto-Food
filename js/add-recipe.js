@@ -1,9 +1,9 @@
 import { supabase } from './supabaseClient.js';
 import { initAuth } from './auth.js';
 import { showToast, toBase64, parseNumber, setInputVal } from './utils.js';
-import { getLang } from './storage.js';
+import { getLang, loadUserStorage } from './storage.js';
 import { i18n } from './i18n.js';
-import { getRecipeDisplayName } from './recipe-utils.js';
+import { getRecipeName } from './recipe-utils.js';
 import { lockScroll, unlockScroll } from './scroll-lock.js';
 import { showLoading, showConfirmModal } from './ui-components.js';
 import { initRecipeModal, openRecipeModal } from './recipe-modal.js';
@@ -56,6 +56,7 @@ let currentViewingId = null;
 let editingRecipeId = null;
 let _editingRecipeOriginal = null;
 let currentUser = null;
+let tempAiImage = null;
 
 // Пошук/browsing state
 let searchOwnShowAll = false;
@@ -89,10 +90,6 @@ const updateStarsUI = (rating) => {
     valDisplay.textContent = numericRating > 0 ? numericRating.toFixed(1) : '0.0';
   }
 };
-
-function getRecipeName(recipe) {
-  return getRecipeDisplayName(recipe, getLang());
-}
 
 function isOwnRecipe(recipe) {
   if (!currentUser || !recipe) return false;
@@ -1078,7 +1075,7 @@ const closeModal = () => {
   if (modal) {
     modal.classList.remove('is-active');
     editingRecipeId = null;
-    window.tempAiImage = null;
+    tempAiImage = null;
 
     if (previewFormElement) previewFormElement.reset();
 
@@ -1122,7 +1119,7 @@ const showForm = (data = null) => {
 
   if (data) {
     if (data.image) {
-      window.tempAiImage = data.image;
+      tempAiImage = data.image;
     }
 
     setInputVal('prev-name', data.name);
@@ -1144,7 +1141,7 @@ const showForm = (data = null) => {
     }, 50);
   } else if (previewFormElement) {
     previewFormElement.reset();
-    window.tempAiImage = null;
+    tempAiImage = null;
     const ingField = document.getElementById('prev-ingredients');
     const stepField = document.getElementById('prev-steps');
     if (ingField) ingField.style.height = 'auto';
@@ -1506,6 +1503,7 @@ function closeNewRecipesDrawer() {
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
+  await loadUserStorage();
   await initAuth(async (event) => {
     // Після логіну перебудовуємо фільтри та рецепти з контекстом юзера
     if (event === 'SIGNED_IN') {
@@ -1618,8 +1616,8 @@ if (previewFormElement) {
       finalImageUrl = await toBase64(fileInput.files[0]);
     } else if (urlInput?.value.trim()) {
       finalImageUrl = urlInput.value.trim();
-    } else if (window.tempAiImage) {
-      finalImageUrl = window.tempAiImage;
+    } else if (tempAiImage) {
+      finalImageUrl = tempAiImage;
     }
 
     const recipeData = {
@@ -1638,7 +1636,7 @@ if (previewFormElement) {
 
     if (success) {
       editingRecipeId = null;
-      window.tempAiImage = null;
+      tempAiImage = null;
       await loadAndDisplayRecipes(true);
       closeModal();
     }

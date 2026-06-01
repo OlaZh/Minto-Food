@@ -15,16 +15,19 @@ interface ActionButtonProps {
   onDone?: () => void
   className?: string
   useUndo?: boolean
+  disabled?: boolean
+  title?: string
 }
 
 export default function ActionButton({
   label, confirmText, variant = 'outline', size = 'sm',
-  action, onDone, className, useUndo = false,
+  action, onDone, className, useUndo = false, disabled = false, title,
 }: ActionButtonProps) {
   const [pending, startTransition] = useTransition()
   const [confirming, setConfirming] = useState(false)
 
   function handleClick() {
+    if (disabled) return
     if (useUndo) {
       withUndoToast(label, action, onDone)
       return
@@ -63,8 +66,9 @@ export default function ActionButton({
       size={size}
       variant={variant}
       className={`h-7 text-xs ${className ?? ''}`}
+      title={title}
       onClick={handleClick}
-      disabled={pending}
+      disabled={pending || disabled}
     >
       {pending ? <Loader2 className="h-3 w-3 mr-1 animate-spin" /> : null}
       {label}

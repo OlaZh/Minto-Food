@@ -1,7 +1,6 @@
 'use client'
 
-import { useFieldArray, Control } from 'react-hook-form'
-import { Plus, Trash2, GripVertical } from 'lucide-react'
+import { Plus, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
@@ -25,6 +24,11 @@ function parseSteps(value: string): string[] {
 
 export default function StepsEditor({ locale, label, value, onChange }: StepsEditorProps) {
   const steps = parseSteps(value)
+  const placeholderPrefix = {
+    ua: 'Крок',
+    en: 'Step',
+    pl: 'Krok',
+  }[locale]
 
   function updateSteps(newSteps: string[]) {
     onChange(newSteps.filter(s => s.trim()).join(STEP_SEPARATOR))
@@ -58,7 +62,7 @@ export default function StepsEditor({ locale, label, value, onChange }: StepsEdi
             <Textarea
               value={step}
               onChange={e => handleChange(idx, e.target.value)}
-              placeholder={`Крок ${idx + 1}...`}
+              placeholder={`${placeholderPrefix} ${idx + 1}...`}
               rows={2}
               className="flex-1 resize-none text-sm min-h-[60px]"
             />

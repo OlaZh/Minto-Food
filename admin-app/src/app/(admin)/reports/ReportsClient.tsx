@@ -1,9 +1,9 @@
 'use client'
 
+import Image from 'next/image'
 import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { toast } from 'sonner'
 import ActionButton from '@/components/moderation/ActionButton'
 import ModerationReasonDialog, { type ModerationReason } from '@/components/moderation/ModerationReasonDialog'
 import {
@@ -21,8 +21,38 @@ const REASON_LABELS: Record<string, string> = {
   other: 'Інше',
 }
 
+interface ReportAuthor {
+  id: string
+  full_name: string | null
+  is_banned: boolean
+  strikes: number
+  created_at: string
+  recipe_count: number
+  report_count: number
+}
+
+interface ReportRecipe {
+  id: string
+  slug: string | null
+  name_ua: string | null
+  name_en: string | null
+  image: string | null
+  status: string
+  category: string | null
+  author: ReportAuthor | null
+}
+
+interface ReportItem {
+  id: string
+  reason: string | null
+  created_at: string
+  status: string
+  recipe: ReportRecipe | null
+  reporter: { full_name: string | null } | null
+}
+
 interface ReportsClientProps {
-  reports: any[]
+  reports: ReportItem[]
   currentStatus: string
 }
 
@@ -80,7 +110,7 @@ export default function ReportsClient({ reports, currentStatus }: ReportsClientP
                 {/* Thumbnail */}
                 <div className="w-12 h-12 rounded-md overflow-hidden bg-gray-100 shrink-0">
                   {recipe?.image
-                    ? <img src={recipe.image} alt="" className="w-full h-full object-cover" />
+                    ? <Image src={recipe.image} alt={name} width={48} height={48} className="w-full h-full object-cover" unoptimized />
                     : <div className="w-full h-full flex items-center justify-center text-gray-300">🍽</div>
                   }
                 </div>

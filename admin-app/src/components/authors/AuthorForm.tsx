@@ -42,7 +42,7 @@ export default function AuthorForm({ author, onDone }: AuthorFormProps) {
   const [saving, setSaving] = useState(false)
   const isEdit = !!author
 
-  const { register, control, handleSubmit, setValue, watch } = useForm<FormValues>({
+  const { register, control, handleSubmit, setValue } = useForm<FormValues>({
     defaultValues: {
       display_name: author?.display_name ?? '',
       slug: author?.slug ?? '',

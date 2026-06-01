@@ -1,10 +1,20 @@
 import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import RecipeForm from '@/components/recipes/RecipeForm'
-import type { IngredientRow } from '@/lib/types'
+import type { IngredientRow, Recipe } from '@/lib/types'
 
 interface EditRecipePageProps {
   params: Promise<{ id: string }>
+}
+
+interface RawIngredientRow {
+  ingredient_id: number
+  amount: number
+  unit: string | null
+  product: {
+    name_ua: string | null
+    name_en: string | null
+  } | null
 }
 
 export default async function EditRecipePage({ params }: EditRecipePageProps) {
@@ -31,12 +41,12 @@ export default async function EditRecipePage({ params }: EditRecipePageProps) {
     `)
     .eq('recipe_id', id)
 
-  const ingredients: IngredientRow[] = (rawIngredients ?? []).map((r: any) => ({
+  const ingredients: IngredientRow[] = ((rawIngredients ?? []) as RawIngredientRow[]).map((r) => ({
     product_id: r.ingredient_id,
     product_name: r.product?.name_ua || r.product?.name_en || '',
     quantity: r.amount,
     unit: r.unit ?? 'г',
   }))
 
-  return <RecipeForm recipe={recipe as any} initialIngredients={ingredients} />
+  return <RecipeForm recipe={recipe as Recipe} initialIngredients={ingredients} />
 }

@@ -1,6 +1,33 @@
 import { createClient } from '@/lib/supabase/server'
 import ArchiveClient from './ArchiveClient'
 
+interface ProfileSummary {
+  id: string
+  full_name: string | null
+}
+
+interface ArchivedProductRow {
+  id: number
+  name_ua: string | null
+  name_en: string | null
+  kcal: number | null
+  protein: number | null
+  fat: number | null
+  carbs: number | null
+  deleted_at: string | null
+  user_id: string | null
+}
+
+interface ArchivedRecipeRow {
+  id: string
+  name_ua: string | null
+  name_en: string | null
+  image: string | null
+  deleted_at: string | null
+  user_id: string | null
+  category: string | null
+}
+
 export default async function ArchivePage({
   searchParams,
 }: {
@@ -18,15 +45,18 @@ export default async function ArchivePage({
       .order('deleted_at', { ascending: false })
       .limit(100)
 
-    const userIds = [...new Set((products ?? []).map((p: any) => p.user_id).filter(Boolean))]
-    let profilesMap: Record<string, any> = {}
+    const rows = (products ?? []) as ArchivedProductRow[]
+    const userIds = [...new Set(rows.map((p) => p.user_id).filter(Boolean))] as string[]
+    let profilesMap: Record<string, ProfileSummary> = {}
     if (userIds.length) {
       const { data: profiles } = await supabase
         .from('profiles').select('id, full_name').in('id', userIds)
-      profilesMap = Object.fromEntries((profiles ?? []).map((p: any) => [p.id, p]))
+      profilesMap = Object.fromEntries(
+        ((profiles ?? []) as ProfileSummary[]).map((p) => [p.id, p])
+      )
     }
 
-    const enriched = (products ?? []).map((p: any) => ({
+    const enriched = rows.map((p) => ({
       ...p, author: profilesMap[p.user_id] ?? null,
     }))
 
@@ -40,15 +70,18 @@ export default async function ArchivePage({
     .order('deleted_at', { ascending: false })
     .limit(100)
 
-  const authorIds = [...new Set((recipes ?? []).map((r: any) => r.user_id).filter(Boolean))]
-  let profilesMap: Record<string, any> = {}
+  const rows = (recipes ?? []) as ArchivedRecipeRow[]
+  const authorIds = [...new Set(rows.map((r) => r.user_id).filter(Boolean))] as string[]
+  let profilesMap: Record<string, ProfileSummary> = {}
   if (authorIds.length) {
     const { data: profiles } = await supabase
       .from('profiles').select('id, full_name').in('id', authorIds)
-    profilesMap = Object.fromEntries((profiles ?? []).map((p: any) => [p.id, p]))
+    profilesMap = Object.fromEntries(
+      ((profiles ?? []) as ProfileSummary[]).map((p) => [p.id, p])
+    )
   }
 
-  const enriched = (recipes ?? []).map((r: any) => ({
+  const enriched = rows.map((r) => ({
     ...r, author: profilesMap[r.user_id] ?? null,
   }))
 

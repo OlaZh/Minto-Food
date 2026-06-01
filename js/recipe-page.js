@@ -6,6 +6,7 @@
 import { supabase }                        from './supabaseClient.js';
 import { initAuth, isLoggedIn, openAuthModal } from './auth.js';
 import { iconShare, iconPlate, iconLeaf, iconBookOpen, iconStar } from './icons.js';
+import { getLang, loadUserStorage } from './storage.js';
 
 const CATEGORY_LABELS = {
   breakfast: 'Сніданок', lunch: 'Обід',    dinner: 'Вечеря',
@@ -25,15 +26,13 @@ const CATEGORY_LABELS_PL = {
   bakery:    'Pieczywo',  fast:   'Szybki', no_power: 'Bez prądu',
 };
 
-// Detect current lang: ?lang= param → localStorage → 'uk'
+// Detect current lang: ?lang= param → profile preference → 'uk'
 function _getLang() {
   const fromUrl = new URLSearchParams(window.location.search).get('lang');
   if (fromUrl && ['uk', 'ua', 'en', 'pl'].includes(fromUrl)) return fromUrl === 'ua' ? 'uk' : fromUrl;
-  try {
-    const stored = localStorage.getItem('lang');
-    if (stored === 'ua') return 'uk';
-    if (stored && ['uk', 'en', 'pl'].includes(stored)) return stored;
-  } catch (_) {}
+  const stored = getLang();
+  if (stored === 'ua') return 'uk';
+  if (stored && ['uk', 'en', 'pl'].includes(stored)) return stored;
   return 'uk';
 }
 
@@ -50,13 +49,14 @@ async function init() {
 
   // initAuth керує headerAuthBtn + відкриває модалку при потребі
   await initAuth((_event, user) => _updateSaveCTA(!!user));
+  await loadUserStorage();
 
   if (!_slug) { _show404(); return; }
 
   // Отримуємо рецепт по slug
   const { data: recipe, error } = await supabase
     .from('recipes')
-    .select('id, name_ua, name_en, slug, image, kcal, protein, fat, carbs, steps, category, rating, user_id, created_at, prep_time_min, cook_time_min, total_time_min, recipe_yield')
+    .select('id, name_ua, name_en, name_pl, slug, image, kcal, protein, fat, carbs, steps, category, rating, user_id, created_at, prep_time_min, cook_time_min, total_time_min, recipe_yield')
     .eq('slug', _slug)
     .eq('status', 'published')
     .is('deleted_at', null)
@@ -73,7 +73,7 @@ async function init() {
       : Promise.resolve({ data: null }),
     supabase
       .from('product_recipe')
-      .select('amount, unit, ingredient:products(name_ua, name_en)')
+      .select('amount, unit, ingredient:products(name_ua, name_en, name_pl)')
       .eq('recipe_id', recipe.id),
   ]);
 
@@ -89,8 +89,10 @@ async function init() {
 // ── Render recipe ─────────────────────────────────────────────
 
 function _renderRecipe(recipe, authorName, ingredients) {
-  const name     = recipe.name_ua || recipe.name_en || 'Без назви';
-  const catLabel = CATEGORY_LABELS[recipe.category] ?? recipe.category ?? '';
+  const lang     = _getLang();
+  const dataLang = lang === 'uk' ? 'ua' : lang;
+  const name     = _getLocalizedName(recipe, lang);
+  const catLabel = _getCategoryLabel(recipe.category, lang);
 
   const heroHtml = recipe.image
     ? `<img class="rp-hero" src="${recipe.image}" alt="${_esc(name)}" loading="eager" decoding="async">`
@@ -140,7 +142,7 @@ function _renderRecipe(recipe, authorName, ingredients) {
     ? `<h2 class="rp-h2">Інгредієнти</h2>
        <ul class="rp-ings">
          ${ingredients.map(i => {
-           const ingName = i.ingredient?.name_ua || i.ingredient?.name_en || '—';
+           const ingName = i.ingredient?.[`name_${dataLang}`] || i.ingredient?.name_ua || i.ingredient?.name_en || i.ingredient?.name_pl || '—';
            return `<li class="rp-ing">
              <span class="rp-ing__dot"></span>
              <span>${_esc(ingName)}</span>
@@ -192,7 +194,7 @@ function _renderRecipe(recipe, authorName, ingredients) {
 }
 
 function _shareRecipe(recipe) {
-  const name = recipe.name_ua || recipe.name_en || 'Рецепт';
+  const name = _getLocalizedName(recipe, _getLang());
   const url  = _canonicalUrl();
 
   if (navigator.share) {
@@ -325,7 +327,8 @@ function _injectHreflang(canonical) {
 }
 
 function _getLocalizedName(recipe, lang) {
-  if (lang === 'en' || lang === 'pl') return recipe.name_en || recipe.name_ua || 'Recipe';
+  if (lang === 'pl') return recipe.name_pl || recipe.name_ua || recipe.name_en || 'Przepis';
+  if (lang === 'en') return recipe.name_en || recipe.name_ua || recipe.name_pl || 'Recipe';
   return recipe.name_ua || recipe.name_en || 'Рецепт';
 }
 

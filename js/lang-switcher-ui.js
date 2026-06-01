@@ -1,10 +1,12 @@
-import { getLang, setLang } from './storage.js';
+import { getLang, loadUserStorage, setLang } from './storage.js';
 import { iconChevronDown } from './icons.js';
 
 (() => {
   const LABELS = { ua: 'UA', pl: 'PL', en: 'EN' };
 
-  function init() {
+  async function init() {
+    await loadUserStorage();
+
     const select = document.getElementById('langSwitcher');
     if (!select) return;
 
@@ -100,6 +102,6 @@ import { iconChevronDown } from './icons.js';
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
   } else {
-    init();
+    void init();
   }
 })();

@@ -1,6 +1,29 @@
 import { createClient } from '@/lib/supabase/server'
 import ModerationClient from './ModerationClient'
 
+interface ModerationRecipeRow {
+  id: string
+  slug: string | null
+  name_ua: string | null
+  name_en: string | null
+  image: string | null
+  status: string
+  created_at: string
+  category: string | null
+  user_id: string | null
+  kcal: number | null
+  steps: string | string[] | null
+}
+
+interface ProfileSummary {
+  id: string
+  full_name: string | null
+  is_banned: boolean
+  is_shadow_banned: boolean
+  strikes: number
+  created_at: string
+}
+
 export default async function ModerationPage() {
   const supabase = await createClient()
 
@@ -12,8 +35,9 @@ export default async function ModerationPage() {
     .order('created_at', { ascending: false })
     .limit(100)
 
-  const userIds = [...new Set((recipes ?? []).map((r: any) => r.user_id).filter(Boolean))]
-  let profilesMap: Record<string, any> = {}
+  const rows = (recipes ?? []) as ModerationRecipeRow[]
+  const userIds = [...new Set(rows.map((r) => r.user_id).filter(Boolean))] as string[]
+  let profilesMap: Record<string, ProfileSummary & { recipe_count: number; report_count: number }> = {}
 
   if (userIds.length) {
     const [{ data: profiles }, { data: recipesData }] = await Promise.all([
@@ -49,7 +73,7 @@ export default async function ModerationPage() {
     }
 
     profilesMap = Object.fromEntries(
-      (profiles ?? []).map((p: any) => [p.id, {
+      ((profiles ?? []) as ProfileSummary[]).map((p) => [p.id, {
         ...p,
         recipe_count: recipeCountMap[p.id] ?? 0,
         report_count: reportCountMap[p.id] ?? 0,
@@ -57,7 +81,7 @@ export default async function ModerationPage() {
     )
   }
 
-  const enriched = (recipes ?? []).map((r: any) => ({
+  const enriched = rows.map((r) => ({
     ...r,
     author: profilesMap[r.user_id] ?? null,
   }))

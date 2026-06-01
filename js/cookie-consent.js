@@ -12,18 +12,35 @@ const STORAGE_KEY = 'minto_consent';
 const SEEN_KEY    = 'minto_consent_seen';
 const TTL = 180 * 24 * 60 * 60 * 1000; // 6 місяців
 
+function readCookie(name) {
+  const prefix = `${name}=`;
+  return document.cookie
+    .split(';')
+    .map((part) => part.trim())
+    .find((part) => part.startsWith(prefix))
+    ?.slice(prefix.length) ?? null;
+}
+
+function writeCookie(name, value, maxAgeSeconds) {
+  document.cookie = `${name}=${encodeURIComponent(value)}; path=/; max-age=${maxAgeSeconds}; SameSite=Lax`;
+}
+
+function deleteCookie(name) {
+  document.cookie = `${name}=; path=/; max-age=0; SameSite=Lax`;
+}
+
 export function getConsent() {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = readCookie(STORAGE_KEY);
     if (!raw) return null;
-    const data = JSON.parse(raw);
+    const data = JSON.parse(decodeURIComponent(raw));
     if (!data.savedAt || Date.now() - data.savedAt > TTL) {
-      localStorage.removeItem(STORAGE_KEY);
+      deleteCookie(STORAGE_KEY);
       return null;
     }
     // Версія змінилась — згода вже недійсна, потрібен re-prompt
     if (data.version !== CONSENT_VERSION) {
-      localStorage.removeItem(STORAGE_KEY);
+      deleteCookie(STORAGE_KEY);
       return null;
     }
     return data;
@@ -34,23 +51,23 @@ export function getConsent() {
 
 function save(consent) {
   const data = { ...consent, necessary: true, version: CONSENT_VERSION, savedAt: Date.now() };
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  writeCookie(STORAGE_KEY, JSON.stringify(data), Math.floor(TTL / 1000));
   document.dispatchEvent(new CustomEvent('consentUpdated', { detail: data }));
   return data;
 }
 
 function seenForCurrentVersion() {
   try {
-    const raw = localStorage.getItem(SEEN_KEY);
+    const raw = readCookie(SEEN_KEY);
     if (!raw) return false;
-    return JSON.parse(raw).version === CONSENT_VERSION;
+    return JSON.parse(decodeURIComponent(raw)).version === CONSENT_VERSION;
   } catch {
     return false;
   }
 }
 
 function markSeen() {
-  localStorage.setItem(SEEN_KEY, JSON.stringify({ version: CONSENT_VERSION }));
+  writeCookie(SEEN_KEY, JSON.stringify({ version: CONSENT_VERSION }), Math.floor(TTL / 1000));
 }
 
 function buildBanner() {

@@ -322,11 +322,26 @@ export function isNotEmpty(value) {
 // =============================================================
 
 /**
- * Отримати поточну мову з localStorage
+ * Отримати поточну мову
  * @returns {string} - Код мови (ua, en, pl)
  */
 export function getCurrentLang() {
   return getLang();
+}
+
+/**
+ * Повертає правильну форму слова "день" для українського числа
+ * @param {number} count
+ * @returns {string}
+ */
+export function getDayWord(count) {
+  const lastTwo = count % 100;
+  const lastOne = count % 10;
+
+  if (lastTwo >= 11 && lastTwo <= 14) return 'днів';
+  if (lastOne === 1) return 'день';
+  if (lastOne >= 2 && lastOne <= 4) return 'дні';
+  return 'днів';
 }
 
 /**

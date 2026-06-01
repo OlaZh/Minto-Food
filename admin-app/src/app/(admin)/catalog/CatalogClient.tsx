@@ -24,6 +24,10 @@ interface Category {
   name_ua: string
 }
 
+interface EnrichedProduct extends Product {
+  _cat: string
+}
+
 const RAW_COLORS: Record<string, string> = {
   always:    'text-green-700 bg-green-50 border-green-300',
   sometimes: 'text-amber-700 bg-amber-50 border-amber-300',
@@ -183,7 +187,7 @@ export default function CatalogClient({
     [categories]
   )
 
-  const enriched = useMemo(
+  const enriched = useMemo<EnrichedProduct[]>(
     () => products.map(p => ({ ...p, _cat: catMap.get(p.category_id ?? -1) ?? '' })),
     [products, catMap]
   )
@@ -282,7 +286,7 @@ export default function CatalogClient({
                     {product.name_ua || product.name_en || '—'}
                   </p>
                   <div className="flex flex-wrap gap-x-3 gap-y-0.5 mt-0.5 text-xs text-gray-400">
-                    {(product as any)._cat && <span>{(product as any)._cat}</span>}
+                    {product._cat && <span>{product._cat}</span>}
                     {product.kcal != null && <span>{product.kcal} ккал</span>}
                     {product.protein != null && (
                       <span>Б:{product.protein} Ж:{product.fat} В:{product.carbs}{(product.fiber ?? 0) > 0 ? ` Кл:${product.fiber}` : ''}</span>

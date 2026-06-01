@@ -6,7 +6,13 @@
 import { supabase } from './supabaseClient.js';
 import { showToast } from './utils.js';
 import { lockScroll, unlockScroll } from './scroll-lock.js';
-import { getLang } from './storage.js';
+import {
+  clearStorageCache,
+  getLang,
+  hasSeenWelcomeToday,
+  loadUserStorage,
+  markWelcomeSeenToday,
+} from './storage.js';
 import { iconChevronDown, iconUser, iconShield, iconLogOut, iconEye } from './icons.js';
 
 // =============================================================
@@ -24,6 +30,10 @@ let _isAdminCache = null;
 // =============================================================
 
 const _SUPABASE_REF = 'xpaibteyntflrixmigfx';
+const _ADMIN_APP_URL = 'https://minto-food-xv5f.vercel.app';
+const _ADMIN_TRANSFER_REQUEST = 'minto-admin-transfer-request';
+const _ADMIN_TRANSFER_SESSION = 'minto-admin-transfer-session';
+const _ADMIN_TRANSFER_TIMEOUT_MS = 12000;
 
 // Синхронно читає кешовану сесію з localStorage щоб уникнути FOUC
 function _readCachedUser() {
@@ -88,17 +98,17 @@ export async function initAuth(onAuthChange = null) {
         await checkOnboarding(session.user);
       }
 
-      const today = new Date().toDateString();
-      const key = `minto_welcome_${userId}`;
+      await loadUserStorage(session.user, { force: true });
 
-      if (userId && localStorage.getItem(key) !== today) {
-        localStorage.setItem(key, today);
+      if (userId && !hasSeenWelcomeToday()) {
+        await markWelcomeSeenToday();
         showToast('Ласкаво просимо!');
       }
     }
 
     if (event === 'SIGNED_OUT') {
       _isAdminCache = null;
+      clearStorageCache();
       showToast('Ви вийшли з акаунту');
     }
   });
@@ -228,6 +238,7 @@ export async function signUpWithEmail(email, password, name = '') {
 export async function signOut() {
   // Видаляємо storage одразу — до мережевого запиту Supabase
   _clearAuthStorage();
+  clearStorageCache();
   const { error } = await supabase.auth.signOut();
   if (error) {
     console.error('Помилка виходу:', error);
@@ -655,8 +666,47 @@ export async function openAdminPanel() {
     showToast('Спочатку увійдіть в акаунт', 'error');
     return;
   }
-  const url = new URL('https://minto-food-xv5f.vercel.app/auth/transfer');
-  url.searchParams.set('access_token', session.access_token);
-  url.searchParams.set('refresh_token', session.refresh_token);
-  window.open(url.toString(), '_blank');
+
+  const url = new URL('/auth/transfer', _ADMIN_APP_URL);
+  const adminOrigin = url.origin;
+  const adminWindow = window.open(url.toString(), '_blank');
+
+  if (!adminWindow) {
+    showToast('Браузер заблокував нову вкладку. Дозвольте pop-up для входу в адмінку.', 'error');
+    return;
+  }
+
+  let finished = false;
+
+  const cleanup = () => {
+    if (finished) return;
+    finished = true;
+    window.removeEventListener('message', handleTransferRequest);
+    window.clearTimeout(timeoutId);
+  };
+
+  const handleTransferRequest = (event) => {
+    if (event.origin !== adminOrigin) return;
+    if (event.source !== adminWindow) return;
+    if (event.data?.type !== _ADMIN_TRANSFER_REQUEST) return;
+
+    adminWindow.postMessage(
+      {
+        type: _ADMIN_TRANSFER_SESSION,
+        payload: {
+          accessToken: session.access_token,
+          refreshToken: session.refresh_token,
+        },
+      },
+      adminOrigin,
+    );
+
+    cleanup();
+  };
+
+  const timeoutId = window.setTimeout(() => {
+    cleanup();
+  }, _ADMIN_TRANSFER_TIMEOUT_MS);
+
+  window.addEventListener('message', handleTransferRequest);
 }

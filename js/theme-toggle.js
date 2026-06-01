@@ -1,6 +1,8 @@
-import { getTheme, setTheme } from './storage.js';
+import { getTheme, loadUserStorage, setTheme } from './storage.js';
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+  await loadUserStorage();
+
   const themeToggle = document.querySelector('.theme-toggle');
   const root = document.documentElement;
 
@@ -12,7 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (!themeToggle) return;
 
-  themeToggle.addEventListener('click', () => {
+  themeToggle.addEventListener('click', async () => {
     root.classList.add('theme-transition');
 
     const nextTheme = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
@@ -23,7 +25,7 @@ document.addEventListener('DOMContentLoaded', () => {
       root.removeAttribute('data-theme');
     }
 
-    setTheme(nextTheme);
+    await setTheme(nextTheme);
 
     requestAnimationFrame(() => {
       root.classList.remove('theme-transition');

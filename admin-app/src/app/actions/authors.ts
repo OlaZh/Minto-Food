@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { requireAdminUser } from '@/lib/admin'
 import { revalidatePath } from 'next/cache'
 
 export interface AuthorPayload {
@@ -17,6 +18,7 @@ export async function createAuthor(
   payload: AuthorPayload
 ): Promise<{ id: string } | { error: string }> {
   const supabase = await createClient()
+  await requireAdminUser(supabase)
   const { data, error } = await supabase
     .from('recipe_author_profiles')
     .insert(payload)
@@ -32,6 +34,7 @@ export async function updateAuthor(
   payload: Partial<AuthorPayload>
 ): Promise<{ ok: true } | { error: string }> {
   const supabase = await createClient()
+  await requireAdminUser(supabase)
   const { error } = await supabase
     .from('recipe_author_profiles')
     .update(payload)
@@ -43,6 +46,7 @@ export async function updateAuthor(
 
 export async function deleteAuthor(id: string): Promise<{ ok: true } | { error: string }> {
   const supabase = await createClient()
+  await requireAdminUser(supabase)
   const { error } = await supabase
     .from('recipe_author_profiles')
     .delete()

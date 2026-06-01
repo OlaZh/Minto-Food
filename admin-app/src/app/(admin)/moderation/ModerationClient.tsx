@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -9,8 +10,32 @@ import { approveRecipe, rejectRecipe, banUser, addStrike } from '@/app/actions/m
 import { detectFlags } from '@/lib/autoFlag'
 import AutoFlagBadges from '@/components/moderation/AutoFlagBadges'
 
+interface ModerationAuthor {
+  id: string
+  full_name: string | null
+  is_banned: boolean
+  is_shadow_banned: boolean
+  strikes: number
+  created_at: string
+  recipe_count: number
+  report_count: number
+}
+
+interface ModerationRecipe {
+  id: string
+  slug: string | null
+  name_ua: string | null
+  name_en: string | null
+  image: string | null
+  category: string | null
+  kcal: number | null
+  steps: string | string[] | null
+  created_at: string
+  author: ModerationAuthor | null
+}
+
 interface ModerationClientProps {
-  recipes: any[]
+  recipes: ModerationRecipe[]
 }
 
 type PendingDialog = {
@@ -54,7 +79,7 @@ export default function ModerationClient({ recipes }: ModerationClientProps) {
               <div className="flex items-start gap-3">
                 <div className="w-14 h-14 rounded-md overflow-hidden bg-gray-100 shrink-0">
                   {recipe.image
-                    ? <img src={recipe.image} alt="" className="w-full h-full object-cover" />
+                    ? <Image src={recipe.image} alt={name} width={56} height={56} className="w-full h-full object-cover" unoptimized />
                     : <div className="w-full h-full flex items-center justify-center text-gray-300 text-xl">🍽</div>
                   }
                 </div>
