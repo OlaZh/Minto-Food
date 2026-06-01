@@ -211,7 +211,12 @@ async function loadBooks() {
     if (version !== _loadVersion) return;
     if (error) throw error;
 
-    await renderBooks(books || [], version);
+    const safeBooks = books || [];
+    const recipeCounts = await loadRecipeCounts(safeBooks);
+
+    if (version !== _loadVersion) return;
+
+    renderBooks(safeBooks, recipeCounts, version);
   } catch (err) {
     clearTimeout(skeletonTimer);
     if (version !== _loadVersion) return;
@@ -220,7 +225,29 @@ async function loadBooks() {
   }
 }
 
-async function renderBooks(books, version) {
+async function loadRecipeCounts(books) {
+  const counts = new Map();
+  if (!books.length) return counts;
+
+  const bookIds = books.map((book) => book.id).filter(Boolean);
+  if (!bookIds.length) return counts;
+
+  const { data, error } = await supabase
+    .from('cookbook_recipes')
+    .select('cookbook_id')
+    .in('cookbook_id', bookIds);
+
+  if (error) throw error;
+
+  (data || []).forEach((item) => {
+    const bookId = item.cookbook_id;
+    counts.set(bookId, (counts.get(bookId) || 0) + 1);
+  });
+
+  return counts;
+}
+
+function renderBooks(books, recipeCounts, version) {
   const existingBooks = booksGrid.querySelectorAll('.cookbook-book, .skeleton-book, .cookbook-empty');
   existingBooks.forEach((el) => el.remove());
 
@@ -237,7 +264,7 @@ async function renderBooks(books, version) {
 
   for (const book of books) {
     if (version !== _loadVersion) return;
-    const bookEl = await createBookElement(book);
+    const bookEl = createBookElement(book, recipeCounts.get(book.id) || 0);
     if (version !== _loadVersion) return;
     booksGrid.appendChild(bookEl);
   }
@@ -245,13 +272,7 @@ async function renderBooks(books, version) {
 
 // Замінити функцію createBookElement в cookbook.js
 
-async function createBookElement(book) {
-  const { count } = await supabase
-    .from('cookbook_recipes')
-    .select('*', { count: 'exact', head: true })
-    .eq('cookbook_id', book.id);
-
-  const recipeCount = count || 0;
+function createBookElement(book, recipeCount = 0) {
   const isDefault = book.is_default;
 
   // Правильне відмінювання
@@ -349,7 +370,7 @@ async function handleCreateBook(e) {
     if (error) throw error;
 
     // Додаємо в DOM
-    const bookEl = await createBookElement(data);
+    const bookEl = createBookElement(data);
     booksGrid.appendChild(bookEl);
 
     // Закриваємо і очищаємо
