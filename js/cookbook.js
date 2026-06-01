@@ -61,6 +61,7 @@ let editSelectedCover = null;
 let _setupDone = false;
 let _loadVersion = 0;
 let _initialLoadDone = false;
+let _booksRetryTimer = null;
 
 // =====================================
 // DOM ЕЛЕМЕНТИ
@@ -81,6 +82,7 @@ const closeNewBookModal = document.getElementById('closeNewBookModal');
 const newBookForm = document.getElementById('newBookForm');
 const newBookName = document.getElementById('newBookName');
 const iconPicker = document.getElementById('iconPicker');
+const newBookError = document.getElementById('newBookError');
 
 // =====================================
 // ІНІЦІАЛІЗАЦІЯ
@@ -129,6 +131,30 @@ function _onUserReady() {
 function initIconPicker() {
   const picker = document.getElementById('iconPicker');
   if (picker) picker.innerHTML = renderIconPickerHTML('book');
+}
+
+async function ensureCurrentUser() {
+  if (currentUser?.id) return currentUser;
+
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+
+  currentUser = session?.user || null;
+  return currentUser;
+}
+
+function scheduleBooksReload(delay = 700) {
+  clearTimeout(_booksRetryTimer);
+  _booksRetryTimer = setTimeout(() => {
+    loadBooks();
+  }, delay);
+}
+
+function setNewBookError(message = '') {
+  if (!newBookError) return;
+  newBookError.textContent = message;
+  newBookError.hidden = !message;
 }
 
 function setupEventListeners() {
@@ -200,16 +226,22 @@ function showBookSkeletons(count = 4) {
 
 async function loadBooks() {
   const version = ++_loadVersion;
+  clearTimeout(_booksRetryTimer);
 
   const skeletonTimer = setTimeout(() => {
     if (version === _loadVersion) showBookSkeletons();
   }, 200);
 
   try {
+    const user = await ensureCurrentUser();
+    if (!user?.id) {
+      throw new Error('Missing authenticated user');
+    }
+
     const { data: books, error } = await supabase
       .from('cookbooks')
       .select('*')
-      .eq('user_id', currentUser.id)
+      .eq('user_id', user.id)
       .order('is_default', { ascending: false })
       .order('created_at', { ascending: true });
 
@@ -233,6 +265,7 @@ async function loadBooks() {
     if (version !== _loadVersion) return;
     console.error('Error loading books:', err);
     booksGrid?.querySelectorAll('.skeleton-book').forEach((el) => el.remove());
+    scheduleBooksReload();
   }
 }
 
@@ -371,18 +404,27 @@ function createBookElement(book, recipeCount = 0) {
 
 async function handleCreateBook(e) {
   e.preventDefault();
+  setNewBookError('');
 
   const name = newBookName.value.trim();
   if (!name) return;
 
+  const submitBtn = newBookForm?.querySelector('[type="submit"]');
+  if (submitBtn) submitBtn.disabled = true;
+
   try {
+    const user = await ensureCurrentUser();
+    if (!user?.id) {
+      throw new Error('Missing authenticated user');
+    }
+
     const { data, error } = await supabase
       .from('cookbooks')
       .insert([
         {
           name,
           icon: selectedIcon,
-          user_id: currentUser.id,
+          user_id: user.id,
           is_default: false,
         },
       ])
@@ -406,7 +448,10 @@ async function handleCreateBook(e) {
     showToast('Книгу створено!');
   } catch (err) {
     console.error('Error creating book:', err);
+    setNewBookError(err?.message || 'Не вдалося створити книгу.');
     showToast('Помилка створення книги', 'error');
+  } finally {
+    if (submitBtn) submitBtn.disabled = false;
   }
 }
 
