@@ -195,7 +195,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
-  function copyDay() {
+  async function copyDay() {
     const snapshot = JSON.parse(JSON.stringify(mealsState));
     const hasItems = Object.values(snapshot).some((arr) => arr.length > 0);
     if (!hasItems) {

@@ -168,7 +168,7 @@ async function loadActivitiesFromSupabase(userId) {
 }
 
 async function saveActivityToSupabase(activity) {
-  const user = await getCurrentUser();
+  const user = getCurrentUser();
   if (!user) return false;
   const { data, error } = await supabase
     .from('user_activities')
@@ -258,7 +258,7 @@ function buildWeightChart(canvasId, history, chartRef) {
 }
 
 async function initWeightChart() {
-  const user = await getCurrentUser();
+  const user = getCurrentUser();
   if (!user) return;
 
   const history = await loadWeightFromSupabase(user.id);
@@ -268,7 +268,7 @@ async function initWeightChart() {
 }
 
 async function initWeightChart2() {
-  const user = await getCurrentUser();
+  const user = getCurrentUser();
   if (!user) return;
 
   const history = await loadWeightFromSupabase(user.id);
@@ -287,7 +287,7 @@ async function recordNewWeight() {
     return;
   }
 
-  const user = await getCurrentUser();
+  const user = getCurrentUser();
   if (!user) {
     showToast('Увійдіть в акаунт', 'error');
     return;
@@ -363,7 +363,7 @@ async function initStatisticsCharts() {
     if (chart) chart.destroy();
   });
 
-  const user = await getCurrentUser();
+  const user = getCurrentUser();
   if (!user) return;
 
   // Діапазон: сьогодні - 13 днів (2 тижні)
@@ -1254,7 +1254,7 @@ function syncWeightInputs() {
 let activityTrackerInitialized = false;
 
 async function initActivityTracker() {
-  const user = await getCurrentUser();
+  const user = getCurrentUser();
   if (user) await loadActivitiesFromSupabase(user.id);
 
   if (activityTrackerInitialized) {

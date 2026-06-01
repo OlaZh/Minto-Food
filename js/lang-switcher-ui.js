@@ -74,9 +74,9 @@ import { iconChevronDown } from './icons.js';
       });
     }
 
-    function selectLang(code) {
+    async function selectLang(code) {
       select.value = code;
-      setLang(code);
+      await setLang(code);
       select.dispatchEvent(new Event('change'));
       syncUi(code);
       closeMenu();
