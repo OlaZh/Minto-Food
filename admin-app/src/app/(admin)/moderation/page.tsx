@@ -55,6 +55,7 @@ export default async function ModerationPage() {
     const recipeCountMap: Record<string, number> = {}
     const recipeIdToUserId: Record<string, string> = {}
     for (const r of recipesData ?? []) {
+      if (!r.user_id) continue
       recipeCountMap[r.user_id] = (recipeCountMap[r.user_id] ?? 0) + 1
       recipeIdToUserId[r.id] = r.user_id
     }
@@ -83,7 +84,7 @@ export default async function ModerationPage() {
 
   const enriched = rows.map((r) => ({
     ...r,
-    author: profilesMap[r.user_id] ?? null,
+    author: r.user_id ? profilesMap[r.user_id] ?? null : null,
   }))
 
   return <ModerationClient recipes={enriched} />

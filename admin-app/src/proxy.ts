@@ -1,7 +1,7 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname
   if (pathname === '/login' || pathname === '/unauthorized' || pathname.startsWith('/auth/')) {
     return NextResponse.next()
@@ -28,8 +28,9 @@ export async function middleware(request: NextRequest) {
     }
   )
 
-  // Refresh session tokens
-  const { data: { user } } = await supabase.auth.getUser()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
 
   if (!user) {
     return NextResponse.redirect(new URL('/login', request.url))

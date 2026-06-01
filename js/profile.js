@@ -15,6 +15,7 @@ import { getDayWord, showToast } from './utils.js';
 import {
   getDailyCaloriesNorm,
   getUnitSystem,
+  getUserProfile,
   loadUserStorage,
   mergeUserProfileCache,
   setTheme,
@@ -301,7 +302,12 @@ async function recordNewWeight() {
   weightNowInput.value = '';
   showToast(`Вага ${weight} кг збережена`);
 
+  const weightNowInput2 = document.getElementById('currentWeightInput2');
+  if (weightNowInput2) weightNowInput2.value = '';
+
   await initWeightChart();
+  await initWeightChart2();
+  generateWeightAdvice();
 }
 
 function generateWeightProgress(history) {
@@ -965,6 +971,12 @@ function renderAll(data) {
 
   updateBMI(data.weight, data.height);
   mergeUserProfileCache(data);
+
+  const burnedCalories = parseInt(
+    document.getElementById('impactBurnedCalories')?.textContent || '0',
+    10,
+  );
+  updateCalorieImpact(Number.isFinite(burnedCalories) ? burnedCalories : 0);
 }
 
 // =====================================
@@ -981,7 +993,13 @@ async function loadProfileFromSupabase() {
     .eq('user_id', user.id)
     .maybeSingle();
 
-  if (error || !data) return null;
+  if (error || !data) {
+    const cachedProfile = getUserProfile();
+    fillForm(cachedProfile);
+    renderAll(cachedProfile);
+    updateProfileHeader(user);
+    return null;
+  }
 
   fillForm(data);
   renderAll(data);
@@ -1037,6 +1055,7 @@ async function updateProfileHeader(user) {
   if (profileEmailEl) profileEmailEl.textContent = email;
 
   if (profileAvatarEl && avatar) {
+    profileAvatarEl.textContent = '';
     profileAvatarEl.style.backgroundImage = `url(${avatar})`;
     profileAvatarEl.style.backgroundSize = 'cover';
     profileAvatarEl.style.backgroundPosition = 'center';
@@ -1049,6 +1068,7 @@ async function updateProfileHeader(user) {
       .toUpperCase()
       .slice(0, 2);
     profileAvatarEl.textContent = initials;
+    profileAvatarEl.style.backgroundImage = 'none';
     profileAvatarEl.style.display = 'flex';
     profileAvatarEl.style.alignItems = 'center';
     profileAvatarEl.style.justifyContent = 'center';
@@ -1839,20 +1859,133 @@ function _setNbHint(el, text, color) {
   el.style.color = color || '#3f7558';
 }
 
+function formatAccountDate(value) {
+  if (!value) return '';
+
+  try {
+    return new Intl.DateTimeFormat('uk-UA', {
+      day: '2-digit',
+      month: 'long',
+      year: 'numeric',
+    }).format(new Date(value));
+  } catch {
+    return value;
+  }
+}
+
+function renderDeletionStatus(profileData = {}) {
+  const statusEl = document.getElementById('settingsDeletionStatus');
+  const deleteBtn = document.getElementById('deleteAccountBtn');
+  const cancelBtn = document.getElementById('cancelDeletionBtn');
+  if (!statusEl || !deleteBtn || !cancelBtn) return;
+
+  const scheduledFor = profileData.deletion_scheduled_for;
+  const requestedAt = profileData.deletion_requested_at;
+  const isPending = Boolean(scheduledFor);
+
+  statusEl.classList.toggle('is-pending', isPending);
+  deleteBtn.hidden = isPending;
+  cancelBtn.hidden = !isPending;
+
+  if (isPending) {
+    const scheduledLabel = formatAccountDate(scheduledFor);
+    const requestedLabel = formatAccountDate(requestedAt);
+    statusEl.textContent = requestedLabel
+      ? `Запит на видалення створено ${requestedLabel}. Остаточне видалення заплановано на ${scheduledLabel}.`
+      : `Запит на видалення активний. Остаточне видалення заплановано на ${scheduledLabel}.`;
+    return;
+  }
+
+  statusEl.textContent = 'Акаунт активний. Запитів на видалення немає.';
+}
+
+async function syncReminderPreference(field, enabled) {
+  const user = getCurrentUser();
+  if (!user) return false;
+
+  const { error } = await supabase
+    .from('profiles')
+    .upsert({ id: user.id, [field]: enabled }, { onConflict: 'id' });
+
+  if (error) {
+    console.warn(`profiles ${field} upsert:`, error.message);
+    return false;
+  }
+
+  return true;
+}
+
+function bindReminderToggle(inputId, field, initialValue, successMessage) {
+  const input = document.getElementById(inputId);
+  if (!input) return;
+
+  input.checked = Boolean(initialValue);
+  input.addEventListener('change', async () => {
+    const nextValue = input.checked;
+    const ok = await syncReminderPreference(field, nextValue);
+
+    if (!ok) {
+      input.checked = !nextValue;
+      showToast('Не вдалося зберегти налаштування', 'error');
+      return;
+    }
+
+    showToast(successMessage);
+  });
+}
+
+async function requestAccountDeletion(userId) {
+  const { error } = await supabase.rpc('soft_delete_user', { p_user_id: userId });
+  if (error) {
+    console.warn('soft_delete_user:', error.message);
+    showToast('Не вдалося створити запит на видалення', 'error');
+    return false;
+  }
+
+  return true;
+}
+
+async function cancelAccountDeletionRequest(userId) {
+  const { error } = await supabase.rpc('cancel_soft_delete_user', { p_user_id: userId });
+  if (error) {
+    console.warn('cancel_soft_delete_user:', error.message);
+    showToast('Не вдалося скасувати запит', 'error');
+    return false;
+  }
+
+  return true;
+}
+
 // =====================================
 // SETTINGS TAB
 // =====================================
 
-function initSettings(user) {
+async function initSettings(user) {
   // Email / name display
   const emailEl = document.getElementById('settingsEmailDisplay');
   const nameEl = document.getElementById('settingsNameDisplay');
   if (emailEl && user?.email) emailEl.textContent = user.email;
+  const { data: profileDataRaw } = await supabase
+    .from('profiles')
+    .select(`
+      display_name,
+      full_name,
+      meal_reminders_enabled,
+      water_reminders_enabled,
+      deletion_requested_at,
+      deletion_scheduled_for
+    `)
+    .eq('id', user.id)
+    .maybeSingle();
+
+  let profileData = profileDataRaw || {};
+
   if (nameEl) {
-    supabase.from('profiles').select('display_name, full_name').eq('id', user.id).single()
-      .then(({ data }) => {
-        nameEl.textContent = data?.display_name || data?.full_name || user.user_metadata?.full_name || '';
-      });
+    nameEl.textContent =
+      profileData.display_name ||
+      profileData.full_name ||
+      user.user_metadata?.full_name ||
+      '';
   }
 
   // Theme buttons
@@ -1866,14 +1999,14 @@ function initSettings(user) {
   syncThemeBtns();
 
   document.querySelectorAll('.settings-theme-btn').forEach((btn) => {
-    btn.addEventListener('click', () => {
+    btn.addEventListener('click', async () => {
       const theme = btn.dataset.themeSet;
       if (theme === 'dark') {
         document.documentElement.setAttribute('data-theme', 'dark');
-        setTheme('dark');
+        await setTheme('dark');
       } else {
         document.documentElement.removeAttribute('data-theme');
-        setTheme('light');
+        await setTheme('light');
       }
       syncThemeBtns();
     });
@@ -1889,8 +2022,8 @@ function initSettings(user) {
   syncLangBtns();
 
   document.querySelectorAll('.settings-lang-btn').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      setLang(btn.dataset.lang);
+    btn.addEventListener('click', async () => {
+      await setLang(btn.dataset.lang);
       syncLangBtns();
     });
   });
@@ -1898,12 +2031,27 @@ function initSettings(user) {
   const savedUnit = getUnitSystem();
   document.querySelectorAll('.settings-unit-btn').forEach((btn) => {
     btn.classList.toggle('active', btn.dataset.unit === savedUnit);
-    btn.addEventListener('click', () => {
+    btn.addEventListener('click', async () => {
       document.querySelectorAll('.settings-unit-btn').forEach((b) => b.classList.remove('active'));
       btn.classList.add('active');
-      setUnitSystem(btn.dataset.unit);
+      await setUnitSystem(btn.dataset.unit);
     });
   });
+
+  bindReminderToggle(
+    'toggleMealReminders',
+    'meal_reminders_enabled',
+    profileData.meal_reminders_enabled,
+    'Налаштування нагадувань про їжу збережено',
+  );
+  bindReminderToggle(
+    'toggleWaterReminders',
+    'water_reminders_enabled',
+    profileData.water_reminders_enabled,
+    'Налаштування нагадувань про воду збережено',
+  );
+
+  renderDeletionStatus(profileData);
 
   // Nickname editor
   _initNicknameEditor(user);
@@ -1914,7 +2062,7 @@ function initSettings(user) {
     window.location.href = 'index.html';
   });
 
-  // Delete account (confirmation only — no backend yet)
+  // Legacy handler kept only until the fresh button replacement below.
   document.getElementById('deleteAccountBtn')?.addEventListener('click', () => {
     showConfirmModal({
       title: 'Видалити акаунт?',
@@ -1925,6 +2073,57 @@ function initSettings(user) {
       },
     });
   });
+
+  const deleteBtn = document.getElementById('deleteAccountBtn');
+  if (deleteBtn) {
+    const freshDeleteBtn = deleteBtn.cloneNode(true);
+    deleteBtn.replaceWith(freshDeleteBtn);
+    freshDeleteBtn.addEventListener('click', () => {
+      showConfirmModal({
+        title: 'Запросити видалення акаунту?',
+        message:
+          'Ми створимо GDPR-запит і заплануємо видалення через 30 днів. До цього моменту ти зможеш скасувати запит у профілі.',
+        confirmText: 'Створити запит',
+        onConfirm: async () => {
+          const ok = await requestAccountDeletion(user.id);
+          if (!ok) return;
+
+          profileData = {
+            ...profileData,
+            deletion_requested_at: new Date().toISOString(),
+            deletion_scheduled_for: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+          };
+          renderDeletionStatus(profileData);
+          showToast('Запит на видалення акаунту створено');
+        },
+      });
+    });
+  }
+
+  const cancelBtn = document.getElementById('cancelDeletionBtn');
+  if (cancelBtn) {
+    const freshCancelBtn = cancelBtn.cloneNode(true);
+    cancelBtn.replaceWith(freshCancelBtn);
+    freshCancelBtn.addEventListener('click', () => {
+      showConfirmModal({
+        title: 'Скасувати запит на видалення?',
+        message: 'Акаунт залишиться активним, а запит на видалення буде відкликано.',
+        confirmText: 'Скасувати запит',
+        onConfirm: async () => {
+          const ok = await cancelAccountDeletionRequest(user.id);
+          if (!ok) return;
+
+          profileData = {
+            ...profileData,
+            deletion_requested_at: null,
+            deletion_scheduled_for: null,
+          };
+          renderDeletionStatus(profileData);
+          showToast('Запит на видалення скасовано');
+        },
+      });
+    });
+  }
 }
 
 // =====================================
@@ -1961,6 +2160,11 @@ function initCaloriesInlineEdit() {
 
     displayEl.textContent = `${val} ккал`;
     mergeUserProfileCache({ calories: val });
+    const burnedCalories = parseInt(
+      document.getElementById('impactBurnedCalories')?.textContent || '0',
+      10,
+    );
+    updateCalorieImpact(Number.isFinite(burnedCalories) ? burnedCalories : 0);
 
     const user = getCurrentUser();
     if (user) {
@@ -2049,13 +2253,20 @@ async function initProfile() {
 
   initSelectsGlobalListener();
   await loadUserStorage(user, { force: true });
+  const cachedProfile = getUserProfile();
+  fillForm(cachedProfile);
+  renderAll(cachedProfile);
+  if (cachedProfile.target_weight) {
+    checkTargetWeightWarning(cachedProfile.target_weight);
+  }
   await loadProfileFromSupabase();
   await loadProfileStreak(user.id);
 
   initWeightChart();
   initSidebarIcons();
   initProfileTabs();
-  initSettings(user);
+  generateWeightAdvice();
+  await initSettings(user);
 }
 
 // =====================================

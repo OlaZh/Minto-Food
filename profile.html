@@ -5,21 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Minto — Профіль</title>
 
-    <script>
-      (function () {
-        const theme = localStorage.getItem('theme');
-        if (theme === 'dark') {
-          document.documentElement.setAttribute('data-theme', 'dark');
-        }
-      })();
-    </script>
-
     <link rel="stylesheet" href="./css/main.css" />
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
   </head>
 
   <body class="page page--profile">
-                                        ﻿    ﻿    ﻿    ﻿    ﻿    <header class="header">
+    <header class="header">
       <div class="header__container">
         <a href="index.html" class="header__logo"
           ><img src="img/logo.svg" alt="Logo" data-i18n="logo" class="logo--default"
@@ -953,16 +944,31 @@
                     <span class="settings-toggle__track"></span>
                   </label>
                 </div>
+
+                <p class="settings-note">
+                  Ми збережемо ці налаштування в акаунті. Коли сервіс нагадувань буде активовано,
+                  саме ці преференції використаються автоматично.
+                </p>
               </div>
 
               <!-- НЕБЕЗПЕЧНА ЗОНА -->
               <div class="profile-card settings-card--danger">
                 <h2 class="profile-card__title profile-card__title--icon"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg></span>Небезпечна зона</h2>
                 <p class="settings-danger__text">
-                  Видалення акаунту є незворотною дією. Всі ваші дані, рецепти та меню будуть
-                  видалені назавжди.
+                  Видалення акаунту запускає 30-денний період очікування. Протягом цього часу запит
+                  можна скасувати, після чого дані будуть позначені для остаточного видалення.
                 </p>
-                <button class="settings-delete-btn" id="deleteAccountBtn">Видалити акаунт</button>
+                <div class="settings-danger__status" id="settingsDeletionStatus">
+                  Акаунт активний. Запитів на видалення немає.
+                </div>
+                <div class="settings-danger__actions">
+                  <button class="settings-delete-btn" id="deleteAccountBtn">
+                    Запросити видалення акаунту
+                  </button>
+                  <button class="settings-action-btn" id="cancelDeletionBtn" hidden>
+                    Скасувати запит на видалення
+                  </button>
+                </div>
               </div>
             </div>
           </section>
@@ -971,7 +977,7 @@
     </div>
     </main>
 
-                                        ﻿    ﻿    ﻿    ﻿    ﻿    <footer class="site-footer">
+    <footer class="site-footer">
       <div class="site-footer__inner">
 
         <div class="site-footer__brand">

@@ -99,9 +99,10 @@ export default function ReportsClient({ reports, currentStatus }: ReportsClientP
       <div className="divide-y divide-gray-100">
         {reports.map(report => {
           const recipe = report.recipe
+          const recipeId = recipe?.id ?? null
           const author = recipe?.author
           const name = recipe?.name_ua || recipe?.name_en || 'Без назви'
-          const reasonLabel = REASON_LABELS[report.reason] ?? report.reason ?? '—'
+          const reasonLabel = report.reason ? REASON_LABELS[report.reason] ?? report.reason : '—'
           const flags = detectFlags(recipe ?? {})
 
           return (
@@ -173,14 +174,14 @@ export default function ReportsClient({ reports, currentStatus }: ReportsClientP
                     label="Приховати рецепт"
                     variant="outline"
                     useUndo
-                    action={() => hideRecipeFromReport(report.id, recipe?.id)}
+                    action={() => recipeId ? hideRecipeFromReport(report.id, recipeId) : Promise.resolve()}
                     onDone={() => router.refresh()}
                   />
                   <button
                     className="h-7 text-xs px-2.5 rounded-md border border-red-200 text-red-600 bg-white hover:bg-red-50 transition-colors"
                     onClick={() => setDialog({
                       title: 'Видалити рецепт',
-                      action: (reason) => deleteRecipeFromReport(report.id, recipe?.id, reason),
+                      action: (reason) => recipeId ? deleteRecipeFromReport(report.id, recipeId, reason) : Promise.resolve(),
                     })}
                   >
                     Видалити рецепт

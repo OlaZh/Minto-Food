@@ -73,7 +73,7 @@ export default async function ProductsPage({
 
   const enriched = rows.map((p) => ({
     ...p,
-    author: profilesMap[p.user_id] ?? null,
+    author: p.user_id ? profilesMap[p.user_id] ?? null : null,
   }))
 
   return (

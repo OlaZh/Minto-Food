@@ -31,7 +31,14 @@ interface RecipeListRow {
   author_profile_id: string | null
   author_profile?: {
     display_name: string | null
-  } | null
+  } | Array<{
+    display_name: string | null
+  }> | null
+}
+
+function getAuthorProfile(authorProfile: RecipeListRow['author_profile']) {
+  if (Array.isArray(authorProfile)) return authorProfile[0] ?? null
+  return authorProfile ?? null
 }
 
 export default async function RecipesPage({
@@ -65,7 +72,7 @@ export default async function RecipesPage({
 
   const { data: recipes, error, count } = await query
   const totalPages = Math.max(1, Math.ceil((count ?? 0) / PAGE_SIZE))
-  const rows = (recipes ?? []) as RecipeListRow[]
+  const rows = (recipes ?? []) as unknown as RecipeListRow[]
 
   const statuses = ['all', 'draft', 'scheduled', 'published', 'pending', 'rejected']
 
@@ -147,7 +154,7 @@ export default async function RecipesPage({
       <div className="divide-y divide-gray-100">
         {rows.map(recipe => {
           const st = STATUS_LABELS[recipe.status] ?? STATUS_LABELS.draft
-          const author = recipe.author_profile
+          const author = getAuthorProfile(recipe.author_profile)
           return (
             <Link
               key={recipe.id}

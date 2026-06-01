@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useEffect, useMemo, useState } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import { Loader2 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 
@@ -22,7 +22,6 @@ function getReferrerOrigin() {
 
 export default function AdminTransferPage() {
   const router = useRouter()
-  const searchParams = useSearchParams()
   const [error, setError] = useState<string | null>(null)
   const [status, setStatus] = useState('Підключаємо безпечний вхід…')
 
@@ -95,13 +94,6 @@ export default function AdminTransferPage() {
       void finishWithSession(accessToken, refreshToken)
     }
 
-    const legacyAccessToken = searchParams.get('access_token')
-    const legacyRefreshToken = searchParams.get('refresh_token')
-    if (legacyAccessToken && legacyRefreshToken) {
-      void finishWithSession(legacyAccessToken, legacyRefreshToken)
-      return cleanup
-    }
-
     if (!window.opener) {
       fail('Відкрий адмінку через кнопку "Адмінка" на основному сайті.')
       return cleanup
@@ -119,7 +111,7 @@ export default function AdminTransferPage() {
     }
 
     return cleanup
-  }, [fallbackOrigin, router, searchParams])
+  }, [fallbackOrigin, router])
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#f0f9f4] px-4">

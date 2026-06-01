@@ -57,7 +57,8 @@ export default async function ArchivePage({
     }
 
     const enriched = rows.map((p) => ({
-      ...p, author: profilesMap[p.user_id] ?? null,
+      ...p,
+      author: p.user_id ? profilesMap[p.user_id] ?? null : null,
     }))
 
     return <ArchiveClient tab="products" recipes={[]} products={enriched} />
@@ -82,7 +83,8 @@ export default async function ArchivePage({
   }
 
   const enriched = rows.map((r) => ({
-    ...r, author: profilesMap[r.user_id] ?? null,
+    ...r,
+    author: r.user_id ? profilesMap[r.user_id] ?? null : null,
   }))
 
   return <ArchiveClient tab="recipes" recipes={enriched} products={[]} />
