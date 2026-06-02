@@ -4,7 +4,7 @@
  */
 
 import { supabase } from './supabaseClient.js';
-import { parseIngredientsText, findProductMatch, findAllMatches, resolveScannedProduct } from './parse-food.js';
+import { parseIngredientsText, findProductMatch, findAllMatches, resolveScannedProduct, isDirectUnit } from './parse-food.js';
 import { iconCheck, iconClose, iconScan, iconBarcode } from './icons.js';
 import { scanBarcode } from './barcode-scanner.js';
 import { escapeHTML } from './utils.js';
@@ -12,7 +12,8 @@ import { escapeHTML } from './utils.js';
 let ingredientsList = [];
 let onIngredientsChange = null;
 let currentLang = 'ua';
-let productUnitsCache = [];
+let productUnitsCache = [];   // штучні: product_units
+let productMeasureCache = []; // об'ємні/мірні: product_measure_weights
 
 // ==================== ЛОКАЛІЗАЦІЯ ====================
 
@@ -140,13 +141,18 @@ export function initIngredientBuilder(containerSelector, onChange, lang = 'ua') 
 let cacheReady = false;
 let cachePromise = null;
 
+// Кеш ваг по мірах. ДВА джерела:
+//   product_units            — штучні продукти (unit_type='шт', є size)
+//   product_measure_weights  — об'ємні/мірні (склянка/ложки/дрібка), вага по продукту
 function loadProductsCache() {
   if (cachePromise) return cachePromise;
-  cachePromise = supabase
-    .from('product_units')
-    .select('product_id, unit_type, size, grams')
-    .then(({ data }) => {
-      productUnitsCache = data || [];
+  cachePromise = Promise.all([
+    supabase.from('product_units').select('product_id, unit_type, size, grams'),
+    supabase.from('product_measure_weights').select('product_id, unit_type, grams, state, note'),
+  ])
+    .then(([units, measures]) => {
+      productUnitsCache = units?.data || [];
+      productMeasureCache = measures?.data || [];
       cacheReady = true;
     })
     .catch(() => {});
@@ -155,22 +161,38 @@ function loadProductsCache() {
 
 // ==================== ОТРИМАННЯ ВАГИ ПРОДУКТУ ====================
 
-function getProductWeight(productId, size = 'medium') {
-  // Шукаємо в product_units
-  const unit = productUnitsCache.find((u) => u.product_id === productId && u.size === size);
+// Вага однієї одиниці продукту (РЕАЛЬНІ дані з БД). Фільтр по unitType
+// ОБОВ'ЯЗКОВИЙ: на продукт може бути кілька типів з різною вагою.
+// Шукаємо у ДВОХ джерелах:
+//   • 'шт'         → product_units (штучні продукти, є size)
+//   • об'ємні/мірні → product_measure_weights (склянка/ложки/дрібка…)
+// Нема рядка → null (жодних дефолтів; інгредієнт стане червоним).
+function getProductWeight(productId, unitType, size = 'medium') {
+  if (!unitType) return null;
 
-  if (unit) return unit.grams;
+  // Штука → product_units
+  if (unitType === 'шт') {
+    const exact = productUnitsCache.find(
+      (u) => u.product_id === productId && u.unit_type === 'шт' && u.size === size,
+    );
+    if (exact) return exact.grams;
+    const medium = productUnitsCache.find(
+      (u) => u.product_id === productId && u.unit_type === 'шт' && u.size === 'medium',
+    );
+    if (medium) return medium.grams;
+    const any = productUnitsCache.find(
+      (u) => u.product_id === productId && u.unit_type === 'шт',
+    );
+    return any ? any.grams : null;
+  }
 
-  // Якщо немає потрібного розміру — беремо medium або перший доступний
-  const mediumUnit = productUnitsCache.find(
-    (u) => u.product_id === productId && u.size === 'medium',
+  // Об'ємні/мірні → product_measure_weights.
+  // Кілька рядків можливі (різні state/note) → беремо перший знайдений
+  // (наповнюватимемо по одному дефолтному на пару; уточнення — пізніше).
+  const measure = productMeasureCache.find(
+    (m) => m.product_id === productId && m.unit_type === unitType,
   );
-  if (mediumUnit) return mediumUnit.grams;
-
-  const anyUnit = productUnitsCache.find((u) => u.product_id === productId);
-  if (anyUnit) return anyUnit.grams;
-
-  return null;
+  return measure ? measure.grams : null;
 }
 
 // ==================== ПОДІЇ ====================
@@ -227,22 +249,21 @@ async function parseAndAddIngredients(text) {
     for (const item of parsed) {
       const product = await findProductMatch(item.name);
 
+      // Вага:
+      //  • DIRECT-одиниці (г/кг/мл/л) → item.grams уже пораховані парсером.
+      //  • LOOKUP-одиниці (шт/склянка/ложки/дрібка) → вага з product_units по
+      //    цьому продукту й цьому unitType. Нема рядка в БД → grams лишається null.
+      // ЖОДНИХ вигаданих дефолтів: нема ваги → не рахуємо КБЖУ, інгредієнт червоний.
       let grams = item.grams;
-
-      // Штучна кількість ("2 шт", "картопля") → вага штуки з product_units
-      // (це РЕАЛЬНІ дані з БД, не вигадка). Розмір у рецепті не вказують → 'medium'.
-      if (product && item.amount && !grams) {
-        const unitWeight = getProductWeight(product.id, 'medium');
-        if (unitWeight) {
-          grams = Math.round(item.amount * unitWeight);
-        }
+      if (product && grams == null && item.amount) {
+        const unitWeight = getProductWeight(product.id, item.unitType, 'medium');
+        if (unitWeight) grams = Math.round(item.amount * unitWeight);
       }
 
-      // ЖОДНИХ вигаданих дефолтів. Якщо ваги немає ні в тексті, ні в product_units
-      // (напр. рідина без запису про штуку) — grams лишається null, ккал не рахуємо.
-      // Раніше тут було grams = 100 зі стелі — прибрано.
-
-      const factor = grams ? grams / 100 : 0;
+      const hasWeight = grams != null;
+      const factor = hasWeight ? grams / 100 : 0;
+      // Розпізнаним вважаємо лише коли є і продукт, і вага (інакше КБЖУ = 0 → червоний).
+      const matched = !!product && hasWeight;
 
       const ingredient = {
         id: product?.id || null,
@@ -252,14 +273,15 @@ async function parseAndAddIngredients(text) {
         original: item.original,
         weight: grams,
         parsedAmount: item.amount || 1,
-        parsedUnit: item.unit || 'шт',
-        unit: grams ? 'g' : 'шт',
-        kcal: product ? Math.round((product.kcal || 0) * factor) : 0,
-        protein: product ? parseFloat(((product.protein || 0) * factor).toFixed(1)) : 0,
-        fat: product ? parseFloat(((product.fat || 0) * factor).toFixed(1)) : 0,
-        carbs: product ? parseFloat(((product.carbs || 0) * factor).toFixed(1)) : 0,
-        fiber: product ? parseFloat(((product.fiber || 0) * factor).toFixed(1)) : 0,
-        matched: !!product,
+        parsedUnit: item.unit || 'шт',   // СИРА одиниця як написала людина ("л", "дрібка")
+        unitType: item.unitType,         // канон для lookup при заміні продукту
+        unit: hasWeight ? 'g' : (item.unit || 'шт'),
+        kcal: matched ? Math.round((product.kcal || 0) * factor) : 0,
+        protein: matched ? parseFloat(((product.protein || 0) * factor).toFixed(1)) : 0,
+        fat: matched ? parseFloat(((product.fat || 0) * factor).toFixed(1)) : 0,
+        carbs: matched ? parseFloat(((product.carbs || 0) * factor).toFixed(1)) : 0,
+        fiber: matched ? parseFloat(((product.fiber || 0) * factor).toFixed(1)) : 0,
+        matched: matched,
         foodState: product?.food_state || null,
         originalQuery: item.name,
       };
@@ -341,7 +363,8 @@ function renderIngredientsList() {
 
   listEl.innerHTML = ingredientsList
     .map((ing, index) => {
-      const name = getProductName(ing) || ing.original || ing.name_ua;
+      // Показуємо ЯК НАПИСАЛА ЛЮДИНА: її назву ("молоко"), а не назву продукту з БД.
+      const name = escapeHTML(ing.originalQuery || ing.original || ing.name_ua || '');
       const statusClass = ing.matched ? 'ingredient-item--matched' : 'ingredient-item--unmatched';
       const statusIcon = ing.matched ? iconCheck : '?';
       const statusTitle = ing.matched ? t('found') : t('notFound');
@@ -352,15 +375,21 @@ function renderIngredientsList() {
         ? `<em class="ingredient-item__state">${stateLabel}</em>`
         : '';
 
-      const weightDisplay = ing.weight
-        ? `${ing.weight} ${t('unitG')}`
-        : `${ing.parsedAmount} ${ing.parsedUnit}`;
+      // Підказка: який продукт з БД зіставлено (лише якщо назва відрізняється від введеної).
+      const matchedName = getProductName(ing);
+      const hintHtml =
+        ing.matched && matchedName && matchedName.toLowerCase() !== (ing.originalQuery || '').toLowerCase()
+          ? `<em class="ingredient-item__match-hint">→ ${escapeHTML(matchedName)}</em>`
+          : '';
+
+      // Вага — ЗАВЖДИ в одиницях людини ("1 л", "2 шт", "дрібка"), без грамів.
+      const weightDisplay = `${ing.parsedAmount} ${ing.parsedUnit}`;
 
       return `
       <li class="ingredient-item ${statusClass}" data-index="${index}">
         <span class="ingredient-item__status" title="${statusTitle}">${statusIcon}</span>
         <span class="ingredient-item__name" title="Натисніть щоб змінити">
-          ${name}${stateHtml}
+          ${name}${stateHtml}${hintHtml}
         </span>
         <span class="ingredient-item__weight">${weightDisplay}</span>
         <span class="ingredient-item__kcal">${ing.kcal} ${t('kcal')}</span>
@@ -436,20 +465,35 @@ function renderIngredientsList() {
 
           if (!chosen) return;
 
-          const grams = ingredientsList[index].weight;
-          const factor = grams ? grams / 100 : 0;
+          const cur = ingredientsList[index];
+
+          // Перерахунок ваги при заміні продукту:
+          //  • DIRECT (г/л) — вага з тексту (cur.grams був заданий) не залежить від
+          //    продукту → лишаємо як є.
+          //  • LOOKUP (шт/склянка/...) — вага залежить від продукту → беремо з
+          //    product_units нового продукту по unitType. Нема рядка → null (червоний).
+          let grams = cur.weight;
+          const isDirectWeight = isDirectUnit(cur.parsedUnit);
+          if (!isDirectWeight && cur.unitType) {
+            const uw = getProductWeight(chosen.id, cur.unitType, 'medium');
+            grams = uw != null ? Math.round((cur.parsedAmount || 1) * uw) : null;
+          }
+
+          const hasWeight = grams != null;
+          const factor = hasWeight ? grams / 100 : 0;
           ingredientsList[index] = {
-            ...ingredientsList[index],
+            ...cur,
             id: chosen.id,
             name_ua: chosen.name_ua,
             name_en: chosen.name_en,
             name_pl: chosen.name_pl,
             foodState: chosen.food_state,
-            kcal:    Math.round((chosen.kcal    || 0) * factor),
-            protein: parseFloat(((chosen.protein || 0) * factor).toFixed(1)),
-            fat:     parseFloat(((chosen.fat     || 0) * factor).toFixed(1)),
-            carbs:   parseFloat(((chosen.carbs   || 0) * factor).toFixed(1)),
-            matched: true,
+            weight: grams,
+            kcal:    hasWeight ? Math.round((chosen.kcal    || 0) * factor) : 0,
+            protein: hasWeight ? parseFloat(((chosen.protein || 0) * factor).toFixed(1)) : 0,
+            fat:     hasWeight ? parseFloat(((chosen.fat     || 0) * factor).toFixed(1)) : 0,
+            carbs:   hasWeight ? parseFloat(((chosen.carbs   || 0) * factor).toFixed(1)) : 0,
+            matched: hasWeight,
           };
 
           dropdown.remove();

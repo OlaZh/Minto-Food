@@ -7,6 +7,10 @@ import { supabase } from './supabaseClient.js';
 // КОНСТАНТИ
 // =====================================
 
+// ─────────────────────────────────────────────────────────────
+// DIRECT — вагові/об'ємні одиниці з ФІКСОВАНИМ перерахунком у грами.
+// Вага продукту тут не залежить від продукту (г, кг, мл, л).
+// ─────────────────────────────────────────────────────────────
 const UNIT_CONVERSIONS = {
   // Вага
   г: 1, гр: 1, грам: 1, грами: 1, грамів: 1,
@@ -18,51 +22,55 @@ const UNIT_CONVERSIONS = {
   // Об'єм
   мл: 1, ml: 1,
   л: 1000, літр: 1000, літра: 1000, l: 1000, liter: 1000,
-  // Ложки
-  'ч.л.': 5, 'ч.л': 5, чл: 5, tsp: 5, teaspoon: 5,
-  'ст.л.': 15, 'ст.л': 15, стл: 15, tbsp: 15, tablespoon: 15,
-  ложка: 15, ложки: 15, ложок: 15,
-  // Склянки / стакани
-  склянка: 250, склянки: 250, склянок: 250,
-  стакан: 200, стакана: 200, стакани: 200,
-  cup: 250, cups: 250,
-  // Щіпки / дрібки
-  щіпка: 2, щіпки: 2, щіпок: 2,
-  дрібка: 1, дрібки: 1, дрібок: 1,
-  pinch: 2,
-  // Жмені
-  жменя: 30, жмені: 30, жмень: 30, жменька: 30, жменьки: 30,
-  handful: 30,
-  // Пачки / упаковки
-  пачка: 200, пачки: 200, пачок: 200,
-  упаковка: 200, упаковки: 200,
-  // Штуки (grams=null → шукаємо в product_units)
-  шт: null, 'шт.': null, штука: null, штуки: null, штук: null,
-  pcs: null, piece: null, pieces: null,
 };
 
-// Одиниці що означають "штука" — кількість грамів береться з product_units
-const PIECE_UNITS = new Set(
-  Object.entries(UNIT_CONVERSIONS)
-    .filter(([, v]) => v === null)
-    .map(([k]) => k)
-);
+// ─────────────────────────────────────────────────────────────
+// LOOKUP — штучні/об'ємні одиниці, вага яких ЗАЛЕЖИТЬ ВІД ПРОДУКТУ
+// (склянка борошна ≠ склянка молока). Грами беруться з product_units
+// по конкретному продукту. У парсері grams завжди null.
+// UNIT_TO_TYPE зводить синоніми до канонічного unit_type (як у БД).
+// ─────────────────────────────────────────────────────────────
+const UNIT_TO_TYPE = {
+  // Штуки
+  шт: 'шт', 'шт.': 'шт', штука: 'шт', штуки: 'шт', штук: 'шт',
+  pcs: 'шт', piece: 'шт', pieces: 'шт',
+  // Чайна ложка
+  'ч.л.': 'ч.л.', 'ч.л': 'ч.л.', чл: 'ч.л.', tsp: 'ч.л.', teaspoon: 'ч.л.',
+  // Десертна ложка
+  'дес.л.': 'дес.л.', 'дес.л': 'дес.л.', десл: 'дес.л.',
+  // Столова ложка
+  'ст.л.': 'ст.л.', 'ст.л': 'ст.л.', стл: 'ст.л.', tbsp: 'ст.л.', tablespoon: 'ст.л.',
+  ложка: 'ст.л.', ложки: 'ст.л.', ложок: 'ст.л.',
+  // Склянка (250 мл) і стакан (200 мл) — РОЗДІЛЬНІ unit_type
+  склянка: 'склянка', склянки: 'склянка', склянок: 'склянка', cup: 'склянка', cups: 'склянка',
+  стакан: 'стакан', стакана: 'стакан', стакани: 'стакан',
+  // Щіпки / дрібки
+  щіпка: 'щіпка', щіпки: 'щіпка', щіпок: 'щіпка', pinch: 'щіпка',
+  дрібка: 'дрібка', дрібки: 'дрібка', дрібок: 'дрібка',
+  // Жмені
+  жменя: 'жменя', жмені: 'жменя', жмень: 'жменя', жменька: 'жменя', жменьки: 'жменя', handful: 'жменя',
+  // Пачки / упаковки
+  пачка: 'пачка', пачки: 'пачка', пачок: 'пачка', упаковка: 'пачка', упаковки: 'пачка',
+};
 
-// Одиниці ваги/об'єму, для яких "без числа" не має сенсу ("сіль г", "сіль мл").
-// Їх Патерн 5/6 (одиниця без числа) ігнорує — без числа ловимо лише мірні
-// одиниці на кшталт дрібка/щіпка/жменя/склянка/пачка.
-const IMPLICIT_ONE_EXCLUDE = new Set([
-  'г', 'гр', 'грам', 'грами', 'грамів', 'g', 'gram', 'grams',
-  'кг', 'кілограм', 'кілограма', 'кілограми', 'kg',
-  'oz', 'ounce', 'lb', 'pound',
-  'мл', 'ml', 'л', 'літр', 'літра', 'l', 'liter',
-]);
+const LOOKUP_UNITS = new Set(Object.keys(UNIT_TO_TYPE));
 
-// Регекс для всіх відомих одиниць (довші — першими, щоб "ст.л." не зматчилось як "ст")
-const UNIT_RE_SRC = Object.keys(UNIT_CONVERSIONS)
+// "Штучні" одиниці (для патернів "2 яйця" → unit='шт'). Підмножина LOOKUP.
+const PIECE_UNITS = new Set(['шт', 'шт.', 'штука', 'штуки', 'штук', 'pcs', 'piece', 'pieces']);
+
+// Регекс для ВСІХ одиниць — DIRECT + LOOKUP (довші першими, щоб "ст.л." не
+// зматчилось як "ст"). Критично об'єднувати обидва набори, інакше склянки/ложки
+// не ловитимуться регексом узагалі.
+const UNIT_RE_SRC = [...Object.keys(UNIT_CONVERSIONS), ...LOOKUP_UNITS]
   .map((k) => k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
   .sort((a, b) => b.length - a.length)
   .join('|');
+
+// Чи одиниця DIRECT (вага не залежить від продукту: г/кг/мл/л).
+// Експортується, бо recipe-ingredients.js вирішує, чи перераховувати вагу при заміні продукту.
+export function isDirectUnit(unit) {
+  return unit != null && UNIT_CONVERSIONS[unit.toLowerCase()] !== undefined;
+}
 
 // Слова, що вказують на термічну/кулінарну обробку (стан).
 // Наявність стану → шукаємо готову страву в `recipes`, а не сирий продукт.
@@ -165,6 +173,7 @@ export function parseFoodInput(input) {
 
   // Нормалізуємо багатослівні одиниці перед основним парсингом
   text = text
+    .replace(/десертн[иіая]+\s+ложк[иаою]*/gi, 'дес.л.')
     .replace(/столов[иіая]+\s+ложк[иаою]*/gi, 'ст.л.')
     .replace(/чайн[иіая]+\s+ложк[иаою]*/gi, 'ч.л.')
     .replace(/[—–-]+/g, ' ')
@@ -185,8 +194,9 @@ export function parseFoodInput(input) {
     amount = parseFloat(match[1].replace(',', '.'));
     unit = match[2].toLowerCase();
     name = match[3].trim();
+    // DIRECT (є в UNIT_CONVERSIONS) → фіксовані грами. LOOKUP → null (вага з product_units).
     const conv = UNIT_CONVERSIONS[unit];
-    grams = PIECE_UNITS.has(unit) ? null : amount * (conv ?? 1);
+    grams = conv !== undefined ? amount * conv : null;
   }
 
   // Патерн 2: "курка 200 г" / "сіль 1 щіпка"
@@ -199,7 +209,7 @@ export function parseFoodInput(input) {
       amount = parseFloat(match[2].replace(',', '.'));
       unit = match[3].toLowerCase();
       const conv = UNIT_CONVERSIONS[unit];
-      grams = PIECE_UNITS.has(unit) ? null : amount * (conv ?? 1);
+      grams = conv !== undefined ? amount * conv : null;
     }
   }
 
@@ -225,16 +235,16 @@ export function parseFoodInput(input) {
 
   // Патерн 5/6: одиниця БЕЗ числа, кількість мається на увазі = 1.
   // Природна мова: "сіль дрібка", "дрібка солі", "щіпка перцю", "склянка борошна".
-  // Лише для безкількісних мірних одиниць (дрібка/щіпка/жменя/склянка/...),
-  // НЕ для "г"/"мл"/"шт" — "сіль г" не має сенсу.
+  // Лише для LOOKUP-одиниць окрім штук ("сіль шт" безглуздо). Вага з product_units → grams=null.
+  const implicitOneOk = (u) => LOOKUP_UNITS.has(u) && !PIECE_UNITS.has(u);
   if (!match) {
     // "сіль дрібка" — назва, потім одиниця в кінці
     match = text.match(new RegExp(`^(.+?)\\s+(${UNIT_RE_SRC})\\.?$`, 'i'));
-    if (match && !PIECE_UNITS.has(match[2].toLowerCase()) && !IMPLICIT_ONE_EXCLUDE.has(match[2].toLowerCase())) {
+    if (match && implicitOneOk(match[2].toLowerCase())) {
       name = match[1].trim();
       unit = match[2].toLowerCase();
       amount = 1;
-      grams = amount * (UNIT_CONVERSIONS[unit] ?? 1);
+      grams = null;
     } else {
       match = null;
     }
@@ -242,24 +252,27 @@ export function parseFoodInput(input) {
   if (!match) {
     // "дрібка солі" — одиниця на початку, потім назва
     match = text.match(new RegExp(`^(${UNIT_RE_SRC})\\.?\\s+(.+)$`, 'i'));
-    if (match && !PIECE_UNITS.has(match[1].toLowerCase()) && !IMPLICIT_ONE_EXCLUDE.has(match[1].toLowerCase())) {
+    if (match && implicitOneOk(match[1].toLowerCase())) {
       unit = match[1].toLowerCase();
       name = match[2].trim();
       amount = 1;
-      grams = amount * (UNIT_CONVERSIONS[unit] ?? 1);
+      grams = null;
     } else {
       match = null;
     }
   }
 
   const searchName = removeStopWords(name);
+  const finalUnit = unit || 'шт';
 
   return {
     raw: input,
+    original: input,            // alias — recipe-ingredients.js читає item.original
     name: name,
     searchName: searchName,
     amount: amount || 1,
-    unit: unit || 'шт',
+    unit: finalUnit,            // СИРА одиниця для показу "як написала" ("л", "дрібка")
+    unitType: UNIT_TO_TYPE[finalUnit] ?? finalUnit, // канон для lookup у product_units
     grams: grams,
   };
 }
