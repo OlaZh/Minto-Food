@@ -229,8 +229,8 @@ async function parseAndAddIngredients(text) {
 
       let grams = item.grams;
 
-      // Якщо знайшли продукт і є кількість але немає грамів — беремо з product_units.
-      // Розмір не вказано в рецепті → завжди беремо 'medium'
+      // Штучна кількість ("2 шт", "картопля") → вага штуки з product_units
+      // (це РЕАЛЬНІ дані з БД, не вигадка). Розмір у рецепті не вказують → 'medium'.
       if (product && item.amount && !grams) {
         const unitWeight = getProductWeight(product.id, 'medium');
         if (unitWeight) {
@@ -238,11 +238,9 @@ async function parseAndAddIngredients(text) {
         }
       }
 
-      // Для вагових одиниць без ваги — дефолт 100г
-      // Для штучних (шт, pcs, piece) — НЕ підставляємо вагу, показуємо "N шт"
-      const PIECE_UNIT_LIST = ['шт', 'шт.', 'штука', 'штуки', 'штук', 'pcs', 'piece', 'pieces'];
-      const isPieceUnit = item.unit && PIECE_UNIT_LIST.includes(item.unit.toLowerCase());
-      if (!grams && !isPieceUnit) grams = 100;
+      // ЖОДНИХ вигаданих дефолтів. Якщо ваги немає ні в тексті, ні в product_units
+      // (напр. рідина без запису про штуку) — grams лишається null, ккал не рахуємо.
+      // Раніше тут було grams = 100 зі стелі — прибрано.
 
       const factor = grams ? grams / 100 : 0;
 
