@@ -97,10 +97,39 @@ function resetCaches() {
 
 async function resolveUser(user = null) {
   if (user) return user;
-  const {
-    data: { user: currentUser },
-  } = await supabase.auth.getUser();
-  return currentUser ?? null;
+
+  try {
+    const {
+      data: { session },
+      error,
+    } = await supabase.auth.getSession();
+
+    if (error) {
+      console.warn('[storage] auth session lookup failed:', error.message);
+    }
+
+    if (session?.user) {
+      return session.user;
+    }
+  } catch (error) {
+    console.warn('[storage] auth session lookup threw:', error?.message ?? error);
+  }
+
+  try {
+    const {
+      data: { user: currentUser },
+      error,
+    } = await supabase.auth.getUser();
+
+    if (error) {
+      console.warn('[storage] auth user lookup failed:', error.message);
+    }
+
+    return currentUser ?? null;
+  } catch (error) {
+    console.warn('[storage] auth user lookup threw:', error?.message ?? error);
+    return null;
+  }
 }
 
 async function saveProfileFields(fields, user = null) {
@@ -155,7 +184,14 @@ async function upsertHealthProfileFields(fields) {
 }
 
 export async function loadUserStorage(user = null, { force = false } = {}) {
-  const resolvedUser = await resolveUser(user);
+  let resolvedUser = null;
+
+  try {
+    resolvedUser = await resolveUser(user);
+  } catch (error) {
+    console.warn('[storage] failed to resolve auth user during bootstrap:', error?.message ?? error);
+  }
+
   const userId = resolvedUser?.id ?? null;
 
   if (!force && hasLoaded && loadedUserId === userId) {
@@ -181,33 +217,38 @@ export async function loadUserStorage(user = null, { force = false } = {}) {
 
   loadedUserId = userId;
   loadingPromise = (async () => {
-    const [profileRes, healthRes] = await Promise.all([
-      supabase
-        .from('profiles')
-        .select(
-          'language, theme, unit_system, copied_day, copied_week, welcome_intro_seen, welcome_seen_on',
-        )
-        .eq('id', userId)
-        .maybeSingle(),
-      supabase
-        .from('user_profiles')
-        .select('age, height, weight, gender, activity, goal, calories, protein, fat, carbs, water, target_weight')
-        .eq('user_id', userId)
-        .maybeSingle(),
-    ]);
+    try {
+      const [profileRes, healthRes] = await Promise.all([
+        supabase
+          .from('profiles')
+          .select(
+            'language, theme, unit_system, copied_day, copied_week, welcome_intro_seen, welcome_seen_on',
+          )
+          .eq('id', userId)
+          .maybeSingle(),
+        supabase
+          .from('user_profiles')
+          .select('age, height, weight, gender, activity, goal, calories, protein, fat, carbs, water, target_weight')
+          .eq('user_id', userId)
+          .maybeSingle(),
+      ]);
 
-    resetCaches();
+      resetCaches();
 
-    if (!profileRes.error && profileRes.data) {
-      applyPreferences(profileRes.data);
-    } else if (profileRes.error) {
-      console.warn('[storage] profiles load failed:', profileRes.error.message);
-    }
+      if (!profileRes.error && profileRes.data) {
+        applyPreferences(profileRes.data);
+      } else if (profileRes.error) {
+        console.warn('[storage] profiles load failed:', profileRes.error.message);
+      }
 
-    if (!healthRes.error && healthRes.data) {
-      applyHealthProfile(healthRes.data);
-    } else if (healthRes.error) {
-      console.warn('[storage] user_profiles load failed:', healthRes.error.message);
+      if (!healthRes.error && healthRes.data) {
+        applyHealthProfile(healthRes.data);
+      } else if (healthRes.error) {
+        console.warn('[storage] user_profiles load failed:', healthRes.error.message);
+      }
+    } catch (error) {
+      console.warn('[storage] load bootstrap failed:', error?.message ?? error);
+      resetCaches();
     }
 
     hasLoaded = true;

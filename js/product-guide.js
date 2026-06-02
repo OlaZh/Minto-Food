@@ -535,8 +535,8 @@ document.addEventListener('click', (e) => {
    ============================================================ */
 
 document.addEventListener('DOMContentLoaded', async () => {
+  await initAuth();
   await loadUserStorage();
   currentLang = getLang();
-  await initAuth();
   loadProducts();
 });

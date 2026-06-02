@@ -1503,7 +1503,6 @@ function closeNewRecipesDrawer() {
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
-  await loadUserStorage();
   await initAuth(async (event) => {
     // Після логіну перебудовуємо фільтри та рецепти з контекстом юзера
     if (event === 'SIGNED_IN') {
@@ -1516,6 +1515,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       loadAndDisplayRecipes();
     }
   });
+  await loadUserStorage();
   await initBookSelector();
   await initRecipeModal();
   buildFilterPanel();
