@@ -4,8 +4,6 @@
 
 import { supabase } from './supabaseClient.js';
 import { iconVeg, iconCheck } from './icons.js';
-import { saveProfileFields } from './storage.js';
-import { showToast } from './utils.js';
 
 const MIN = 2;
 const MAX = 25;
@@ -19,29 +17,17 @@ let _suggested = '';
 // ── Публічний метод ───────────────────────────────────────────
 
 export async function checkOnboarding(user) {
-  const { data: profile, error } = await supabase
+  // Швидка перевірка — якщо вже проходив онбординг, не турбуємо
+  if (localStorage.getItem(`minto_onb_${user.id}`)) return;
+
+  const { data: profile } = await supabase
     .from('profiles')
-    .select('display_name, welcome_intro_seen')
+    .select('display_name')
     .eq('id', user.id)
-    .maybeSingle();
+    .single();
 
-  if (error) {
-    console.warn('[onboarding] failed to load profile:', error.message);
-    return;
-  }
-
-  if (profile?.welcome_intro_seen || profile?.display_name) {
-    return;
-  }
-
-  const markSeenError = !(await saveProfileFields(
-    { welcome_intro_seen: true },
-    user,
-  ));
-
-  if (markSeenError) {
-    console.error('[onboarding] failed to mark welcome as shown');
-    showToast('Не вдалося підготувати вітання. Спробуйте ще раз.', 'error');
+  if (profile?.display_name) {
+    localStorage.setItem(`minto_onb_${user.id}`, '1'); // більше не питаємо
     return;
   }
 
@@ -223,7 +209,7 @@ function _mount(suggested) {
 
 function _bindSuggestView() {
   document.getElementById('onbAcceptBtn')?.addEventListener('click', () => _save(_suggested));
-  document.getElementById('onbLaterBtn')?.addEventListener('click', () => _dismiss());
+  document.getElementById('onbLaterBtn')?.addEventListener('click', () => _save(_suggested));
   document.getElementById('onbEditBtn')?.addEventListener('click', _showEditView);
 }
 
@@ -317,38 +303,11 @@ async function _save(displayName) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return;
 
-  const payload = {
-    display_name: displayName,
-    welcome_intro_seen: true,
-  };
+  await supabase
+    .from('profiles')
+    .upsert({ id: user.id, display_name: displayName }, { onConflict: 'id' });
 
-  const ok = await saveProfileFields(payload, user);
-
-  if (!ok) {
-    console.error('[onboarding] failed to save nickname');
-    showToast('Не вдалося зберегти нікнейм. Спробуйте ще раз.', 'error');
-    return;
-  }
-
-  document.getElementById('onboarding-overlay')?.remove();
-  _resolveFn?.();
-}
-
-async function _dismiss() {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return;
-
-  const ok = await saveProfileFields(
-    { welcome_intro_seen: true },
-    user,
-  );
-
-  if (!ok) {
-    console.error('[onboarding] failed to dismiss welcome');
-    showToast('Не вдалося закрити вітання. Спробуйте ще раз.', 'error');
-    return;
-  }
-
+  localStorage.setItem(`minto_onb_${user.id}`, '1');
   document.getElementById('onboarding-overlay')?.remove();
   _resolveFn?.();
 }

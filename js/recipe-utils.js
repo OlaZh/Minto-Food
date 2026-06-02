@@ -8,14 +8,3 @@ export function getRecipeDisplayName(recipe, lang = getLang()) {
 
   return recipe.name_ua || recipe.name_en || recipe.name_pl || recipe.name || '';
 }
-
-export function getRecipeName(recipe, lang = getLang()) {
-  const name = getRecipeDisplayName(recipe, lang);
-  if (!name) return '';
-
-  return name
-    .replace(/рецепт:?/gi, '')
-    .replace(/recipe:?/gi, '')
-    .trim()
-    .replace(/^\w/, (char) => char.toUpperCase());
-}

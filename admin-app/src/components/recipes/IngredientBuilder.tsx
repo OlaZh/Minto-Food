@@ -1,9 +1,10 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { Plus, Trash2, Search } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import { createClient } from '@/lib/supabase/client'
 import type { IngredientRow, Product } from '@/lib/types'
 import { UNITS } from '@/lib/types'
@@ -11,6 +12,11 @@ import { UNITS } from '@/lib/types'
 interface IngredientBuilderProps {
   value: IngredientRow[]
   onChange: (rows: IngredientRow[]) => void
+}
+
+interface ProductOption {
+  id: number
+  label: string
 }
 
 function ProductSearch({
@@ -25,6 +31,10 @@ function ProductSearch({
   const [open, setOpen] = useState(false)
   const debounce = useRef<ReturnType<typeof setTimeout> | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    setQuery(value)
+  }, [value])
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -42,7 +52,7 @@ function ProductSearch({
     const { data } = await supabase
       .from('products')
       .select('id, name_ua, name_en, name_pl, kcal, protein, fat, carbs')
-      .or(`name_ua.ilike.%${q}%,name_en.ilike.%${q}%,name_pl.ilike.%${q}%`)
+      .or(`name_ua.ilike.%${q}%,name_en.ilike.%${q}%`)
       .is('deleted_at', null)
       .limit(12)
     setResults(data ?? [])

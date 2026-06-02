@@ -1,47 +1,16 @@
 'use client'
 
-import Link from 'next/link'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import ActionButton from '@/components/moderation/ActionButton'
-import { approveProduct, updateProductNutrition, softDeleteProduct } from '@/app/actions/moderation'
-
-interface ProductRow {
-  id: number
-  name_ua: string | null
-  name_en: string | null
-  name_pl: string | null
-  category_id: number | null
-  kcal: number | null
-  protein: number | null
-  fat: number | null
-  carbs: number | null
-  fiber: number | null
-  label_type: string | null
-  food_state: 'raw' | 'dry' | 'cooked' | null
-  raw_edible: string | null
-  created_at: string
-  author?: { full_name: string | null } | null
-}
+import { approveProduct, updateProductNutrition, softDeleteProduct, mergeProduct } from '@/app/actions/moderation'
 
 interface ProductsClientProps {
-  products: ProductRow[]
-  errorMessage: string | null
-  searchQuery: string
-  page: number
-  pageSize: number
-  totalCount: number
+  products: any[]
 }
 
-function buildProductsHref(searchQuery: string, page: number) {
-  const params = new URLSearchParams()
-  if (searchQuery) params.set('q', searchQuery)
-  params.set('page', String(page))
-  return `/products?${params.toString()}`
-}
-
-function NutritionEditor({ product, onSaved }: { product: ProductRow; onSaved: () => void }) {
+function NutritionEditor({ product, onSaved }: { product: any; onSaved: () => void }) {
   const [kcal, setKcal] = useState(String(product.kcal ?? ''))
   const [protein, setProtein] = useState(String(product.protein ?? ''))
   const [fat, setFat] = useState(String(product.fat ?? ''))
@@ -64,8 +33,8 @@ function NutritionEditor({ product, onSaved }: { product: ProductRow; onSaved: (
         food_state: foodState,
       })
       onSaved()
-    } catch (error: unknown) {
-      toast.error(error instanceof Error ? error.message : 'Помилка')
+    } catch (e: any) {
+      toast.error(e?.message ?? 'Помилка')
     }
     setSaving(false)
   }
@@ -127,71 +96,48 @@ function NutritionEditor({ product, onSaved }: { product: ProductRow; onSaved: (
 }
 
 const RAW_EDIBLE_OPTIONS = [
-  { value: 'always', label: 'Завжди показувати' },
+  { value: 'always',    label: 'Завжди показувати' },
   { value: 'sometimes', label: 'Показувати як сире' },
-  { value: 'never', label: 'Не показувати' },
+  { value: 'never',     label: 'Не показувати' },
 ]
 
-export default function ProductsClient({
-  products,
-  errorMessage,
-  searchQuery,
-  page,
-  pageSize,
-  totalCount,
-}: ProductsClientProps) {
+export default function ProductsClient({ products }: ProductsClientProps) {
   const router = useRouter()
+  const [search, setSearch] = useState('')
   const [editingId, setEditingId] = useState<number | null>(null)
   const [rawEdibleMap, setRawEdibleMap] = useState<Record<number, string>>({})
 
-  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize))
-  const from = totalCount === 0 ? 0 : (page - 1) * pageSize + 1
-  const to = Math.min(page * pageSize, totalCount)
+  const filtered = search
+    ? products.filter(p =>
+        (p.name_ua ?? '').toLowerCase().includes(search.toLowerCase()) ||
+        (p.name_en ?? '').toLowerCase().includes(search.toLowerCase())
+      )
+    : products
 
   return (
     <div>
       <div className="sticky top-0 z-10 bg-white border-b border-gray-200 px-4 md:px-8 py-4 flex items-center justify-between">
         <h1 className="text-lg font-semibold">Юзерські продукти</h1>
-        <span className="text-sm text-gray-400">{totalCount} записів</span>
+        <span className="text-sm text-gray-400">{filtered.length} записів</span>
       </div>
 
       <div className="px-4 md:px-8 py-3 border-b border-gray-100">
-        <form className="flex flex-wrap gap-2">
-          <input
-            type="text"
-            name="q"
-            defaultValue={searchQuery}
-            placeholder="Пошук за назвою…"
-            className="w-full max-w-sm text-sm border border-gray-200 rounded-md px-3 py-1.5 outline-none focus:border-gray-400"
-          />
-          <button
-            type="submit"
-            className="h-9 px-3 text-sm rounded-md bg-gray-900 text-white hover:bg-gray-700 transition-colors"
-          >
-            Знайти
-          </button>
-        </form>
+        <input
+          type="text"
+          placeholder="Пошук за назвою…"
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          className="w-full max-w-sm text-sm border border-gray-200 rounded-md px-3 py-1.5 outline-none focus:border-gray-400"
+        />
       </div>
 
-      {errorMessage && (
-        <div className="px-4 md:px-8 py-3 text-sm text-red-600 bg-red-50 border-b border-red-100">
-          {errorMessage}
-        </div>
-      )}
-
-      {totalCount > 0 && (
-        <div className="px-4 md:px-8 py-2 text-xs text-gray-400 border-b border-gray-100">
-          {from}–{to} з {totalCount}
-        </div>
-      )}
-
-      {products.length === 0 && !errorMessage && (
+      {filtered.length === 0 && (
         <div className="px-4 md:px-8 py-16 text-center text-gray-400 text-sm">Продуктів немає 🌿</div>
       )}
 
       <div className="divide-y divide-gray-100">
-        {products.map(product => {
-          const name = product.name_ua || product.name_en || product.name_pl || 'Без назви'
+        {filtered.map(product => {
+          const name = product.name_ua || product.name_en || 'Без назви'
           const isEditing = editingId === product.id
           const rawEdible = rawEdibleMap[product.id]
 
@@ -203,12 +149,12 @@ export default function ProductsClient({
                   <div className="flex flex-wrap gap-x-3 gap-y-0.5 mt-0.5 text-xs text-gray-400">
                     {product.kcal != null && <span>{product.kcal} ккал</span>}
                     {product.protein != null && (
-                      <span>Б:{product.protein} Ж:{product.fat} В:{product.carbs}{(product.fiber ?? 0) > 0 ? ` Кл:${product.fiber}` : ''}</span>
+                      <span>Б:{product.protein} Ж:{product.fat} В:{product.carbs}{product.fiber > 0 ? ` Кл:${product.fiber}` : ''}</span>
                     )}
                     {product.label_type && product.label_type !== 'EU' && (
                       <span className="text-amber-500">{product.label_type}</span>
                     )}
-                    {product.category_id && <span>Категорія #{product.category_id}</span>}
+                    {product.category_id && <span>{product.category_id}</span>}
                     {product.author && <span>Від: {product.author.full_name ?? '—'}</span>}
                     <span suppressHydrationWarning>{product.created_at?.slice(0, 10)}</span>
                   </div>
@@ -216,13 +162,13 @@ export default function ProductsClient({
                   <div className="flex items-center gap-2 mt-2">
                     <span className="text-xs text-gray-400">Відображення:</span>
                     <select
-                      value={rawEdible ?? product.raw_edible ?? ''}
+                      value={rawEdible ?? ''}
                       onChange={e => {
-                        const value = e.target.value
-                        if (value) setRawEdibleMap(m => ({ ...m, [product.id]: value }))
+                        const v = e.target.value
+                        if (v) setRawEdibleMap(m => ({ ...m, [product.id]: v }))
                       }}
                       className={`text-xs border rounded px-1.5 py-1 outline-none bg-white ${
-                        rawEdible || product.raw_edible ? 'border-gray-400' : 'border-orange-300 text-orange-600'
+                        rawEdible ? 'border-gray-400' : 'border-orange-300 text-orange-600'
                       }`}
                     >
                       <option value="">— вибери —</option>
@@ -230,27 +176,27 @@ export default function ProductsClient({
                         <option key={o.value} value={o.value}>{o.label}</option>
                       ))}
                     </select>
+                    {product.raw_edible && !rawEdible && (
+                      <span className="text-xs text-gray-400">зараз: {product.raw_edible}</span>
+                    )}
                   </div>
 
                   {isEditing && (
                     <NutritionEditor
                       product={product}
-                      onSaved={() => {
-                        setEditingId(null)
-                        router.refresh()
-                      }}
+                      onSaved={() => { setEditingId(null); router.refresh() }}
                     />
                   )}
                 </div>
               </div>
 
               <div className="flex flex-wrap gap-2 mt-3">
-                {(rawEdible || product.raw_edible) ? (
+                {rawEdible ? (
                   <ActionButton
                     label="Схвалити"
                     confirmText="Зробити загальним продуктом?"
                     variant="default"
-                    action={() => approveProduct(product.id, rawEdible || product.raw_edible || 'always')}
+                    action={() => approveProduct(product.id, rawEdible)}
                     onDone={() => router.refresh()}
                   />
                 ) : (
@@ -279,34 +225,6 @@ export default function ProductsClient({
           )
         })}
       </div>
-
-      {totalPages > 1 && (
-        <div className="px-4 md:px-8 py-4 border-t border-gray-100 flex items-center justify-between gap-2">
-          <Link
-            href={buildProductsHref(searchQuery, Math.max(1, page - 1))}
-            className={`text-xs px-3 py-1.5 rounded-md border transition-colors ${
-              page <= 1 ? 'pointer-events-none opacity-30 border-gray-200' : 'border-gray-200 hover:border-gray-400'
-            }`}
-            aria-disabled={page <= 1}
-          >
-            ← Попередня
-          </Link>
-
-          <span className="text-xs text-gray-400">
-            сторінка {page} з {totalPages}
-          </span>
-
-          <Link
-            href={buildProductsHref(searchQuery, Math.min(totalPages, page + 1))}
-            className={`text-xs px-3 py-1.5 rounded-md border transition-colors ${
-              page >= totalPages ? 'pointer-events-none opacity-30 border-gray-200' : 'border-gray-200 hover:border-gray-400'
-            }`}
-            aria-disabled={page >= totalPages}
-          >
-            Наступна →
-          </Link>
-        </div>
-      )}
     </div>
   )
 }

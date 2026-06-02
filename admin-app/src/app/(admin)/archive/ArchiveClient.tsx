@@ -1,41 +1,14 @@
 'use client'
 
-import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import ActionButton from '@/components/moderation/ActionButton'
 import { restoreRecipe, purgeRecipe, restoreProduct, purgeProduct } from '@/app/actions/moderation'
 
-interface ArchiveAuthor {
-  full_name: string | null
-}
-
-interface ArchivedRecipe {
-  id: string
-  name_ua: string | null
-  name_en: string | null
-  image: string | null
-  deleted_at: string | null
-  category: string | null
-  author: ArchiveAuthor | null
-}
-
-interface ArchivedProduct {
-  id: number
-  name_ua: string | null
-  name_en: string | null
-  kcal: number | null
-  protein: number | null
-  fat: number | null
-  carbs: number | null
-  deleted_at: string | null
-  author: ArchiveAuthor | null
-}
-
 interface ArchiveClientProps {
   tab: 'recipes' | 'products'
-  recipes: ArchivedRecipe[]
-  products: ArchivedProduct[]
+  recipes: any[]
+  products: any[]
 }
 
 export default function ArchiveClient({ tab, recipes, products }: ArchiveClientProps) {
@@ -84,7 +57,7 @@ export default function ArchiveClient({ tab, recipes, products }: ArchiveClientP
                   <div className="flex items-start gap-3">
                     <div className="w-12 h-12 rounded-md overflow-hidden bg-gray-100 shrink-0 opacity-60">
                       {recipe.image
-                        ? <Image src={recipe.image} alt={name} width={48} height={48} className="w-full h-full object-cover" unoptimized />
+                        ? <img src={recipe.image} alt="" className="w-full h-full object-cover" />
                         : <div className="w-full h-full flex items-center justify-center text-gray-300">🍽</div>
                       }
                     </div>

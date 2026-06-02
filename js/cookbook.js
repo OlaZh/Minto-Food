@@ -24,12 +24,6 @@ function getCoverSrc(filename) {
   return `img/covers/${filename}.avif`;
 }
 
-function recipesLabel(n) {
-  if (n % 10 === 1 && n % 100 !== 11) return `${n} Ń€ĐµŃ†ĐµĐżŃ‚`;
-  if ([2, 3, 4].includes(n % 10) && ![12, 13, 14].includes(n % 100)) return `${n} Ń€ĐµŃ†ĐµĐżŃ‚Đ¸`;
-  return `${n} Ń€ĐµŃ†ĐµĐżŃ‚Ń–Đ˛`;
-}
-
 function renderIconPickerHTML(activeIcon = 'book') {
   return Object.entries(BOOK_ICONS)
     .map(
@@ -61,7 +55,6 @@ let editSelectedCover = null;
 let _setupDone = false;
 let _loadVersion = 0;
 let _initialLoadDone = false;
-let _booksRetryTimer = null;
 
 // =====================================
 // DOM ЕЛЕМЕНТИ
@@ -82,7 +75,6 @@ const closeNewBookModal = document.getElementById('closeNewBookModal');
 const newBookForm = document.getElementById('newBookForm');
 const newBookName = document.getElementById('newBookName');
 const iconPicker = document.getElementById('iconPicker');
-const newBookError = document.getElementById('newBookError');
 
 // =====================================
 // ІНІЦІАЛІЗАЦІЯ
@@ -131,30 +123,6 @@ function _onUserReady() {
 function initIconPicker() {
   const picker = document.getElementById('iconPicker');
   if (picker) picker.innerHTML = renderIconPickerHTML('book');
-}
-
-async function ensureCurrentUser() {
-  if (currentUser?.id) return currentUser;
-
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-
-  currentUser = session?.user || null;
-  return currentUser;
-}
-
-function scheduleBooksReload(delay = 700) {
-  clearTimeout(_booksRetryTimer);
-  _booksRetryTimer = setTimeout(() => {
-    loadBooks();
-  }, delay);
-}
-
-function setNewBookError(message = '') {
-  if (!newBookError) return;
-  newBookError.textContent = message;
-  newBookError.hidden = !message;
 }
 
 function setupEventListeners() {
@@ -226,22 +194,16 @@ function showBookSkeletons(count = 4) {
 
 async function loadBooks() {
   const version = ++_loadVersion;
-  clearTimeout(_booksRetryTimer);
 
   const skeletonTimer = setTimeout(() => {
     if (version === _loadVersion) showBookSkeletons();
   }, 200);
 
   try {
-    const user = await ensureCurrentUser();
-    if (!user?.id) {
-      throw new Error('Missing authenticated user');
-    }
-
     const { data: books, error } = await supabase
       .from('cookbooks')
       .select('*')
-      .eq('user_id', user.id)
+      .eq('user_id', currentUser.id)
       .order('is_default', { ascending: false })
       .order('created_at', { ascending: true });
 
@@ -249,49 +211,16 @@ async function loadBooks() {
     if (version !== _loadVersion) return;
     if (error) throw error;
 
-    const safeBooks = books || [];
-    renderBooks(safeBooks, new Map(), version);
-
-    loadRecipeCounts(safeBooks)
-      .then((recipeCounts) => {
-        if (version !== _loadVersion) return;
-        applyRecipeCounts(recipeCounts);
-      })
-      .catch((countsError) => {
-        console.error('Error loading recipe counts:', countsError);
-      });
+    await renderBooks(books || [], version);
   } catch (err) {
     clearTimeout(skeletonTimer);
     if (version !== _loadVersion) return;
     console.error('Error loading books:', err);
     booksGrid?.querySelectorAll('.skeleton-book').forEach((el) => el.remove());
-    scheduleBooksReload();
   }
 }
 
-async function loadRecipeCounts(books) {
-  const counts = new Map();
-  if (!books.length) return counts;
-
-  const bookIds = books.map((book) => book.id).filter(Boolean);
-  if (!bookIds.length) return counts;
-
-  const { data, error } = await supabase
-    .from('cookbook_recipes')
-    .select('cookbook_id')
-    .in('cookbook_id', bookIds);
-
-  if (error) throw error;
-
-  (data || []).forEach((item) => {
-    const bookId = item.cookbook_id;
-    counts.set(bookId, (counts.get(bookId) || 0) + 1);
-  });
-
-  return counts;
-}
-
-function renderBooks(books, recipeCounts, version) {
+async function renderBooks(books, version) {
   const existingBooks = booksGrid.querySelectorAll('.cookbook-book, .skeleton-book, .cookbook-empty');
   existingBooks.forEach((el) => el.remove());
 
@@ -308,26 +237,21 @@ function renderBooks(books, recipeCounts, version) {
 
   for (const book of books) {
     if (version !== _loadVersion) return;
-    const bookEl = createBookElement(book, recipeCounts.get(book.id) || 0);
+    const bookEl = await createBookElement(book);
     if (version !== _loadVersion) return;
     booksGrid.appendChild(bookEl);
   }
 }
 
-function applyRecipeCounts(recipeCounts) {
-  if (!booksGrid) return;
-
-  booksGrid.querySelectorAll('.cookbook-book').forEach((bookEl) => {
-    const bookId = bookEl.dataset.bookId;
-    const countEl = bookEl.querySelector('.cookbook-book__count');
-    if (!bookId || !countEl) return;
-    countEl.textContent = recipesLabel(recipeCounts.get(bookId) || 0);
-  });
-}
-
 // Замінити функцію createBookElement в cookbook.js
 
-function createBookElement(book, recipeCount = 0) {
+async function createBookElement(book) {
+  const { count } = await supabase
+    .from('cookbook_recipes')
+    .select('*', { count: 'exact', head: true })
+    .eq('cookbook_id', book.id);
+
+  const recipeCount = count || 0;
   const isDefault = book.is_default;
 
   // Правильне відмінювання
@@ -404,27 +328,18 @@ function createBookElement(book, recipeCount = 0) {
 
 async function handleCreateBook(e) {
   e.preventDefault();
-  setNewBookError('');
 
   const name = newBookName.value.trim();
   if (!name) return;
 
-  const submitBtn = newBookForm?.querySelector('[type="submit"]');
-  if (submitBtn) submitBtn.disabled = true;
-
   try {
-    const user = await ensureCurrentUser();
-    if (!user?.id) {
-      throw new Error('Missing authenticated user');
-    }
-
     const { data, error } = await supabase
       .from('cookbooks')
       .insert([
         {
           name,
           icon: selectedIcon,
-          user_id: user.id,
+          user_id: currentUser.id,
           is_default: false,
         },
       ])
@@ -434,7 +349,7 @@ async function handleCreateBook(e) {
     if (error) throw error;
 
     // Додаємо в DOM
-    const bookEl = createBookElement(data);
+    const bookEl = await createBookElement(data);
     booksGrid.appendChild(bookEl);
 
     // Закриваємо і очищаємо
@@ -448,10 +363,7 @@ async function handleCreateBook(e) {
     showToast('Книгу створено!');
   } catch (err) {
     console.error('Error creating book:', err);
-    setNewBookError(err?.message || 'Не вдалося створити книгу.');
     showToast('Помилка створення книги', 'error');
-  } finally {
-    if (submitBtn) submitBtn.disabled = false;
   }
 }
 

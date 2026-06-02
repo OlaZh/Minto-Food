@@ -2028,13 +2028,6 @@
   border-top: 1px solid var(--color-border);
 }
 
-.settings-note {
-  margin: 14px 0 0;
-  font-size: 12px;
-  line-height: 1.6;
-  color: var(--color-text-secondary);
-}
-
 .settings-action-btn {
   width: 100%;
   padding: 10px 14px;
@@ -2156,29 +2149,6 @@
   margin: 0 0 16px;
 }
 
-.settings-danger__status {
-  margin-bottom: 14px;
-  padding: 12px 14px;
-  border-radius: 12px;
-  background: var(--color-bg-secondary);
-  border: 1px solid rgba(239, 68, 68, 0.14);
-  color: var(--color-text-primary);
-  font-size: 13px;
-  line-height: 1.5;
-}
-
-.settings-danger__status.is-pending {
-  background: rgba(239, 68, 68, 0.08);
-  border-color: rgba(239, 68, 68, 0.28);
-}
-
-.settings-danger__actions {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  align-items: flex-start;
-}
-
 .settings-delete-btn {
   padding: 10px 20px;
   background: transparent;
@@ -2197,11 +2167,6 @@
     background: #ef4444;
     color: #fff;
   }
-}
-
-.settings-danger__actions .settings-action-btn,
-.settings-danger__actions .settings-delete-btn {
-  width: 100%;
 }
 
 /* ===============================================================

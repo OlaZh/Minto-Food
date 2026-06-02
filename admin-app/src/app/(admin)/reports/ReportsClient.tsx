@@ -1,9 +1,9 @@
 'use client'
 
-import Image from 'next/image'
 import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 import ActionButton from '@/components/moderation/ActionButton'
 import ModerationReasonDialog, { type ModerationReason } from '@/components/moderation/ModerationReasonDialog'
 import {
@@ -21,38 +21,8 @@ const REASON_LABELS: Record<string, string> = {
   other: 'Інше',
 }
 
-interface ReportAuthor {
-  id: string
-  full_name: string | null
-  is_banned: boolean
-  strikes: number
-  created_at: string
-  recipe_count: number
-  report_count: number
-}
-
-interface ReportRecipe {
-  id: string
-  slug: string | null
-  name_ua: string | null
-  name_en: string | null
-  image: string | null
-  status: string
-  category: string | null
-  author: ReportAuthor | null
-}
-
-interface ReportItem {
-  id: string
-  reason: string | null
-  created_at: string
-  status: string
-  recipe: ReportRecipe | null
-  reporter: { full_name: string | null } | null
-}
-
 interface ReportsClientProps {
-  reports: ReportItem[]
+  reports: any[]
   currentStatus: string
 }
 
@@ -99,10 +69,9 @@ export default function ReportsClient({ reports, currentStatus }: ReportsClientP
       <div className="divide-y divide-gray-100">
         {reports.map(report => {
           const recipe = report.recipe
-          const recipeId = recipe?.id ?? null
           const author = recipe?.author
           const name = recipe?.name_ua || recipe?.name_en || 'Без назви'
-          const reasonLabel = report.reason ? REASON_LABELS[report.reason] ?? report.reason : '—'
+          const reasonLabel = REASON_LABELS[report.reason] ?? report.reason ?? '—'
           const flags = detectFlags(recipe ?? {})
 
           return (
@@ -111,7 +80,7 @@ export default function ReportsClient({ reports, currentStatus }: ReportsClientP
                 {/* Thumbnail */}
                 <div className="w-12 h-12 rounded-md overflow-hidden bg-gray-100 shrink-0">
                   {recipe?.image
-                    ? <Image src={recipe.image} alt={name} width={48} height={48} className="w-full h-full object-cover" unoptimized />
+                    ? <img src={recipe.image} alt="" className="w-full h-full object-cover" />
                     : <div className="w-full h-full flex items-center justify-center text-gray-300">🍽</div>
                   }
                 </div>
@@ -174,14 +143,14 @@ export default function ReportsClient({ reports, currentStatus }: ReportsClientP
                     label="Приховати рецепт"
                     variant="outline"
                     useUndo
-                    action={() => recipeId ? hideRecipeFromReport(report.id, recipeId) : Promise.resolve()}
+                    action={() => hideRecipeFromReport(report.id, recipe?.id)}
                     onDone={() => router.refresh()}
                   />
                   <button
                     className="h-7 text-xs px-2.5 rounded-md border border-red-200 text-red-600 bg-white hover:bg-red-50 transition-colors"
                     onClick={() => setDialog({
                       title: 'Видалити рецепт',
-                      action: (reason) => recipeId ? deleteRecipeFromReport(report.id, recipeId, reason) : Promise.resolve(),
+                      action: (reason) => deleteRecipeFromReport(report.id, recipe?.id, reason),
                     })}
                   >
                     Видалити рецепт

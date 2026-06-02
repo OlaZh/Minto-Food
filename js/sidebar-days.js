@@ -84,8 +84,11 @@ document.addEventListener('DOMContentLoaded', () => {
     buttons.forEach((b) => b.removeAttribute('aria-current'));
     btn.setAttribute('aria-current', 'true');
 
+    // Завантажити дані через глобальний API
     const dateString = formatDateForDB(info.fullDate);
-    document.dispatchEvent(new CustomEvent('meals:load-day', { detail: { dateString } }));
+    if (window.mealsAPI?.loadMealsForDate) {
+      window.mealsAPI.loadMealsForDate(dateString);
+    }
   }
 
   const dayMapping = {

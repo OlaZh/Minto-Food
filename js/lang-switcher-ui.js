@@ -1,12 +1,10 @@
-import { getLang, loadUserStorage, setLang } from './storage.js';
+import { getLang, setLang } from './storage.js';
 import { iconChevronDown } from './icons.js';
 
 (() => {
   const LABELS = { ua: 'UA', pl: 'PL', en: 'EN' };
 
-  async function init() {
-    await loadUserStorage();
-
+  function init() {
     const select = document.getElementById('langSwitcher');
     if (!select) return;
 
@@ -74,9 +72,9 @@ import { iconChevronDown } from './icons.js';
       });
     }
 
-    async function selectLang(code) {
+    function selectLang(code) {
       select.value = code;
-      await setLang(code);
+      setLang(code);
       select.dispatchEvent(new Event('change'));
       syncUi(code);
       closeMenu();
@@ -102,6 +100,6 @@ import { iconChevronDown } from './icons.js';
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
   } else {
-    void init();
+    init();
   }
 })();

@@ -5,19 +5,14 @@ import { supabase } from './supabaseClient.js';
 import { initAuth, requireAuth } from './auth.js';
 import { initBarcodeScanner, closeScanner } from './barcode-scanner.js';
 import { getLocalDateString, showToast } from './utils.js';
-import { getDailyCaloriesNorm, getCopiedDay, getLang, loadUserStorage, saveCopiedDay, setLang } from './storage.js';
+import { getDailyCaloriesNorm, getLang, setLang, getItem, setItem } from './storage.js';
 import { showConfirmModal } from './ui-components.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
   let currentSelectedDate = getLocalDateString();
-  let lang = 'ua';
-  let langSwitcher = null;
 
   // ================== AUTH ==================
-  await initAuth(async (event, user) => {
-    await loadUserStorage(user, { force: true });
-    lang = getLang();
-    if (langSwitcher) langSwitcher.value = lang;
+  await initAuth((event, user) => {
     if (event === 'SIGNED_IN' || event === 'SIGNED_OUT') {
       loadMealsFromSupabase(currentSelectedDate);
       loadWaterFromSupabase(currentSelectedDate);
@@ -25,10 +20,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 
   // ================== LANGUAGE ==================
-  await loadUserStorage();
-  lang = getLang();
+  let lang = getLang();
 
-  langSwitcher = document.getElementById('langSwitcher');
+  const langSwitcher = document.getElementById('langSwitcher');
   if (langSwitcher) {
     langSwitcher.value = lang;
     langSwitcher.addEventListener('change', () => {
@@ -58,6 +52,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   const summaryValue = document.querySelector('.day-summary__value');
   const dayDateDisplay = document.getElementById('dayDate');
+
+  // ================== DAILY NORM ==================
+  const dailyNorm = getDailyCaloriesNorm();
 
   // ================== SUPABASE LOGIC ==================
 
@@ -195,21 +192,21 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
-  async function copyDay() {
+  function copyDay() {
     const snapshot = JSON.parse(JSON.stringify(mealsState));
     const hasItems = Object.values(snapshot).some((arr) => arr.length > 0);
     if (!hasItems) {
       showToast('Немає страв для копіювання', 'info');
       return;
     }
-    await saveCopiedDay(snapshot);
+    setItem('copied_day', snapshot);
     showToast('День скопійовано');
   }
 
   async function pasteDay() {
     if (!requireAuth()) return;
 
-    const saved = getCopiedDay();
+    const saved = getItem('copied_day');
     if (!saved) {
       showToast('Немає скопійованого дня', 'info');
       return;
@@ -332,7 +329,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       summaryValue.textContent = `${Math.round(total.kcal)} ${t('kcal')} · ${t('protein')} ${Math.round(total.protein)} · ${t('fat')} ${Math.round(total.fat)} · ${t('carbs')} ${Math.round(total.carbs)}`;
     }
 
-    const dailyNorm = getDailyCaloriesNorm();
     const progress = dailyNorm ? total.kcal / dailyNorm : 0;
 
     updateStats({
@@ -1208,12 +1204,13 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.addEventListener('scanner:manualEntry', (e) => {
     openCreateProductModal(e.detail?.name || '', e.detail?.barcode || null, e.detail?.brand || '');
   });
-  document.addEventListener('meals:load-day', (e) => {
-    const dateString = e.detail?.dateString;
-    if (!dateString) return;
-    currentSelectedDate = dateString;
-    loadMealsFromSupabase(dateString);
-  });
+  // Експорт для sidebar-days.js
+  window.mealsAPI = {
+    loadMealsForDate: (dateString) => {
+      currentSelectedDate = dateString;
+      loadMealsFromSupabase(dateString);
+    },
+  };
 
   // Початкове завантаження
   loadMealsFromSupabase(currentSelectedDate);

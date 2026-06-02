@@ -6,12 +6,12 @@
     <title>Книга рецептів</title>
 
     <script>
-      document.documentElement.classList.add('no-transition');
-      try {
-        if (localStorage.getItem('minto-theme-hint') === 'dark') {
+      (function () {
+        const theme = localStorage.getItem('theme');
+        if (theme === 'dark') {
           document.documentElement.setAttribute('data-theme', 'dark');
         }
-      } catch {}
+      })();
     </script>
 
     <link rel="stylesheet" href="./css/main.css" />
@@ -239,8 +239,6 @@
             </div>
           </div>
 
-          <p id="newBookError" class="auth-modal__error" hidden></p>
-
           <button type="submit" class="cookbook-form__submit">Створити книгу</button>
         </form>
       </div>
@@ -337,7 +335,7 @@
     </footer>
 
     <script type="module" src="./js/theme-toggle.js"></script>
-    <script type="module" src="./js/cookbook.js?v=20260602-4"></script>
+    <script type="module" src="./js/cookbook.js"></script>
     <script type="module" src="js/mobile-nav.js"></script>
     <script type="module" src="js/mobile-tab-bar.js"></script>
   </body>

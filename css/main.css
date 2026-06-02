@@ -1359,11 +1359,10 @@ svg[viewBox="0 0 24 24"] {
 
 .site-footer__tagline {
   font-size: 12px;
-  color: var(--color-text-inverse);
+  color: rgba(255, 255, 255, 0.55);
   line-height: 1.4;
   max-width: 200px;
   margin: 0;
-  opacity: 0.78;
 }
 
 /* ---- Column ---- */
@@ -1378,9 +1377,8 @@ svg[viewBox="0 0 24 24"] {
   font-weight: 500;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--color-text-inverse);
+  color: rgba(255, 255, 255, 0.5);
   margin: 0 0 6px;
-  opacity: 0.7;
 }
 
 .site-footer__links {
@@ -1394,14 +1392,12 @@ svg[viewBox="0 0 24 24"] {
 .site-footer__links a {
   font-size: 13px;
   font-weight: 400;
-  color: var(--color-text-inverse);
+  color: rgba(255, 255, 255, 0.75);
   text-decoration: none;
   transition: color 0.15s ease;
-  opacity: 0.88;
 }
 .site-footer__links a:hover {
-  color: var(--color-text-inverse);
-  opacity: 1;
+  color: #ffffff;
 }
 
 /* ---- Mobile accordion ---- */
@@ -1430,8 +1426,8 @@ svg[viewBox="0 0 24 24"] {
   font-weight: 500;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--color-text-inverse);
-  opacity: 0.74;
+  color: var(--color-text-secondary);
+  opacity: 0.6;
   cursor: pointer;
   list-style: none;
   user-select: none;
@@ -1460,12 +1456,12 @@ svg[viewBox="0 0 24 24"] {
 .site-footer__accordion ul a {
   font-size: 14px;
   font-weight: 400;
-  color: var(--color-text-inverse);
+  color: var(--color-text-primary);
   text-decoration: none;
-  opacity: 0.88;
+  opacity: 0.82;
 }
 .site-footer__accordion ul a:hover {
-  color: var(--color-text-inverse);
+  color: var(--color-accent);
   opacity: 1;
 }
 
@@ -1492,9 +1488,8 @@ svg[viewBox="0 0 24 24"] {
 
 .site-footer__copyright {
   font-size: 12px;
-  color: var(--color-text-inverse);
+  color: rgba(255, 255, 255, 0.45);
   margin: 0;
-  opacity: 0.7;
 }
 
 /* ---- Language switcher ---- */
@@ -1505,8 +1500,7 @@ svg[viewBox="0 0 24 24"] {
 }
 .site-footer__lang span {
   font-size: 11px;
-  color: var(--color-text-inverse);
-  opacity: 0.6;
+  color: rgba(255, 255, 255, 0.3);
 }
 
 .site-footer__lang-btn {
@@ -1516,28 +1510,25 @@ svg[viewBox="0 0 24 24"] {
   font-weight: 600;
   font-family: var(--font-body);
   letter-spacing: 0.05em;
-  color: var(--color-text-inverse);
+  color: rgba(255, 255, 255, 0.5);
   cursor: pointer;
   padding: 2px 4px;
   border-radius: 3px;
   transition: opacity 0.15s ease, color 0.15s ease;
-  opacity: 0.72;
 }
 .site-footer__lang-btn:hover {
-  color: var(--color-text-inverse);
-  opacity: 1;
+  color: rgba(255, 255, 255, 0.9);
 }
 .site-footer__lang-btn.is-active {
-  color: var(--color-text-inverse);
-  opacity: 1;
+  color: #ffffff;
 }
 
 /* ---- Made with ---- */
 .site-footer__made {
   font-size: 11px;
-  color: var(--color-text-inverse);
+  color: var(--color-text-secondary);
   margin: 0;
-  opacity: 0.7;
+  opacity: 0.55;
   white-space: nowrap;
 }
 
@@ -8854,13 +8845,6 @@ svg[viewBox="0 0 24 24"] {
   border-top: 1px solid var(--color-border);
 }
 
-.settings-note {
-  margin: 14px 0 0;
-  font-size: 12px;
-  line-height: 1.6;
-  color: var(--color-text-secondary);
-}
-
 .settings-action-btn {
   width: 100%;
   padding: 10px 14px;
@@ -8965,29 +8949,6 @@ input:checked + .settings-toggle__track::after {
   margin: 0 0 16px;
 }
 
-.settings-danger__status {
-  margin-bottom: 14px;
-  padding: 12px 14px;
-  border-radius: 12px;
-  background: var(--color-bg-secondary);
-  border: 1px solid rgba(239, 68, 68, 0.14);
-  color: var(--color-text-primary);
-  font-size: 13px;
-  line-height: 1.5;
-}
-
-.settings-danger__status.is-pending {
-  background: rgba(239, 68, 68, 0.08);
-  border-color: rgba(239, 68, 68, 0.28);
-}
-
-.settings-danger__actions {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  align-items: flex-start;
-}
-
 .settings-delete-btn {
   padding: 10px 20px;
   background: transparent;
@@ -9003,11 +8964,6 @@ input:checked + .settings-toggle__track::after {
 .settings-delete-btn:hover {
   background: #ef4444;
   color: #fff;
-}
-
-.settings-danger__actions .settings-action-btn,
-.settings-danger__actions .settings-delete-btn {
-  width: 100%;
 }
 
 /* ===============================================================
@@ -15325,3 +15281,5 @@ input[type=date].admin-select {
   font-family: inherit;
   cursor: pointer;
 }
+
+/*# sourceMappingURL=main.css.map */

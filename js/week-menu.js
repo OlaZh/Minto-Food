@@ -4,14 +4,11 @@ import { initRecipeModal, openRecipeModal } from './recipe-modal.js';
 import { initAuth, requireAuth } from './auth.js';
 import { showToast, getLocalDateString } from './utils.js';
 import { showLoading, showEmpty, showConfirmModal } from './ui-components.js';
-import { getCopiedWeek, getLang, loadUserStorage, saveCopiedWeek, setLang } from './storage.js';
-import { getRecipeDisplayName, getRecipeName } from './recipe-utils.js';
+import { getLang, setLang, saveWeekShoppingList, setItem, getItem } from './storage.js';
+import { getRecipeDisplayName } from './recipe-utils.js';
 import { iconMoreVertical, iconPlus, iconAlert, iconBookOpen, iconGlobe, iconClose } from './icons.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
-  await initAuth();
-  await loadUserStorage();
-
   // ================== МОВА ==================
   let lang = getLang();
 
@@ -28,6 +25,19 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   function t(key) {
     return i18n[lang]?.[key] || key;
+  }
+
+  function cleanName(name) {
+    if (!name) return '';
+    return name
+      .replace(/рецепт:?/gi, '')
+      .replace(/recipe:?/gi, '')
+      .trim()
+      .replace(/^\w/, (c) => c.toUpperCase());
+  }
+
+  function getRecipeName(recipe) {
+    return cleanName(getRecipeDisplayName(recipe, lang));
   }
 
   // ================== СТАН ==================
@@ -729,115 +739,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     const shoppingList = Object.values(grouped);
-    if (!requireAuth()) return;
 
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    saveWeekShoppingList(shoppingList);
 
-    if (!user) return;
-
-    let { data: mainList, error: listError } = await supabase
-      .from('shopping_lists')
-      .select('id')
-      .eq('user_id', user.id)
-      .eq('type', 'shopping')
-      .maybeSingle();
-
-    if (listError) {
-      console.error('Помилка отримання списку покупок:', listError);
-      showToast('Помилка формування списку', 'error');
-      return;
-    }
-
-    if (!mainList) {
-      const created = await supabase
-        .from('shopping_lists')
-        .insert([{ user_id: user.id, name: 'Список покупок', type: 'shopping' }])
-        .select('id')
-        .single();
-
-      if (created.error || !created.data) {
-        console.error('Помилка створення списку покупок:', created.error);
-        showToast('Помилка формування списку', 'error');
-        return;
-      }
-
-      mainList = created.data;
-    }
-
-    const normalizeKey = (name, unit) =>
-      `${String(name).trim().toLowerCase()}__${String(unit || '').trim().toLowerCase()}`;
-    const names = shoppingList.map((item) => item.name).filter(Boolean);
-    const existingResponse = names.length
-      ? await supabase
-          .from('shopping_items')
-          .select('id, name, unit, amount')
-          .eq('list_id', mainList.id)
-          .eq('user_id', user.id)
-          .in('name', names)
-      : { data: [], error: null };
-
-    if (existingResponse.error) {
-      console.error('Помилка читання списку покупок:', existingResponse.error);
-      showToast('Помилка формування списку', 'error');
-      return;
-    }
-
-    const existingMap = new Map(
-      (existingResponse.data || []).map((item) => [normalizeKey(item.name, item.unit), item]),
-    );
-
-    const updates = [];
-    const inserts = [];
-
-    shoppingList.forEach((item) => {
-      const existing = existingMap.get(normalizeKey(item.name, item.unit));
-      if (existing) {
-        updates.push({
-          id: existing.id,
-          amount: (Number(existing.amount) || 0) + (Number(item.amount) || 0),
-        });
-        return;
-      }
-
-      inserts.push({
-        list_id: mainList.id,
-        user_id: user.id,
-        name: item.name,
-        amount: item.amount || null,
-        unit: item.unit || null,
-        category: 'Інше',
-        is_checked: false,
-      });
-    });
-
-    const updateResults = await Promise.all(
-      updates.map((item) =>
-        supabase
-          .from('shopping_items')
-          .update({ amount: item.amount })
-          .eq('id', item.id)
-          .eq('user_id', user.id),
-      ),
-    );
-
-    if (updateResults.some((result) => result.error)) {
-      console.error('Помилка оновлення списку покупок:', updateResults);
-      showToast('Помилка формування списку', 'error');
-      return;
-    }
-
-    if (inserts.length > 0) {
-      const insertResult = await supabase.from('shopping_items').insert(inserts);
-      if (insertResult.error) {
-        console.error('Помилка додавання списку покупок:', insertResult.error);
-        showToast('Помилка формування списку', 'error');
-        return;
-      }
-    }
-
-    showToast(`Список покупок оновлено: ${shoppingList.length} продуктів`);
+    showToast(`Список покупок сформовано: ${shoppingList.length} продуктів`);
   }
 
   // ================== КОПІЮВАННЯ ТИЖНЯ ==================
@@ -846,16 +751,16 @@ document.addEventListener('DOMContentLoaded', async () => {
   const pasteWeekBtn = document.getElementById('pasteWeekBtn');
 
   if (copyWeekBtn) {
-    copyWeekBtn.addEventListener('click', async () => {
+    copyWeekBtn.addEventListener('click', () => {
       const snapshot = JSON.parse(JSON.stringify(weekMealsState));
-      await saveCopiedWeek(snapshot);
+      setItem('copied_week', snapshot);
       showToast('Тиждень скопійовано!');
     });
   }
 
   if (pasteWeekBtn) {
     pasteWeekBtn.addEventListener('click', async () => {
-      const saved = getCopiedWeek();
+      const saved = getItem('copied_week');
       if (!saved) {
         showToast('Немає скопійованого тижня', 'info');
         return;
@@ -1345,7 +1250,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   // ================== ІНІЦІАЛІЗАЦІЯ ==================
-  await initRecipeModal();
+  await initAuth();
+  initRecipeModal();
   initDragAndDrop();
   loadWeekFromSupabase();
 });

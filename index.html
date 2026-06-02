@@ -7,11 +7,13 @@
 
     <script>
       document.documentElement.classList.add('no-transition');
-      try {
-        if (localStorage.getItem('minto-theme-hint') === 'dark') {
+
+      (function () {
+        const theme = localStorage.getItem('theme');
+        if (theme === 'dark') {
           document.documentElement.setAttribute('data-theme', 'dark');
         }
-      } catch {}
+      })();
     </script>
 
     <link rel="stylesheet" href="./css/main.css" />

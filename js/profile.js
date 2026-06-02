@@ -11,19 +11,14 @@ import {
   iconUser, iconSettings,
 } from './icons.js';
 import { initAuth, requireAuth, getCurrentUser, openAuthModal, signOut } from './auth.js';
-import { getDayWord, showToast } from './utils.js';
+import { showToast } from './utils.js';
 import {
-  getDailyCaloriesNorm,
-  getUnitSystem,
-  getUserProfile,
-  loadUserStorage,
-  mergeUserProfileCache,
+  getWeightHistory,
+  addWeightRecord,
   setTheme,
   getLang,
   setLang,
-  setUnitSystem,
 } from './storage.js';
-import { saveProfileFields } from './storage.js';
 import { initCustomSelect, setSelectValue, initSelectsGlobalListener, showConfirmModal } from './ui-components.js';
 
 // =====================================
@@ -89,7 +84,6 @@ let weightChart2 = null;
 let activityChart = null;
 let currentPeriod = 'week'; // Додано: змінна для періоду
 let activityCache = []; // дзеркало user_activities з Supabase (синхронний доступ для рендера)
-let weightHistoryCache = [];
 
 let statisticsCharts = {
   balancePieChart: null,
@@ -126,8 +120,7 @@ async function loadWeightFromSupabase(userId) {
     console.warn('weight_records fetch:', error.message);
     return null;
   }
-  weightHistoryCache = data || [];
-  return weightHistoryCache;
+  return data || [];
 }
 
 // =====================================
@@ -169,7 +162,7 @@ async function loadActivitiesFromSupabase(userId) {
 }
 
 async function saveActivityToSupabase(activity) {
-  const user = getCurrentUser();
+  const user = await getCurrentUser();
   if (!user) return false;
   const { data, error } = await supabase
     .from('user_activities')
@@ -259,7 +252,7 @@ function buildWeightChart(canvasId, history, chartRef) {
 }
 
 async function initWeightChart() {
-  const user = getCurrentUser();
+  const user = await getCurrentUser();
   if (!user) return;
 
   const history = await loadWeightFromSupabase(user.id);
@@ -269,7 +262,7 @@ async function initWeightChart() {
 }
 
 async function initWeightChart2() {
-  const user = getCurrentUser();
+  const user = await getCurrentUser();
   if (!user) return;
 
   const history = await loadWeightFromSupabase(user.id);
@@ -288,7 +281,7 @@ async function recordNewWeight() {
     return;
   }
 
-  const user = getCurrentUser();
+  const user = await getCurrentUser();
   if (!user) {
     showToast('Увійдіть в акаунт', 'error');
     return;
@@ -303,12 +296,7 @@ async function recordNewWeight() {
   weightNowInput.value = '';
   showToast(`Вага ${weight} кг збережена`);
 
-  const weightNowInput2 = document.getElementById('currentWeightInput2');
-  if (weightNowInput2) weightNowInput2.value = '';
-
   await initWeightChart();
-  await initWeightChart2();
-  generateWeightAdvice();
 }
 
 function generateWeightProgress(history) {
@@ -364,7 +352,7 @@ async function initStatisticsCharts() {
     if (chart) chart.destroy();
   });
 
-  const user = getCurrentUser();
+  const user = await getCurrentUser();
   if (!user) return;
 
   // Діапазон: сьогодні - 13 днів (2 тижні)
@@ -971,13 +959,15 @@ function renderAll(data) {
   if (normWaterEl) normWaterEl.textContent = data.water;
 
   updateBMI(data.weight, data.height);
-  mergeUserProfileCache(data);
 
-  const burnedCalories = parseInt(
-    document.getElementById('impactBurnedCalories')?.textContent || '0',
-    10,
-  );
-  updateCalorieImpact(Number.isFinite(burnedCalories) ? burnedCalories : 0);
+  localStorage.setItem('dailyCaloriesNorm', data.calories);
+  localStorage.setItem('userProtein', data.protein);
+  localStorage.setItem('userFat', data.fat);
+  localStorage.setItem('userCarbs', data.carbs);
+  localStorage.setItem('userWater', data.water);
+  localStorage.setItem('userWeight', data.weight);
+  localStorage.setItem('userHeight', data.height);
+  localStorage.setItem('userGoal', data.goal);
 }
 
 // =====================================
@@ -986,7 +976,11 @@ function renderAll(data) {
 
 async function loadProfileFromSupabase() {
   const user = getCurrentUser();
-  if (!user) return null;
+
+  if (!user) {
+    loadFromLocalStorage();
+    return;
+  }
 
   const { data, error } = await supabase
     .from('user_profiles')
@@ -995,17 +989,21 @@ async function loadProfileFromSupabase() {
     .maybeSingle();
 
   if (error || !data) {
-    const cachedProfile = getUserProfile();
-    fillForm(cachedProfile);
-    renderAll(cachedProfile);
-    updateProfileHeader(user);
-    return null;
+    loadFromLocalStorage();
+    return;
   }
 
   fillForm(data);
   renderAll(data);
   updateProfileHeader(user);
-  return data;
+}
+
+function loadFromLocalStorage() {
+  const saved = JSON.parse(localStorage.getItem('userProfile') || 'null');
+  if (saved) {
+    fillForm(saved);
+    renderAll(saved);
+  }
 }
 
 function fillForm(data) {
@@ -1056,7 +1054,6 @@ async function updateProfileHeader(user) {
   if (profileEmailEl) profileEmailEl.textContent = email;
 
   if (profileAvatarEl && avatar) {
-    profileAvatarEl.textContent = '';
     profileAvatarEl.style.backgroundImage = `url(${avatar})`;
     profileAvatarEl.style.backgroundSize = 'cover';
     profileAvatarEl.style.backgroundPosition = 'center';
@@ -1069,7 +1066,6 @@ async function updateProfileHeader(user) {
       .toUpperCase()
       .slice(0, 2);
     profileAvatarEl.textContent = initials;
-    profileAvatarEl.style.backgroundImage = 'none';
     profileAvatarEl.style.display = 'flex';
     profileAvatarEl.style.alignItems = 'center';
     profileAvatarEl.style.justifyContent = 'center';
@@ -1084,7 +1080,11 @@ async function updateProfileHeader(user) {
 
 async function saveProfileToSupabase(data) {
   const user = getCurrentUser();
-  if (!user) return;
+
+  if (!user) {
+    localStorage.setItem('userProfile', JSON.stringify(data));
+    return;
+  }
 
   const payload = {
     user_id: user.id,
@@ -1113,7 +1113,7 @@ async function saveProfileToSupabase(data) {
     return;
   }
 
-  mergeUserProfileCache(data);
+  localStorage.setItem('userProfile', JSON.stringify(data));
   showToast('Профіль збережено');
 }
 
@@ -1128,13 +1128,13 @@ function generateWeightAdvice() {
   if (!adviceContainer) return;
 
   const weight = parseFloat(
-    document.getElementById('weight')?.value || 0,
+    localStorage.getItem('userWeight') || document.getElementById('weight')?.value || 0,
   );
   const height = parseFloat(
-    document.getElementById('height')?.value || 0,
+    localStorage.getItem('userHeight') || document.getElementById('height')?.value || 0,
   );
   const goal =
-    document.getElementById('goalInput')?.value || 'maintain';
+    localStorage.getItem('userGoal') || document.getElementById('goalInput')?.value || 'maintain';
   const targetWeight = parseFloat(
     document.getElementById('targetWeight')?.value ||
       document.getElementById('targetWeight2')?.value ||
@@ -1175,7 +1175,7 @@ function generateWeightAdvice() {
   if (targetWeight > 0 && weight > 0) {
     const diff = Math.abs(weightDiff);
     const direction = weightDiff > 0 ? 'скинути' : 'набрати';
-    const startWeight = parseFloat(weightHistoryCache[0]?.weight || weight);
+    const startWeight = parseFloat(localStorage.getItem('startWeight') || weight);
     const totalToLose = Math.abs(startWeight - targetWeight);
     const alreadyLost = Math.abs(startWeight - weight);
     const progressPercent =
@@ -1255,7 +1255,7 @@ function syncWeightInputs() {
 let activityTrackerInitialized = false;
 
 async function initActivityTracker() {
-  const user = getCurrentUser();
+  const user = await getCurrentUser();
   if (user) await loadActivitiesFromSupabase(user.id);
 
   if (activityTrackerInitialized) {
@@ -1455,6 +1455,8 @@ async function deleteActivity(activityId) {
   initActivityChart();
 }
 
+window.deleteActivity = deleteActivity;
+
 function updateTodayStats() {
   const history = getActivityHistory();
   const today = new Date().toDateString();
@@ -1474,10 +1476,11 @@ function updateTodayStats() {
   if (countEl) countEl.textContent = totalCount;
 
   updateCalorieImpact(totalCalories);
+  localStorage.setItem('todayBurnedCalories', totalCalories);
 }
 
 function updateCalorieImpact(burnedCalories) {
-  const baseCalories = getDailyCaloriesNorm();
+  const baseCalories = parseInt(localStorage.getItem('dailyCaloriesNorm') || 0);
   const totalCalories = baseCalories + burnedCalories;
 
   const baseEl = document.getElementById('impactBaseCalories');
@@ -1552,7 +1555,7 @@ function renderActivityHistory(period) {
             <span class="activity-item__calories-value">-${activity.calories}</span>
             <span class="activity-item__calories-label">ккал</span>
           </div>
-          <button class="activity-item__delete" data-activity-id="${activity.id}" title="Видалити">${iconXCircle}</button>
+          <button class="activity-item__delete" onclick="deleteActivity(${activity.id})" title="Видалити">${iconXCircle}</button>
         </div>
       `;
     });
@@ -1561,12 +1564,6 @@ function renderActivityHistory(period) {
   }
 
   container.innerHTML = html;
-  container.querySelectorAll('.activity-item__delete').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      const activityId = Number(btn.dataset.activityId);
-      if (activityId) deleteActivity(activityId);
-    });
-  });
 }
 
 function initActivityChart() {
@@ -1808,9 +1805,11 @@ function _initNicknameEditor(user) {
     saveBtn.disabled = true;
     saveBtn.textContent = 'Збереження…';
 
-    const ok = await saveProfileFields({ display_name: val }, user);
+    const { error } = await supabase
+      .from('profiles')
+      .upsert({ id: user.id, display_name: val }, { onConflict: 'id' });
 
-    if (!ok) {
+    if (error) {
       _setNbHint(hint, 'Помилка збереження', '#e74c3c');
       saveBtn.disabled = false;
       saveBtn.textContent = 'Зберегти';
@@ -1858,124 +1857,20 @@ function _setNbHint(el, text, color) {
   el.style.color = color || '#3f7558';
 }
 
-function formatAccountDate(value) {
-  if (!value) return '';
-
-  try {
-    return new Intl.DateTimeFormat('uk-UA', {
-      day: '2-digit',
-      month: 'long',
-      year: 'numeric',
-    }).format(new Date(value));
-  } catch {
-    return value;
-  }
-}
-
-function renderDeletionStatus(profileData = {}) {
-  const statusEl = document.getElementById('settingsDeletionStatus');
-  const deleteBtn = document.getElementById('deleteAccountBtn');
-  const cancelBtn = document.getElementById('cancelDeletionBtn');
-  if (!statusEl || !deleteBtn || !cancelBtn) return;
-
-  const scheduledFor = profileData.deletion_scheduled_for;
-  const requestedAt = profileData.deletion_requested_at;
-  const isPending = Boolean(scheduledFor);
-
-  statusEl.classList.toggle('is-pending', isPending);
-  deleteBtn.hidden = isPending;
-  cancelBtn.hidden = !isPending;
-
-  if (isPending) {
-    const scheduledLabel = formatAccountDate(scheduledFor);
-    const requestedLabel = formatAccountDate(requestedAt);
-    statusEl.textContent = requestedLabel
-      ? `Запит на видалення створено ${requestedLabel}. Остаточне видалення заплановано на ${scheduledLabel}.`
-      : `Запит на видалення активний. Остаточне видалення заплановано на ${scheduledLabel}.`;
-    return;
-  }
-
-  statusEl.textContent = 'Акаунт активний. Запитів на видалення немає.';
-}
-
-async function syncReminderPreference(field, enabled) {
-  const user = getCurrentUser();
-  if (!user) return false;
-
-  return saveProfileFields({ [field]: enabled }, user);
-}
-
-function bindReminderToggle(inputId, field, initialValue, successMessage) {
-  const input = document.getElementById(inputId);
-  if (!input) return;
-
-  input.checked = Boolean(initialValue);
-  input.addEventListener('change', async () => {
-    const nextValue = input.checked;
-    const ok = await syncReminderPreference(field, nextValue);
-
-    if (!ok) {
-      input.checked = !nextValue;
-      showToast('Не вдалося зберегти налаштування', 'error');
-      return;
-    }
-
-    showToast(successMessage);
-  });
-}
-
-async function requestAccountDeletion(userId) {
-  const { error } = await supabase.rpc('soft_delete_user', { p_user_id: userId });
-  if (error) {
-    console.warn('soft_delete_user:', error.message);
-    showToast('Не вдалося створити запит на видалення', 'error');
-    return false;
-  }
-
-  return true;
-}
-
-async function cancelAccountDeletionRequest(userId) {
-  const { error } = await supabase.rpc('cancel_soft_delete_user', { p_user_id: userId });
-  if (error) {
-    console.warn('cancel_soft_delete_user:', error.message);
-    showToast('Не вдалося скасувати запит', 'error');
-    return false;
-  }
-
-  return true;
-}
-
 // =====================================
 // SETTINGS TAB
 // =====================================
 
-async function initSettings(user) {
+function initSettings(user) {
   // Email / name display
   const emailEl = document.getElementById('settingsEmailDisplay');
   const nameEl = document.getElementById('settingsNameDisplay');
   if (emailEl && user?.email) emailEl.textContent = user.email;
-  const { data: profileDataRaw } = await supabase
-    .from('profiles')
-    .select(`
-      display_name,
-      full_name,
-      meal_reminders_enabled,
-      water_reminders_enabled,
-      deletion_requested_at,
-      deletion_scheduled_for
-    `)
-    .eq('id', user.id)
-    .maybeSingle();
-
-  let profileData = profileDataRaw || {};
-
   if (nameEl) {
-    nameEl.textContent =
-      profileData.display_name ||
-      profileData.full_name ||
-      user.user_metadata?.full_name ||
-      '';
+    supabase.from('profiles').select('display_name, full_name').eq('id', user.id).single()
+      .then(({ data }) => {
+        nameEl.textContent = data?.display_name || data?.full_name || user.user_metadata?.full_name || '';
+      });
   }
 
   // Theme buttons
@@ -1989,14 +1884,14 @@ async function initSettings(user) {
   syncThemeBtns();
 
   document.querySelectorAll('.settings-theme-btn').forEach((btn) => {
-    btn.addEventListener('click', async () => {
+    btn.addEventListener('click', () => {
       const theme = btn.dataset.themeSet;
       if (theme === 'dark') {
         document.documentElement.setAttribute('data-theme', 'dark');
-        await setTheme('dark');
+        setTheme('dark');
       } else {
         document.documentElement.removeAttribute('data-theme');
-        await setTheme('light');
+        setTheme('light');
       }
       syncThemeBtns();
     });
@@ -2012,36 +1907,22 @@ async function initSettings(user) {
   syncLangBtns();
 
   document.querySelectorAll('.settings-lang-btn').forEach((btn) => {
-    btn.addEventListener('click', async () => {
-      await setLang(btn.dataset.lang);
+    btn.addEventListener('click', () => {
+      setLang(btn.dataset.lang);
       syncLangBtns();
     });
   });
 
-  const savedUnit = getUnitSystem();
+  // Unit buttons (UI only — no backend yet)
+  const savedUnit = localStorage.getItem('units') || 'metric';
   document.querySelectorAll('.settings-unit-btn').forEach((btn) => {
     btn.classList.toggle('active', btn.dataset.unit === savedUnit);
-    btn.addEventListener('click', async () => {
+    btn.addEventListener('click', () => {
       document.querySelectorAll('.settings-unit-btn').forEach((b) => b.classList.remove('active'));
       btn.classList.add('active');
-      await setUnitSystem(btn.dataset.unit);
+      localStorage.setItem('units', btn.dataset.unit);
     });
   });
-
-  bindReminderToggle(
-    'toggleMealReminders',
-    'meal_reminders_enabled',
-    profileData.meal_reminders_enabled,
-    'Налаштування нагадувань про їжу збережено',
-  );
-  bindReminderToggle(
-    'toggleWaterReminders',
-    'water_reminders_enabled',
-    profileData.water_reminders_enabled,
-    'Налаштування нагадувань про воду збережено',
-  );
-
-  renderDeletionStatus(profileData);
 
   // Nickname editor
   _initNicknameEditor(user);
@@ -2052,7 +1933,7 @@ async function initSettings(user) {
     window.location.href = 'index.html';
   });
 
-  // Legacy handler kept only until the fresh button replacement below.
+  // Delete account (confirmation only — no backend yet)
   document.getElementById('deleteAccountBtn')?.addEventListener('click', () => {
     showConfirmModal({
       title: 'Видалити акаунт?',
@@ -2063,57 +1944,6 @@ async function initSettings(user) {
       },
     });
   });
-
-  const deleteBtn = document.getElementById('deleteAccountBtn');
-  if (deleteBtn) {
-    const freshDeleteBtn = deleteBtn.cloneNode(true);
-    deleteBtn.replaceWith(freshDeleteBtn);
-    freshDeleteBtn.addEventListener('click', () => {
-      showConfirmModal({
-        title: 'Запросити видалення акаунту?',
-        message:
-          'Ми створимо GDPR-запит і заплануємо видалення через 30 днів. До цього моменту ти зможеш скасувати запит у профілі.',
-        confirmText: 'Створити запит',
-        onConfirm: async () => {
-          const ok = await requestAccountDeletion(user.id);
-          if (!ok) return;
-
-          profileData = {
-            ...profileData,
-            deletion_requested_at: new Date().toISOString(),
-            deletion_scheduled_for: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-          };
-          renderDeletionStatus(profileData);
-          showToast('Запит на видалення акаунту створено');
-        },
-      });
-    });
-  }
-
-  const cancelBtn = document.getElementById('cancelDeletionBtn');
-  if (cancelBtn) {
-    const freshCancelBtn = cancelBtn.cloneNode(true);
-    cancelBtn.replaceWith(freshCancelBtn);
-    freshCancelBtn.addEventListener('click', () => {
-      showConfirmModal({
-        title: 'Скасувати запит на видалення?',
-        message: 'Акаунт залишиться активним, а запит на видалення буде відкликано.',
-        confirmText: 'Скасувати запит',
-        onConfirm: async () => {
-          const ok = await cancelAccountDeletionRequest(user.id);
-          if (!ok) return;
-
-          profileData = {
-            ...profileData,
-            deletion_requested_at: null,
-            deletion_scheduled_for: null,
-          };
-          renderDeletionStatus(profileData);
-          showToast('Запит на видалення скасовано');
-        },
-      });
-    });
-  }
 }
 
 // =====================================
@@ -2130,7 +1960,7 @@ function initCaloriesInlineEdit() {
   function startEdit() {
     if (editing) return;
     editing = true;
-    const current = getDailyCaloriesNorm();
+    const current = parseInt(localStorage.getItem('dailyCaloriesNorm') || '0');
     inputEl.value = current || '';
     inputEl.hidden = false;
     displayEl.hidden = true;
@@ -2149,12 +1979,7 @@ function initCaloriesInlineEdit() {
     if (!val || val < 500 || val > 10000) return;
 
     displayEl.textContent = `${val} ккал`;
-    mergeUserProfileCache({ calories: val });
-    const burnedCalories = parseInt(
-      document.getElementById('impactBurnedCalories')?.textContent || '0',
-      10,
-    );
-    updateCalorieImpact(Number.isFinite(burnedCalories) ? burnedCalories : 0);
+    localStorage.setItem('dailyCaloriesNorm', val);
 
     const user = getCurrentUser();
     if (user) {
@@ -2188,6 +2013,15 @@ function initCaloriesInlineEdit() {
 // INIT
 // =====================================
 
+function getDayWord(n) {
+  const l2 = n % 100,
+    l1 = n % 10;
+  if (l2 >= 11 && l2 <= 14) return 'днів';
+  if (l1 === 1) return 'день';
+  if (l1 >= 2 && l1 <= 4) return 'дні';
+  return 'днів';
+}
+
 async function loadProfileStreak(userId) {
   const currentEl = document.getElementById('profileCurrentStreak');
   const longestEl = document.getElementById('profileLongestStreak');
@@ -2210,10 +2044,13 @@ async function loadProfileStreak(userId) {
 async function initProfile() {
   const user = await initAuth(async (event, user) => {
     if (event === 'SIGNED_IN') {
-      await loadUserStorage(user, { force: true });
       await loadProfileFromSupabase();
       updateProfileHeader(user);
       initProfileTabs();
+    }
+
+    if (event === 'SIGNED_OUT') {
+      loadFromLocalStorage();
     }
   });
 
@@ -2242,21 +2079,13 @@ async function initProfile() {
   recordWeightBtn?.addEventListener('click', recordNewWeight);
 
   initSelectsGlobalListener();
-  await loadUserStorage(user, { force: true });
-  const cachedProfile = getUserProfile();
-  fillForm(cachedProfile);
-  renderAll(cachedProfile);
-  if (cachedProfile.target_weight) {
-    checkTargetWeightWarning(cachedProfile.target_weight);
-  }
   await loadProfileFromSupabase();
   await loadProfileStreak(user.id);
 
   initWeightChart();
   initSidebarIcons();
   initProfileTabs();
-  generateWeightAdvice();
-  await initSettings(user);
+  initSettings(user);
 }
 
 // =====================================

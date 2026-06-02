@@ -56,9 +56,7 @@
       "Bash(xargs wc -l)",
       "Bash(grep -v \"^\\\\s*$\")",
       "Bash(node --check js/profile.js)",
-      "Bash(node --check js/storage.js)",
-      "Bash(grep -oE 'src=\"js/[^\"]+\"' __TRACKED_VAR__.html)",
-      "Bash(grep -oE '<script[^>]*>' __TRACKED_VAR__.html)"
+      "Bash(node --check js/storage.js)"
     ]
   }
 }

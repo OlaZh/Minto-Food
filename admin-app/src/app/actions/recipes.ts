@@ -1,7 +1,6 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
-import { assertNoError, logAdminAction, requireAdminUser } from '@/lib/admin'
 import { generateRecipeTags } from '@/lib/auto-tags'
 import { revalidatePath } from 'next/cache'
 import type { IngredientRow } from '@/lib/types'
@@ -42,7 +41,6 @@ export async function createRecipe(
   ingredients: IngredientRow[]
 ): Promise<{ id: string } | { error: string }> {
   const supabase = await createClient()
-  const admin = await requireAdminUser(supabase)
 
   const { data: recipe, error } = await supabase
     .from('recipes')
@@ -54,10 +52,6 @@ export async function createRecipe(
 
   await syncIngredients(recipe.id, ingredients)
   await syncTags(recipe.id, payload, ingredients)
-  await logAdminAction(supabase, admin.id, 'recipes', recipe.id, 'create', {
-    status: payload.status,
-    author_profile_id: payload.author_profile_id ?? null,
-  })
 
   revalidatePath('/recipes')
   return { id: recipe.id }
@@ -69,7 +63,6 @@ export async function updateRecipe(
   ingredients: IngredientRow[]
 ): Promise<{ ok: true } | { error: string }> {
   const supabase = await createClient()
-  const admin = await requireAdminUser(supabase)
 
   const { error } = await supabase
     .from('recipes')
@@ -80,7 +73,6 @@ export async function updateRecipe(
 
   await syncIngredients(id, ingredients)
   await syncTags(id, payload as RecipePayload, ingredients)
-  await logAdminAction(supabase, admin.id, 'recipes', id, 'update', payload)
 
   revalidatePath('/recipes')
   revalidatePath(`/recipes/${id}/edit`)
@@ -90,8 +82,7 @@ export async function updateRecipe(
 async function syncIngredients(recipeId: string, ingredients: IngredientRow[]) {
   const supabase = await createClient()
 
-  const { error: deleteError } = await supabase.from('product_recipe').delete().eq('recipe_id', recipeId)
-  assertNoError(deleteError, 'Не вдалося оновити інгредієнти рецепта.')
+  await supabase.from('product_recipe').delete().eq('recipe_id', recipeId)
 
   if (!ingredients.length) return
 
@@ -104,10 +95,7 @@ async function syncIngredients(recipeId: string, ingredients: IngredientRow[]) {
       unit: ing.unit,
     }))
 
-  if (rows.length) {
-    const { error: insertError } = await supabase.from('product_recipe').insert(rows)
-    assertNoError(insertError, 'Не вдалося зберегти інгредієнти рецепта.')
-  }
+  if (rows.length) await supabase.from('product_recipe').insert(rows)
 }
 
 async function syncTags(
@@ -125,8 +113,7 @@ async function syncTags(
   )
 
   if (!slugs.length) {
-    const { error: deleteError } = await supabase.from('recipe_tags').delete().eq('recipe_id', recipeId)
-    assertNoError(deleteError, 'Не вдалося очистити теги рецепта.')
+    await supabase.from('recipe_tags').delete().eq('recipe_id', recipeId)
     return
   }
 
@@ -137,36 +124,27 @@ async function syncTags(
 
   if (!tags?.length) return
 
-  const { error: deleteError } = await supabase.from('recipe_tags').delete().eq('recipe_id', recipeId)
-  assertNoError(deleteError, 'Не вдалося оновити теги рецепта.')
-
-  const { error: insertError } = await supabase.from('recipe_tags').insert(
+  await supabase.from('recipe_tags').delete().eq('recipe_id', recipeId)
+  await supabase.from('recipe_tags').insert(
     tags.map(t => ({ recipe_id: recipeId, tag_id: t.id }))
   )
-  assertNoError(insertError, 'Не вдалося зберегти теги рецепта.')
 }
 
 export async function deleteRecipe(id: string): Promise<{ ok: true } | { error: string }> {
   const supabase = await createClient()
-  const admin = await requireAdminUser(supabase)
   const { error } = await supabase
     .from('recipes')
     .update({ deleted_at: new Date().toISOString() })
     .eq('id', id)
   if (error) return { error: error.message }
-  await logAdminAction(supabase, admin.id, 'recipes', id, 'soft_delete')
   revalidatePath('/recipes')
   return { ok: true }
 }
 
 export async function publishScheduledRecipes(): Promise<{ count: number } | { error: string }> {
   const supabase = await createClient()
-  const admin = await requireAdminUser(supabase)
   const { data, error } = await supabase.rpc('publish_scheduled_recipes')
   if (error) return { error: error.message }
-  await logAdminAction(supabase, admin.id, 'recipes', 'scheduled', 'publish_scheduled', {
-    count: data ?? 0,
-  })
   revalidatePath('/recipes')
   return { count: data ?? 0 }
 }

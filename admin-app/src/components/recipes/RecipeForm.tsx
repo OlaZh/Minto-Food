@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
-import { useForm, Controller, useWatch } from 'react-hook-form'
+import { useState, useEffect } from 'react'
+import { useForm, Controller } from 'react-hook-form'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { Loader2, Calculator, Tags } from 'lucide-react'
@@ -76,9 +76,10 @@ export default function RecipeForm({ recipe, initialIngredients = [] }: RecipeFo
 
   const [ingredients, setIngredients] = useState<IngredientRow[]>(initialIngredients)
   const [authors, setAuthors] = useState<RecipeAuthorProfile[]>([])
+  const [previewTags, setPreviewTags] = useState<string[]>([])
   const [saving, setSaving] = useState(false)
 
-  const { register, control, handleSubmit, getValues, setValue } = useForm<FormValues>({
+  const { register, control, handleSubmit, watch, setValue, formState: { errors } } = useForm<FormValues>({
     defaultValues: {
       name_ua: recipe?.name_ua ?? '',
       name_en: recipe?.name_en ?? '',
@@ -111,10 +112,10 @@ export default function RecipeForm({ recipe, initialIngredients = [] }: RecipeFo
     },
   })
 
-  const watchedType = useWatch({ control, name: 'type' })
-  const watchedCategory = useWatch({ control, name: 'category' })
-  const watchedCookingMethod = useWatch({ control, name: 'cooking_method' })
-  const watchedStatus = useWatch({ control, name: 'status' })
+  const watchedType = watch('type')
+  const watchedCategory = watch('category')
+  const watchedCookingMethod = watch('cooking_method')
+  const watchedStatus = watch('status')
 
   // Load authors
   useEffect(() => {
@@ -129,15 +130,16 @@ export default function RecipeForm({ recipe, initialIngredients = [] }: RecipeFo
     load()
   }, [])
 
-  const previewTags = useMemo(
-    () => generateRecipeTags(
+  // Live tag preview
+  useEffect(() => {
+    const slugs = generateRecipeTags(
       ingredients,
       watchedCategory,
       watchedType,
       watchedCookingMethod
-    ),
-    [ingredients, watchedCategory, watchedType, watchedCookingMethod]
-  )
+    )
+    setPreviewTags(slugs)
+  }, [ingredients, watchedCategory, watchedType, watchedCookingMethod])
 
   async function autoCalculate() {
     if (!ingredients.length) { toast.info('Спочатку додайте інгредієнти'); return }
@@ -157,7 +159,8 @@ export default function RecipeForm({ recipe, initialIngredients = [] }: RecipeFo
       product: productMap.get(ing.product_id) as Product,
     })).filter(ing => ing.product)
 
-    const yieldRatio = toNum(getValues('yield_ratio')) ?? 0.85
+    const yieldRatio = toNum(watch('yield_ratio')) ?? 0.85
+    const recipeYield = toNum(watch('recipe_yield')) ?? 1
     const result = calculateNutrition(withProducts, yieldRatio > 0 ? yieldRatio : 0.85)
 
     setValue('kcal', result.kcal.toString())

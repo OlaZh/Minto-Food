@@ -5,7 +5,7 @@
 import { supabase } from './supabaseClient.js';
 import { initAuth } from './auth.js';
 import { escapeHTML } from './utils.js';
-import { getLang, loadUserStorage } from './storage.js';
+import { getLang } from './storage.js';
 import { iconVeg, iconLeaf, iconAlert, iconClose, iconXCircle, iconCheckCircle } from './icons.js';
 
 let products = [];
@@ -535,8 +535,7 @@ document.addEventListener('click', (e) => {
    ============================================================ */
 
 document.addEventListener('DOMContentLoaded', async () => {
-  await initAuth();
-  await loadUserStorage();
   currentLang = getLang();
+  await initAuth();
   loadProducts();
 });

@@ -1,233 +1,160 @@
-import { supabase } from './supabaseClient.js';
+// =============================================================
+// STORAGE.JS — Централізоване управління localStorage
+// =============================================================
+// Цей файл замінює розкидані по проєкту функції:
+// - getWaterNorm(), getDailyCaloriesNorm(), getProteinNorm() тощо
+// Тепер всі норми та налаштування в одному місці
+// =============================================================
 
-const DEFAULT_PREFERENCES = Object.freeze({
-  language: 'ua',
-  theme: 'light',
-  unit_system: 'metric',
-  copied_day: null,
-  copied_week: null,
-  welcome_seen_on: null,
-});
+// =============================================================
+// КЛЮЧІ STORAGE
+// =============================================================
 
-const DEFAULT_HEALTH_PROFILE = Object.freeze({
-  age: null,
-  height: null,
-  weight: null,
-  gender: 'female',
-  activity: 1.375,
-  goal: 'maintain',
-  calories: 2000,
-  protein: 100,
-  fat: 70,
-  carbs: 250,
-  water: 2.5,
-  target_weight: null,
-});
+export const STORAGE_KEYS = {
+  // Профіль користувача
+  USER_PROFILE: 'userProfile',
+  USER_AGE: 'userAge',
+  USER_HEIGHT: 'userHeight',
+  USER_WEIGHT: 'userWeight',
+  USER_GENDER: 'userGender',
+  USER_ACTIVITY: 'userActivity',
+  USER_GOAL: 'userGoal',
+  TARGET_WEIGHT: 'targetWeight',
 
-let preferencesCache = { ...DEFAULT_PREFERENCES };
-let healthProfileCache = { ...DEFAULT_HEALTH_PROFILE };
-let loadedUserId = null;
-let hasLoaded = false;
-let loadingPromise = null;
+  // Норми КБЖУ
+  DAILY_CALORIES: 'dailyCaloriesNorm',
+  USER_PROTEIN: 'userProtein',
+  USER_FAT: 'userFat',
+  USER_CARBS: 'userCarbs',
+  USER_WATER: 'userWater',
 
-function clone(value) {
-  if (value === null || value === undefined) return value;
-  return JSON.parse(JSON.stringify(value));
-}
+  // Трекери
+  WATER_TODAY: 'waterTodayMl',
+  TODAY_BURNED_CALORIES: 'todayBurnedCalories',
 
-function todayIsoDate() {
-  return new Date().toISOString().slice(0, 10);
-}
+  // Історія
+  WEIGHT_HISTORY: 'weightHistory',
+  ACTIVITY_HISTORY: 'activityHistory',
 
-function normalizeLang(lang) {
-  if (lang === 'uk') return 'ua';
-  return ['ua', 'en', 'pl'].includes(lang) ? lang : DEFAULT_PREFERENCES.language;
-}
+  // Тимчасові дані
+  WEEK_SHOPPING_LIST: 'week_shopping_list',
+  COPIED_WEEK: 'copied_week',
 
-function normalizeTheme(theme) {
-  return theme === 'dark' ? 'dark' : 'light';
-}
+  // Налаштування
+  LANG: 'lang',
+  THEME: 'theme',
 
-function normalizeUnitSystem(unitSystem) {
-  return unitSystem === 'imperial' ? 'imperial' : 'metric';
-}
+  // Поради
+  SHOWN_ADVICE: 'shown_advice',
+};
 
-function applyPreferences(data = {}) {
-  preferencesCache = {
-    ...preferencesCache,
-    language: normalizeLang(data.language ?? preferencesCache.language),
-    theme: normalizeTheme(data.theme ?? preferencesCache.theme),
-    unit_system: normalizeUnitSystem(data.unit_system ?? preferencesCache.unit_system),
-    copied_day: clone(data.copied_day ?? preferencesCache.copied_day),
-    copied_week: clone(data.copied_week ?? preferencesCache.copied_week),
-    welcome_seen_on: data.welcome_seen_on ?? preferencesCache.welcome_seen_on,
-  };
-}
+// =============================================================
+// БАЗОВІ ОПЕРАЦІЇ
+// =============================================================
 
-function applyHealthProfile(data = {}) {
-  healthProfileCache = {
-    ...healthProfileCache,
-    ...data,
-  };
-}
-
-function resetCaches() {
-  preferencesCache = { ...DEFAULT_PREFERENCES };
-  healthProfileCache = { ...DEFAULT_HEALTH_PROFILE };
-}
-
-async function resolveUser(user = null) {
-  if (user) return user;
-  const {
-    data: { user: currentUser },
-  } = await supabase.auth.getUser();
-  return currentUser ?? null;
-}
-
-async function upsertProfileFields(fields) {
-  const user = await resolveUser();
-  if (!user) return false;
-
-  const payload = { id: user.id, ...fields };
-  const { error } = await supabase.from('profiles').upsert(payload, { onConflict: 'id' });
-
-  if (error) {
-    console.warn('[storage] profiles upsert failed:', error.message);
-    return false;
-  }
-
-  return true;
-}
-
-async function upsertHealthProfileFields(fields) {
-  const user = await resolveUser();
-  if (!user) return false;
-
-  const payload = { user_id: user.id, ...fields };
-  const { error } = await supabase.from('user_profiles').upsert(payload, { onConflict: 'user_id' });
-
-  if (error) {
-    console.warn('[storage] user_profiles upsert failed:', error.message);
-    return false;
-  }
-
-  return true;
-}
-
-export async function saveProfileFields(fields, user = null) {
-  const resolvedUser = await resolveUser(user);
-  if (!resolvedUser) return false;
-
-  const payload = { id: resolvedUser.id, ...fields };
-  const { error } = await supabase.from('profiles').upsert(payload, { onConflict: 'id' });
-
-  if (error) {
-    console.warn('[storage] profiles upsert failed:', error.message);
-    return false;
-  }
-
-  return true;
-}
-
-export async function loadUserStorage(user = null, { force = false } = {}) {
-  const resolvedUser = await resolveUser(user);
-  const userId = resolvedUser?.id ?? null;
-
-  if (!force && hasLoaded && loadedUserId === userId) {
-    return {
-      preferences: { ...preferencesCache },
-      healthProfile: { ...healthProfileCache },
-    };
-  }
-
-  if (!force && loadingPromise && loadedUserId === userId) {
-    return loadingPromise;
-  }
-
-  if (!userId) {
-    loadedUserId = null;
-    hasLoaded = true;
-    resetCaches();
-    return {
-      preferences: { ...preferencesCache },
-      healthProfile: { ...healthProfileCache },
-    };
-  }
-
-  loadedUserId = userId;
-  loadingPromise = (async () => {
-    const [profileRes, healthRes] = await Promise.all([
-      supabase
-        .from('profiles')
-        .select('language, theme, unit_system, copied_day, copied_week, welcome_seen_on')
-        .eq('id', userId)
-        .maybeSingle(),
-      supabase
-        .from('user_profiles')
-        .select('age, height, weight, gender, activity, goal, calories, protein, fat, carbs, water, target_weight')
-        .eq('user_id', userId)
-        .maybeSingle(),
-    ]);
-
-    resetCaches();
-
-    if (!profileRes.error && profileRes.data) {
-      applyPreferences(profileRes.data);
-    } else if (profileRes.error) {
-      console.warn('[storage] profiles load failed:', profileRes.error.message);
-    }
-
-    if (!healthRes.error && healthRes.data) {
-      applyHealthProfile(healthRes.data);
-    } else if (healthRes.error) {
-      console.warn('[storage] user_profiles load failed:', healthRes.error.message);
-    }
-
-    hasLoaded = true;
-    return {
-      preferences: { ...preferencesCache },
-      healthProfile: { ...healthProfileCache },
-    };
-  })();
-
+/**
+ * Отримати значення з localStorage
+ * @param {string} key - Ключ
+ * @param {*} defaultValue - Значення за замовчуванням
+ * @returns {*} - Значення або defaultValue
+ */
+export function getItem(key, defaultValue = null) {
   try {
-    return await loadingPromise;
-  } finally {
-    loadingPromise = null;
+    const item = localStorage.getItem(key);
+    if (item === null) return defaultValue;
+
+    // Спробувати розпарсити JSON
+    try {
+      return JSON.parse(item);
+    } catch {
+      return item;
+    }
+  } catch (e) {
+    console.warn(`Storage: помилка читання ${key}`, e);
+    return defaultValue;
   }
 }
 
-export function clearStorageCache() {
-  loadedUserId = null;
-  hasLoaded = false;
-  loadingPromise = null;
-  resetCaches();
+/**
+ * Зберегти значення в localStorage
+ * @param {string} key - Ключ
+ * @param {*} value - Значення (автоматично серіалізується)
+ */
+export function setItem(key, value) {
+  try {
+    const serialized = typeof value === 'object' ? JSON.stringify(value) : value;
+    localStorage.setItem(key, serialized);
+  } catch (e) {
+    console.warn(`Storage: помилка запису ${key}`, e);
+  }
 }
 
-export function mergeUserProfileCache(patch = {}) {
-  applyHealthProfile(patch);
+/**
+ * Видалити значення з localStorage
+ * @param {string} key - Ключ
+ */
+export function removeItem(key) {
+  try {
+    localStorage.removeItem(key);
+  } catch (e) {
+    console.warn(`Storage: помилка видалення ${key}`, e);
+  }
 }
 
+// =============================================================
+// НОРМИ КБЖУ — Єдине джерело правди
+// =============================================================
+
+/**
+ * Отримати норму води (в літрах)
+ * @returns {number} - Літри
+ */
 export function getWaterNorm() {
-  return Number(healthProfileCache.water) || DEFAULT_HEALTH_PROFILE.water;
+  const saved = localStorage.getItem(STORAGE_KEYS.USER_WATER);
+  if (!saved) return 2.5;
+  return Number(String(saved).replace(',', '.'));
 }
 
+/**
+ * Отримати денну норму калорій
+ * @returns {number} - Калорії
+ */
 export function getDailyCaloriesNorm() {
-  return Number(healthProfileCache.calories) || DEFAULT_HEALTH_PROFILE.calories;
+  const saved = localStorage.getItem(STORAGE_KEYS.DAILY_CALORIES);
+  return saved ? Number(saved) : 2000;
 }
 
+/**
+ * Отримати норму білка (грами)
+ * @returns {number} - Грами
+ */
 export function getProteinNorm() {
-  return Number(healthProfileCache.protein) || DEFAULT_HEALTH_PROFILE.protein;
+  const saved = localStorage.getItem(STORAGE_KEYS.USER_PROTEIN);
+  return saved ? Number(saved) : 100;
 }
 
+/**
+ * Отримати норму жирів (грами)
+ * @returns {number} - Грами
+ */
 export function getFatNorm() {
-  return Number(healthProfileCache.fat) || DEFAULT_HEALTH_PROFILE.fat;
+  const saved = localStorage.getItem(STORAGE_KEYS.USER_FAT);
+  return saved ? Number(saved) : 70;
 }
 
+/**
+ * Отримати норму вуглеводів (грами)
+ * @returns {number} - Грами
+ */
 export function getCarbsNorm() {
-  return Number(healthProfileCache.carbs) || DEFAULT_HEALTH_PROFILE.carbs;
+  const saved = localStorage.getItem(STORAGE_KEYS.USER_CARBS);
+  return saved ? Number(saved) : 250;
 }
 
+/**
+ * Отримати всі норми одним об'єктом
+ * @returns {Object} - { calories, protein, fat, carbs, water }
+ */
 export function getAllNorms() {
   return {
     calories: getDailyCaloriesNorm(),
@@ -238,95 +165,218 @@ export function getAllNorms() {
   };
 }
 
-export async function saveAllNorms(norms) {
-  mergeUserProfileCache(norms);
-  await upsertHealthProfileFields(norms);
+/**
+ * Зберегти всі норми
+ * @param {Object} norms - { calories, protein, fat, carbs, water }
+ */
+export function saveAllNorms(norms) {
+  if (norms.calories !== undefined) setItem(STORAGE_KEYS.DAILY_CALORIES, norms.calories);
+  if (norms.protein !== undefined) setItem(STORAGE_KEYS.USER_PROTEIN, norms.protein);
+  if (norms.fat !== undefined) setItem(STORAGE_KEYS.USER_FAT, norms.fat);
+  if (norms.carbs !== undefined) setItem(STORAGE_KEYS.USER_CARBS, norms.carbs);
+  if (norms.water !== undefined) setItem(STORAGE_KEYS.USER_WATER, norms.water);
 }
 
+// =============================================================
+// ПРОФІЛЬ КОРИСТУВАЧА
+// =============================================================
+
+/**
+ * Отримати профіль користувача
+ * @returns {Object} - Профіль
+ */
 export function getUserProfile() {
-  return { ...healthProfileCache };
+  return getItem(STORAGE_KEYS.USER_PROFILE, {
+    age: null,
+    height: null,
+    weight: null,
+    gender: 'female',
+    activity: 1.375,
+    goal: 'maintain',
+    targetWeight: null,
+  });
 }
 
-export async function saveUserProfile(profile) {
-  mergeUserProfileCache(profile);
-  await upsertHealthProfileFields(profile);
+/**
+ * Зберегти профіль користувача
+ * @param {Object} profile - Профіль
+ */
+export function saveUserProfile(profile) {
+  setItem(STORAGE_KEYS.USER_PROFILE, profile);
+
+  // Також зберігаємо окремі поля для сумісності
+  if (profile.age) setItem(STORAGE_KEYS.USER_AGE, profile.age);
+  if (profile.height) setItem(STORAGE_KEYS.USER_HEIGHT, profile.height);
+  if (profile.weight) setItem(STORAGE_KEYS.USER_WEIGHT, profile.weight);
+  if (profile.gender) setItem(STORAGE_KEYS.USER_GENDER, profile.gender);
+  if (profile.activity) setItem(STORAGE_KEYS.USER_ACTIVITY, profile.activity);
+  if (profile.goal) setItem(STORAGE_KEYS.USER_GOAL, profile.goal);
 }
 
+// =============================================================
+// ІСТОРІЯ ВАГИ
+// =============================================================
+
+/**
+ * Отримати історію ваги
+ * @returns {Array} - [{ date, weight }]
+ */
+export function getWeightHistory() {
+  return getItem(STORAGE_KEYS.WEIGHT_HISTORY, []);
+}
+
+/**
+ * Додати запис ваги
+ * @param {number} weight - Вага
+ * @param {string} date - Дата (опціонально, за замовчуванням сьогодні)
+ */
+export function addWeightRecord(weight, date = null) {
+  const history = getWeightHistory();
+  const recordDate = date || new Date().toLocaleDateString('uk-UA');
+
+  // Перевірити чи вже є запис на цю дату
+  const existingIndex = history.findIndex((r) => r.date === recordDate);
+
+  if (existingIndex >= 0) {
+    history[existingIndex].weight = weight;
+  } else {
+    history.push({ date: recordDate, weight });
+  }
+
+  // Сортувати по даті
+  history.sort((a, b) => {
+    const [d1, m1, y1] = a.date.split('.');
+    const [d2, m2, y2] = b.date.split('.');
+    return new Date(y1, m1 - 1, d1) - new Date(y2, m2 - 1, d2);
+  });
+
+  setItem(STORAGE_KEYS.WEIGHT_HISTORY, history);
+}
+
+// =============================================================
+// ІСТОРІЯ АКТИВНОСТІ
+// @deprecated Активність перенесена в Supabase (таблиця user_activities).
+// Ці localStorage-функції більше не використовуються — лишені тимчасово.
+// =============================================================
+
+/**
+ * Отримати історію активностей
+ * @returns {Array} - Масив активностей
+ */
+export function getActivityHistory() {
+  return getItem(STORAGE_KEYS.ACTIVITY_HISTORY, []);
+}
+
+/**
+ * Зберегти активність
+ * @param {Object} activity - { id, type, name, duration, calories, date }
+ */
+export function saveActivity(activity) {
+  const history = getActivityHistory();
+  history.unshift(activity);
+
+  // Обмежити історію 100 записами
+  if (history.length > 100) history.pop();
+
+  setItem(STORAGE_KEYS.ACTIVITY_HISTORY, history);
+}
+
+/**
+ * Видалити активність
+ * @param {string} activityId - ID активності
+ */
+export function deleteActivity(activityId) {
+  let history = getActivityHistory();
+  history = history.filter((a) => a.id !== activityId);
+  setItem(STORAGE_KEYS.ACTIVITY_HISTORY, history);
+}
+
+// =============================================================
+// ТРЕКЕР ВОДИ
+// =============================================================
+
+/**
+ * Отримати спожиту воду сьогодні (мл)
+ * @returns {number} - Мілілітри
+ */
 export function getWaterToday() {
-  return 0;
+  return getItem(STORAGE_KEYS.WATER_TODAY, 0);
 }
 
-export async function setWaterToday() {}
+/**
+ * Зберегти спожиту воду (мл)
+ * @param {number} ml - Мілілітри
+ */
+export function setWaterToday(ml) {
+  setItem(STORAGE_KEYS.WATER_TODAY, ml);
+}
 
-export async function resetWaterToday() {}
+/**
+ * Скинути трекер води
+ */
+export function resetWaterToday() {
+  setItem(STORAGE_KEYS.WATER_TODAY, 0);
+}
 
+// =============================================================
+// НАЛАШТУВАННЯ
+// =============================================================
+
+/**
+ * Отримати мову
+ * @returns {string} - Код мови
+ */
 export function getLang() {
-  return normalizeLang(preferencesCache.language);
+  return getItem(STORAGE_KEYS.LANG, 'ua');
 }
 
-export async function setLang(lang) {
-  const value = normalizeLang(lang);
-  applyPreferences({ language: value });
-  await upsertProfileFields({ language: value });
-  document.dispatchEvent(new CustomEvent('storage:lang-changed', { detail: { lang: value } }));
-  return value;
+/**
+ * Зберегти мову
+ * @param {string} lang - Код мови
+ */
+export function setLang(lang) {
+  setItem(STORAGE_KEYS.LANG, lang);
 }
 
+/**
+ * Отримати тему
+ * @returns {string} - 'light' або 'dark'
+ */
 export function getTheme() {
-  return normalizeTheme(preferencesCache.theme);
+  return getItem(STORAGE_KEYS.THEME, 'light');
 }
 
-export async function setTheme(theme) {
-  const value = normalizeTheme(theme);
-  applyPreferences({ theme: value });
-  await upsertProfileFields({ theme: value });
-  return value;
+/**
+ * Зберегти тему
+ * @param {string} theme - 'light' або 'dark'
+ */
+export function setTheme(theme) {
+  setItem(STORAGE_KEYS.THEME, theme);
 }
 
-export function getUnitSystem() {
-  return normalizeUnitSystem(preferencesCache.unit_system);
+// =============================================================
+// СПИСОК ПОКУПОК (тимчасове збереження)
+// =============================================================
+
+/**
+ * Отримати тимчасовий список покупок з меню тижня
+ * @returns {Array} - Список продуктів
+ */
+export function getWeekShoppingList() {
+  return getItem(STORAGE_KEYS.WEEK_SHOPPING_LIST, []);
 }
 
-export async function setUnitSystem(unitSystem) {
-  const value = normalizeUnitSystem(unitSystem);
-  applyPreferences({ unit_system: value });
-  await upsertProfileFields({ unit_system: value });
-  return value;
+/**
+ * Зберегти список покупок з меню тижня
+ * @param {Array} list - Список продуктів
+ */
+export function saveWeekShoppingList(list) {
+  setItem(STORAGE_KEYS.WEEK_SHOPPING_LIST, list);
 }
 
-export function getCopiedDay() {
-  return clone(preferencesCache.copied_day);
-}
-
-export async function saveCopiedDay(snapshot) {
-  const value = clone(snapshot);
-  applyPreferences({ copied_day: value });
-  await upsertProfileFields({ copied_day: value });
-  return value;
-}
-
-export function getCopiedWeek() {
-  return clone(preferencesCache.copied_week);
-}
-
-export async function saveCopiedWeek(snapshot) {
-  const value = clone(snapshot);
-  applyPreferences({ copied_week: value });
-  await upsertProfileFields({ copied_week: value });
-  return value;
-}
-
-export async function clearCopiedState() {
-  applyPreferences({ copied_day: null, copied_week: null });
-  await upsertProfileFields({ copied_day: null, copied_week: null });
-}
-
-export function hasSeenWelcomeToday() {
-  return preferencesCache.welcome_seen_on === todayIsoDate();
-}
-
-export async function markWelcomeSeenToday() {
-  const value = todayIsoDate();
-  applyPreferences({ welcome_seen_on: value });
-  await upsertProfileFields({ welcome_seen_on: value });
+/**
+ * Очистити тимчасовий список покупок
+ */
+export function clearWeekShoppingList() {
+  removeItem(STORAGE_KEYS.WEEK_SHOPPING_LIST);
 }
