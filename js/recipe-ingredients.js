@@ -7,6 +7,7 @@ import { supabase } from './supabaseClient.js';
 import { parseIngredientsText, findProductMatch, findAllMatches, resolveScannedProduct } from './parse-food.js';
 import { iconCheck, iconClose, iconScan, iconBarcode } from './icons.js';
 import { scanBarcode } from './barcode-scanner.js';
+import { escapeHTML } from './utils.js';
 
 let ingredientsList = [];
 let onIngredientsChange = null;
