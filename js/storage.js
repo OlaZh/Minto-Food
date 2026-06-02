@@ -1,6 +1,13 @@
 import { supabase } from './supabaseClient.js';
 
+const LANG_KEY = 'minto-language';
+const THEME_KEY = 'minto-theme';
 const THEME_HINT_KEY = 'minto-theme-hint';
+const UNIT_SYSTEM_KEY = 'minto-unit-system';
+const COPIED_DAY_KEY = 'minto-copied-day';
+const COPIED_WEEK_KEY = 'minto-copied-week';
+const WELCOME_INTRO_SEEN_KEY = 'minto-welcome-intro-seen';
+const WELCOME_SEEN_ON_KEY = 'minto-welcome-seen-on';
 
 const DEFAULT_PREFERENCES = Object.freeze({
   language: 'ua',
@@ -27,26 +34,6 @@ const DEFAULT_HEALTH_PROFILE = Object.freeze({
   target_weight: null,
 });
 
-function readThemeHint() {
-  try {
-    return normalizeTheme(localStorage.getItem(THEME_HINT_KEY));
-  } catch {
-    return DEFAULT_PREFERENCES.theme;
-  }
-}
-
-function writeThemeHint(theme) {
-  try {
-    localStorage.setItem(THEME_HINT_KEY, normalizeTheme(theme));
-  } catch {}
-}
-
-let preferencesCache = { ...DEFAULT_PREFERENCES, theme: readThemeHint() };
-let healthProfileCache = { ...DEFAULT_HEALTH_PROFILE };
-let loadedUserId = null;
-let hasLoaded = false;
-let loadingPromise = null;
-
 function clone(value) {
   if (value === null || value === undefined) return value;
   return JSON.parse(JSON.stringify(value));
@@ -69,6 +56,66 @@ function normalizeUnitSystem(unitSystem) {
   return unitSystem === 'imperial' ? 'imperial' : 'metric';
 }
 
+function readLocal(key) {
+  try {
+    return localStorage.getItem(key);
+  } catch {
+    return null;
+  }
+}
+
+function writeLocal(key, value) {
+  try {
+    if (value === null || value === undefined) {
+      localStorage.removeItem(key);
+      return;
+    }
+
+    localStorage.setItem(key, value);
+  } catch {}
+}
+
+function readJson(key) {
+  const raw = readLocal(key);
+  if (!raw) return null;
+
+  try {
+    return JSON.parse(raw);
+  } catch {
+    return null;
+  }
+}
+
+function readThemeHint() {
+  return normalizeTheme(readLocal(THEME_HINT_KEY));
+}
+
+function writeThemeHint(theme) {
+  writeLocal(THEME_HINT_KEY, normalizeTheme(theme));
+}
+
+function readLocalPreferences() {
+  return {
+    language: normalizeLang(readLocal(LANG_KEY)),
+    theme: normalizeTheme(readLocal(THEME_KEY) || readLocal(THEME_HINT_KEY)),
+    unit_system: normalizeUnitSystem(readLocal(UNIT_SYSTEM_KEY)),
+    copied_day: clone(readJson(COPIED_DAY_KEY)),
+    copied_week: clone(readJson(COPIED_WEEK_KEY)),
+    welcome_intro_seen: readLocal(WELCOME_INTRO_SEEN_KEY) === 'true',
+    welcome_seen_on: readLocal(WELCOME_SEEN_ON_KEY) || null,
+  };
+}
+
+let preferencesCache = {
+  ...DEFAULT_PREFERENCES,
+  ...readLocalPreferences(),
+  theme: normalizeTheme(readLocal(THEME_KEY) || readLocal(THEME_HINT_KEY)),
+};
+let healthProfileCache = { ...DEFAULT_HEALTH_PROFILE };
+let loadedUserId = null;
+let hasLoaded = false;
+let loadingPromise = null;
+
 function applyPreferences(data = {}) {
   preferencesCache = {
     ...preferencesCache,
@@ -83,6 +130,48 @@ function applyPreferences(data = {}) {
   writeThemeHint(preferencesCache.theme);
 }
 
+function syncPreferencesFromLocal() {
+  preferencesCache = {
+    ...DEFAULT_PREFERENCES,
+    ...readLocalPreferences(),
+    theme: normalizeTheme(readLocal(THEME_KEY) || readLocal(THEME_HINT_KEY)),
+  };
+  writeThemeHint(preferencesCache.theme);
+}
+
+function persistPreferences(patch = {}) {
+  applyPreferences(patch);
+
+  if ('language' in patch) {
+    writeLocal(LANG_KEY, preferencesCache.language);
+  }
+
+  if ('theme' in patch) {
+    writeLocal(THEME_KEY, preferencesCache.theme);
+    writeThemeHint(preferencesCache.theme);
+  }
+
+  if ('unit_system' in patch) {
+    writeLocal(UNIT_SYSTEM_KEY, preferencesCache.unit_system);
+  }
+
+  if ('copied_day' in patch) {
+    writeLocal(COPIED_DAY_KEY, preferencesCache.copied_day === null ? null : JSON.stringify(preferencesCache.copied_day));
+  }
+
+  if ('copied_week' in patch) {
+    writeLocal(COPIED_WEEK_KEY, preferencesCache.copied_week === null ? null : JSON.stringify(preferencesCache.copied_week));
+  }
+
+  if ('welcome_intro_seen' in patch) {
+    writeLocal(WELCOME_INTRO_SEEN_KEY, preferencesCache.welcome_intro_seen ? 'true' : 'false');
+  }
+
+  if ('welcome_seen_on' in patch) {
+    writeLocal(WELCOME_SEEN_ON_KEY, preferencesCache.welcome_seen_on);
+  }
+}
+
 function applyHealthProfile(data = {}) {
   healthProfileCache = {
     ...healthProfileCache,
@@ -90,8 +179,7 @@ function applyHealthProfile(data = {}) {
   };
 }
 
-function resetCaches() {
-  preferencesCache = { ...DEFAULT_PREFERENCES, theme: readThemeHint() };
+function resetHealthProfileCache() {
   healthProfileCache = { ...DEFAULT_HEALTH_PROFILE };
 }
 
@@ -132,7 +220,22 @@ async function resolveUser(user = null) {
   }
 }
 
-async function saveProfileFields(fields, user = null) {
+async function upsertHealthProfileFields(fields) {
+  const user = await resolveUser();
+  if (!user) return false;
+
+  const payload = { user_id: user.id, ...fields };
+  const { error } = await supabase.from('user_profiles').upsert(payload, { onConflict: 'user_id' });
+
+  if (error) {
+    console.warn('[storage] user_profiles upsert failed:', error.message);
+    return false;
+  }
+
+  return true;
+}
+
+export async function saveProfileFields(fields, user = null) {
   const resolvedUser = await resolveUser(user);
   if (!resolvedUser) return false;
 
@@ -162,28 +265,9 @@ async function saveProfileFields(fields, user = null) {
   return true;
 }
 
-async function upsertProfileFields(fields) {
-  const user = await resolveUser();
-  if (!user) return false;
-  return saveProfileFields(fields, user);
-}
-
-async function upsertHealthProfileFields(fields) {
-  const user = await resolveUser();
-  if (!user) return false;
-
-  const payload = { user_id: user.id, ...fields };
-  const { error } = await supabase.from('user_profiles').upsert(payload, { onConflict: 'user_id' });
-
-  if (error) {
-    console.warn('[storage] user_profiles upsert failed:', error.message);
-    return false;
-  }
-
-  return true;
-}
-
 export async function loadUserStorage(user = null, { force = false } = {}) {
+  syncPreferencesFromLocal();
+
   let resolvedUser = null;
 
   try {
@@ -208,7 +292,7 @@ export async function loadUserStorage(user = null, { force = false } = {}) {
   if (!userId) {
     loadedUserId = null;
     hasLoaded = true;
-    resetCaches();
+    resetHealthProfileCache();
     return {
       preferences: { ...preferencesCache },
       healthProfile: { ...healthProfileCache },
@@ -217,38 +301,23 @@ export async function loadUserStorage(user = null, { force = false } = {}) {
 
   loadedUserId = userId;
   loadingPromise = (async () => {
+    resetHealthProfileCache();
+
     try {
-      const [profileRes, healthRes] = await Promise.all([
-        supabase
-          .from('profiles')
-          .select(
-            'language, theme, unit_system, copied_day, copied_week, welcome_intro_seen, welcome_seen_on',
-          )
-          .eq('id', userId)
-          .maybeSingle(),
-        supabase
-          .from('user_profiles')
-          .select('age, height, weight, gender, activity, goal, calories, protein, fat, carbs, water, target_weight')
-          .eq('user_id', userId)
-          .maybeSingle(),
-      ]);
+      const { data, error } = await supabase
+        .from('user_profiles')
+        .select('age, height, weight, gender, activity, goal, calories, protein, fat, carbs, water, target_weight')
+        .eq('user_id', userId)
+        .maybeSingle();
 
-      resetCaches();
-
-      if (!profileRes.error && profileRes.data) {
-        applyPreferences(profileRes.data);
-      } else if (profileRes.error) {
-        console.warn('[storage] profiles load failed:', profileRes.error.message);
-      }
-
-      if (!healthRes.error && healthRes.data) {
-        applyHealthProfile(healthRes.data);
-      } else if (healthRes.error) {
-        console.warn('[storage] user_profiles load failed:', healthRes.error.message);
+      if (!error && data) {
+        applyHealthProfile(data);
+      } else if (error) {
+        console.warn('[storage] user_profiles load failed:', error.message);
       }
     } catch (error) {
       console.warn('[storage] load bootstrap failed:', error?.message ?? error);
-      resetCaches();
+      resetHealthProfileCache();
     }
 
     hasLoaded = true;
@@ -269,7 +338,8 @@ export function clearStorageCache() {
   loadedUserId = null;
   hasLoaded = false;
   loadingPromise = null;
-  resetCaches();
+  syncPreferencesFromLocal();
+  resetHealthProfileCache();
 }
 
 export function mergeUserProfileCache(patch = {}) {
@@ -334,8 +404,7 @@ export function getLang() {
 
 export async function setLang(lang) {
   const value = normalizeLang(lang);
-  applyPreferences({ language: value });
-  await upsertProfileFields({ language: value });
+  persistPreferences({ language: value });
   document.dispatchEvent(new CustomEvent('storage:lang-changed', { detail: { lang: value } }));
   return value;
 }
@@ -346,8 +415,7 @@ export function getTheme() {
 
 export async function setTheme(theme) {
   const value = normalizeTheme(theme);
-  applyPreferences({ theme: value });
-  await upsertProfileFields({ theme: value });
+  persistPreferences({ theme: value });
   return value;
 }
 
@@ -357,8 +425,7 @@ export function getUnitSystem() {
 
 export async function setUnitSystem(unitSystem) {
   const value = normalizeUnitSystem(unitSystem);
-  applyPreferences({ unit_system: value });
-  await upsertProfileFields({ unit_system: value });
+  persistPreferences({ unit_system: value });
   return value;
 }
 
@@ -368,8 +435,7 @@ export function getCopiedDay() {
 
 export async function saveCopiedDay(snapshot) {
   const value = clone(snapshot);
-  applyPreferences({ copied_day: value });
-  await upsertProfileFields({ copied_day: value });
+  persistPreferences({ copied_day: value });
   return value;
 }
 
@@ -379,14 +445,12 @@ export function getCopiedWeek() {
 
 export async function saveCopiedWeek(snapshot) {
   const value = clone(snapshot);
-  applyPreferences({ copied_week: value });
-  await upsertProfileFields({ copied_week: value });
+  persistPreferences({ copied_week: value });
   return value;
 }
 
 export async function clearCopiedState() {
-  applyPreferences({ copied_day: null, copied_week: null });
-  await upsertProfileFields({ copied_day: null, copied_week: null });
+  persistPreferences({ copied_day: null, copied_week: null });
 }
 
 export function hasCompletedWelcomeIntro() {
@@ -398,8 +462,8 @@ export async function markWelcomeIntroSeen() {
     return true;
   }
 
-  applyPreferences({ welcome_intro_seen: true });
-  return upsertProfileFields({ welcome_intro_seen: true });
+  persistPreferences({ welcome_intro_seen: true });
+  return true;
 }
 
 export function hasSeenWelcomeToday() {
@@ -413,9 +477,6 @@ export async function markWelcomeSeenToday() {
     return null;
   }
 
-  applyPreferences({ welcome_seen_on: value });
-  await upsertProfileFields({ welcome_seen_on: value });
+  persistPreferences({ welcome_seen_on: value });
   return value;
 }
-
-export { saveProfileFields };
