@@ -114,6 +114,21 @@ async function upsertHealthProfileFields(fields) {
   return true;
 }
 
+export async function saveProfileFields(fields, user = null) {
+  const resolvedUser = await resolveUser(user);
+  if (!resolvedUser) return false;
+
+  const payload = { id: resolvedUser.id, ...fields };
+  const { error } = await supabase.from('profiles').upsert(payload, { onConflict: 'id' });
+
+  if (error) {
+    console.warn('[storage] profiles upsert failed:', error.message);
+    return false;
+  }
+
+  return true;
+}
+
 export async function loadUserStorage(user = null, { force = false } = {}) {
   const resolvedUser = await resolveUser(user);
   const userId = resolvedUser?.id ?? null;
