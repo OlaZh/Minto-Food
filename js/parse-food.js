@@ -48,6 +48,16 @@ const PIECE_UNITS = new Set(
     .map(([k]) => k)
 );
 
+// Одиниці ваги/об'єму, для яких "без числа" не має сенсу ("сіль г", "сіль мл").
+// Їх Патерн 5/6 (одиниця без числа) ігнорує — без числа ловимо лише мірні
+// одиниці на кшталт дрібка/щіпка/жменя/склянка/пачка.
+const IMPLICIT_ONE_EXCLUDE = new Set([
+  'г', 'гр', 'грам', 'грами', 'грамів', 'g', 'gram', 'grams',
+  'кг', 'кілограм', 'кілограма', 'кілограми', 'kg',
+  'oz', 'ounce', 'lb', 'pound',
+  'мл', 'ml', 'л', 'літр', 'літра', 'l', 'liter',
+]);
+
 // Регекс для всіх відомих одиниць (довші — першими, щоб "ст.л." не зматчилось як "ст")
 const UNIT_RE_SRC = Object.keys(UNIT_CONVERSIONS)
   .map((k) => k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
@@ -210,6 +220,35 @@ export function parseFoodInput(input) {
       name = match[1].trim();
       amount = parseFloat(match[2].replace(',', '.'));
       unit = 'шт';
+    }
+  }
+
+  // Патерн 5/6: одиниця БЕЗ числа, кількість мається на увазі = 1.
+  // Природна мова: "сіль дрібка", "дрібка солі", "щіпка перцю", "склянка борошна".
+  // Лише для безкількісних мірних одиниць (дрібка/щіпка/жменя/склянка/...),
+  // НЕ для "г"/"мл"/"шт" — "сіль г" не має сенсу.
+  if (!match) {
+    // "сіль дрібка" — назва, потім одиниця в кінці
+    match = text.match(new RegExp(`^(.+?)\\s+(${UNIT_RE_SRC})\\.?$`, 'i'));
+    if (match && !PIECE_UNITS.has(match[2].toLowerCase()) && !IMPLICIT_ONE_EXCLUDE.has(match[2].toLowerCase())) {
+      name = match[1].trim();
+      unit = match[2].toLowerCase();
+      amount = 1;
+      grams = amount * (UNIT_CONVERSIONS[unit] ?? 1);
+    } else {
+      match = null;
+    }
+  }
+  if (!match) {
+    // "дрібка солі" — одиниця на початку, потім назва
+    match = text.match(new RegExp(`^(${UNIT_RE_SRC})\\.?\\s+(.+)$`, 'i'));
+    if (match && !PIECE_UNITS.has(match[1].toLowerCase()) && !IMPLICIT_ONE_EXCLUDE.has(match[1].toLowerCase())) {
+      unit = match[1].toLowerCase();
+      name = match[2].trim();
+      amount = 1;
+      grams = amount * (UNIT_CONVERSIONS[unit] ?? 1);
+    } else {
+      match = null;
     }
   }
 

@@ -176,13 +176,9 @@ export async function initRecipeModal() {
   const cancelBtn = document.getElementById('rm-cancel');
   const form = document.getElementById('recipe-modal-form');
 
-  // Закриття
+  // Закриття — ЛИШЕ через хрестик або "Скасувати".
+  // Клік по фону (оверлею) НЕ закриває модалку, щоб не втратити недописаний рецепт.
   closeBtn?.addEventListener('click', closeRecipeModal);
-  recipeModalInstance?.addEventListener('click', (e) => {
-    if (e.target === recipeModalInstance) closeRecipeModal();
-  });
-
-  // Скасувати у формі
   cancelBtn?.addEventListener('click', closeRecipeModal);
 
   // Авто-ресайз textarea
