@@ -17,19 +17,17 @@ let _suggested = '';
 // ── Публічний метод ───────────────────────────────────────────
 
 export async function checkOnboarding(user) {
-  // Швидка перевірка — якщо вже проходив онбординг, не турбуємо
-  if (localStorage.getItem(`minto_onb_${user.id}`)) return;
-
+  // Джерело правди — БД: онбординг показуємо РІВНО ОДИН РАЗ за весь час,
+  // на будь-якому пристрої. Прапор welcome_intro_seen прив'язаний до акаунта,
+  // тому не залежить від localStorage (чистка кешу / новий пристрій не вертають онбординг).
   const { data: profile } = await supabase
     .from('profiles')
-    .select('display_name')
+    .select('display_name, welcome_intro_seen')
     .eq('id', user.id)
-    .single();
+    .maybeSingle();
 
-  if (profile?.display_name) {
-    localStorage.setItem(`minto_onb_${user.id}`, '1'); // більше не питаємо
-    return;
-  }
+  // Вже бачив онбординг або вже має нікнейм — не турбуємо
+  if (profile?.welcome_intro_seen || profile?.display_name) return;
 
   _suggested = await _generateNickname(user);
 
@@ -305,9 +303,11 @@ async function _save(displayName) {
 
   await supabase
     .from('profiles')
-    .upsert({ id: user.id, display_name: displayName }, { onConflict: 'id' });
+    .upsert(
+      { id: user.id, display_name: displayName, welcome_intro_seen: true },
+      { onConflict: 'id' },
+    );
 
-  localStorage.setItem(`minto_onb_${user.id}`, '1');
   document.getElementById('onboarding-overlay')?.remove();
   _resolveFn?.();
 }

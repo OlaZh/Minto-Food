@@ -12,6 +12,19 @@ const STORAGE_KEY = 'minto_consent';
 const SEEN_KEY    = 'minto_consent_seen';
 const TTL = 180 * 24 * 60 * 60 * 1000; // 6 місяців
 
+import { supabase } from './supabaseClient.js';
+
+// ─────────────────────────────────────────────────────────────
+// ДЖЕРЕЛО ПРАВДИ
+//   • Гість (не залогінений)  → localStorage. Так вимагає GDPR:
+//     до логіну немає де зберігати в БД.
+//   • Залогінений             → таблиця profiles у Supabase. Згода
+//     прив'язана до акаунта і їде за користувачем на будь-який
+//     пристрій — банер не лізе після зміни пристрою чи чистки кешу.
+// ─────────────────────────────────────────────────────────────
+
+// ─── localStorage (гість) ───────────────────────────────────
+
 export function getConsent() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
@@ -32,7 +45,7 @@ export function getConsent() {
   }
 }
 
-function save(consent) {
+function saveLocal(consent) {
   const data = { ...consent, necessary: true, version: CONSENT_VERSION, savedAt: Date.now() };
   localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
   document.dispatchEvent(new CustomEvent('consentUpdated', { detail: data }));
@@ -52,6 +65,70 @@ function seenForCurrentVersion() {
 function markSeen() {
   localStorage.setItem(SEEN_KEY, JSON.stringify({ version: CONSENT_VERSION }));
 }
+
+// ─── Supabase profiles (залогінений) ────────────────────────
+
+// Читає згоду з БД. Повертає:
+//   об'єкт consent — якщо в БД є валідна згода поточної версії
+//   null           — якщо згоди ще немає або версія застаріла (треба показати банер)
+async function getConsentFromDB(userId) {
+  try {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('consent_analytics, consent_marketing, consent_version, consent_at')
+      .eq('id', userId)
+      .maybeSingle();
+    if (error || !data) return null;
+    if (data.consent_version !== CONSENT_VERSION) return null;
+    if (data.consent_analytics === null) return null; // ще не відповідав
+    return {
+      necessary: true,
+      analytics: data.consent_analytics,
+      marketing: data.consent_marketing,
+      version: data.consent_version,
+      savedAt: data.consent_at ? Date.parse(data.consent_at) : Date.now(),
+    };
+  } catch {
+    return null;
+  }
+}
+
+async function saveConsentToDB(userId, consent) {
+  try {
+    await supabase
+      .from('profiles')
+      .update({
+        consent_analytics: !!consent.analytics,
+        consent_marketing: !!consent.marketing,
+        consent_version: CONSENT_VERSION,
+        consent_at: new Date().toISOString(),
+      })
+      .eq('id', userId);
+  } catch (e) {
+    console.warn('Cookie consent: не вдалось зберегти в БД', e);
+  }
+}
+
+// Зберегти вибір: пише і локально (миттєвий ефект + узгодженість),
+// і в БД якщо користувач залогінений.
+async function saveConsent(consent, userId) {
+  const data = saveLocal(consent);
+  if (userId) await saveConsentToDB(userId, data);
+  return data;
+}
+
+// ─── Поточний користувач ────────────────────────────────────
+
+async function getUserId() {
+  try {
+    const { data } = await supabase.auth.getSession();
+    return data?.session?.user?.id ?? null;
+  } catch {
+    return null;
+  }
+}
+
+// ─── Банер ──────────────────────────────────────────────────
 
 function buildBanner() {
   const el = document.createElement('div');
@@ -88,12 +165,9 @@ function buildBanner() {
   return el;
 }
 
-export function initCookieConsent() {
-  // Валідна згода для поточної версії — нічого не робимо
-  if (getConsent()) return;
-
-  // Банер вже показували для цієї версії — не турбуємо знову
-  if (seenForCurrentVersion()) return;
+function showBanner(userId) {
+  // Захист від подвійного показу (напр. init + подія SIGNED_IN)
+  if (document.querySelector('.cookie-banner')) return;
 
   markSeen();
   const banner = buildBanner();
@@ -101,13 +175,13 @@ export function initCookieConsent() {
 
   const prefs = banner.querySelector('#cbPrefs');
 
-  banner.querySelector('#cbAcceptAll').addEventListener('click', () => {
-    save({ analytics: true, marketing: true });
+  banner.querySelector('#cbAcceptAll').addEventListener('click', async () => {
+    await saveConsent({ analytics: true, marketing: true }, userId);
     banner.remove();
   });
 
-  banner.querySelector('#cbRejectAll').addEventListener('click', () => {
-    save({ analytics: false, marketing: false });
+  banner.querySelector('#cbRejectAll').addEventListener('click', async () => {
+    await saveConsent({ analytics: false, marketing: false }, userId);
     banner.remove();
   });
 
@@ -116,11 +190,77 @@ export function initCookieConsent() {
     banner.querySelector('#cbCustomize').hidden = true;
   });
 
-  banner.querySelector('#cbSavePrefs').addEventListener('click', () => {
-    save({
-      analytics: banner.querySelector('#cbAnalytics').checked,
-      marketing: banner.querySelector('#cbMarketing').checked,
-    });
+  banner.querySelector('#cbSavePrefs').addEventListener('click', async () => {
+    await saveConsent(
+      {
+        analytics: banner.querySelector('#cbAnalytics').checked,
+        marketing: banner.querySelector('#cbMarketing').checked,
+      },
+      userId,
+    );
     banner.remove();
   });
+}
+
+// ─── Точка входу ────────────────────────────────────────────
+
+// Чи вже навішений слухач auth — щоб не дублювати при повторних init
+let _authListenerBound = false;
+
+// Реагуємо на вхід/вихід ВЖЕ ПІСЛЯ завантаження сторінки (логін через
+// модалку). При вході — переносимо згоду гостя в БД і прибираємо банер,
+// якщо в акаунті згода вже є.
+function bindAuthListener() {
+  if (_authListenerBound) return;
+  _authListenerBound = true;
+
+  supabase.auth.onAuthStateChange(async (event, session) => {
+    const uid = session?.user?.id;
+    if (event === 'SIGNED_IN' && uid) {
+      const dbConsent = await getConsentFromDB(uid);
+      if (dbConsent) {
+        // В акаунті вже є згода — банер більше не потрібен
+        saveLocal(dbConsent);
+        document.querySelector('.cookie-banner')?.remove();
+      } else {
+        // Переносимо згоду, яку гість міг дати в localStorage
+        const local = getConsent();
+        if (local) await saveConsentToDB(uid, local);
+      }
+    }
+  });
+}
+
+export async function initCookieConsent() {
+  bindAuthListener();
+
+  const userId = await getUserId();
+
+  if (userId) {
+    // ── Залогінений: джерело правди — БД ──
+    const dbConsent = await getConsentFromDB(userId);
+    if (dbConsent) {
+      // Згода є в акаунті — банер не показуємо на жодному пристрої.
+      // Синхронізуємо локальний кеш щоб аналітика на цій вкладці знала вибір.
+      saveLocal(dbConsent);
+      return;
+    }
+
+    // В БД згоди ще немає. Якщо гість раніше давав згоду в localStorage —
+    // переносимо її в акаунт (одноразова міграція), банер не турбує.
+    const local = getConsent();
+    if (local) {
+      await saveConsentToDB(userId, local);
+      return;
+    }
+
+    // Ніде немає згоди — показуємо банер, відповідь піде в БД.
+    showBanner(userId);
+    return;
+  }
+
+  // ── Гість: localStorage ──
+  if (getConsent()) return;
+  if (seenForCurrentVersion()) return;
+  showBanner(null);
 }

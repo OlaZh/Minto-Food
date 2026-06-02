@@ -421,7 +421,7 @@ export async function findAllMatches(query, limit = 10) {
     const [{ data: productsData }, { data: scannedData }] = await Promise.all([
       supabase
         .from('products')
-        .select('id, name_ua, name_en, name_pl, kcal, protein, fat, carbs, fiber, food_state, raw_edible, category_id')
+        .select('id, name_ua, name_en, name_pl, kcal, protein, fat, carbs, fiber, food_state, category_id')
         .or(`name_ua.ilike.%${q}%,name_en.ilike.%${q}%`)
         .is('deleted_at', null)
         .is('user_id', null)
@@ -444,7 +444,6 @@ export async function findAllMatches(query, limit = 10) {
     const scanned = (scannedData || []).map((s) => ({
       ...s,
       _source: 'barcode',
-      raw_edible: 'always',
       food_state: null,
     }));
 

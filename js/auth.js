@@ -88,13 +88,10 @@ export async function initAuth(onAuthChange = null) {
         await checkOnboarding(session.user);
       }
 
-      const today = new Date().toDateString();
-      const key = `minto_welcome_${userId}`;
-
-      if (userId && localStorage.getItem(key) !== today) {
-        localStorage.setItem(key, today);
-        showToast('Ласкаво просимо!');
-      }
+      // Тост "Ласкаво просимо!" — раз на день при першому вході.
+      // Дата останнього показу зберігається в БД (profiles.welcome_seen_on),
+      // тому не залежить від пристрою чи чистки кешу.
+      if (userId) await _maybeShowDailyWelcome(userId);
     }
 
     if (event === 'SIGNED_OUT') {
@@ -111,6 +108,34 @@ export async function initAuth(onAuthChange = null) {
   updateAuthUI();
 
   return currentUser;
+}
+
+// Показує тост "Ласкаво просимо!" не частіше разу на день.
+// Джерело правди — profiles.welcome_seen_on (тип date), тому вітання
+// з'являється раз на день незалежно від пристрою чи стану localStorage.
+async function _maybeShowDailyWelcome(userId) {
+  // Локальна дата у форматі YYYY-MM-DD ("сьогодні" в поясі користувача)
+  const now = new Date();
+  const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+
+  try {
+    const { data } = await supabase
+      .from('profiles')
+      .select('welcome_seen_on')
+      .eq('id', userId)
+      .maybeSingle();
+
+    if (data?.welcome_seen_on === today) return; // вже вітали сьогодні
+
+    showToast('Ласкаво просимо!');
+
+    await supabase
+      .from('profiles')
+      .update({ welcome_seen_on: today })
+      .eq('id', userId);
+  } catch (e) {
+    console.warn('Welcome toast: помилка перевірки/запису welcome_seen_on', e);
+  }
 }
 
 // =============================================================
