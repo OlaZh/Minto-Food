@@ -36,71 +36,13 @@ const _ADMIN_TRANSFER_SESSION = 'minto-admin-transfer-session';
 const _ADMIN_TRANSFER_TIMEOUT_MS = 12000;
 
 // Синхронно читає кешовану сесію з localStorage щоб уникнути FOUC
-function _pickCachedSessionCandidate(parsed) {
-  if (!parsed) return null;
-
-  if (parsed.access_token && parsed.refresh_token) {
-    return parsed;
-  }
-
-  if (parsed.currentSession?.access_token && parsed.currentSession?.refresh_token) {
-    return parsed.currentSession;
-  }
-
-  if (parsed.session?.access_token && parsed.session?.refresh_token) {
-    return parsed.session;
-  }
-
-  if (parsed.data?.session?.access_token && parsed.data?.session?.refresh_token) {
-    return parsed.data.session;
-  }
-
-  if (Array.isArray(parsed)) {
-    return (
-      parsed.find((item) => item?.access_token && item?.refresh_token)
-      || parsed.map((item) => item?.currentSession).find((item) => item?.access_token && item?.refresh_token)
-      || null
-    );
-  }
-
-  return null;
-}
-
-function _readCachedSession() {
+function _readCachedUser() {
   try {
     const raw = localStorage.getItem(`sb-${_SUPABASE_REF}-auth-token`);
     if (!raw) return null;
     const parsed = JSON.parse(raw);
-    return _pickCachedSessionCandidate(parsed);
+    return parsed?.user ?? null;
   } catch {
-    return null;
-  }
-}
-
-function _readCachedUser() {
-  return _readCachedSession()?.user ?? null;
-}
-
-async function _restoreSessionFromCache() {
-  const cachedSession = _readCachedSession();
-  if (!cachedSession?.access_token || !cachedSession?.refresh_token) {
-    return null;
-  }
-
-  try {
-    const { data, error } = await supabase.auth.setSession({
-      access_token: cachedSession.access_token,
-      refresh_token: cachedSession.refresh_token,
-    });
-
-    if (error) {
-      console.warn('[auth] failed to restore cached session:', error.message);
-      return null;
-    }
-
-    return data?.session ?? null;
-  } catch (error) {
-    console.warn('[auth] failed to restore cached session:', error?.message ?? error);
     return null;
   }
 }
@@ -150,18 +92,17 @@ export async function initAuth(onAuthChange = null) {
 
       const userId = session?.user?.id;
 
-      await loadUserStorage(session.user, { force: true });
-
+      // Перевіряємо чи обраний нікнейм — якщо ні, показуємо onboarding
       if (session?.user) {
-        const { checkOnboarding } = await import('./onboarding.js?v=20260601-5');
+        const { checkOnboarding } = await import('./onboarding.js');
         await checkOnboarding(session.user);
       }
 
+      await loadUserStorage(session.user, { force: true });
+
       if (userId && !hasSeenWelcomeToday()) {
-        const markedOn = await markWelcomeSeenToday();
-        if (markedOn) {
-          showToast('Ласкаво просимо!');
-        }
+        await markWelcomeSeenToday();
+        showToast('Ласкаво просимо!');
       }
     }
 
@@ -173,14 +114,9 @@ export async function initAuth(onAuthChange = null) {
   });
 
   // Перевіряємо поточну сесію
-  let {
+  const {
     data: { session },
   } = await supabase.auth.getSession();
-
-  if (!session && _readCachedSession()) {
-    session = await _restoreSessionFromCache();
-  }
-
   currentUser = session?.user || null;
   updateAuthUI();
 
@@ -250,7 +186,7 @@ export async function signInWithGoogle() {
   const { error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
     options: {
-      redirectTo: `${window.location.origin}/`,
+      redirectTo: 'https://minto-food.vercel.app/',
     },
   });
 
