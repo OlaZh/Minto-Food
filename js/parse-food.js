@@ -2,6 +2,7 @@
 // Парсер продуктів з pg_trgm пошуком через Supabase
 
 import { supabase } from './supabaseClient.js';
+import { getLang } from './storage.js';
 
 // =====================================
 // КОНСТАНТИ
@@ -135,15 +136,41 @@ const STOP_WORDS = new Set([
 // УТИЛІТИ
 // =====================================
 
-/**
- * Нормалізує текст для пошуку
- */
-function normalizeText(text) {
+// ─────────────────────────────────────────────────────────────
+// normalizeKey — КАНОНІЧНИЙ ключ для пошуку (заміна старої normalizeText).
+// Спільна, тримовна, БЕЗ стемінгу. Звести і запит, і alias_name до
+// однакової форми, щоб exact-match по product_aliases.alias_normalized
+// працював без морфології в рантаймі.
+//
+// Робить рівно три речі:
+//   1) lowercase
+//   2) транслітерує діакритику (pl/en) → базова латиниця: ą→a, ó→o, ł→l…
+//      (стара normalizeText діакритику ВИКИДАЛА — "mąka"→"m ka"; це ламало pl/en)
+//   3) прибирає пунктуацію/дужки, стискає пробіли
+//
+// Канонічність несе product_id, не цей ключ. Жодного відсікання закінчень.
+// ─────────────────────────────────────────────────────────────
+const DIACRITIC_MAP = {
+  // польські
+  ą: 'a', ć: 'c', ę: 'e', ł: 'l', ń: 'n', ó: 'o', ś: 's', ź: 'z', ż: 'z',
+  // загальні латинські (en/запозичення/копіпаст)
+  á: 'a', à: 'a', â: 'a', ä: 'a', ã: 'a',
+  é: 'e', è: 'e', ê: 'e', ë: 'e',
+  í: 'i', ì: 'i', î: 'i', ï: 'i',
+  ò: 'o', ô: 'o', ö: 'o', õ: 'o',
+  ú: 'u', ù: 'u', û: 'u', ü: 'u',
+  ý: 'y', ÿ: 'y', ç: 'c', ñ: 'n', ß: 'ss',
+};
+
+export function normalizeKey(text) {
   if (!text) return '';
 
   return text
     .toLowerCase()
-    .replace(/[^\wа-яіїєґ\s]/gi, ' ')
+    .replace(/[́̀̈]/g, '')          // комбіновані наголоси (U+0301 тощо)
+    .replace(/[a-zà-ÿąćęłńóśźż]/g, (ch) => DIACRITIC_MAP[ch] ?? ch)
+    .replace(/['’`ʼ]/g, '')                         // апострофи: м'який→мякий (як у наявних аліасах)
+    .replace(/[^a-z0-9а-яіїєґ\s]/gi, ' ')           // решта пунктуації/дужок → пробіл
     .replace(/\s+/g, ' ')
     .trim();
 }
@@ -152,7 +179,7 @@ function normalizeText(text) {
  * Прибирає стоп-слова
  */
 function removeStopWords(text) {
-  const words = normalizeText(text).split(' ');
+  const words = normalizeKey(text).split(' ');
   const filtered = words.filter((w) => w.length > 1 && !STOP_WORDS.has(w));
   return filtered.join(' ') || text;
 }
@@ -432,7 +459,7 @@ async function searchScanned(query, term) {
 export async function findProductMatch(query) {
   if (!query || query.length < 2) return null;
 
-  const term = normalizeText(query);
+  const term = normalizeKey(query);
 
   try {
     // Зі станом → лише recipes, без відкату на products.
@@ -467,10 +494,11 @@ export async function findProductMatch(query) {
 export async function findAllMatches(query, limit = 10) {
   if (!query || query.length < 2) return [];
 
-  const q = normalizeText(query);
+  const q = normalizeKey(query);
+  const lang = getLang() || 'ua';
 
   try {
-    const [{ data: productsData }, { data: scannedData }] = await Promise.all([
+    const [{ data: productsData }, { data: scannedData }, { data: aliasRows }] = await Promise.all([
       supabase
         .from('products')
         .select('id, name_ua, name_en, name_pl, kcal, protein, fat, carbs, fiber, food_state, category_id')
@@ -484,12 +512,52 @@ export async function findAllMatches(query, limit = 10) {
         .or(`name_ua.ilike.%${q}%,name_en.ilike.%${q}%`)
         .not('kcal', 'is', null)
         .limit(5),
+      // Щедрий шар: словник аліасів (синоніми, відмінкові форми, переклади).
+      // Саме він робить дропдаун багатим — "борошна" зловить "борошно",
+      // "макрель" → Скумбрія тощо. getLang — пріоритет, не фільтр.
+      supabase
+        .from('product_aliases')
+        .select('product_id, language, alias_normalized')
+        .ilike('alias_normalized', `%${q}%`)
+        .limit(30),
     ]);
+
+    // Продукти, знайдені через аліаси (яких ще немає в прямому збігу по name_ua).
+    const directIds = new Set((productsData || []).map((p) => p.id));
+    const aliasByProduct = new Map(); // product_id → найкращий (за мовою) language аліаса
+    for (const a of aliasRows || []) {
+      if (directIds.has(a.product_id)) continue;
+      const prev = aliasByProduct.get(a.product_id);
+      // Пріоритет мови UI: збіг у getLang() важливіший за інші мови.
+      if (!prev || (a.language === lang && prev !== lang)) {
+        aliasByProduct.set(a.product_id, a.language);
+      }
+    }
+
+    let aliasProducts = [];
+    if (aliasByProduct.size > 0) {
+      const { data: ap } = await supabase
+        .from('products')
+        .select('id, name_ua, name_en, name_pl, kcal, protein, fat, carbs, fiber, food_state, category_id')
+        .in('id', [...aliasByProduct.keys()])
+        .is('deleted_at', null)
+        .is('user_id', null);
+      aliasProducts = (ap || []).map((p) => ({
+        ...p,
+        _matchedVia: 'alias',
+        _aliasLangMatch: aliasByProduct.get(p.id) === lang,
+      }));
+    }
 
     // Сортуємо products: сирі/сухі першими, готові — знизу
     const stateOrder = { raw: 0, dry: 1, cooked: 2 };
-    const sorted = (productsData || []).sort(
-      (a, b) => (stateOrder[a.food_state] ?? 1) - (stateOrder[b.food_state] ?? 1),
+    const sortByState = (a, b) =>
+      (stateOrder[a.food_state] ?? 1) - (stateOrder[b.food_state] ?? 1);
+
+    const sorted = (productsData || []).sort(sortByState);
+    // Аліасні: спершу ті, що збіглися мовою UI, потім за станом.
+    aliasProducts.sort(
+      (a, b) => (b._aliasLangMatch - a._aliasLangMatch) || sortByState(a, b),
     );
 
     // Scanned_products: маркуємо джерело
@@ -499,7 +567,7 @@ export async function findAllMatches(query, limit = 10) {
       food_state: null,
     }));
 
-    return [...sorted, ...scanned];
+    return [...sorted, ...aliasProducts, ...scanned];
   } catch (err) {
     console.error('Search error:', err);
     return [];
