@@ -168,6 +168,7 @@ export function normalizeKey(text) {
   return text
     .toLowerCase()
     .replace(/[́̀̈]/g, '')          // комбіновані наголоси (U+0301 тощо)
+    .replace(/ß/g, 'ss')                            // ß поза діапазоном à-ÿ → окремо (як у SQL)
     .replace(/[a-zà-ÿąćęłńóśźż]/g, (ch) => DIACRITIC_MAP[ch] ?? ch)
     .replace(/['’`ʼ]/g, '')                         // апострофи: м'який→мякий (як у наявних аліасах)
     .replace(/[^a-z0-9а-яіїєґ\s]/gi, ' ')           // решта пунктуації/дужок → пробіл
@@ -319,6 +320,16 @@ export function parseFoodInput(input) {
 // Розбиває нормалізований запит на значущі слова (≥2 символів).
 function termWords(term) {
   return term.split(' ').filter((w) => w.length >= 2);
+}
+
+// Токени для alias_tokens @> (contains). На відміну від termWords —
+// ЗБЕРІГАЄ короткі числові токени ("5", "0"), бо саме вони несуть зміст
+// у "сир 5", "молоко 0.5%". Стоп-слова прибираємо: у @> (AND по токенах)
+// зайвий токен надміру звузив би результат.
+function keyTokens(term) {
+  return [...new Set(
+    term.split(' ').filter((w) => (w.length >= 2 || /^\d+$/.test(w)) && !STOP_WORDS.has(w)),
+  )];
 }
 
 // Чи схожий запит на штрихкод (8–14 цифр).
@@ -495,6 +506,7 @@ export async function findAllMatches(query, limit = 10) {
   if (!query || query.length < 2) return [];
 
   const q = normalizeKey(query);
+  const qTokens = keyTokens(q);
   const lang = getLang() || 'ua';
 
   try {
@@ -515,11 +527,18 @@ export async function findAllMatches(query, limit = 10) {
       // Щедрий шар: словник аліасів (синоніми, відмінкові форми, переклади).
       // Саме він робить дропдаун багатим — "борошна" зловить "борошно",
       // "макрель" → Скумбрія тощо. getLang — пріоритет, не фільтр.
-      supabase
-        .from('product_aliases')
-        .select('product_id, language, alias_normalized')
-        .ilike('alias_normalized', `%${q}%`)
-        .limit(30),
+      //
+      // ТОКЕН-AWARE через @> (contains): шукаємо аліаси, чий масив alias_tokens
+      // містить УСІ токени запиту. Токен "5" не зловить "50" — це окремі елементи
+      // масиву, не підрядки. Колізій фізично немає. GIN-індекс → швидко.
+      // Уся фільтрація в БД, тож limit не створює сліпих зон.
+      qTokens.length > 0
+        ? supabase
+            .from('product_aliases')
+            .select('product_id, language, alias_normalized')
+            .contains('alias_tokens', qTokens)
+            .limit(30)
+        : Promise.resolve({ data: [] }),
     ]);
 
     // Продукти, знайдені через аліаси (яких ще немає в прямому збігу по name_ua).
@@ -571,6 +590,48 @@ export async function findAllMatches(query, limit = 10) {
   } catch (err) {
     console.error('Search error:', err);
     return [];
+  }
+}
+
+/**
+ * Самонавчання аліасів (Крок 3).
+ * Коли користувач ВРУЧНУ обрав продукт у дропдауні для запиту, який автомат
+ * не вгадав — запам'ятовуємо його запит як аліас (is_user_added=true).
+ * Наступного разу той самий запит зматчиться автоматично.
+ *
+ * Безпечно й тихо:
+ *   • пише лише залогований юзер (RLS); анонім/офлайн → мовчазний no-op;
+ *   • не пише, якщо запит уже веде до цього продукту (нема чого вчити);
+ *   • ON CONFLICT DO NOTHING через частковий unique-індекс (міграція 20260605).
+ *
+ * @param {string} rawQuery - оригінальний запит користувача ("борошна")
+ * @param {number} productId - id обраного продукту
+ */
+export async function learnAlias(rawQuery, productId) {
+  if (!rawQuery || !productId) return;
+
+  const aliasNormalized = normalizeKey(rawQuery);
+  if (aliasNormalized.length < 2) return;
+
+  try {
+    // Не вчити, якщо такий аліас уже існує (будь-якою мовою) для цього продукту.
+    const { data: dup } = await supabase
+      .from('product_aliases')
+      .select('id')
+      .eq('product_id', productId)
+      .eq('alias_normalized', aliasNormalized)
+      .limit(1);
+    if (dup?.length > 0) return;
+
+    await supabase.from('product_aliases').insert({
+      product_id: productId,
+      alias_name: rawQuery.trim(),
+      alias_normalized: aliasNormalized,
+      language: getLang() || 'ua',
+      is_user_added: true,
+    });
+  } catch {
+    /* RLS / анонім / офлайн — самонавчання необов'язкове, не ламаємо UX */
   }
 }
 

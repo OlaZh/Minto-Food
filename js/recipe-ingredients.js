@@ -4,7 +4,7 @@
  */
 
 import { supabase } from './supabaseClient.js';
-import { parseIngredientsText, findProductMatch, findAllMatches, resolveScannedProduct, isDirectUnit } from './parse-food.js';
+import { parseIngredientsText, findProductMatch, findAllMatches, resolveScannedProduct, isDirectUnit, learnAlias } from './parse-food.js';
 import { iconCheck, iconClose, iconScan, iconBarcode } from './icons.js';
 import { scanBarcode } from './barcode-scanner.js';
 import { escapeHTML } from './utils.js';
@@ -422,12 +422,29 @@ function renderIngredientsList() {
       document.querySelectorAll('.ingredient-picker').forEach((d) => d.remove());
 
       const matches = await findAllMatches(query, 8);
-      if (!matches.length) return;
 
       const STATE_LABELS = { raw: 'сирий', dry: 'сухий' };
 
       const dropdown = document.createElement('ul');
       dropdown.className = 'ingredient-picker';
+
+      // Порожній стан: НЕ мовчати, інакше клік по червоному полю виглядає мертвим.
+      if (!matches.length) {
+        dropdown.classList.add('ingredient-picker--empty');
+        dropdown.innerHTML = `<li class="ingredient-picker__empty">${t('productNotFound')}</li>`;
+        li.style.position = 'relative';
+        li.appendChild(dropdown);
+        setTimeout(() => {
+          document.addEventListener('click', function close(ev) {
+            if (!dropdown.contains(ev.target)) {
+              dropdown.remove();
+              document.removeEventListener('click', close);
+            }
+          });
+        }, 0);
+        return;
+      }
+
       dropdown.innerHTML = matches.map((p) => {
         const isBarcode = p._source === 'barcode';
         const badge = isBarcode
@@ -466,6 +483,11 @@ function renderIngredientsList() {
           if (!chosen) return;
 
           const cur = ingredientsList[index];
+
+          // Самонавчання: запам'ятати запит користувача як аліас обраного продукту,
+          // щоб наступного разу він зматчився автоматично. Тихо й необов'язково
+          // (дедуп і RLS — усередині learnAlias). Баркод-продукти теж мають id.
+          learnAlias(cur.originalQuery || query, chosen.id);
 
           // Перерахунок ваги при заміні продукту:
           //  • DIRECT (г/л) — вага з тексту (cur.grams був заданий) не залежить від

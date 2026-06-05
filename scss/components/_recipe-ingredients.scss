@@ -328,6 +328,18 @@
       background: var(--color-bg-secondary);
     }
   }
+
+  // Порожній стан: некликабельний, приглушений (клік по червоному полі
+  // не має виглядати мертвим, але й вибирати тут нічого).
+  li.ingredient-picker__empty {
+    cursor: default;
+    color: var(--color-text-secondary);
+    font-style: italic;
+
+    &:hover {
+      background: none;
+    }
+  }
 }
 
 .ingredient-item__weight {
