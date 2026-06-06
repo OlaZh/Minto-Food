@@ -509,21 +509,37 @@ export async function findAllMatches(query, limit = 10) {
   const qTokens = keyTokens(q);
   const lang = getLang() || 'ua';
 
+  // Самі стоп-слова / надто короткий запит → нема за чим шукати (інакше
+  // andTokens без фільтрів поверне всю таблицю).
+  if (qTokens.length === 0) return [];
+
+  // Токенний AND по колонці: кожен токен — окремий підрядок (ланцюжок .ilike).
+  // "сир 5" → name_ua містить "сир" І "5" (де завгодно), а не підрядок "сир 5".
+  // Так знаходимо "Сир кисломолочний 5%" навіть без аліаса.
+  const PROD_COLS = 'id, name_ua, name_en, name_pl, kcal, protein, fat, carbs, fiber, food_state, category_id';
+  const andTokens = (qb, col) => {
+    for (const t of qTokens) qb = qb.ilike(col, `%${t}%`);
+    return qb;
+  };
+
   try {
-    const [{ data: productsData }, { data: scannedData }, { data: aliasRows }] = await Promise.all([
-      supabase
-        .from('products')
-        .select('id, name_ua, name_en, name_pl, kcal, protein, fat, carbs, fiber, food_state, category_id')
-        .or(`name_ua.ilike.%${q}%,name_en.ilike.%${q}%`)
-        .is('deleted_at', null)
-        .is('user_id', null)
-        .limit(limit),
-      supabase
-        .from('scanned_products')
-        .select('barcode, name_ua, name_en, name_pl, kcal, protein, fat, carbs, fiber')
-        .or(`name_ua.ilike.%${q}%,name_en.ilike.%${q}%`)
-        .not('kcal', 'is', null)
-        .limit(5),
+    const [
+      { data: prodUa }, { data: prodEn }, { data: scannedData }, { data: aliasRows },
+    ] = await Promise.all([
+      andTokens(
+        supabase.from('products').select(PROD_COLS).is('deleted_at', null).is('user_id', null),
+        'name_ua',
+      ).limit(limit),
+      andTokens(
+        supabase.from('products').select(PROD_COLS).is('deleted_at', null).is('user_id', null),
+        'name_en',
+      ).limit(limit),
+      andTokens(
+        supabase.from('scanned_products')
+          .select('barcode, name_ua, name_en, name_pl, kcal, protein, fat, carbs, fiber')
+          .not('kcal', 'is', null),
+        'name_ua',
+      ).limit(5),
       // Щедрий шар: словник аліасів (синоніми, відмінкові форми, переклади).
       // Саме він робить дропдаун багатим — "борошна" зловить "борошно",
       // "макрель" → Скумбрія тощо. getLang — пріоритет, не фільтр.
@@ -541,8 +557,15 @@ export async function findAllMatches(query, limit = 10) {
         : Promise.resolve({ data: [] }),
     ]);
 
+    // Злиття прямих збігів по name_ua + name_en (дедуп по id).
+    const productsMap = new Map();
+    for (const p of [...(prodUa || []), ...(prodEn || [])]) {
+      if (!productsMap.has(p.id)) productsMap.set(p.id, p);
+    }
+    const productsData = [...productsMap.values()];
+
     // Продукти, знайдені через аліаси (яких ще немає в прямому збігу по name_ua).
-    const directIds = new Set((productsData || []).map((p) => p.id));
+    const directIds = new Set(productsData.map((p) => p.id));
     const aliasByProduct = new Map(); // product_id → найкращий (за мовою) language аліаса
     for (const a of aliasRows || []) {
       if (directIds.has(a.product_id)) continue;

@@ -432,7 +432,6 @@ function renderIngredientsList() {
       if (!matches.length) {
         dropdown.classList.add('ingredient-picker--empty');
         dropdown.innerHTML = `<li class="ingredient-picker__empty">${t('productNotFound')}</li>`;
-        li.style.position = 'relative';
         li.appendChild(dropdown);
         setTimeout(() => {
           document.addEventListener('click', function close(ev) {
@@ -461,7 +460,6 @@ function renderIngredientsList() {
         return `<li data-pid="${pid}" data-name="${escapeHTML(p.name_ua || '')}"${barcodeAttr}>${badge}${escapeHTML(p.name_ua || p.name_en || '')}${label} — ${p.kcal || 0} ккал/100г</li>`;
       }).join('');
 
-      li.style.position = 'relative';
       li.appendChild(dropdown);
 
       dropdown.querySelectorAll('li').forEach((item) => {

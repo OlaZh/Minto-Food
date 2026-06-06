@@ -223,6 +223,7 @@
 .ingredient-item {
   display: flex;
   align-items: center;
+  flex-wrap: wrap; // дозволяє .ingredient-picker перейти на новий рядок під item
   gap: 8px;
   padding: 8px 12px;
   border-radius: 10px;
@@ -284,17 +285,18 @@
 }
 
 .ingredient-picker {
-  position: absolute;
-  top: calc(100% + 4px);
-  left: 0;
-  z-index: 500;
-  min-width: 240px;
+  // У потоці: дропдаун — окремий рядок на всю ширину item (flex-wrap),
+  // відштовхує наступні інгредієнти, не перекриває "Разом".
+  flex: 0 0 100%;
+  width: 100%;
+  margin-top: 4px;
+  max-height: 320px;
+  overflow-y: auto;
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-3);
   list-style: none;
-  margin: 0;
   padding: 4px 0;
 
   li {
