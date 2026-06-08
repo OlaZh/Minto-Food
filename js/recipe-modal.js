@@ -257,7 +257,7 @@ function bindIngredientBuilder() {
   setLanguage(lang);
   initIngredientBuilder(
     '#rm-ingredients-builder',
-    (ingredients, totals) => {
+    (_ingredients, totals) => {
       updateRecipeNutritionPreview(totals);
     },
     lang,
@@ -328,7 +328,7 @@ export async function openRecipeModalForEdit(recipe, onSaved = null) {
   }
 
   onRecipeSavedCallback = onSaved;
-  editingRecipeId = recipe?.id ?? null;
+  editingRecipeId = recipe.id ?? null;
   editingRecipeOriginal = recipe || null;
   resetRecipeForm();
 
@@ -374,6 +374,7 @@ async function showRecipeForm(data = null) {
   await refreshBooks();
   const booksSection = document.querySelector('.recipe-books-section');
   if (booksSection) booksSection.hidden = !!data;
+
   const preselectedBookIds = data?.id ? await getRecipeBooks(data.id) : [];
   createInlineBookSelector('rm-book-selector', preselectedBookIds);
 
@@ -401,6 +402,11 @@ async function saveRecipe() {
 
   if (!user) {
     showToast('Увійдіть, щоб зберігати рецепти', 'error');
+    return;
+  }
+
+  if (editingRecipeId !== null && editingRecipeOriginal?.user_id !== user.id) {
+    showToast('Редагувати можна лише власні рецепти', 'error');
     return;
   }
 
@@ -465,11 +471,6 @@ async function saveRecipe() {
 
   let data = null;
   let error = null;
-
-  if (editingRecipeId !== null && editingRecipeOriginal?.user_id !== user.id) {
-    showToast('Редагувати можна лише власні рецепти', 'error');
-    return;
-  }
 
   if (editingRecipeId !== null) {
     if (editingRecipeOriginal?.status === 'published') {
@@ -583,13 +584,6 @@ async function saveRecipe() {
     await saveRecipeToBooks(data.id, selectedBookIds);
   }
 
-
-  showToast(status === 'pending' ? 'Рецепт надіслано на модерацію!' : 'Рецепт збережено!');
-  if (editingRecipeId !== null) {
-  }
-
-  }
-
   if (editingRecipeId !== null) {
     const hasModeratedChanges = editingRecipeOriginal?.status === 'published' && (
       payload.name_ua !== editingRecipeOriginal?.name_ua ||
@@ -607,6 +601,4 @@ async function saveRecipe() {
   if (onRecipeSavedCallback) {
     onRecipeSavedCallback(data);
   }
-
-  return;
 }
