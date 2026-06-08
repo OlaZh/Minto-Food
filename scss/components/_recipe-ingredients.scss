@@ -82,6 +82,18 @@
 
 /* ================= INGREDIENTS LIST ================= */
 
+.ingredient-builder__check-hint {
+  margin: 0;
+  font-size: 12px;
+  font-style: italic;
+  line-height: 1.45;
+  color: var(--color-text-secondary);
+
+  &[hidden] {
+    display: none;
+  }
+}
+
 .ingredient-builder__list {
   list-style: none;
   margin: 0;

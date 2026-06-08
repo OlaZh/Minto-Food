@@ -19,6 +19,7 @@ import {
   iconNoGluten, iconNoLactose, iconAvocado, iconDiabetic, iconHealthy,
   iconBolt, iconKid, iconWallet, iconNoCook, iconBento, iconCandle,
 } from './icons.js';
+import { parseFoodInput, formatAmount } from './parse-food.js';
 import {
   initBookSelector,
   quickSaveToDefault,
@@ -902,6 +903,32 @@ async function handleFavoriteClick(btn, recipeId) {
 // 5. ПЕРЕГЛЯД РЕЦЕПТУ
 // =============================================================
 
+// Розкладає рядок інгредієнта (як написала людина) на назву + міру для
+// показу "назва зліва / міра справа". Міру визначає парсер (надійно ловить
+// число+одиницю за будь-якого розділювача), але назву беремо з оригіналу,
+// щоб зберегти регістр і написання ("Молоко 3.2%", а не "молоко 3.2%").
+// Якщо парсер не знайшов кількості ("сіль за смаком") — міри немає, весь
+// рядок іде зліва.
+function splitIngredientLine(line) {
+  const parsed = parseFoodInput(line) || {};
+  const parsedName = (parsed.name || '').trim();
+  const hasMeasure = parsedName && parsedName.length < line.length;
+
+  if (!hasMeasure) {
+    return { name: line, measure: '' };
+  }
+
+  // parsed.name у нижньому регістрі — відновлюємо оригінальний регістр,
+  // знайшовши цю підстроку в оригіналі ("молоко 3.2%" → "Молоко 3.2%").
+  const idx = line.toLowerCase().indexOf(parsedName);
+  const name = idx >= 0 ? line.substr(idx, parsedName.length) : parsedName;
+
+  return {
+    name,
+    measure: formatAmount(parsed.amount, parsed.unit),
+  };
+}
+
 export async function openRecipeView(recipeId) {
   if (!currentUser) {
     const {
@@ -953,13 +980,19 @@ export async function openRecipeView(recipeId) {
   if (list) {
     list.innerHTML = '';
 
-    // Спочатку показуємо оригінальний текст автора якщо є
+    // Показуємо текст автора як є, але розкладаємо назву зліва / міру справа.
+    // parseFoodInput надійно витягує число+одиницю незалежно від розділювача
+    // ("молоко 1 л", "молоко — 1 л", "300 г борошна").
     if (recipe.ingredients) {
       const ingLines = recipe.ingredients.split('\n').filter((l) => l.trim().length > 0);
       ingLines.forEach((line) => {
+        const { name, measure } = splitIngredientLine(line.trim());
+
         const li = document.createElement('li');
         li.className = 'ingredient-item-row';
-        li.innerHTML = `<span>• ${line.trim()}</span>`;
+        li.innerHTML = measure
+          ? `<span>• ${name}</span> <span class="ing-count">${measure}</span>`
+          : `<span>• ${name}</span>`;
         list.appendChild(li);
       });
     } else {

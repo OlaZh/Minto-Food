@@ -36,6 +36,7 @@ const i18nIngredients = {
     searchProduct: 'Пошук продукту...',
     productNotFound: 'Продукт не знайдено в базі',
     tapToChoose: 'Натисніть, щоб вибрати продукт',
+    checkHint: 'Перевірте, чи правильно розпізналися продукти. Якщо ні — натисніть на інгредієнт і змініть.',
   },
   en: {
     pasteIngredients: 'Paste ingredient list...',
@@ -55,6 +56,7 @@ const i18nIngredients = {
     searchProduct: 'Search product...',
     productNotFound: 'Product not found in database',
     tapToChoose: 'Tap to choose a product',
+    checkHint: 'Check that the products were recognized correctly. If not — tap an ingredient to change it.',
   },
   pl: {
     pasteIngredients: 'Wklej listę składników...',
@@ -74,6 +76,7 @@ const i18nIngredients = {
     searchProduct: 'Szukaj produktu...',
     productNotFound: 'Produktu nie znaleziono w bazie',
     tapToChoose: 'Kliknij, aby wybrać produkt',
+    checkHint: 'Sprawdź, czy produkty zostały poprawnie rozpoznane. Jeśli nie — kliknij składnik, aby go zmienić.',
   },
 };
 
@@ -143,6 +146,8 @@ export function initIngredientBuilder(containerSelector, onChange, lang = 'ua') 
           </button>
         </div>
       </div>
+
+      <p class="ingredient-builder__check-hint" id="ingredientCheckHint" hidden>${t('checkHint')}</p>
 
       <ul class="ingredient-builder__list" id="ingredientList"></ul>
 
@@ -346,6 +351,9 @@ function removeIngredient(index) {
 function renderIngredientsList() {
   const listEl = document.getElementById('ingredientList');
   if (!listEl) return;
+
+  const hintEl = document.getElementById('ingredientCheckHint');
+  if (hintEl) hintEl.hidden = ingredientsList.length === 0;
 
   if (ingredientsList.length === 0) {
     listEl.innerHTML = `<li class="ingredient-item ingredient-item--empty">${t('addIngredients')}</li>`;
@@ -613,6 +621,9 @@ export function setLanguage(lang) {
 
   const clearBtn = document.getElementById('clearIngredientsBtn');
   if (clearBtn) clearBtn.textContent = t('clearAll');
+
+  const hintEl = document.getElementById('ingredientCheckHint');
+  if (hintEl) hintEl.textContent = t('checkHint');
 
   const totalLabel = document.querySelector('.ingredient-builder__total-label');
   if (totalLabel) totalLabel.textContent = t('total');
