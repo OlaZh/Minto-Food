@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -9,14 +10,41 @@ import { approveRecipe, rejectRecipe, banUser, addStrike } from '@/app/actions/m
 import { detectFlags } from '@/lib/autoFlag'
 import AutoFlagBadges from '@/components/moderation/AutoFlagBadges'
 
+type ModerationAuthor = {
+  id: string
+  full_name: string | null
+  is_banned: boolean
+  is_shadow_banned: boolean
+  strikes: number | null
+  created_at: string | null
+  recipe_count: number
+  report_count: number
+}
+
+type ModerationRecipe = {
+  id: string
+  slug: string | null
+  name_ua: string | null
+  name_en: string | null
+  image: string | null
+  status: string
+  created_at: string | null
+  category: string | null
+  kcal: number | null
+  steps: unknown
+  author: ModerationAuthor | null
+}
+
 interface ModerationClientProps {
-  recipes: any[]
+  recipes: ModerationRecipe[]
 }
 
 type PendingDialog = {
   title: string
   action: (reason: ModerationReason) => Promise<unknown>
 }
+
+const passthroughImageLoader = ({ src }: { src: string }) => src
 
 export default function ModerationClient({ recipes }: ModerationClientProps) {
   const router = useRouter()
@@ -37,6 +65,7 @@ export default function ModerationClient({ recipes }: ModerationClientProps) {
         {recipes.map(recipe => {
           const author = recipe.author
           const name = recipe.name_ua || recipe.name_en || 'Без назви'
+          const authorStrikes = author?.strikes ?? 0
           const stepsCount = (() => {
             try {
               const s = recipe.steps
@@ -52,9 +81,9 @@ export default function ModerationClient({ recipes }: ModerationClientProps) {
           return (
             <div key={recipe.id} className="px-4 md:px-8 py-4 hover:bg-gray-50">
               <div className="flex items-start gap-3">
-                <div className="w-14 h-14 rounded-md overflow-hidden bg-gray-100 shrink-0">
+                <div className="relative w-14 h-14 rounded-md overflow-hidden bg-gray-100 shrink-0">
                   {recipe.image
-                    ? <img src={recipe.image} alt="" className="w-full h-full object-cover" />
+                    ? <Image src={recipe.image} alt={name} fill sizes="56px" unoptimized loader={passthroughImageLoader} className="object-cover" />
                     : <div className="w-full h-full flex items-center justify-center text-gray-300 text-xl">🍽</div>
                   }
                 </div>
@@ -83,7 +112,7 @@ export default function ModerationClient({ recipes }: ModerationClientProps) {
                         Автор: <b className="text-gray-700">{author.full_name ?? '—'}</b>
                         {author.is_shadow_banned && ' 👁'}
                         {author.is_banned && ' 🚫'}
-                        {author.strikes > 0 && ` ⚡${author.strikes}`}
+                        {authorStrikes > 0 && ` ⚡${authorStrikes}`}
                       </span>
                     )}
                     {recipe.kcal && <span>{recipe.kcal} ккал</span>}
@@ -126,10 +155,10 @@ export default function ModerationClient({ recipes }: ModerationClientProps) {
                 />
                 {author && !author.is_banned && (
                   <ActionButton
-                    label={`⚡ Страйк (${author.strikes ?? 0})`}
+                    label={`⚡ Страйк (${authorStrikes})`}
                     variant="outline"
                     useUndo
-                    action={() => addStrike(author.id, author.strikes ?? 0)}
+                    action={() => addStrike(author.id, authorStrikes)}
                     onDone={() => router.refresh()}
                   />
                 )}

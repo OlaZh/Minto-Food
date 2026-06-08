@@ -17,7 +17,7 @@ export default function LogoutButton() {
       style={{ color: '#0f2818' }}
     >
       <LogOut className="h-4 w-4 shrink-0" style={{ color: '#3f7558' }} />
-      Вийти
+      Вийти з адмінки
     </button>
   )
 }

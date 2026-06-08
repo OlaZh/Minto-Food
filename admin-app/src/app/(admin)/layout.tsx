@@ -1,42 +1,12 @@
-import Link from 'next/link';
-import {
-  BookOpen,
-  Users,
-  Tag,
-  LayoutDashboard,
-  ChefHat,
-  AlertTriangle,
-  Shield,
-  Package,
-  Archive,
-  UserCheck,
-  ScanBarcode,
-  Database,
-} from 'lucide-react';
-import MobileNav from '@/components/MobileNav';
-import LogoutButton from '@/components/LogoutButton';
-
-const editorialNav = [
-  { href: '/dashboard', label: 'Дашборд', icon: LayoutDashboard },
-  { href: '/recipes', label: 'Рецепти', icon: BookOpen },
-  { href: '/authors', label: 'Автори', icon: UserCheck },
-  { href: '/tags', label: 'Теги', icon: Tag },
-];
-
-const moderationNav = [
-  { href: '/reports', label: 'Скарги', icon: AlertTriangle },
-  { href: '/moderation', label: 'Модерація', icon: Shield },
-  { href: '/users', label: 'Юзери', icon: Users },
-  { href: '/products', label: 'Продукти', icon: Package },
-  { href: '/catalog', label: 'Каталог', icon: Database },
-  { href: '/corrections', label: 'Правки ШК', icon: ScanBarcode },
-  { href: '/archive', label: 'Архів', icon: Archive },
-];
+import Link from 'next/link'
+import { ChefHat, ExternalLink } from 'lucide-react'
+import AdminSidebarNav from '@/components/AdminSidebarNav'
+import MobileNav from '@/components/MobileNav'
+import LogoutButton from '@/components/LogoutButton'
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex h-screen" style={{ background: '#f0f7f3' }}>
-      {/* Sidebar — desktop only */}
       <aside
         className="hidden md:flex w-56 flex-col shrink-0"
         style={{ background: '#9fd1b1', borderRight: '1px solid #82bf99' }}
@@ -60,68 +30,29 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </span>
         </div>
 
-        <nav className="flex-1 px-2 py-3 overflow-y-auto">
-          <p
-            className="px-3 mb-1 text-[10px] font-semibold uppercase tracking-wider"
-            style={{ color: '#3f7558' }}
-          >
-            Редакція
-          </p>
-          <div className="space-y-0.5 mb-4">
-            {editorialNav.map(({ href, label, icon: Icon }) => (
-              <Link
-                key={href}
-                href={href}
-                className="admin-nav-link flex items-center gap-2.5 px-3 py-2 rounded-md text-sm transition-colors"
-                style={{ color: '#0f2818' }}
-              >
-                <Icon className="h-4 w-4 shrink-0" style={{ color: '#3f7558' }} />
-                {label}
-              </Link>
-            ))}
-          </div>
-          <p
-            className="px-3 mb-1 text-[10px] font-semibold uppercase tracking-wider"
-            style={{ color: '#3f7558' }}
-          >
-            Модерація
-          </p>
-          <div className="space-y-0.5">
-            {moderationNav.map(({ href, label, icon: Icon }) => (
-              <Link
-                key={href}
-                href={href}
-                className="admin-nav-link flex items-center gap-2.5 px-3 py-2 rounded-md text-sm transition-colors"
-                style={{ color: '#0f2818' }}
-              >
-                <Icon className="h-4 w-4 shrink-0" style={{ color: '#3f7558' }} />
-                {label}
-              </Link>
-            ))}
-          </div>
-        </nav>
+        <AdminSidebarNav />
 
-        <div
-          className="px-2 py-2"
-          style={{ borderTop: '1px solid #82bf99' }}
-        >
+        <div className="px-2 py-2" style={{ borderTop: '1px solid #82bf99' }}>
+          <Link
+            href={process.env.NEXT_PUBLIC_MAIN_SITE_URL ?? '/'}
+            className="flex items-center gap-2.5 w-full px-3 py-2 rounded-md text-sm transition-colors hover:bg-black/10"
+            style={{ color: '#0f2818' }}
+          >
+            <ExternalLink className="h-4 w-4 shrink-0" style={{ color: '#3f7558' }} />
+            На сайт
+          </Link>
           <LogoutButton />
         </div>
-        <div
-          className="px-4 py-2 text-xs"
-          style={{ color: '#3f7558' }}
-        >
+        <div className="px-4 py-2 text-xs" style={{ color: '#3f7558' }}>
           Minto Food © {new Date().getFullYear()}
         </div>
       </aside>
 
-      {/* Content */}
-      <main className="flex-1 overflow-y-auto pb-16 md:pb-0">
+      <main className="flex-1 overflow-y-auto pb-20 md:pb-0">
         {children}
       </main>
 
-      {/* Bottom nav — mobile only */}
       <MobileNav />
     </div>
-  );
+  )
 }

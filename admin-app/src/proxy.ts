@@ -1,9 +1,11 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
+import { getAdminRouteDecision, isPublicAdminPath } from '@/lib/security/admin-route'
 
 export async function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname
-  if (pathname === '/login' || pathname === '/unauthorized' || pathname.startsWith('/auth/')) {
+
+  if (isPublicAdminPath(pathname)) {
     return NextResponse.next()
   }
 
@@ -28,19 +30,33 @@ export async function proxy(request: NextRequest) {
     }
   )
 
-  const { data: { user } } = await supabase.auth.getUser()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
 
-  if (!user) {
+  const unauthenticatedDecision = getAdminRouteDecision({
+    pathname,
+    hasUser: Boolean(user),
+    isAdmin: false,
+  })
+
+  if (unauthenticatedDecision === 'redirect-login') {
     return NextResponse.redirect(new URL('/login', request.url))
   }
 
   const { data: profile } = await supabase
     .from('profiles')
     .select('is_admin')
-    .eq('id', user.id)
+    .eq('id', user!.id)
     .single()
 
-  if (!profile?.is_admin) {
+  const routeDecision = getAdminRouteDecision({
+    pathname,
+    hasUser: true,
+    isAdmin: Boolean(profile?.is_admin),
+  })
+
+  if (routeDecision === 'redirect-unauthorized') {
     return NextResponse.redirect(new URL('/unauthorized', request.url))
   }
 

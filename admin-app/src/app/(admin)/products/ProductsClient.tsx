@@ -5,7 +5,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import ActionButton from '@/components/moderation/ActionButton'
-import { approveProduct, updateProductNutrition, softDeleteProduct } from '@/app/actions/moderation'
+import { approveProduct, softDeleteProduct, updateProductNutrition } from '@/app/actions/moderation'
 
 type ProductAuthor = {
   full_name: string | null
@@ -64,12 +64,16 @@ function NutritionEditor({ product, onSaved }: { product: ProductListItem; onSav
     setSaving(false)
   }
 
-  const field = (label: string, val: string, set: (v: string) => void) => (
+  const field = (label: string, value: string, setValue: (nextValue: string) => void) => (
     <label className="flex items-center gap-1 text-xs">
       <span className="text-gray-500 w-5">{label}</span>
       <input
-        type="number" min="0" max="9999" step="0.1"
-        value={val} onChange={e => set(e.target.value)}
+        type="number"
+        min="0"
+        max="9999"
+        step="0.1"
+        value={value}
+        onChange={event => setValue(event.target.value)}
         className="w-16 border border-gray-200 rounded px-1.5 py-1 text-xs outline-none focus:border-gray-400"
       />
     </label>
@@ -84,18 +88,18 @@ function NutritionEditor({ product, onSaved }: { product: ProductListItem; onSav
       {field('Кл', fiber, setFiber)}
       <div className="flex items-center gap-1 text-xs">
         <span className="text-gray-500">Стандарт</span>
-        {(['EU', 'US'] as const).map(v => (
+        {(['EU', 'US'] as const).map(value => (
           <button
-            key={v}
+            key={value}
             type="button"
-            onClick={() => setLabelType(v)}
+            onClick={() => setLabelType(value)}
             className={`px-2 py-1 rounded text-xs font-semibold border transition-colors ${
-              labelType === v
+              labelType === value
                 ? 'bg-gray-900 text-white border-gray-900'
                 : 'bg-white text-gray-500 border-gray-200 hover:border-gray-400'
             }`}
           >
-            {v}
+            {value}
           </button>
         ))}
       </div>
@@ -103,7 +107,7 @@ function NutritionEditor({ product, onSaved }: { product: ProductListItem; onSav
         <span className="text-gray-500">Стан</span>
         <select
           value={foodState}
-          onChange={e => setFoodState(e.target.value as 'raw' | 'dry' | 'cooked')}
+          onChange={event => setFoodState(event.target.value as 'raw' | 'dry' | 'cooked')}
           className="border border-gray-200 rounded px-1.5 py-1 text-xs outline-none focus:border-gray-400 bg-white"
         >
           <option value="raw">Сирий</option>
@@ -112,8 +116,11 @@ function NutritionEditor({ product, onSaved }: { product: ProductListItem; onSav
         </select>
       </div>
       <button
-        onClick={save} disabled={saving}
-        className="text-xs h-7 px-2 bg-gray-900 text-white rounded hover:bg-gray-700 disabled:opacity-50">
+        type="button"
+        onClick={save}
+        disabled={saving}
+        className="text-xs h-7 px-2 bg-gray-900 text-white rounded hover:bg-gray-700 disabled:opacity-50"
+      >
         {saving ? '…' : '✓'}
       </button>
     </div>
@@ -121,9 +128,9 @@ function NutritionEditor({ product, onSaved }: { product: ProductListItem; onSav
 }
 
 const RAW_EDIBLE_OPTIONS = [
-  { value: 'always',    label: 'Завжди показувати' },
+  { value: 'always', label: 'Завжди показувати' },
   { value: 'sometimes', label: 'Показувати як сире' },
-  { value: 'never',     label: 'Не показувати' },
+  { value: 'never', label: 'Не показувати' },
 ]
 
 export default function ProductsClient({ products, page, totalPages, totalCount }: ProductsClientProps) {
@@ -131,11 +138,12 @@ export default function ProductsClient({ products, page, totalPages, totalCount 
   const [search, setSearch] = useState('')
   const [editingId, setEditingId] = useState<number | null>(null)
   const [rawEdibleMap, setRawEdibleMap] = useState<Record<number, string>>({})
+  const normalizedSearch = search.trim().toLowerCase()
 
-  const filtered = search
-    ? products.filter(p =>
-        (p.name_ua ?? '').toLowerCase().includes(search.toLowerCase()) ||
-        (p.name_en ?? '').toLowerCase().includes(search.toLowerCase())
+  const filtered = normalizedSearch
+    ? products.filter(product =>
+        (product.name_ua ?? '').toLowerCase().includes(normalizedSearch) ||
+        (product.name_en ?? '').toLowerCase().includes(normalizedSearch)
       )
     : products
 
@@ -143,17 +151,31 @@ export default function ProductsClient({ products, page, totalPages, totalCount 
     <div>
       <div className="sticky top-0 z-10 bg-white border-b border-gray-200 px-4 md:px-8 py-4 flex items-center justify-between">
         <h1 className="text-lg font-semibold">Юзерські продукти</h1>
-        <span className="text-sm text-gray-400">{filtered.length} з {totalCount}</span>
+        <span className="text-sm text-gray-400">{filtered.length} на сторінці</span>
       </div>
 
-      <div className="px-4 md:px-8 py-3 border-b border-gray-100">
-        <input
-          type="text"
-          placeholder="Пошук за назвою…"
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-          className="w-full max-w-sm text-sm border border-gray-200 rounded-md px-3 py-1.5 outline-none focus:border-gray-400"
-        />
+      <div className="px-4 md:px-8 py-3 border-b border-gray-100 space-y-2">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+          <input
+            type="text"
+            placeholder="Пошук за назвою на поточній сторінці…"
+            value={search}
+            onChange={event => setSearch(event.target.value)}
+            className="w-full max-w-sm text-sm border border-gray-200 rounded-md px-3 py-1.5 outline-none focus:border-gray-400"
+          />
+          {search && (
+            <button
+              type="button"
+              onClick={() => setSearch('')}
+              className="h-8 px-3 text-xs rounded-md border border-gray-200 hover:border-gray-400 transition-colors"
+            >
+              Очистити
+            </button>
+          )}
+        </div>
+        <p className="text-xs text-gray-400">
+          Швидкий фільтр працює лише в межах відкритої сторінки.
+        </p>
       </div>
 
       {totalCount > 0 && (
@@ -163,7 +185,9 @@ export default function ProductsClient({ products, page, totalPages, totalCount 
       )}
 
       {filtered.length === 0 && (
-        <div className="px-4 md:px-8 py-16 text-center text-gray-400 text-sm">Продуктів немає 🌿</div>
+        <div className="px-4 md:px-8 py-16 text-center text-gray-400 text-sm">
+          {search ? 'На цій сторінці нічого не знайдено за цим фільтром' : 'Продуктів немає'}
+        </div>
       )}
 
       <div className="divide-y divide-gray-100">
@@ -180,7 +204,10 @@ export default function ProductsClient({ products, page, totalPages, totalCount 
                   <div className="flex flex-wrap gap-x-3 gap-y-0.5 mt-0.5 text-xs text-gray-400">
                     {product.kcal != null && <span>{product.kcal} ккал</span>}
                     {product.protein != null && (
-                      <span>Б:{product.protein} Ж:{product.fat} В:{product.carbs}{(product.fiber ?? 0) > 0 ? ` Кл:${product.fiber}` : ''}</span>
+                      <span>
+                        Б:{product.protein} Ж:{product.fat} В:{product.carbs}
+                        {(product.fiber ?? 0) > 0 ? ` Кл:${product.fiber}` : ''}
+                      </span>
                     )}
                     {product.label_type && product.label_type !== 'EU' && (
                       <span className="text-amber-500">{product.label_type}</span>
@@ -194,17 +221,21 @@ export default function ProductsClient({ products, page, totalPages, totalCount 
                     <span className="text-xs text-gray-400">Відображення:</span>
                     <select
                       value={rawEdible ?? ''}
-                      onChange={e => {
-                        const v = e.target.value
-                        if (v) setRawEdibleMap(m => ({ ...m, [product.id]: v }))
+                      onChange={event => {
+                        const value = event.target.value
+                        if (value) {
+                          setRawEdibleMap(currentMap => ({ ...currentMap, [product.id]: value }))
+                        }
                       }}
                       className={`text-xs border rounded px-1.5 py-1 outline-none bg-white ${
                         rawEdible ? 'border-gray-400' : 'border-orange-300 text-orange-600'
                       }`}
                     >
                       <option value="">— вибери —</option>
-                      {RAW_EDIBLE_OPTIONS.map(o => (
-                        <option key={o.value} value={o.value}>{o.label}</option>
+                      {RAW_EDIBLE_OPTIONS.map(option => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
                       ))}
                     </select>
                     {product.raw_edible && !rawEdible && (
@@ -215,7 +246,10 @@ export default function ProductsClient({ products, page, totalPages, totalCount 
                   {isEditing && (
                     <NutritionEditor
                       product={product}
-                      onSaved={() => { setEditingId(null); router.refresh() }}
+                      onSaved={() => {
+                        setEditingId(null)
+                        router.refresh()
+                      }}
                     />
                   )}
                 </div>
@@ -232,6 +266,7 @@ export default function ProductsClient({ products, page, totalPages, totalCount 
                   />
                 ) : (
                   <button
+                    type="button"
                     disabled
                     title="Спочатку вибери статус відображення"
                     className="h-7 text-xs px-2.5 border border-gray-200 rounded-md opacity-40 cursor-not-allowed"
@@ -240,8 +275,10 @@ export default function ProductsClient({ products, page, totalPages, totalCount 
                   </button>
                 )}
                 <button
+                  type="button"
                   onClick={() => setEditingId(isEditing ? null : product.id)}
-                  className="h-7 text-xs px-2.5 border border-gray-200 rounded-md hover:border-gray-400 transition-colors">
+                  className="h-7 text-xs px-2.5 border border-gray-200 rounded-md hover:border-gray-400 transition-colors"
+                >
                   {isEditing ? 'Закрити' : 'КБЖУ'}
                 </button>
                 <ActionButton
@@ -261,7 +298,11 @@ export default function ProductsClient({ products, page, totalPages, totalCount 
         <div className="px-4 md:px-8 py-4 border-t border-gray-100 flex items-center justify-between gap-2">
           <Link
             href={`/products?page=${page - 1}`}
-            className={`text-xs px-3 py-1.5 rounded-md border transition-colors ${page <= 1 ? 'pointer-events-none opacity-30 border-gray-200' : 'border-gray-200 hover:border-gray-400'}`}
+            className={`text-xs px-3 py-1.5 rounded-md border transition-colors ${
+              page <= 1
+                ? 'pointer-events-none opacity-30 border-gray-200'
+                : 'border-gray-200 hover:border-gray-400'
+            }`}
             aria-disabled={page <= 1}
           >
             ← Попередня
@@ -273,7 +314,11 @@ export default function ProductsClient({ products, page, totalPages, totalCount 
 
           <Link
             href={`/products?page=${page + 1}`}
-            className={`text-xs px-3 py-1.5 rounded-md border transition-colors ${page >= totalPages ? 'pointer-events-none opacity-30 border-gray-200' : 'border-gray-200 hover:border-gray-400'}`}
+            className={`text-xs px-3 py-1.5 rounded-md border transition-colors ${
+              page >= totalPages
+                ? 'pointer-events-none opacity-30 border-gray-200'
+                : 'border-gray-200 hover:border-gray-400'
+            }`}
             aria-disabled={page >= totalPages}
           >
             Наступна →

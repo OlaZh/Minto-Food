@@ -1,31 +1,32 @@
 import { createClient } from '@/lib/supabase/server'
+import { getAssertAdminErrorMessage } from '@/lib/security/admin-assert'
 
 type SupabaseClient = Awaited<ReturnType<typeof createClient>>
 
 export async function assertAdmin(supabase: SupabaseClient) {
-  const { data: { session }, error: sessionError } = await supabase.auth.getSession()
+  const {
+    data: { session },
+    error: sessionError,
+  } = await supabase.auth.getSession()
 
-  if (sessionError) {
-    throw new Error(`Не вдалося отримати сесію: ${sessionError.message}`)
+  const { data: profile, error: profileError } = session?.user
+    ? await supabase
+        .from('profiles')
+        .select('is_admin')
+        .eq('id', session.user.id)
+        .single()
+    : { data: null, error: null }
+
+  const errorMessage = getAssertAdminErrorMessage({
+    sessionErrorMessage: sessionError?.message,
+    hasUser: Boolean(session?.user),
+    profileErrorMessage: profileError?.message,
+    isAdmin: Boolean(profile?.is_admin),
+  })
+
+  if (errorMessage) {
+    throw new Error(errorMessage)
   }
 
-  if (!session?.user) {
-    throw new Error('Потрібно увійти як адміністратор')
-  }
-
-  const { data: profile, error: profileError } = await supabase
-    .from('profiles')
-    .select('is_admin')
-    .eq('id', session.user.id)
-    .single()
-
-  if (profileError) {
-    throw new Error(`Не вдалося перевірити права адміністратора: ${profileError.message}`)
-  }
-
-  if (!profile?.is_admin) {
-    throw new Error('Дію дозволено лише адміністраторам')
-  }
-
-  return session.user
+  return session!.user
 }

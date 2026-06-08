@@ -1,9 +1,9 @@
 'use client'
 
+import Image from 'next/image'
 import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { toast } from 'sonner'
 import ActionButton from '@/components/moderation/ActionButton'
 import ModerationReasonDialog, { type ModerationReason } from '@/components/moderation/ModerationReasonDialog'
 import {
@@ -21,8 +21,43 @@ const REASON_LABELS: Record<string, string> = {
   other: 'Інше',
 }
 
+type ReportAuthor = {
+  id: string
+  full_name: string | null
+  is_banned: boolean
+  strikes: number | null
+  created_at: string | null
+  recipe_count: number
+  report_count: number
+}
+
+type ReportRecipe = {
+  id: string
+  slug: string | null
+  name_ua: string | null
+  name_en: string | null
+  image: string | null
+  status: string
+  user_id: string | null
+  category: string | null
+  author: ReportAuthor | null
+}
+
+type ReportReporter = {
+  full_name: string | null
+}
+
+type ReportListItem = {
+  id: string
+  reason: string | null
+  created_at: string | null
+  status: string
+  recipe: ReportRecipe | null
+  reporter: ReportReporter | null
+}
+
 interface ReportsClientProps {
-  reports: any[]
+  reports: ReportListItem[]
   currentStatus: string
 }
 
@@ -37,6 +72,8 @@ type PendingDialog = {
   title: string
   action: (reason: ModerationReason) => Promise<unknown>
 }
+
+const passthroughImageLoader = ({ src }: { src: string }) => src
 
 export default function ReportsClient({ reports, currentStatus }: ReportsClientProps) {
   const router = useRouter()
@@ -69,18 +106,21 @@ export default function ReportsClient({ reports, currentStatus }: ReportsClientP
       <div className="divide-y divide-gray-100">
         {reports.map(report => {
           const recipe = report.recipe
+          const recipeId = recipe?.id ?? null
           const author = recipe?.author
           const name = recipe?.name_ua || recipe?.name_en || 'Без назви'
-          const reasonLabel = REASON_LABELS[report.reason] ?? report.reason ?? '—'
+          const reasonKey = report.reason ?? ''
+          const reasonLabel = REASON_LABELS[reasonKey] ?? report.reason ?? '—'
           const flags = detectFlags(recipe ?? {})
+          const authorStrikes = author?.strikes ?? 0
 
           return (
             <div key={report.id} className="px-4 md:px-8 py-4 hover:bg-gray-50">
               <div className="flex items-start gap-3">
                 {/* Thumbnail */}
-                <div className="w-12 h-12 rounded-md overflow-hidden bg-gray-100 shrink-0">
+                <div className="relative w-12 h-12 rounded-md overflow-hidden bg-gray-100 shrink-0">
                   {recipe?.image
-                    ? <img src={recipe.image} alt="" className="w-full h-full object-cover" />
+                    ? <Image src={recipe.image} alt={name} fill sizes="48px" unoptimized loader={passthroughImageLoader} className="object-cover" />
                     : <div className="w-full h-full flex items-center justify-center text-gray-300">🍽</div>
                   }
                 </div>
@@ -101,7 +141,7 @@ export default function ReportsClient({ reports, currentStatus }: ReportsClientP
                   </div>
                   <div className="flex flex-wrap gap-x-3 gap-y-0.5 mt-0.5 text-xs text-gray-400">
                     <span className="text-orange-600 font-medium">{reasonLabel}</span>
-                    {author && <span>Автор: <b className="text-gray-700">{author.full_name ?? '—'}</b>{author.is_banned ? ' 🚫' : ''}{author.strikes > 0 ? ` ⚡${author.strikes}` : ''}</span>}
+                    {author && <span>Автор: <b className="text-gray-700">{author.full_name ?? '—'}</b>{author.is_banned ? ' 🚫' : ''}{authorStrikes > 0 ? ` ⚡${authorStrikes}` : ''}</span>}
                     {report.reporter && <span>Скаржник: {report.reporter.full_name ?? '—'}</span>}
                     <span>{report.created_at?.slice(0, 10)}</span>
                   </div>
@@ -139,28 +179,32 @@ export default function ReportsClient({ reports, currentStatus }: ReportsClientP
                     action={() => resolveReport(report.id, 'dismissed')}
                     onDone={() => router.refresh()}
                   />
-                  <ActionButton
-                    label="Приховати рецепт"
-                    variant="outline"
-                    useUndo
-                    action={() => hideRecipeFromReport(report.id, recipe?.id)}
-                    onDone={() => router.refresh()}
-                  />
-                  <button
-                    className="h-7 text-xs px-2.5 rounded-md border border-red-200 text-red-600 bg-white hover:bg-red-50 transition-colors"
-                    onClick={() => setDialog({
-                      title: 'Видалити рецепт',
-                      action: (reason) => deleteRecipeFromReport(report.id, recipe?.id, reason),
-                    })}
-                  >
-                    Видалити рецепт
-                  </button>
+                  {recipeId && (
+                    <>
+                      <ActionButton
+                        label="Приховати рецепт"
+                        variant="outline"
+                        useUndo
+                        action={() => hideRecipeFromReport(report.id, recipeId)}
+                        onDone={() => router.refresh()}
+                      />
+                      <button
+                        className="h-7 text-xs px-2.5 rounded-md border border-red-200 text-red-600 bg-white hover:bg-red-50 transition-colors"
+                        onClick={() => setDialog({
+                          title: 'Видалити рецепт',
+                          action: (reason) => deleteRecipeFromReport(report.id, recipeId, reason),
+                        })}
+                      >
+                        Видалити рецепт
+                      </button>
+                    </>
+                  )}
                   {author && !author.is_banned && (
                     <ActionButton
-                      label={`⚡ Страйк (${author.strikes ?? 0})`}
+                      label={`⚡ Страйк (${authorStrikes})`}
                       variant="outline"
                       useUndo
-                      action={() => addStrike(author.id, author.strikes ?? 0)}
+                      action={() => addStrike(author.id, authorStrikes)}
                       onDone={() => router.refresh()}
                     />
                   )}

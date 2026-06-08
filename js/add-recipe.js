@@ -14,7 +14,7 @@ import {
   iconBread, iconPorridge, iconSoup, iconSalad, iconSideDish, iconPlate,
   iconPasta, iconSauce, iconSandwich, iconCasserole, iconPancakes, iconOmelet,
   iconSmoothie, iconBoil, iconOven, iconSteam, iconGrill, iconStew, iconSoak,
-  iconLeafRaw, iconAlert, iconScale, iconClose, iconStar, iconStarFilled, iconCalendar,
+  iconLeafRaw, iconAlert, iconScale, iconClose, iconStar, iconStarFilled, iconCalendar, iconLock,
   iconProtein, iconLowCarb, iconLowCal, iconLowFat, iconVeg, iconSprout,
   iconNoGluten, iconNoLactose, iconAvocado, iconDiabetic, iconHealthy,
   iconBolt, iconKid, iconWallet, iconNoCook, iconBento, iconCandle,
@@ -57,6 +57,11 @@ let editingRecipeId = null;
 let _editingRecipeOriginal = null;
 let currentUser = null;
 
+// Фільтр власних рецептів (browsing): 'all' | 'private' | 'public' | 'pending'
+let ownFilter = 'all';
+let ownRecipesCache = [];
+let savedRecipeIdsCache = [];
+
 // Пошук/browsing state
 let searchOwnShowAll = false;
 let searchCommunityShowAll = false;
@@ -97,6 +102,57 @@ function getRecipeName(recipe) {
 function isOwnRecipe(recipe) {
   if (!currentUser || !recipe) return false;
   return recipe.user_id === currentUser.id;
+}
+
+// Чи відповідає рецепт активному фільтру власної секції
+function matchesOwnFilter(recipe) {
+  switch (ownFilter) {
+    case 'pending':
+      return recipe.status === 'pending';
+    case 'public':
+      return recipe.is_public === true && recipe.status !== 'pending';
+    case 'private':
+      return recipe.is_public !== true;
+    case 'all':
+    default:
+      return true;
+  }
+}
+
+// Рендер власної секції з урахуванням активного фільтра
+function renderOwnRecipes() {
+  const ownRow = document.getElementById('own-row');
+  const ownCount = document.getElementById('own-count');
+  if (!ownRow) return;
+
+  const filtered = ownRecipesCache.filter(matchesOwnFilter);
+
+  ownRow.innerHTML = '';
+  if (filtered.length === 0) {
+    ownRow.innerHTML = `<p class="recipe-own-filter__empty">У цій категорії поки порожньо</p>`;
+  } else {
+    filtered.forEach((r) => ownRow.appendChild(buildRecipeCard(r, savedRecipeIdsCache)));
+  }
+
+  // Бейдж показує кількість у поточному фільтрі (або загальну для "Усі")
+  if (ownCount) {
+    ownCount.textContent = ownFilter === 'all' ? ownRecipesCache.length : filtered.length;
+  }
+}
+
+// Навісити обробники на чіпи фільтра (одноразово при init)
+function initOwnFilter() {
+  const bar = document.getElementById('own-filter');
+  if (!bar) return;
+  bar.addEventListener('click', (e) => {
+    const chip = e.target.closest('.recipe-own-filter__chip');
+    if (!chip) return;
+    ownFilter = chip.dataset.filter || 'all';
+    bar.querySelectorAll('.recipe-own-filter__chip').forEach((c) =>
+      c.classList.toggle('is-active', c === chip),
+    );
+    renderOwnRecipes();
+  });
 }
 
 // =============================================================
@@ -610,6 +666,9 @@ function buildRecipeCard(recipe, savedRecipeIds) {
       <span class="recipe-card__rating-star">${iconStarFilled}</span>
       <span>${rating > 0 ? Number(rating).toFixed(1) : '0'}</span>
     </div>
+    ${isOwn ? (recipe.is_public
+      ? `<div class="recipe-card__visibility recipe-card__visibility--public" title="Публічний — видно у спільноті">${iconGlobal}<span>Публічний</span></div>`
+      : `<div class="recipe-card__visibility recipe-card__visibility--private" title="Приватний — видно лише тобі">${iconLock}<span>Приватний</span></div>`) : ''}
     ${isOwn ? `<button class="btn-delete-recipe js-delete-recipe" aria-label="Видалити рецепт">${iconClose}</button>` : ''}
     <button class="recipe-card__favorite ${isSaved ? 'recipe-card__favorite--saved' : ''}"
             data-recipe-id="${recipe.id}"
@@ -625,6 +684,9 @@ function buildRecipeCard(recipe, savedRecipeIds) {
       ? `<div class="recipe-card__mod-note">${recipe.moderation_note}</div>`
       : ''}
     ${metaRow}
+    ${isOwn && !recipe.is_public && recipe.status !== 'pending'
+      ? `<button class="recipe-card__make-public js-make-public">${iconGlobal}Зробити публічним</button>`
+      : ''}
     <div class="recipe-card__footer">
       <span class="recipe-card__kcal">${recipe.kcal || 0} ккал</span>
       <button class="recipe-card__btn js-view-recipe">Переглянути</button>
@@ -646,6 +708,14 @@ function buildRecipeCard(recipe, savedRecipeIds) {
     deleteBtn.addEventListener('click', (e) => {
       e.stopPropagation();
       openDeleteConfirm(recipe.id);
+    });
+  }
+
+  const makePublicBtn = card.querySelector('.js-make-public');
+  if (makePublicBtn) {
+    makePublicBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      openMakePublicConfirm(recipe);
     });
   }
 
@@ -687,15 +757,11 @@ async function displayRecipes(recipes, isSearch = false) {
     const ownRecipes = recipes.filter((r) => isOwnRecipe(r));
     const communityRecipes = recipes.filter((r) => !isOwnRecipe(r));
 
-    // Власна секція (горизонтальний рядок)
-    const ownRow = document.getElementById('own-row');
-    const ownCount = document.getElementById('own-count');
-    if (ownRow) {
-      ownRow.innerHTML = '';
-      ownRecipes.forEach((r) => ownRow.appendChild(buildRecipeCard(r, savedRecipeIds)));
-    }
-    if (ownCount) ownCount.textContent = ownRecipes.length;
+    // Власна секція — кешуємо й рендеримо з урахуванням активного фільтра
+    ownRecipesCache = ownRecipes;
+    savedRecipeIdsCache = savedRecipeIds;
     if (sectionOwn) sectionOwn.hidden = ownRecipes.length === 0;
+    renderOwnRecipes();
 
     // Загальна база (сітка)
     const communityGrid = document.getElementById('community-grid');
@@ -1064,6 +1130,43 @@ function openDeleteConfirm(recipeId) {
           viewModal.classList.remove('is-active');
           unlockScroll('recipe-view-modal');
         }
+        loadAndDisplayRecipes(true);
+      }
+    },
+  });
+}
+
+// Зробити приватний рецепт публічним → відправити на модерацію.
+// Дзеркалить валідацію публікації з recipe-modal.js (назва + інгредієнти/кроки).
+function openMakePublicConfirm(recipe) {
+  const hasIngredients = !!(recipe.ingredients && recipe.ingredients.trim());
+  const hasSteps = !!(recipe.steps && recipe.steps.trim());
+
+  if (!recipe.name_ua || !recipe.name_ua.trim()) {
+    showToast('Для публікації потрібна назва рецепту', 'error');
+    return;
+  }
+  if (!hasIngredients && !hasSteps) {
+    showToast('Додайте інгредієнти або кроки приготування', 'error');
+    return;
+  }
+
+  showConfirmModal({
+    title: 'Зробити публічним?',
+    message: 'Рецепт побачить спільнота. Він пройде модерацію перед публікацією.',
+    confirmText: 'Так, опублікувати',
+    onConfirm: async () => {
+      // Shadow banned юзери — теж pending (як при створенні)
+      const { error } = await supabase
+        .from('recipes')
+        .update({ is_public: true, status: 'pending' })
+        .eq('id', recipe.id);
+
+      if (error) {
+        console.error('Помилка публікації:', error);
+        showToast('Помилка публікації', 'error');
+      } else {
+        showToast('Рецепт відправлено на модерацію', 'info');
         loadAndDisplayRecipes(true);
       }
     },
@@ -1521,6 +1624,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   await initBookSelector();
   await initRecipeModal();
   buildFilterPanel();
+  initOwnFilter();
   loadAndDisplayRecipes();
 
   // Закриваємо підфільтри при кліку поза панеллю

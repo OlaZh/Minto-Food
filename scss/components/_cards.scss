@@ -1,3 +1,23 @@
+/* Фільтр власних рецептів (Усі / Приватні / Публічні / На модерації) */
+.recipe-own-filter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
+  margin-bottom: var(--space-md);
+
+  &__chip {
+    @extend %chip-filter;
+  }
+
+  &__empty {
+    grid-column: 1 / -1;
+    padding: var(--space-lg);
+    text-align: center;
+    color: var(--color-text-secondary);
+    font-size: 14px;
+  }
+}
+
 .card {
   @extend %premium-card;
   background-color: var(--color-bg-secondary);
@@ -159,6 +179,36 @@
     &--diff-easy   { color: #16a34a; background: rgba(22, 163, 74, .1); }
     &--diff-medium { color: #d97706; background: rgba(217, 119, 6, .1); }
     &--diff-hard   { color: #dc2626; background: rgba(220, 38, 38, .1); }
+  }
+
+  &__make-public {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    width: 100%;
+    margin-top: var(--space-xs);
+    padding: 7px 12px;
+    border: 1px solid var(--color-primary);
+    border-radius: var(--radius-md);
+    background: transparent;
+    color: var(--color-primary);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition:
+      background var(--duration-base) var(--ease-out),
+      color var(--duration-base) var(--ease-out);
+
+    svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    &:hover {
+      background: var(--color-primary);
+      color: #fff;
+    }
   }
 
   &__footer {

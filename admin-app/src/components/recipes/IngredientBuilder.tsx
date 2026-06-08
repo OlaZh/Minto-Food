@@ -1,10 +1,9 @@
 'use client'
 
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Plus, Trash2, Search } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { createClient } from '@/lib/supabase/client'
 import type { IngredientRow, Product } from '@/lib/types'
 import { UNITS } from '@/lib/types'
@@ -14,27 +13,19 @@ interface IngredientBuilderProps {
   onChange: (rows: IngredientRow[]) => void
 }
 
-interface ProductOption {
-  id: number
-  label: string
-}
-
 function ProductSearch({
   value,
+  onChange,
   onSelect,
 }: {
   value: string
+  onChange: (value: string) => void
   onSelect: (product: Product) => void
 }) {
-  const [query, setQuery] = useState(value)
   const [results, setResults] = useState<Product[]>([])
   const [open, setOpen] = useState(false)
   const debounce = useRef<ReturnType<typeof setTimeout> | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    setQuery(value)
-  }, [value])
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -60,7 +51,7 @@ function ProductSearch({
   }
 
   function handleInput(v: string) {
-    setQuery(v)
+    onChange(v)
     if (debounce.current) clearTimeout(debounce.current)
     debounce.current = setTimeout(() => search(v), 250)
   }
@@ -74,11 +65,11 @@ function ProductSearch({
       <div className="relative">
         <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-gray-400" />
         <Input
-          value={query}
+          value={value}
           onChange={e => handleInput(e.target.value)}
           placeholder="Пошук продукту..."
           className="pl-8 h-9 text-sm"
-          onFocus={() => query.length >= 2 && setOpen(true)}
+          onFocus={() => value.length >= 2 && setOpen(true)}
         />
       </div>
       {open && results.length > 0 && (
@@ -91,7 +82,6 @@ function ProductSearch({
               onMouseDown={e => e.preventDefault()}
               onClick={() => {
                 onSelect(p)
-                setQuery(getLabel(p))
                 setOpen(false)
               }}
             >
@@ -129,6 +119,7 @@ export default function IngredientBuilder({ value, onChange }: IngredientBuilder
             <div key={idx} className="flex gap-2 items-center group">
               <ProductSearch
                 value={row.product_name}
+                onChange={productName => update(idx, { product_name: productName, product_id: 0 })}
                 onSelect={p => update(idx, {
                   product_id: p.id,
                   product_name: p.name_ua || p.name_en || '',

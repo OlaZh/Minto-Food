@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useForm, Controller } from 'react-hook-form'
+import { forwardRef, useEffect, useState } from 'react'
+import { Controller, useForm, useWatch } from 'react-hook-form'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { Loader2, Calculator, Tags } from 'lucide-react'
@@ -76,10 +76,9 @@ export default function RecipeForm({ recipe, initialIngredients = [] }: RecipeFo
 
   const [ingredients, setIngredients] = useState<IngredientRow[]>(initialIngredients)
   const [authors, setAuthors] = useState<RecipeAuthorProfile[]>([])
-  const [previewTags, setPreviewTags] = useState<string[]>([])
   const [saving, setSaving] = useState(false)
 
-  const { register, control, handleSubmit, watch, setValue, formState: { errors } } = useForm<FormValues>({
+  const { register, control, handleSubmit, setValue } = useForm<FormValues>({
     defaultValues: {
       name_ua: recipe?.name_ua ?? '',
       name_en: recipe?.name_en ?? '',
@@ -112,10 +111,11 @@ export default function RecipeForm({ recipe, initialIngredients = [] }: RecipeFo
     },
   })
 
-  const watchedType = watch('type')
-  const watchedCategory = watch('category')
-  const watchedCookingMethod = watch('cooking_method')
-  const watchedStatus = watch('status')
+  const watchedType = useWatch({ control, name: 'type' })
+  const watchedCategory = useWatch({ control, name: 'category' })
+  const watchedCookingMethod = useWatch({ control, name: 'cooking_method' })
+  const watchedStatus = useWatch({ control, name: 'status' })
+  const watchedYieldRatio = useWatch({ control, name: 'yield_ratio' })
 
   // Load authors
   useEffect(() => {
@@ -130,16 +130,12 @@ export default function RecipeForm({ recipe, initialIngredients = [] }: RecipeFo
     load()
   }, [])
 
-  // Live tag preview
-  useEffect(() => {
-    const slugs = generateRecipeTags(
-      ingredients,
-      watchedCategory,
-      watchedType,
-      watchedCookingMethod
-    )
-    setPreviewTags(slugs)
-  }, [ingredients, watchedCategory, watchedType, watchedCookingMethod])
+  const previewTags = generateRecipeTags(
+    ingredients,
+    watchedCategory,
+    watchedType,
+    watchedCookingMethod
+  )
 
   async function autoCalculate() {
     if (!ingredients.length) { toast.info('Спочатку додайте інгредієнти'); return }
@@ -159,8 +155,7 @@ export default function RecipeForm({ recipe, initialIngredients = [] }: RecipeFo
       product: productMap.get(ing.product_id) as Product,
     })).filter(ing => ing.product)
 
-    const yieldRatio = toNum(watch('yield_ratio')) ?? 0.85
-    const recipeYield = toNum(watch('recipe_yield')) ?? 1
+    const yieldRatio = toNum(watchedYieldRatio) ?? 0.85
     const result = calculateNutrition(withProducts, yieldRatio > 0 ? yieldRatio : 0.85)
 
     setValue('kcal', result.kcal.toString())
@@ -369,7 +364,7 @@ export default function RecipeForm({ recipe, initialIngredients = [] }: RecipeFo
                   name="steps"
                   control={control}
                   render={({ field }) => (
-                    <StepsEditor locale="ua" label="" value={field.value} onChange={field.onChange} />
+                    <StepsEditor label="" value={field.value} onChange={field.onChange} />
                   )}
                 />
               </TabsContent>
@@ -378,7 +373,7 @@ export default function RecipeForm({ recipe, initialIngredients = [] }: RecipeFo
                   name="steps_en"
                   control={control}
                   render={({ field }) => (
-                    <StepsEditor locale="en" label="" value={field.value} onChange={field.onChange} />
+                    <StepsEditor label="" value={field.value} onChange={field.onChange} />
                   )}
                 />
               </TabsContent>
@@ -387,7 +382,7 @@ export default function RecipeForm({ recipe, initialIngredients = [] }: RecipeFo
                   name="steps_pl"
                   control={control}
                   render={({ field }) => (
-                    <StepsEditor locale="pl" label="" value={field.value} onChange={field.onChange} />
+                    <StepsEditor label="" value={field.value} onChange={field.onChange} />
                   )}
                 />
               </TabsContent>
@@ -555,8 +550,6 @@ export default function RecipeForm({ recipe, initialIngredients = [] }: RecipeFo
 }
 
 // ─── Reusable Select Field ─────────────────────────────────────
-import { forwardRef } from 'react'
-
 interface SelectFieldProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
   label: string
   id: string

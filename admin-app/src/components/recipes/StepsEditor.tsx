@@ -1,13 +1,11 @@
 'use client'
 
-import { useFieldArray, Control } from 'react-hook-form'
-import { Plus, Trash2, GripVertical } from 'lucide-react'
+import { Plus, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 
 interface StepsEditorProps {
-  locale: 'ua' | 'en' | 'pl'
   label: string
   value: string
   onChange: (value: string) => void
@@ -23,7 +21,7 @@ function parseSteps(value: string): string[] {
     .filter(Boolean)
 }
 
-export default function StepsEditor({ locale, label, value, onChange }: StepsEditorProps) {
+export default function StepsEditor({ label, value, onChange }: StepsEditorProps) {
   const steps = parseSteps(value)
 
   function updateSteps(newSteps: string[]) {

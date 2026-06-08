@@ -1,15 +1,44 @@
 'use client'
 
+import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import ActionButton from '@/components/moderation/ActionButton'
 import { restoreRecipe, purgeRecipe, restoreProduct, purgeProduct } from '@/app/actions/moderation'
 
+type ArchiveAuthor = {
+  full_name: string | null
+}
+
+type ArchivedRecipe = {
+  id: string
+  name_ua: string | null
+  name_en: string | null
+  image: string | null
+  deleted_at: string | null
+  category: string | null
+  author: ArchiveAuthor | null
+}
+
+type ArchivedProduct = {
+  id: number
+  name_ua: string | null
+  name_en: string | null
+  kcal: number | null
+  protein: number | null
+  fat: number | null
+  carbs: number | null
+  deleted_at: string | null
+  author: ArchiveAuthor | null
+}
+
 interface ArchiveClientProps {
   tab: 'recipes' | 'products'
-  recipes: any[]
-  products: any[]
+  recipes: ArchivedRecipe[]
+  products: ArchivedProduct[]
 }
+
+const passthroughImageLoader = ({ src }: { src: string }) => src
 
 export default function ArchiveClient({ tab, recipes, products }: ArchiveClientProps) {
   const router = useRouter()
@@ -55,9 +84,9 @@ export default function ArchiveClient({ tab, recipes, products }: ArchiveClientP
               return (
                 <div key={recipe.id} className="px-4 md:px-8 py-4 hover:bg-gray-50">
                   <div className="flex items-start gap-3">
-                    <div className="w-12 h-12 rounded-md overflow-hidden bg-gray-100 shrink-0 opacity-60">
+                    <div className="relative w-12 h-12 rounded-md overflow-hidden bg-gray-100 shrink-0 opacity-60">
                       {recipe.image
-                        ? <img src={recipe.image} alt="" className="w-full h-full object-cover" />
+                        ? <Image src={recipe.image} alt={name} fill sizes="48px" unoptimized loader={passthroughImageLoader} className="object-cover" />
                         : <div className="w-full h-full flex items-center justify-center text-gray-300">🍽</div>
                       }
                     </div>

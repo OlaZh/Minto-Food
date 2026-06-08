@@ -173,6 +173,12 @@
                 <h2 class="recipe-section__title">Твої рецепти</h2>
                 <span class="recipe-section__badge" id="own-count">0</span>
               </div>
+              <div class="recipe-own-filter" id="own-filter" role="tablist">
+                <button class="recipe-own-filter__chip is-active" data-filter="all" role="tab">Усі</button>
+                <button class="recipe-own-filter__chip" data-filter="private" role="tab">Приватні</button>
+                <button class="recipe-own-filter__chip" data-filter="public" role="tab">Публічні</button>
+                <button class="recipe-own-filter__chip" data-filter="pending" role="tab">На модерації</button>
+              </div>
               <div class="recipe-grid" id="own-row"></div>
             </section>
 

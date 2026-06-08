@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import { useState } from 'react'
 import { Plus, Edit, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -13,6 +14,8 @@ import { useRouter } from 'next/navigation'
 interface AuthorsClientProps {
   authors: RecipeAuthorProfile[]
 }
+
+const passthroughImageLoader = ({ src }: { src: string }) => src
 
 export default function AuthorsClient({ authors: initial }: AuthorsClientProps) {
   const router = useRouter()
@@ -54,9 +57,9 @@ export default function AuthorsClient({ authors: initial }: AuthorsClientProps) 
         )}
         {initial.map(author => (
           <div key={author.id} className="flex items-center gap-4 px-4 md:px-8 py-4 hover:bg-gray-50 group">
-            <div className="w-10 h-10 rounded-full bg-gray-100 overflow-hidden shrink-0">
+            <div className="relative w-10 h-10 rounded-full bg-gray-100 overflow-hidden shrink-0">
               {author.avatar ? (
-                <img src={author.avatar} alt="" className="w-full h-full object-cover" />
+                <Image src={author.avatar} alt={author.display_name} fill sizes="40px" unoptimized loader={passthroughImageLoader} className="object-cover" />
               ) : (
                 <div className="w-full h-full flex items-center justify-center text-gray-300 text-base">
                   👤
