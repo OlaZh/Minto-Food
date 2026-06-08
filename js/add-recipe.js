@@ -959,16 +959,28 @@ export async function openRecipeView(recipeId) {
   };
 
   setT('view-title', name);
-  setT('view-calories', recipe.kcal);
+  setT('view-calories', formatRecipeMacroValue(recipe.kcal, 0));
   setT('view-category', getCategoryLabel(recipe.category));
-  setT('view-proteins', recipe.protein);
-  setT('view-carbs', recipe.carbs);
-  setT('view-fats', recipe.fat);
+  setT('view-proteins', formatRecipeMacroValue(recipe.protein, 0));
+  setT('view-carbs', formatRecipeMacroValue(recipe.carbs, 0));
+  setT('view-fats', formatRecipeMacroValue(recipe.fat, 0));
   setT(
     'view-total-weight',
     recipe.total_weight ? `Вага готової страви: ${formatRecipeMacroValue(recipe.total_weight, 0)} г` : 'Вага готової страви не вказана',
   );
   setT('view-nutrition-note', getRecipeNutritionNote(recipe));
+
+  // Клік по вазі готової страви відкриває редагування (лише для власних рецептів),
+  // щоб людина могла дозаповнити/змінити вагу.
+  const totalWeightEl = document.getElementById('view-total-weight');
+  if (totalWeightEl) {
+    totalWeightEl.classList.toggle('is-editable', isOwn);
+    if (isOwn) {
+      totalWeightEl.onclick = () => editRecipe(recipe);
+    } else {
+      totalWeightEl.onclick = null;
+    }
+  }
 
   updateStarsUI(recipe.rating || 0);
 

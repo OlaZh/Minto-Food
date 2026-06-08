@@ -141,6 +141,16 @@
 .nutrition-summary-weight {
   color: var(--color-text-primary);
   font-weight: 600;
+
+  &.is-editable {
+    cursor: pointer;
+    text-decoration: underline dotted;
+    text-underline-offset: 3px;
+
+    &:hover {
+      color: var(--color-accent);
+    }
+  }
 }
 
 .nutrition-summary-note {

@@ -85,6 +85,18 @@ function updateRecipeNutritionPreview(totals = getTotals()) {
   }
 }
 
+// Оновлює лише підпис під КБЖ, не чіпаючи самі поля. Потрібно при редагуванні,
+// де поля КБЖ показують збережені значення, але підпис має відповідати вазі.
+function updateNutritionNoteOnly(kcalForNote) {
+  const noteEl = document.getElementById('rm-macros-note');
+  if (!noteEl) return;
+
+  const totalWeight = parsePositiveNumber(document.getElementById('rm-total-weight')?.value);
+  noteEl.textContent = totalWeight
+    ? `Готова страва: приблизно ${formatMacroValue(kcalForNote, 0)} ккал на 100 г`
+    : 'Сума сирих інгредієнтів. Вкажіть вагу готової страви, щоб побачити КБЖУ на 100 г.';
+}
+
 function createRecipeModalHTML() {
   const div = document.createElement('div');
   div.innerHTML = `
@@ -379,20 +391,29 @@ async function showRecipeForm(data = null) {
   createInlineBookSelector('rm-book-selector', preselectedBookIds);
 
   if (data) {
-    setInputVal('rm-name', data.name || data.title);
-    setInputVal('rm-calories', data.kcal || data.calories);
-    setInputVal('rm-proteins', data.proteins || data.protein);
-    setInputVal('rm-fats', data.fats || data.fat);
-    setInputVal('rm-carbs', data.carbs);
+    setInputVal('rm-name', data.name_ua || data.name || data.title);
     setInputVal('rm-steps', data.steps);
     setInputVal('rm-total-weight', data.total_weight);
     setInputVal('rm-category', data.category || 'lunch');
     setInputVal('rm-image-url', data.image);
     setVisibilityToggle(data.is_public ? 'public' : 'private');
-    await setIngredientsFromText(data.ingredients || '');
-  }
 
-  updateRecipeNutritionPreview();
+    // Парсинг інгредієнтів тригерить перерахунок КБЖ (через notifyChange).
+    // Робимо це ДО відновлення збережених значень, щоб вони не затирались.
+    await setIngredientsFromText(data.ingredients || '');
+
+    // При редагуванні показуємо вже збережені КБЖ, а не перерахунок з нуля:
+    // повторний парсинг може не розпізнати частину інгредієнтів і дати 0.
+    // Реальний перерахунок відбудеться, лише якщо людина змінить інгредієнти.
+    const savedKcal = data.kcal || data.calories || 0;
+    setInputVal('rm-calories', savedKcal);
+    setInputVal('rm-proteins', data.proteins || data.protein);
+    setInputVal('rm-fats', data.fats || data.fat);
+    setInputVal('rm-carbs', data.carbs);
+    updateNutritionNoteOnly(savedKcal);
+  } else {
+    updateRecipeNutritionPreview();
+  }
 }
 
 async function saveRecipe() {
