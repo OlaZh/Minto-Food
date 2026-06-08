@@ -1,8 +1,3 @@
-// =============================================================
-// recipe-modal.js — спільний модуль створення рецепту
-// Використовується на recipes.html і week-menu.html
-// =============================================================
-
 import { supabase } from './supabaseClient.js';
 import {
   initIngredientBuilder,
@@ -18,23 +13,73 @@ import { lockScroll, unlockScroll } from './scroll-lock.js';
 import { iconCamera, iconLock, iconGlobe, iconBookOpen } from './icons.js';
 import {
   initBookSelector,
-  getBooks,
-  getDefaultBook,
   createInlineBookSelector,
   getSelectedBooksFromContainer,
   saveRecipeToBooks,
   refreshBooks,
 } from './book-selector.js';
 
-// =============================================================
-// СТАН
-// =============================================================
+let recipeVisibility = 'private';
+let recipeModalInstance = null;
+let onRecipeSavedCallback = null;
 
-let recipeVisibility = 'private'; // 'private' або 'public'
+function parsePositiveNumber(value) {
+  const normalized = String(value ?? '').replace(',', '.').trim();
+  if (!normalized) return null;
+  const parsed = Number(normalized);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+}
 
-// =============================================================
-// СТВОРЕННЯ HTML МОДАЛКИ ДИНАМІЧНО
-// =============================================================
+function formatMacroValue(value, decimals = 1) {
+  const num = Number(value) || 0;
+  if (decimals === 0) return String(Math.round(num));
+  return num.toFixed(decimals).replace('.', ',');
+}
+
+function getDisplayedNutrition(totals, totalWeight) {
+  if (!totalWeight) {
+    return {
+      kcal: totals.kcal || 0,
+      protein: totals.protein || 0,
+      fat: totals.fat || 0,
+      carbs: totals.carbs || 0,
+      fiber: totals.fiber || 0,
+      mode: 'raw',
+    };
+  }
+
+  const factor = 100 / totalWeight;
+  return {
+    kcal: (totals.kcal || 0) * factor,
+    protein: (totals.protein || 0) * factor,
+    fat: (totals.fat || 0) * factor,
+    carbs: (totals.carbs || 0) * factor,
+    fiber: (totals.fiber || 0) * factor,
+    mode: 'cooked',
+  };
+}
+
+function updateRecipeNutritionPreview(totals = getTotals()) {
+  const totalWeight = parsePositiveNumber(document.getElementById('rm-total-weight')?.value);
+  const displayed = getDisplayedNutrition(totals, totalWeight);
+
+  const kcalEl = document.getElementById('rm-calories');
+  const proteinEl = document.getElementById('rm-proteins');
+  const fatEl = document.getElementById('rm-fats');
+  const carbsEl = document.getElementById('rm-carbs');
+  const noteEl = document.getElementById('rm-macros-note');
+
+  if (kcalEl) kcalEl.value = formatMacroValue(displayed.kcal, 0);
+  if (proteinEl) proteinEl.value = formatMacroValue(displayed.protein, 1);
+  if (fatEl) fatEl.value = formatMacroValue(displayed.fat, 1);
+  if (carbsEl) carbsEl.value = formatMacroValue(displayed.carbs, 1);
+
+  if (noteEl) {
+    noteEl.textContent = displayed.mode === 'cooked'
+      ? `Готова страва: приблизно ${formatMacroValue(displayed.kcal, 0)} ккал на 100 г`
+      : 'Сума сирих інгредієнтів. Вкажіть вагу готової страви, щоб побачити КБЖУ на 100 г.';
+  }
+}
 
 function createRecipeModalHTML() {
   const div = document.createElement('div');
@@ -53,7 +98,13 @@ function createRecipeModalHTML() {
             <div class="preview-form__content">
               <div class="form-group">
                 <label data-i18n="dishName">Назва страви</label>
-                <input type="text" id="rm-name" required placeholder="Назва страви, напр. «Млинці з медом»" data-i18n-placeholder="dishNamePlaceholder" />
+                <input
+                  type="text"
+                  id="rm-name"
+                  required
+                  placeholder="Назва страви, напр. «Млинці з медом»"
+                  data-i18n-placeholder="dishNamePlaceholder"
+                />
               </div>
 
               <div class="recipe-macros-grid">
@@ -73,6 +124,15 @@ function createRecipeModalHTML() {
                   <label data-i18n="carbs">В</label>
                   <input type="number" id="rm-carbs" placeholder="0" readonly />
                 </div>
+              </div>
+
+              <p class="recipe-macros-note" id="rm-macros-note">
+                Сума сирих інгредієнтів. Вкажіть вагу готової страви, щоб побачити КБЖУ на 100 г.
+              </p>
+
+              <div class="form-group">
+                <label for="rm-total-weight">Вага готової страви (г)</label>
+                <input type="number" id="rm-total-weight" min="1" step="1" placeholder="Наприклад, 850" />
               </div>
 
               <div class="form-group">
@@ -118,7 +178,6 @@ function createRecipeModalHTML() {
                 </div>
               </div>
 
-              <!-- TOGGLE ПРИВАТНИЙ/ПУБЛІЧНИЙ -->
               <div class="visibility-section">
                 <label data-i18n="visibilityLabel">Хто бачить рецепт</label>
                 <div class="visibility-toggle" id="visibility-toggle">
@@ -133,7 +192,6 @@ function createRecipeModalHTML() {
                 </div>
               </div>
 
-              <!-- ВИБІР КНИГИ -->
               <div class="recipe-books-section">
                 <div class="recipe-books-section__header">
                   <h4><span>${iconBookOpen}</span> <span data-i18n="saveToBooks">Зберегти в книгу</span></h4>
@@ -154,85 +212,14 @@ function createRecipeModalHTML() {
   return div.firstElementChild;
 }
 
-// =============================================================
-// ІНІЦІАЛІЗАЦІЯ МОДАЛКИ
-// =============================================================
-
-let recipeModalInstance = null;
-let onRecipeSavedCallback = null;
-
-export async function initRecipeModal() {
-  // Ініціалізуємо book-selector
-  await initBookSelector();
-
-  // Додаємо модалку в DOM якщо ще немає
-  if (!document.getElementById('recipe-create-modal')) {
-    document.body.appendChild(createRecipeModalHTML());
-  }
-
-  recipeModalInstance = document.getElementById('recipe-create-modal');
-
-  const closeBtn = document.getElementById('recipe-modal-close');
-  const cancelBtn = document.getElementById('rm-cancel');
-  const form = document.getElementById('recipe-modal-form');
-
-  // Закриття — ЛИШЕ через хрестик або "Скасувати".
-  // Клік по фону (оверлею) НЕ закриває модалку, щоб не втратити недописаний рецепт.
-  closeBtn?.addEventListener('click', closeRecipeModal);
-  cancelBtn?.addEventListener('click', closeRecipeModal);
-
-  // Авто-ресайз textarea
-  recipeModalInstance?.querySelectorAll('textarea').forEach((txt) => {
-    txt.style.overflow = 'hidden';
-    txt.addEventListener('input', () => {
-      txt.style.height = 'auto';
-      txt.style.height = txt.scrollHeight + 'px';
-    });
-  });
-
-  // Збереження форми
-  form?.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    await saveRecipe();
-  });
-
-  // Ініціалізація toggle видимості
-  initVisibilityToggle();
-
-  // Ініціалізація конструктора інгредієнтів
-  const lang = getLang();
-  setLanguage(lang);
-  initIngredientBuilder(
-    '#rm-ingredients-builder',
-    (ingredients, totals) => {
-      // Автозаповнення КБЖУ при зміні інгредієнтів
-      const kcalEl = document.getElementById('rm-calories');
-      const proteinEl = document.getElementById('rm-proteins');
-      const fatEl = document.getElementById('rm-fats');
-      const carbsEl = document.getElementById('rm-carbs');
-
-      if (kcalEl) kcalEl.value = totals.kcal || '';
-      if (proteinEl) proteinEl.value = totals.protein.toFixed(1) || '';
-      if (fatEl) fatEl.value = totals.fat.toFixed(1) || '';
-      if (carbsEl) carbsEl.value = totals.carbs.toFixed(1) || '';
-    },
-    lang,
-  );
-}
-
-// =============================================================
-// TOGGLE ВИДИМОСТІ (ПРИВАТНИЙ/ПУБЛІЧНИЙ)
-// =============================================================
-
 function initVisibilityToggle() {
   const toggle = document.getElementById('visibility-toggle');
   if (!toggle) return;
 
   const options = toggle.querySelectorAll('.visibility-toggle__option');
-
   options.forEach((option) => {
     option.addEventListener('click', () => {
-      options.forEach((o) => o.classList.remove('visibility-toggle__option--active'));
+      options.forEach((item) => item.classList.remove('visibility-toggle__option--active'));
       option.classList.add('visibility-toggle__option--active');
       recipeVisibility = option.dataset.visibility;
     });
@@ -246,18 +233,63 @@ function resetVisibilityToggle() {
 
   const options = toggle.querySelectorAll('.visibility-toggle__option');
   options.forEach((option) => {
-    const isPrivate = option.dataset.visibility === 'private';
-    option.classList.toggle('visibility-toggle__option--active', isPrivate);
+    option.classList.toggle('visibility-toggle__option--active', option.dataset.visibility === 'private');
   });
 }
 
-// =============================================================
-// ВІДКРИТТЯ / ЗАКРИТТЯ
-// =============================================================
+function bindIngredientBuilder() {
+  const lang = getLang();
+  setLanguage(lang);
+  initIngredientBuilder(
+    '#rm-ingredients-builder',
+    (ingredients, totals) => {
+      updateRecipeNutritionPreview(totals);
+    },
+    lang,
+  );
+  updateRecipeNutritionPreview();
+}
+
+export async function initRecipeModal() {
+  await initBookSelector();
+
+  if (!document.getElementById('recipe-create-modal')) {
+    document.body.appendChild(createRecipeModalHTML());
+  }
+
+  recipeModalInstance = document.getElementById('recipe-create-modal');
+
+  const closeBtn = document.getElementById('recipe-modal-close');
+  const cancelBtn = document.getElementById('rm-cancel');
+  const form = document.getElementById('recipe-modal-form');
+  const totalWeightInput = document.getElementById('rm-total-weight');
+
+  closeBtn?.addEventListener('click', closeRecipeModal);
+  cancelBtn?.addEventListener('click', closeRecipeModal);
+
+  recipeModalInstance?.querySelectorAll('textarea').forEach((textarea) => {
+    textarea.style.overflow = 'hidden';
+    textarea.addEventListener('input', () => {
+      textarea.style.height = 'auto';
+      textarea.style.height = `${textarea.scrollHeight}px`;
+    });
+  });
+
+  form?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    await saveRecipe();
+  });
+
+  totalWeightInput?.addEventListener('input', () => {
+    updateRecipeNutritionPreview();
+  });
+
+  initVisibilityToggle();
+  bindIngredientBuilder();
+}
 
 export async function openRecipeModal(onSaved = null) {
   onRecipeSavedCallback = onSaved;
-
   resetRecipeForm();
 
   if (recipeModalInstance) {
@@ -273,6 +305,7 @@ export function closeRecipeModal() {
     recipeModalInstance.classList.remove('is-active');
     unlockScroll('recipe-create-modal');
   }
+
   onRecipeSavedCallback = null;
   resetRecipeForm();
 }
@@ -281,43 +314,18 @@ function resetRecipeForm() {
   const form = document.getElementById('recipe-modal-form');
   if (form) form.reset();
 
-  // Очищаємо конструктор інгредієнтів
   clearIngredients();
-
-  // Скидаємо toggle видимості
   resetVisibilityToggle();
 
-  // Очищаємо селектор книг
   const bookSelector = document.getElementById('rm-book-selector');
   if (bookSelector) bookSelector.innerHTML = '';
+
+  updateRecipeNutritionPreview();
 }
 
-// =============================================================
-// ФОРМА — ПОКАЗАТИ З ДАНИМИ (АБО ПУСТУ)
-// =============================================================
-
 async function showRecipeForm(data = null) {
+  bindIngredientBuilder();
 
-  // Реініціалізуємо конструктор інгредієнтів при показі форми
-  const lang = getLang();
-  setLanguage(lang);
-  initIngredientBuilder(
-    '#rm-ingredients-builder',
-    (ingredients, totals) => {
-      const kcalEl = document.getElementById('rm-calories');
-      const proteinEl = document.getElementById('rm-proteins');
-      const fatEl = document.getElementById('rm-fats');
-      const carbsEl = document.getElementById('rm-carbs');
-
-      if (kcalEl) kcalEl.value = totals.kcal || '';
-      if (proteinEl) proteinEl.value = totals.protein.toFixed(1) || '';
-      if (fatEl) fatEl.value = totals.fat.toFixed(1) || '';
-      if (carbsEl) carbsEl.value = totals.carbs.toFixed(1) || '';
-    },
-    lang,
-  );
-
-  // Ініціалізуємо селектор книг
   await refreshBooks();
   createInlineBookSelector('rm-book-selector');
 
@@ -328,14 +336,13 @@ async function showRecipeForm(data = null) {
     setInputVal('rm-fats', data.fats || data.fat);
     setInputVal('rm-carbs', data.carbs);
     setInputVal('rm-steps', data.steps);
+    setInputVal('rm-total-weight', data.total_weight);
     setInputVal('rm-category', data.category || 'lunch');
     setInputVal('rm-image-url', data.image);
   }
-}
 
-// =============================================================
-// ЗБЕРЕЖЕННЯ РЕЦЕПТУ
-// =============================================================
+  updateRecipeNutritionPreview();
+}
 
 async function saveRecipe() {
   const {
@@ -357,13 +364,16 @@ async function saveRecipe() {
     finalImage = urlInput.value.trim();
   }
 
-  // Отримуємо КБЖУ з конструктора інгредієнтів
   const totals = getTotals();
+  const totalWeightVal = parsePositiveNumber(document.getElementById('rm-total-weight')?.value);
+  const displayedNutrition = getDisplayedNutrition(totals, totalWeightVal);
 
-  // Визначаємо статус на основі toggle
-  // Shadow banned юзери — ЗАВЖДИ pending, навіть якщо обрали "для себе"
   const { data: profile } = await supabase
-    .from('profiles').select('is_shadow_banned').eq('id', user.id).single();
+    .from('profiles')
+    .select('is_shadow_banned')
+    .eq('id', user.id)
+    .single();
+
   const isShadowBanned = profile?.is_shadow_banned === true;
   const isPublicSubmission = recipeVisibility === 'public';
   const status = isShadowBanned ? 'pending' : (isPublicSubmission ? 'pending' : 'draft');
@@ -371,13 +381,13 @@ async function saveRecipe() {
   const nameVal = document.getElementById('rm-name')?.value.trim() ?? '';
   const stepsVal = document.getElementById('rm-steps')?.value.trim() ?? '';
 
-  // Валідація тільки для публічних рецептів
   if (isPublicSubmission) {
     if (!nameVal) {
       showToast('Для публікації потрібна назва рецепту', 'error');
       return;
     }
-    const hasIngredients = getIngredients().length > 0;
+
+    const hasIngredients = !!getIngredientsText().trim();
     if (!hasIngredients && !stepsVal) {
       showToast('Додайте інгредієнти або кроки приготування', 'error');
       return;
@@ -386,17 +396,18 @@ async function saveRecipe() {
 
   const payload = {
     name_ua: nameVal,
-    kcal: totals.kcal || 0,
-    protein: parseFloat(totals.protein.toFixed(1)) || 0,
-    fat: parseFloat(totals.fat.toFixed(1)) || 0,
-    carbs: parseFloat(totals.carbs.toFixed(1)) || 0,
-    fiber: parseFloat((totals.fiber || 0).toFixed(1)),
+    kcal: parseFloat(displayedNutrition.kcal.toFixed(1)) || 0,
+    protein: parseFloat(displayedNutrition.protein.toFixed(1)) || 0,
+    fat: parseFloat(displayedNutrition.fat.toFixed(1)) || 0,
+    carbs: parseFloat(displayedNutrition.carbs.toFixed(1)) || 0,
+    fiber: parseFloat(displayedNutrition.fiber.toFixed(1)) || 0,
+    total_weight: totalWeightVal,
     category: document.getElementById('rm-category')?.value,
     ingredients: getIngredientsText(),
     steps: stepsVal,
     image: finalImage,
     user_id: user.id,
-    status: status,
+    status,
     is_public: isPublicSubmission,
   };
 
@@ -408,41 +419,34 @@ async function saveRecipe() {
     return;
   }
 
-  // Зберігаємо інгредієнти в product_recipe
   const ingredients = getIngredients();
   if (ingredients.length > 0 && data?.id) {
     const ingredientRows = ingredients
-      .filter((ing) => ing.id) // тільки ті, що є в базі products
-      .map((ing) => ({
+      .filter((ingredient) => ingredient.id)
+      .map((ingredient) => ({
         recipe_id: data.id,
-        ingredient_id: ing.id,
-        amount: ing.weight,
-        unit: ing.unit || 'g',
+        ingredient_id: ingredient.id,
+        amount: ingredient.weight,
+        unit: ingredient.unit || 'g',
       }));
 
     if (ingredientRows.length > 0) {
-      const { error: ingError } = await supabase.from('product_recipe').insert(ingredientRows);
-
-      if (ingError) {
-        console.error('Помилка збереження інгредієнтів:', ingError);
+      const { error: ingredientError } = await supabase.from('product_recipe').insert(ingredientRows);
+      if (ingredientError) {
+        console.error('Помилка збереження інгредієнтів:', ingredientError);
       }
     }
   }
 
-  // Зберігаємо в обрані книги
   const selectedBookIds = getSelectedBooksFromContainer('rm-book-selector');
   if (selectedBookIds.length > 0 && data?.id) {
     await saveRecipeToBooks(data.id, selectedBookIds);
   }
 
-  const visibilityText = status === 'pending' ? 'Рецепт надіслано на модерацію!' : 'Рецепт збережено!';
-  showToast(visibilityText);
-
+  showToast(status === 'pending' ? 'Рецепт надіслано на модерацію!' : 'Рецепт збережено!');
   closeRecipeModal();
 
-  // Викликаємо callback щоб сторінка що відкрила модалку могла оновитись
   if (onRecipeSavedCallback) {
     onRecipeSavedCallback(data);
   }
 }
-

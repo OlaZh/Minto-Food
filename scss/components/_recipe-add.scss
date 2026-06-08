@@ -52,6 +52,15 @@
     }
   }
 
+  .recipe-macros-note {
+    margin: -2px 0 0;
+    padding: 0 4px;
+    font-size: 12px;
+    line-height: 1.45;
+    color: var(--color-text-secondary);
+    font-style: italic;
+  }
+
   // Внутрішній стек блоку фото (кнопка / роздільник / URL)
   .form-media-inner {
     display: flex;
