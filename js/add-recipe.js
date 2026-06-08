@@ -1,6 +1,6 @@
 import { supabase } from './supabaseClient.js';
 import { initAuth } from './auth.js';
-import { showToast, toBase64, parseNumber, setInputVal } from './utils.js';
+import { showToast } from './utils.js';
 import { getLang } from './storage.js';
 import { i18n } from './i18n.js';
 import { getRecipeDisplayName } from './recipe-utils.js';
@@ -36,13 +36,6 @@ import {
 // =============================================================
 
 const addBtn = document.getElementById('open-add-modal');
-const modal = document.getElementById('add-recipe-modal');
-const closeBtn = document.getElementById('close-modal');
-const previewForm = document.getElementById('recipe-preview-form');
-
-const previewFormElement = document.querySelector('.preview-form');
-const cancelPreview = document.getElementById('cancel-preview');
-
 
 const viewModal = document.getElementById('view-recipe-modal');
 const closeViewModalBtn = document.getElementById('close-view-modal');
@@ -54,8 +47,6 @@ const saveNotesBtn = document.getElementById('save-notes-btn');
 // =============================================================
 
 let currentViewingId = null;
-let editingRecipeId = null;
-let _editingRecipeOriginal = null;
 let currentUser = null;
 
 // Фільтр власних рецептів (browsing): 'all' | 'private' | 'public' | 'pending'
@@ -1247,24 +1238,6 @@ function openMakePublicConfirm(recipe) {
 // 7. МОДАЛЬНЕ ВІКНО — ВІДКРИТТЯ/ЗАКРИТТЯ
 // =============================================================
 
-const closeModal = () => {
-  if (modal) {
-    modal.classList.remove('is-active');
-    editingRecipeId = null;
-    window.tempAiImage = null;
-
-    if (previewFormElement) previewFormElement.reset();
-
-    const fileNameDisplay = document.getElementById('file-name');
-    if (fileNameDisplay) fileNameDisplay.textContent = 'Файл не вибрано';
-
-    unlockScroll('add-recipe-modal');
-    setTimeout(() => {
-      if (previewForm) previewForm.hidden = true;
-    }, 300);
-  }
-};
-
 const closeViewModal = () => {
   if (viewModal) {
     viewModal.classList.remove('is-active');
@@ -1275,200 +1248,6 @@ const closeViewModal = () => {
     if (from) {
       history.back();
     }
-  }
-};
-
-// =============================================================
-// 8. ФОРМА ПОПЕРЕДНЬОГО ПЕРЕГЛЯДУ
-// =============================================================
-
-const autoResizer = (el) => {
-  if (!el) return;
-  el.style.height = 'auto';
-  el.style.height = el.scrollHeight + 'px';
-};
-
-const showForm = (data = null) => {
-  if (!previewForm) return;
-
-  previewForm.style.display = 'block';
-
-  if (data) {
-    if (data.image) {
-      window.tempAiImage = data.image;
-    }
-
-    setInputVal('prev-name', data.name);
-
-    const kcalVal = data.kcal || data.calories || '';
-    const kcalInput = document.getElementById('prev-calories');
-    if (kcalInput) kcalInput.value = kcalVal;
-
-    setInputVal('prev-ingredients', data.ingredients);
-    setInputVal('prev-steps', data.steps);
-    setInputVal('prev-category', data.category || 'breakfast');
-    setInputVal('prev-proteins', data.proteins || data.protein);
-    setInputVal('prev-carbs', data.carbs);
-    setInputVal('prev-fats', data.fats || data.fat);
-
-    setTimeout(() => {
-      autoResizer(document.getElementById('prev-ingredients'));
-      autoResizer(document.getElementById('prev-steps'));
-    }, 50);
-  } else if (previewFormElement) {
-    previewFormElement.reset();
-    window.tempAiImage = null;
-    const ingField = document.getElementById('prev-ingredients');
-    const stepField = document.getElementById('prev-steps');
-    if (ingField) ingField.style.height = 'auto';
-    if (stepField) stepField.style.height = 'auto';
-  }
-};
-
-// =============================================================
-// 9. НОРМАЛІЗАЦІЯ ІНГРЕДІЄНТІВ
-// =============================================================
-
-function normalizeIngredients(text) {
-  const rawLines = text
-    .split('\n')
-    .map((l) => l.trim())
-    .filter((l) => l.length > 0);
-
-  const lines = rawLines.map((l) =>
-    l.replace(/^•\s*/, '').replace(/[–—-]/g, ' ').replace(/\s+/g, ' ').trim(),
-  );
-
-  const result = [];
-  const isNumber = (s) => /^\d+([.,]\d+)?$/.test(s);
-  const isUnit = (s) => /^(г|гр|мл|л|шт|ст\.?\s?л|ч\.?\s?л|кг)$/i.test(s);
-
-  for (let i = 0; i < lines.length; i++) {
-    const name = lines[i];
-    const next = lines[i + 1] || '';
-    const next2 = lines[i + 2] || '';
-
-    if (isNumber(next) && isUnit(next2)) {
-      result.push(`${name} ${next} ${next2}`);
-      i += 2;
-      continue;
-    }
-
-    if (/^\d+/.test(next)) {
-      result.push(`${name} ${next}`);
-      i += 1;
-      continue;
-    }
-
-    result.push(name);
-  }
-
-  return result.join('\n');
-}
-
-// =============================================================
-// 10. ЗБЕРЕЖЕННЯ РЕЦЕПТУ В SUPABASE
-// =============================================================
-
-async function saveRecipe(recipeData) {
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  const payload = {
-    name_ua: recipeData.name,
-    image: recipeData.image,
-    kcal: recipeData.calories || 0,
-    category: recipeData.category,
-    ingredients: recipeData.ingredients,
-    steps: recipeData.steps,
-    protein: recipeData.proteins || 0,
-    carbs: recipeData.carbs || 0,
-    fat: recipeData.fats || 0,
-    rating: recipeData.rating || 0,
-    notes: recipeData.notes || '',
-    user_id: user ? user.id : null,
-    status: 'draft',
-  };
-
-  if (editingRecipeId !== null) {
-    if (!user || _editingRecipeOriginal?.user_id !== user.id) {
-      showToast('Редагувати можна лише власні рецепти', 'error');
-      return false;
-    }
-    // Для опублікованих рецептів — значущі зміни йдуть на перевірку
-    const original = _editingRecipeOriginal;
-    const MODERATED = ['image', 'steps', 'name_ua'];
-
-    if (original?.status === 'published') {
-      const pendingChanges = {};
-      const directPayload = { ...payload };
-
-      for (const field of MODERATED) {
-        const newVal = payload[field];
-        const oldVal = original[field];
-        const changed = newVal !== oldVal && !(newVal == null && oldVal == null);
-        if (changed) {
-          pendingChanges[field] = newVal;
-          delete directPayload[field];
-        }
-      }
-
-      // Дрібні зміни — зберігаємо одразу
-      if (Object.keys(directPayload).length > 0) {
-        await supabase.from('recipes').update(directPayload).eq('id', editingRecipeId).eq('user_id', user.id);
-      }
-
-      if (Object.keys(pendingChanges).length > 0) {
-        // Значущі зміни — йдуть на перевірку
-        await supabase.from('recipe_pending_updates').insert({
-          recipe_id: editingRecipeId,
-          user_id: user.id,
-          changes: pendingChanges,
-        });
-        await supabase.from('recipes').update({ has_pending_update: true }).eq('id', editingRecipeId).eq('user_id', user.id);
-        showToast('Зміни надіслані на перевірку');
-      } else {
-        showToast('Рецепт оновлено!');
-      }
-    } else {
-      // Draft або pending — зберігаємо напряму
-      const { error } = await supabase.from('recipes').update(payload).eq('id', editingRecipeId).eq('user_id', user.id);
-      if (error) {
-        console.error('Помилка оновлення:', error);
-        showToast('Помилка збереження', 'error');
-        return false;
-      }
-      showToast('Рецепт оновлено!');
-    }
-  } else {
-    const { error } = await supabase.from('recipes').insert([payload]);
-    if (error) {
-      console.error('Помилка додавання:', error);
-      showToast('Помилка збереження', 'error');
-      return false;
-    }
-    showToast('Рецепт збережено!');
-  }
-
-  return true;
-}
-
-
-// =============================================================
-// 13. АВТО-РОЗРАХУНОК КАЛОРІЙ
-// =============================================================
-
-const calculateKcal = () => {
-  const p = parseFloat(document.getElementById('prev-proteins')?.value) || 0;
-  const c = parseFloat(document.getElementById('prev-carbs')?.value) || 0;
-  const f = parseFloat(document.getElementById('prev-fats')?.value) || 0;
-
-  const totalKcal = Math.round(p * 4 + c * 4 + f * 9);
-
-  const kcalInput = document.getElementById('prev-calories');
-  if (kcalInput) {
-    kcalInput.value = totalKcal > 0 ? totalKcal : '';
   }
 };
 
@@ -1720,11 +1499,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     await openRecipeView(recipeParam);
   }
 
-  ['prev-proteins', 'prev-carbs', 'prev-fats'].forEach((id) => {
-    const el = document.getElementById(id);
-    if (el) el.addEventListener('input', calculateKcal);
-  });
-
   const ratingContainer = document.querySelector('.recipe-rating');
   if (ratingContainer) {
     ratingContainer.addEventListener('click', async (e) => {
@@ -1756,7 +1530,6 @@ if (addBtn) {
   });
 }
 
-if (closeBtn) closeBtn.addEventListener('click', closeModal);
 if (closeViewModalBtn) closeViewModalBtn.addEventListener('click', closeViewModal);
 if (closeViewBtn) closeViewBtn.addEventListener('click', closeViewModal);
 
@@ -1776,54 +1549,5 @@ if (saveNotesBtn) {
 
 
 window.addEventListener('click', (e) => {
-  if (e.target === modal) closeModal();
   if (e.target === viewModal) closeViewModal();
-});
-
-if (cancelPreview) {
-  cancelPreview.addEventListener('click', closeModal);
-}
-
-if (previewFormElement) {
-  previewFormElement.addEventListener('submit', async (e) => {
-    e.preventDefault();
-
-    const fileInput = document.getElementById('recipe-image');
-    const urlInput = document.getElementById('recipe-image-url');
-    let finalImageUrl = 'https://images.unsplash.com/photo-1495521821757-a1efb6729352?q=80&w=500';
-
-    if (fileInput?.files?.[0]) {
-      finalImageUrl = await toBase64(fileInput.files[0]);
-    } else if (urlInput?.value.trim()) {
-      finalImageUrl = urlInput.value.trim();
-    } else if (window.tempAiImage) {
-      finalImageUrl = window.tempAiImage;
-    }
-
-    const recipeData = {
-      name: document.getElementById('prev-name').value,
-      image: finalImageUrl,
-      calories: document.getElementById('prev-calories')?.value || 0,
-      category: document.getElementById('prev-category').value,
-      ingredients: normalizeIngredients(document.getElementById('prev-ingredients').value),
-      steps: document.getElementById('prev-steps').value,
-      proteins: document.getElementById('prev-proteins')?.value || 0,
-      carbs: document.getElementById('prev-carbs')?.value || 0,
-      fats: document.getElementById('prev-fats')?.value || 0,
-    };
-
-    const success = await saveRecipe(recipeData);
-
-    if (success) {
-      editingRecipeId = null;
-      window.tempAiImage = null;
-      await loadAndDisplayRecipes(true);
-      closeModal();
-    }
-  });
-}
-
-document.querySelectorAll('textarea').forEach((txt) => {
-  txt.style.overflow = 'hidden';
-  txt.addEventListener('input', () => autoResizer(txt));
 });
