@@ -575,6 +575,24 @@ export function clearIngredients() {
   updateTotals();
 }
 
+export async function setIngredientsFromText(text) {
+  const normalizedText = String(text || '').trim();
+
+  ingredientsList = [];
+
+  const textarea = getTextareaEl();
+  if (textarea) textarea.value = normalizedText;
+
+  if (!normalizedText) {
+    renderIngredientsList();
+    updateTotals();
+    notifyChange();
+    return;
+  }
+
+  await parseAndAddIngredients(normalizedText);
+}
+
 export function setIngredients(ingredients) {
   ingredientsList = ingredients || [];
   renderIngredientsList();

@@ -6,7 +6,7 @@ import { i18n } from './i18n.js';
 import { getRecipeDisplayName } from './recipe-utils.js';
 import { lockScroll, unlockScroll } from './scroll-lock.js';
 import { showLoading, showConfirmModal } from './ui-components.js';
-import { initRecipeModal, openRecipeModal } from './recipe-modal.js';
+import { initRecipeModal, openRecipeModal, openRecipeModalForEdit } from './recipe-modal.js';
 import {
   iconSearch, iconGlobe as iconGlobal, iconMoreVertical, iconChevronDown,
   iconHeart, iconPlus, iconEdit, iconTrash, iconBookmark, iconFlag,
@@ -259,6 +259,28 @@ function getCategoryLabel(value) {
 function getDifficultyLabel(value) {
   const key = `diff_${value}`;
   return t(key) !== key ? t(key) : value;
+}
+
+function parsePositiveNumber(value) {
+  const normalized = String(value ?? '').replace(',', '.').trim();
+  if (!normalized) return null;
+  const parsed = Number(normalized);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+}
+
+function formatRecipeMacroValue(value, decimals = 1) {
+  const num = Number(value) || 0;
+  if (decimals === 0) return String(Math.round(num));
+  return num.toFixed(decimals).replace(/\.0$/, '');
+}
+
+function getRecipeNutritionNote(recipe) {
+  const totalWeight = parsePositiveNumber(recipe?.total_weight);
+  if (totalWeight) {
+    return `Готова страва: приблизно ${formatRecipeMacroValue(recipe?.kcal, 0)} ккал на 100 г`;
+  }
+
+  return 'Сума сирих інгредієнтів. Вкажіть вагу готової страви, щоб побачити КБЖУ на 100 г.';
 }
 
 // =============================================================
@@ -881,6 +903,13 @@ async function handleFavoriteClick(btn, recipeId) {
 // =============================================================
 
 export async function openRecipeView(recipeId) {
+  if (!currentUser) {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    currentUser = user;
+  }
+
   const { data: recipe, error } = await supabase
     .from('recipes')
     .select('*')
@@ -908,6 +937,11 @@ export async function openRecipeView(recipeId) {
   setT('view-proteins', recipe.protein);
   setT('view-carbs', recipe.carbs);
   setT('view-fats', recipe.fat);
+  setT(
+    'view-total-weight',
+    recipe.total_weight ? `Вага готової страви: ${formatRecipeMacroValue(recipe.total_weight, 0)} г` : 'Вага готової страви не вказана',
+  );
+  setT('view-nutrition-note', getRecipeNutritionNote(recipe));
 
   updateStarsUI(recipe.rating || 0);
 
@@ -1086,28 +1120,19 @@ function updateRecipeViewActions(recipe, isOwn) {
 // =============================================================
 
 function editRecipe(recipe) {
-  const name = getRecipeName(recipe);
-
-  editingRecipeId = recipe.id;
-  _editingRecipeOriginal = recipe;
-  if (viewModal) viewModal.classList.remove('is-active');
-
-  if (modal) {
-    modal.classList.add('is-active');
-    const options = document.getElementById('initial-options-view');
-    const form = document.getElementById('recipe-preview-form');
-    if (options) options.style.display = 'none';
-    if (form) form.hidden = false;
-
-    setInputVal('prev-name', name);
-    setInputVal('prev-calories', recipe.kcal);
-    setInputVal('prev-ingredients', recipe.ingredients);
-    setInputVal('prev-steps', recipe.steps);
-    setInputVal('prev-category', recipe.category);
-    setInputVal('prev-proteins', recipe.protein);
-    setInputVal('prev-carbs', recipe.carbs);
-    setInputVal('prev-fats', recipe.fat);
+  if (!isOwnRecipe(recipe)) {
+    showToast('Редагувати можна лише власні рецепти', 'error');
+    return;
   }
+
+  if (viewModal) {
+    viewModal.classList.remove('is-active');
+    unlockScroll('recipe-view-modal');
+  }
+
+  openRecipeModalForEdit(recipe, async () => {
+    await loadAndDisplayRecipes(true);
+  });
 }
 
 // =============================================================
@@ -1322,6 +1347,10 @@ async function saveRecipe(recipeData) {
   };
 
   if (editingRecipeId !== null) {
+    if (!user || _editingRecipeOriginal?.user_id !== user.id) {
+      showToast('Редагувати можна лише власні рецепти', 'error');
+      return false;
+    }
     // Для опублікованих рецептів — значущі зміни йдуть на перевірку
     const original = _editingRecipeOriginal;
     const MODERATED = ['image', 'steps', 'name_ua'];
@@ -1342,7 +1371,7 @@ async function saveRecipe(recipeData) {
 
       // Дрібні зміни — зберігаємо одразу
       if (Object.keys(directPayload).length > 0) {
-        await supabase.from('recipes').update(directPayload).eq('id', editingRecipeId);
+        await supabase.from('recipes').update(directPayload).eq('id', editingRecipeId).eq('user_id', user.id);
       }
 
       if (Object.keys(pendingChanges).length > 0) {
@@ -1352,14 +1381,14 @@ async function saveRecipe(recipeData) {
           user_id: user.id,
           changes: pendingChanges,
         });
-        await supabase.from('recipes').update({ has_pending_update: true }).eq('id', editingRecipeId);
+        await supabase.from('recipes').update({ has_pending_update: true }).eq('id', editingRecipeId).eq('user_id', user.id);
         showToast('Зміни надіслані на перевірку');
       } else {
         showToast('Рецепт оновлено!');
       }
     } else {
       // Draft або pending — зберігаємо напряму
-      const { error } = await supabase.from('recipes').update(payload).eq('id', editingRecipeId);
+      const { error } = await supabase.from('recipes').update(payload).eq('id', editingRecipeId).eq('user_id', user.id);
       if (error) {
         console.error('Помилка оновлення:', error);
         showToast('Помилка збереження', 'error');

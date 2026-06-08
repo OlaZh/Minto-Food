@@ -5,6 +5,7 @@ import {
   getIngredientsText,
   getTotals,
   clearIngredients,
+  setIngredientsFromText,
   setLanguage,
 } from './recipe-ingredients.js';
 import { showToast, toBase64, setInputVal } from './utils.js';
@@ -14,6 +15,7 @@ import { iconCamera, iconLock, iconGlobe, iconBookOpen } from './icons.js';
 import {
   initBookSelector,
   createInlineBookSelector,
+  getRecipeBooks,
   getSelectedBooksFromContainer,
   saveRecipeToBooks,
   refreshBooks,
@@ -22,6 +24,8 @@ import {
 let recipeVisibility = 'private';
 let recipeModalInstance = null;
 let onRecipeSavedCallback = null;
+let editingRecipeId = null;
+let editingRecipeOriginal = null;
 
 function parsePositiveNumber(value) {
   const normalized = String(value ?? '').replace(',', '.').trim();
@@ -237,6 +241,17 @@ function resetVisibilityToggle() {
   });
 }
 
+function setVisibilityToggle(value = 'private') {
+  recipeVisibility = value === 'public' ? 'public' : 'private';
+  const toggle = document.getElementById('visibility-toggle');
+  if (!toggle) return;
+
+  const options = toggle.querySelectorAll('.visibility-toggle__option');
+  options.forEach((option) => {
+    option.classList.toggle('visibility-toggle__option--active', option.dataset.visibility === recipeVisibility);
+  });
+}
+
 function bindIngredientBuilder() {
   const lang = getLang();
   setLanguage(lang);
@@ -290,6 +305,8 @@ export async function initRecipeModal() {
 
 export async function openRecipeModal(onSaved = null) {
   onRecipeSavedCallback = onSaved;
+  editingRecipeId = null;
+  editingRecipeOriginal = null;
   resetRecipeForm();
 
   if (recipeModalInstance) {
@@ -300,6 +317,29 @@ export async function openRecipeModal(onSaved = null) {
   await showRecipeForm();
 }
 
+export async function openRecipeModalForEdit(recipe, onSaved = null) {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user || !recipe || recipe.user_id !== user.id) {
+    showToast('Редагувати можна лише власні рецепти', 'error');
+    return;
+  }
+
+  onRecipeSavedCallback = onSaved;
+  editingRecipeId = recipe?.id ?? null;
+  editingRecipeOriginal = recipe || null;
+  resetRecipeForm();
+
+  if (recipeModalInstance) {
+    recipeModalInstance.classList.add('is-active');
+    lockScroll('recipe-create-modal');
+  }
+
+  await showRecipeForm(recipe);
+}
+
 export function closeRecipeModal() {
   if (recipeModalInstance) {
     recipeModalInstance.classList.remove('is-active');
@@ -307,6 +347,8 @@ export function closeRecipeModal() {
   }
 
   onRecipeSavedCallback = null;
+  editingRecipeId = null;
+  editingRecipeOriginal = null;
   resetRecipeForm();
 }
 
@@ -316,6 +358,9 @@ function resetRecipeForm() {
 
   clearIngredients();
   resetVisibilityToggle();
+
+  const booksSection = document.querySelector('.recipe-books-section');
+  if (booksSection) booksSection.hidden = false;
 
   const bookSelector = document.getElementById('rm-book-selector');
   if (bookSelector) bookSelector.innerHTML = '';
@@ -327,7 +372,10 @@ async function showRecipeForm(data = null) {
   bindIngredientBuilder();
 
   await refreshBooks();
-  createInlineBookSelector('rm-book-selector');
+  const booksSection = document.querySelector('.recipe-books-section');
+  if (booksSection) booksSection.hidden = !!data;
+  const preselectedBookIds = data?.id ? await getRecipeBooks(data.id) : [];
+  createInlineBookSelector('rm-book-selector', preselectedBookIds);
 
   if (data) {
     setInputVal('rm-name', data.name || data.title);
@@ -339,6 +387,8 @@ async function showRecipeForm(data = null) {
     setInputVal('rm-total-weight', data.total_weight);
     setInputVal('rm-category', data.category || 'lunch');
     setInputVal('rm-image-url', data.image);
+    setVisibilityToggle(data.is_public ? 'public' : 'private');
+    await setIngredientsFromText(data.ingredients || '');
   }
 
   updateRecipeNutritionPreview();
@@ -362,6 +412,8 @@ async function saveRecipe() {
     finalImage = await toBase64(fileInput.files[0]);
   } else if (urlInput?.value.trim()) {
     finalImage = urlInput.value.trim();
+  } else if (editingRecipeOriginal?.image) {
+    finalImage = editingRecipeOriginal.image;
   }
 
   const totals = getTotals();
@@ -411,7 +463,84 @@ async function saveRecipe() {
     is_public: isPublicSubmission,
   };
 
-  const { data, error } = await supabase.from('recipes').insert([payload]).select().single();
+  let data = null;
+  let error = null;
+
+  if (editingRecipeId !== null && editingRecipeOriginal?.user_id !== user.id) {
+    showToast('Редагувати можна лише власні рецепти', 'error');
+    return;
+  }
+
+  if (editingRecipeId !== null) {
+    if (editingRecipeOriginal?.status === 'published') {
+      const moderatedFields = ['image', 'steps', 'name_ua'];
+      const pendingChanges = {};
+      const directPayload = { ...payload };
+
+      moderatedFields.forEach((field) => {
+        const newValue = payload[field];
+        const oldValue = editingRecipeOriginal?.[field];
+        const changed = newValue !== oldValue && !(newValue == null && oldValue == null);
+
+        if (changed) {
+          pendingChanges[field] = newValue;
+          delete directPayload[field];
+        }
+      });
+
+      if (Object.keys(directPayload).length > 0) {
+        const directResult = await supabase
+          .from('recipes')
+          .update(directPayload)
+          .eq('id', editingRecipeId)
+          .eq('user_id', user.id);
+        error = directResult.error || null;
+      }
+
+      if (!error && Object.keys(pendingChanges).length > 0) {
+        const pendingResult = await supabase.from('recipe_pending_updates').insert({
+          recipe_id: editingRecipeId,
+          user_id: user.id,
+          changes: pendingChanges,
+        });
+        error = pendingResult.error || null;
+
+        if (!error) {
+          const pendingFlagResult = await supabase
+            .from('recipes')
+            .update({ has_pending_update: true })
+            .eq('id', editingRecipeId)
+            .eq('user_id', user.id);
+          error = pendingFlagResult.error || null;
+        }
+      }
+
+      if (!error) {
+        const fetchResult = await supabase
+          .from('recipes')
+          .select('*')
+          .eq('id', editingRecipeId)
+          .eq('user_id', user.id)
+          .single();
+        data = fetchResult.data || null;
+        error = fetchResult.error || null;
+      }
+    } else {
+      const updateResult = await supabase
+        .from('recipes')
+        .update(payload)
+        .eq('id', editingRecipeId)
+        .eq('user_id', user.id)
+        .select()
+        .single();
+      data = updateResult.data || null;
+      error = updateResult.error || null;
+    }
+  } else {
+    const insertResult = await supabase.from('recipes').insert([payload]).select().single();
+    data = insertResult.data || null;
+    error = insertResult.error || null;
+  }
 
   if (error) {
     console.error('Помилка збереження рецепту:', error);
@@ -420,6 +549,17 @@ async function saveRecipe() {
   }
 
   const ingredients = getIngredients();
+  if (editingRecipeId !== null && data?.id) {
+    const { error: deleteIngredientsError } = await supabase
+      .from('product_recipe')
+      .delete()
+      .eq('recipe_id', data.id);
+
+    if (deleteIngredientsError) {
+      console.error('Error replacing recipe ingredients:', deleteIngredientsError);
+    }
+  }
+
   if (ingredients.length > 0 && data?.id) {
     const ingredientRows = ingredients
       .filter((ingredient) => ingredient.id)
@@ -439,14 +579,34 @@ async function saveRecipe() {
   }
 
   const selectedBookIds = getSelectedBooksFromContainer('rm-book-selector');
-  if (selectedBookIds.length > 0 && data?.id) {
+  if (editingRecipeId === null && selectedBookIds.length > 0 && data?.id) {
     await saveRecipeToBooks(data.id, selectedBookIds);
   }
 
+
   showToast(status === 'pending' ? 'Рецепт надіслано на модерацію!' : 'Рецепт збережено!');
+  if (editingRecipeId !== null) {
+  }
+
+  }
+
+  if (editingRecipeId !== null) {
+    const hasModeratedChanges = editingRecipeOriginal?.status === 'published' && (
+      payload.name_ua !== editingRecipeOriginal?.name_ua ||
+      payload.steps !== editingRecipeOriginal?.steps ||
+      payload.image !== editingRecipeOriginal?.image
+    );
+
+    showToast(hasModeratedChanges ? 'Зміни надіслані на перевірку' : 'Рецепт оновлено!');
+  } else if (selectedBookIds.length === 0) {
+    showToast(status === 'pending' ? 'Рецепт надіслано на модерацію!' : 'Рецепт збережено!');
+  }
+
   closeRecipeModal();
 
   if (onRecipeSavedCallback) {
     onRecipeSavedCallback(data);
   }
+
+  return;
 }
