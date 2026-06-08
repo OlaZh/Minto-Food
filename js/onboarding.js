@@ -31,6 +31,18 @@ export async function checkOnboarding(user) {
 
   _suggested = await _generateNickname(user);
 
+  // Фіксуємо показ ОДРАЗУ, ще до вибору користувача. Так онбординг
+  // з'явиться рівно один раз за весь час — навіть якщо вкладку закриють
+  // чи перезавантажать без натискання кнопки (інакше welcome_intro_seen
+  // лишиться false і вікно вилазитиме при кожному SIGNED_IN).
+  // Нікнейм уже згенеровано, тож акаунт не лишається безіменним.
+  await supabase
+    .from('profiles')
+    .upsert(
+      { id: user.id, welcome_intro_seen: true },
+      { onConflict: 'id' },
+    );
+
   return new Promise(resolve => {
     _resolveFn = resolve;
     _mount(_suggested);
