@@ -1250,6 +1250,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   // ================== ІНІЦІАЛІЗАЦІЯ ==================
+  // Числа дат рахуються локально — проставляємо їх ОДРАЗУ, не чекаючи
+  // на Supabase. Інакше ліва колонка стрибає у висоту, коли дати
+  // підтягуються після async-запиту (layout shift / блимання).
+  updateWeekLabel();
+
   await initAuth();
   initRecipeModal();
   initDragAndDrop();
