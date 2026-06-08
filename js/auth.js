@@ -8,6 +8,7 @@ import { showToast } from './utils.js';
 import { lockScroll, unlockScroll } from './scroll-lock.js';
 import { getLang } from './storage.js';
 import { iconChevronDown, iconUser, iconShield, iconLogOut, iconEye } from './icons.js';
+import { getAdminAppOrigin, getMainSiteUrl } from './runtime-config.js';
 
 // =============================================================
 // СТАН
@@ -201,7 +202,7 @@ export async function signInWithGoogle() {
   const { error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
     options: {
-      redirectTo: 'https://minto-food.vercel.app/',
+      redirectTo: getMainSiteUrl(),
     },
   });
 
@@ -680,8 +681,62 @@ export async function openAdminPanel() {
     showToast('Спочатку увійдіть в акаунт', 'error');
     return;
   }
-  const url = new URL('https://minto-food-xv5f.vercel.app/auth/transfer');
-  url.searchParams.set('access_token', session.access_token);
-  url.searchParams.set('refresh_token', session.refresh_token);
-  window.open(url.toString(), '_blank');
+
+  const adminOrigin = getAdminAppOrigin();
+  const transferUrl = new URL('/auth/transfer', adminOrigin);
+  const popup = window.open(transferUrl.toString(), '_blank');
+
+  if (!popup) {
+    showToast('Не вдалося відкрити адмінку. Дозвольте pop-up для цього сайту.', 'error');
+    return;
+  }
+
+  const payload = {
+    type: 'MINTO_ADMIN_SESSION_TRANSFER',
+    accessToken: session.access_token,
+    refreshToken: session.refresh_token,
+  };
+
+  let attempts = 0;
+  const maxAttempts = 40;
+  let transferFinished = false;
+
+  function finishTransfer() {
+    transferFinished = true;
+    window.clearInterval(timer);
+    window.removeEventListener('message', handleTransferMessage);
+  }
+
+  const timer = window.setInterval(() => {
+    if (popup.closed) {
+      finishTransfer();
+      return;
+    }
+
+    popup.postMessage(payload, adminOrigin);
+    attempts += 1;
+
+    if (attempts >= maxAttempts) {
+      finishTransfer();
+      showToast('Адмінка не відповіла на запит входу. Спробуйте ще раз.', 'error');
+    }
+  }, 400);
+
+  function handleTransferMessage(event) {
+    if (transferFinished) return;
+    if (event.origin !== adminOrigin) return;
+    if (event.data?.type === 'MINTO_ADMIN_TRANSFER_READY' || event.data?.type === 'MINTO_ADMIN_SESSION_TRANSFER_ACK') {
+      popup.postMessage(payload, adminOrigin);
+    }
+    if (event.data?.type === 'MINTO_ADMIN_SESSION_TRANSFER_ACK') {
+      finishTransfer();
+      return;
+    }
+    if (event.data?.type === 'MINTO_ADMIN_SESSION_TRANSFER_ERROR') {
+      finishTransfer();
+      showToast(event.data?.message || 'Не вдалося передати сесію в адмінку', 'error');
+    }
+  }
+
+  window.addEventListener('message', handleTransferMessage);
 }

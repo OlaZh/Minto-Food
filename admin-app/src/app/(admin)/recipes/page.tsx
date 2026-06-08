@@ -1,8 +1,7 @@
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
-import { Plus, Edit, Trash2, Clock } from 'lucide-react'
+import { Plus, Edit, Clock } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import { publishScheduledRecipes } from '@/app/actions/recipes'
 
 const STATUS_LABELS: Record<string, { label: string; class: string }> = {
@@ -14,6 +13,26 @@ const STATUS_LABELS: Record<string, { label: string; class: string }> = {
 }
 
 const PAGE_SIZE = 100
+
+type RecipeAuthor = {
+  display_name: string | null
+}
+
+function getAuthorProfile(value: unknown): RecipeAuthor | null {
+  if (Array.isArray(value)) {
+    const first = value[0]
+    if (first && typeof first === 'object' && 'display_name' in first) {
+      return first as RecipeAuthor
+    }
+    return null
+  }
+
+  if (value && typeof value === 'object' && 'display_name' in value) {
+    return value as RecipeAuthor
+  }
+
+  return null
+}
 
 export default async function RecipesPage({
   searchParams,
@@ -29,7 +48,7 @@ export default async function RecipesPage({
   let query = supabase
     .from('recipes')
     .select(`
-      id, name_ua, name_en, image, status, created_at, is_public,
+      id, name_ua, name_en, name_pl, image, status, created_at, is_public,
       kcal, category, type, available_locales, author_profile_id,
       author_profile:recipe_author_profiles(display_name)
     `, { count: 'exact' })
@@ -41,13 +60,13 @@ export default async function RecipesPage({
     query = query.eq('status', params.status)
   }
   if (params.q) {
-    query = query.or(`name_ua.ilike.%${params.q}%,name_en.ilike.%${params.q}%`)
+    query = query.or(`name_ua.ilike.%${params.q}%,name_en.ilike.%${params.q}%,name_pl.ilike.%${params.q}%`)
   }
 
   const { data: recipes, error, count } = await query
   const totalPages = Math.ceil((count ?? 0) / PAGE_SIZE)
 
-  const statuses = ['all', 'draft', 'scheduled', 'published', 'pending']
+  const statuses = ['all', 'draft', 'scheduled', 'published', 'pending', 'rejected']
 
   return (
     <div>
@@ -82,7 +101,7 @@ export default async function RecipesPage({
                 : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'
             }`}
           >
-            {{ all: 'Всі', draft: 'Чернетки', scheduled: 'Заплановані', published: 'Опубліковані', pending: 'Модерація' }[s]}
+            {{ all: 'Всі', draft: 'Чернетки', scheduled: 'Заплановані', published: 'Опубліковані', pending: 'Модерація', rejected: 'Відхилені' }[s]}
           </Link>
         ))}
         <form className="ml-auto">
@@ -118,10 +137,10 @@ export default async function RecipesPage({
         </div>
       )}
 
-      <div className="divide-y divide-gray-100">
+        <div className="divide-y divide-gray-100">
         {recipes?.map(recipe => {
           const st = STATUS_LABELS[recipe.status] ?? STATUS_LABELS.draft
-          const author = (recipe as any).author_profile
+          const author = getAuthorProfile(recipe.author_profile)
           return (
             <Link
               key={recipe.id}
@@ -140,7 +159,7 @@ export default async function RecipesPage({
               {/* Info */}
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium truncate">
-                  {recipe.name_ua || recipe.name_en || '(без назви)'}
+                  {recipe.name_ua || recipe.name_en || recipe.name_pl || '(без назви)'}
                 </p>
                 <div className="flex items-center gap-2 mt-0.5 flex-wrap">
                   <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${st.class}`}>

@@ -1,16 +1,41 @@
 'use client'
 
+import Link from 'next/link'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import ActionButton from '@/components/moderation/ActionButton'
-import { approveProduct, updateProductNutrition, softDeleteProduct, mergeProduct } from '@/app/actions/moderation'
+import { approveProduct, updateProductNutrition, softDeleteProduct } from '@/app/actions/moderation'
 
-interface ProductsClientProps {
-  products: any[]
+type ProductAuthor = {
+  full_name: string | null
 }
 
-function NutritionEditor({ product, onSaved }: { product: any; onSaved: () => void }) {
+type ProductListItem = {
+  id: number
+  name_ua: string | null
+  name_en: string | null
+  category_id: string | null
+  kcal: number | null
+  protein: number | null
+  fat: number | null
+  carbs: number | null
+  fiber: number | null
+  label_type: string | null
+  food_state: 'raw' | 'dry' | 'cooked' | null
+  raw_edible: string | null
+  created_at: string | null
+  author: ProductAuthor | null
+}
+
+interface ProductsClientProps {
+  products: ProductListItem[]
+  page: number
+  totalPages: number
+  totalCount: number
+}
+
+function NutritionEditor({ product, onSaved }: { product: ProductListItem; onSaved: () => void }) {
   const [kcal, setKcal] = useState(String(product.kcal ?? ''))
   const [protein, setProtein] = useState(String(product.protein ?? ''))
   const [fat, setFat] = useState(String(product.fat ?? ''))
@@ -33,8 +58,8 @@ function NutritionEditor({ product, onSaved }: { product: any; onSaved: () => vo
         food_state: foodState,
       })
       onSaved()
-    } catch (e: any) {
-      toast.error(e?.message ?? 'Помилка')
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Помилка')
     }
     setSaving(false)
   }
@@ -101,7 +126,7 @@ const RAW_EDIBLE_OPTIONS = [
   { value: 'never',     label: 'Не показувати' },
 ]
 
-export default function ProductsClient({ products }: ProductsClientProps) {
+export default function ProductsClient({ products, page, totalPages, totalCount }: ProductsClientProps) {
   const router = useRouter()
   const [search, setSearch] = useState('')
   const [editingId, setEditingId] = useState<number | null>(null)
@@ -118,7 +143,7 @@ export default function ProductsClient({ products }: ProductsClientProps) {
     <div>
       <div className="sticky top-0 z-10 bg-white border-b border-gray-200 px-4 md:px-8 py-4 flex items-center justify-between">
         <h1 className="text-lg font-semibold">Юзерські продукти</h1>
-        <span className="text-sm text-gray-400">{filtered.length} записів</span>
+        <span className="text-sm text-gray-400">{filtered.length} з {totalCount}</span>
       </div>
 
       <div className="px-4 md:px-8 py-3 border-b border-gray-100">
@@ -130,6 +155,12 @@ export default function ProductsClient({ products }: ProductsClientProps) {
           className="w-full max-w-sm text-sm border border-gray-200 rounded-md px-3 py-1.5 outline-none focus:border-gray-400"
         />
       </div>
+
+      {totalCount > 0 && (
+        <div className="px-4 md:px-8 py-2 text-xs text-gray-400 border-b border-gray-100">
+          {totalCount} продуктів · сторінка {page} з {totalPages}
+        </div>
+      )}
 
       {filtered.length === 0 && (
         <div className="px-4 md:px-8 py-16 text-center text-gray-400 text-sm">Продуктів немає 🌿</div>
@@ -149,7 +180,7 @@ export default function ProductsClient({ products }: ProductsClientProps) {
                   <div className="flex flex-wrap gap-x-3 gap-y-0.5 mt-0.5 text-xs text-gray-400">
                     {product.kcal != null && <span>{product.kcal} ккал</span>}
                     {product.protein != null && (
-                      <span>Б:{product.protein} Ж:{product.fat} В:{product.carbs}{product.fiber > 0 ? ` Кл:${product.fiber}` : ''}</span>
+                      <span>Б:{product.protein} Ж:{product.fat} В:{product.carbs}{(product.fiber ?? 0) > 0 ? ` Кл:${product.fiber}` : ''}</span>
                     )}
                     {product.label_type && product.label_type !== 'EU' && (
                       <span className="text-amber-500">{product.label_type}</span>
@@ -225,6 +256,30 @@ export default function ProductsClient({ products }: ProductsClientProps) {
           )
         })}
       </div>
+
+      {totalPages > 1 && (
+        <div className="px-4 md:px-8 py-4 border-t border-gray-100 flex items-center justify-between gap-2">
+          <Link
+            href={`/products?page=${page - 1}`}
+            className={`text-xs px-3 py-1.5 rounded-md border transition-colors ${page <= 1 ? 'pointer-events-none opacity-30 border-gray-200' : 'border-gray-200 hover:border-gray-400'}`}
+            aria-disabled={page <= 1}
+          >
+            ← Попередня
+          </Link>
+
+          <span className="text-xs text-gray-400">
+            сторінка {page} з {totalPages}
+          </span>
+
+          <Link
+            href={`/products?page=${page + 1}`}
+            className={`text-xs px-3 py-1.5 rounded-md border transition-colors ${page >= totalPages ? 'pointer-events-none opacity-30 border-gray-200' : 'border-gray-200 hover:border-gray-400'}`}
+            aria-disabled={page >= totalPages}
+          >
+            Наступна →
+          </Link>
+        </div>
+      )}
     </div>
   )
 }

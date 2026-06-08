@@ -249,9 +249,10 @@
 
 ## 🏗 ФАЗА 10.9: Структурний рефакторинг HTML/SCSS — уніфікація layout
 
-> **Статус:** потрібно зробити (травень 2026).
-> **Проблема:** кожна сторінка має різну структуру між `<header>` і `<footer>` — деякі мають зайві обгортки `div.app-bg > div.app-shell`, деякі не мають `<main>` взагалі, деякі мають `<main>` всередині grid-колонки. Це спричиняє різні відступи, нестабільний sticky-footer і невалідний HTML.
+> **Статус:** ✅ HTML-рефакторинг зроблено (травень 2026) — залишилася тільки фінальна QA (теми/мобайл).
+> **Проблема (вирішена):** кожна сторінка мала різну структуру між `<header>` і `<footer>` — деякі мали зайві обгортки `div.app-bg > div.app-shell`, деякі не мали `<main>` взагалі, деякі мали `<main>` всередині grid-колонки. Це спричиняло різні відступи, нестабільний sticky-footer і невалідний HTML.
 > **Принцип:** одна канонічна структура на всіх сторінках, нуль зайвих обгорток.
+> **Перевірено по коду (червень 2026):** 0 збігів `app-bg`/`app-shell` у всіх HTML; кожна сторінка має `<main class="main">`; вкладені/відсутні `<main>` усунено.
 
 ---
 
@@ -317,16 +318,16 @@ body.page.page--day-menu
 ```
 
 **Конкретні зміни в HTML:**
-- [ ] Видалити рядок `<div class="app-bg">`
-- [ ] Видалити рядок `<div class="app-shell">`
-- [ ] Замінити `<div class="container">` → `<main class="main"><div class="container">`
-- [ ] Замінити внутрішній `<main class="main">` (grid-колонка) → `<div class="meals-column">`
-- [ ] Замінити відповідний `</main>` (grid-колонки) → `</div>`
-- [ ] Виправити закриваючі теги: `</div></main>` замість `</div></div></div>`
+- [x] ✅ Видалити рядок `<div class="app-bg">`
+- [x] ✅ Видалити рядок `<div class="app-shell">`
+- [x] ✅ Замінити `<div class="container">` → `<main class="main"><div class="container">`
+- [x] ✅ Замінити внутрішній `<main class="main">` (grid-колонка) → `<div class="meals-column">`
+- [x] ✅ Замінити відповідний `</main>` (grid-колонки) → `</div>`
+- [x] ✅ Виправити закриваючі теги: `</div></main>` замість `</div></div></div>`
 
 **Конкретні зміни в SCSS (`_layout.scss` + `_day-menu.scss`):**
-- [ ] Додати `.meals-column` туди де є `.main` як grid-колонка: `display: flex; flex-direction: column; min-width: 0; flex: 1;`
-- [ ] Замінити `.page--day-menu .main` → `.page--day-menu .meals-column` де мається на увазі колонка
+- [x] ✅ Додати `.meals-column` туди де є `.main` як grid-колонка: `display: flex; flex-direction: column; min-width: 0; flex: 1;`
+- [x] ✅ Замінити `.page--day-menu .main` → `.page--day-menu .meals-column` де мається на увазі колонка
 
 ---
 
@@ -344,11 +345,11 @@ main.main > div.container
 ```
 
 **Конкретні зміни в HTML:**
-- [ ] Видалити `<div class="app-bg">`
-- [ ] Видалити `<div class="app-shell">`
-- [ ] Замінити `<div class="container">` → `<main class="main">`
-- [ ] Замінити `<main class="main">` → `<div class="container">`
-- [ ] Виправити закриваючі теги: `</div></main>` замість `</main></div></div></div>`
+- [x] ✅ Видалити `<div class="app-bg">`
+- [x] ✅ Видалити `<div class="app-shell">`
+- [x] ✅ Замінити `<div class="container">` → `<main class="main">`
+- [x] ✅ Замінити `<main class="main">` → `<div class="container">`
+- [x] ✅ Виправити закриваючі теги: `</div></main>` замість `</main></div></div></div>`
 
 ---
 
@@ -366,10 +367,10 @@ main.main.recipe-page > div.container
 *(зберігаємо клас `recipe-page` для page-specific стилів)*
 
 **Конкретні зміни в HTML:**
-- [ ] Видалити `<div class="app-bg">`
-- [ ] Видалити `<div class="app-shell">`
-- [ ] Замінити `<main class="recipe-page">` → `<main class="main recipe-page">`
-- [ ] Виправити закриваючі теги: прибрати два зайві `</div>`
+- [x] ✅ Видалити `<div class="app-bg">`
+- [x] ✅ Видалити `<div class="app-shell">`
+- [x] ✅ Замінити `<main class="recipe-page">` → `<main class="main recipe-page">`
+- [x] ✅ Виправити закриваючі теги: прибрати два зайві `</div>`
 
 ---
 
@@ -386,10 +387,10 @@ main.main.shop-page > div.container
 ```
 
 **Конкретні зміни в HTML:**
-- [ ] Видалити `<div class="app-bg">`
-- [ ] Видалити `<div class="app-shell">`
-- [ ] Замінити `<main class="shop-page">` → `<main class="main shop-page">`
-- [ ] Виправити закриваючі теги: прибрати два зайві `</div>`
+- [x] ✅ Видалити `<div class="app-bg">`
+- [x] ✅ Видалити `<div class="app-shell">`
+- [x] ✅ Замінити `<main class="shop-page">` → `<main class="main shop-page">`
+- [x] ✅ Виправити закриваючі теги: прибрати два зайві `</div>`
 
 ---
 
@@ -407,9 +408,9 @@ main.main > div.container
 ```
 
 **Конкретні зміни в HTML:**
-- [ ] Видалити `<div class="app-bg">`
-- [ ] Видалити `<div class="app-shell">`
-- [ ] Виправити закриваючі теги: прибрати два зайні `</div>`
+- [x] ✅ Видалити `<div class="app-bg">`
+- [x] ✅ Видалити `<div class="app-shell">`
+- [x] ✅ Виправити закриваючі теги: прибрати два зайні `</div>`
 
 ---
 
@@ -426,7 +427,7 @@ main.main > div.container > div.cookbook-page
 ```
 
 **Конкретні зміни в HTML:**
-- [ ] Замінити `<main>` → `<main class="main">`
+- [x] ✅ Замінити `<main>` → `<main class="main">`
 
 ---
 
@@ -452,14 +453,14 @@ main.main
 ```
 
 **Конкретні зміни в HTML:**
-- [ ] Замінити `<div class="profile-container">` → `<main class="main"><div class="container">`
-- [ ] Замінити `<main class="profile-main">` → `<div class="profile-main">`
-- [ ] Замінити відповідний `</main>` → `</div>`
-- [ ] Виправити закриваючі теги: `</div></main>` замість `</div></div>`
+- [x] ✅ Замінити `<div class="profile-container">` → `<main class="main"><div class="container">`
+- [x] ✅ Замінити `<main class="profile-main">` → `<div class="profile-main">`
+- [x] ✅ Замінити відповідний `</main>` → `</div>`
+- [x] ✅ Виправити закриваючі теги: `</div></main>` замість `</div></div>`
 
 **Конкретні зміни в SCSS (`_profile.scss`):**
-- [ ] Перевірити чи є стилі на `.profile-container` → перенести на `main.main` або залишити якщо не конфліктують
-- [ ] `.profile-main` лишається — змінюється лише HTML-тег з `<main>` на `<div>`
+- [x] ✅ Перевірити чи є стилі на `.profile-container` → перенести на `main.main` або залишити якщо не конфліктують
+- [x] ✅ `.profile-main` лишається — змінюється лише HTML-тег з `<main>` на `<div>`
 
 ---
 
@@ -481,25 +482,25 @@ footer
 ```
 
 **Конкретні зміни в HTML:**
-- [ ] Додати `<main class="main">` перед `<div id="recipeRoot">`
-- [ ] Додати `</main>` після `</div>` що закриває recipeRoot
-- [ ] Перевірити JS: якщо він рендерить контент у `#recipeRoot` через innerHTML — нічого не змінюється
+- [x] ✅ Додати `<main class="main">` перед `<div id="recipeRoot">`
+- [x] ✅ Додати `</main>` після `</div>` що закриває recipeRoot
+- [x] ✅ Перевірити JS: рендерить у `#recipeRoot` через innerHTML — нічого не змінилось
 
 ---
 
 ### Зміни в SCSS
 
 #### `scss/layout/_layout.scss`
-- [ ] Додати `flex: 1` до `.main` (page wrapper) — щоб footer завжди був внизу
-- [ ] Видалити або закоментувати стилі `.app-shell` (більше не використовується)
-- [ ] Видалити правило `.app-bg, .page > main, #recipeRoot { flex: 1 }` — воно було тимчасовим
-- [ ] Додати `.meals-column` як замінник `.main` в grid-контексті (index.html)
+- [x] ✅ Додати `flex: 1` до `.main` (page wrapper) — щоб footer завжди був внизу
+- [x] ✅ Видалити або закоментувати стилі `.app-shell` (більше не використовується)
+- [x] ✅ Видалити правило `.app-bg, .page > main, #recipeRoot { flex: 1 }` — воно було тимчасовим
+- [x] ✅ Додати `.meals-column` як замінник `.main` в grid-контексті (index.html) — `_layout.scss:146,163`
 
 #### `scss/pages/_day-menu.scss` (або де є `.page--day-menu .main`)
-- [ ] Знайти всі `.layout .main` або `.page--day-menu .main` → замінити на `.meals-column`
+- [x] ✅ Знайти всі `.layout .main` або `.page--day-menu .main` → замінити на `.meals-column` — `_day-menu.scss:29`
 
 #### `scss/pages/_profile.scss`
-- [ ] Перевірити `.profile-container` стилі → перенести на `main.main` якщо потрібно
+- [x] ✅ Перевірити `.profile-container` стилі → перенести на `main.main` якщо потрібно
 
 ---
 
@@ -511,18 +512,18 @@ footer
 4. Фінальна перевірка: всі сторінки у світлій та темній темі, мобільний вигляд
 
 ### Критерії завершення
-- [ ] Жодного `div.app-bg` або `div.app-shell` в жодному HTML-файлі
-- [ ] Кожна сторінка має `<main class="main">` як прямий дочірній елемент `body.page`
-- [ ] `<main>` не вкладено в інший `<main>` (валідний HTML)
-- [ ] Футер завжди притиснутий до низу viewport навіть на порожніх сторінках
-- [ ] Однакові відступи між header↔content і content↔footer на всіх сторінках
-- [ ] Нуль регресій у існуючих стилях
+- [x] ✅ Жодного `div.app-bg` або `div.app-shell` в жодному HTML-файлі (0 збігів)
+- [x] ✅ Кожна сторінка має `<main class="main">` як прямий дочірній елемент `body.page`
+- [x] ✅ `<main>` не вкладено в інший `<main>` (валідний HTML)
+- [ ] Футер завжди притиснутий до низу viewport навіть на порожніх сторінках — *перевірити візуально*
+- [ ] Однакові відступи між header↔content і content↔footer на всіх сторінках — *перевірити візуально*
+- [ ] Нуль регресій у існуючих стилях — *перевірити візуально*
 
 ---
 
 ## 🦶 ФАЗА 10.8: Глобальний футер
 
-> **Статус:** в роботі (травень 2026).
+> **Статус:** ядро зроблено (травень 2026) — залишився тільки тест тем.
 > **Tagline:** "Харчові звички набувають форми"
 > **Принцип:** мінімалістичний, без зайвого — тільки те що реально існує зараз.
 
@@ -541,9 +542,9 @@ footer
 
 ### ✅ Зроблено
 
-- [ ] HTML-компонент `footer.html` (або inline у кожній сторінці)
-- [ ] SCSS `_footer.scss` — десктоп 4 колонки, tablet 2×2, mobile акордеон
-- [ ] Підключено до всіх public сторінок: `index.html`, `recipes.html`, `recipe.html`, `week-menu.html`, `product-guide.html`, `shopping-list.html`, `cookbook.html`, `profile.html`
+- [x] ✅ HTML-компонент `partials/footer.html`
+- [x] ✅ SCSS `scss/layout/_footer.scss` — десктоп 4 колонки, tablet 2×2, mobile акордеон
+- [x] ✅ Підключено до 15 сторінок (усі public + юридичні: `index.html`, `recipes.html`, `recipe.html`, `week-menu.html`, `product-guide.html`, `shopping-list.html`, `shared-list.html`, `cookbook.html`, `profile.html`, `privacy.html`, `terms.html`, `cookies.html`, `imprint.html`, `dmca.html`)
 - [ ] Тест світлої + темної теми
 
 ### 🔮 Відкладено (залежності або TIER 2/3)

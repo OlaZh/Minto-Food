@@ -1,15 +1,32 @@
 'use client'
 
+import Link from 'next/link'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import ActionButton from '@/components/moderation/ActionButton'
 import { banUser, unbanUser, addStrike, toggleShadowBan, toggleAdmin } from '@/app/actions/moderation'
 
-interface UsersClientProps {
-  users: any[]
+type UserListItem = {
+  id: string
+  full_name: string | null
+  is_admin: boolean
+  is_banned: boolean
+  is_shadow_banned: boolean
+  strikes: number | null
+  freeze_until: string | null
+  created_at: string | null
+  recipeCount: number
+  lastActive: string | null
 }
 
-export default function UsersClient({ users }: UsersClientProps) {
+interface UsersClientProps {
+  users: UserListItem[]
+  page: number
+  totalPages: number
+  totalCount: number
+}
+
+export default function UsersClient({ users, page, totalPages, totalCount }: UsersClientProps) {
   const router = useRouter()
   const [search, setSearch] = useState('')
 
@@ -21,7 +38,7 @@ export default function UsersClient({ users }: UsersClientProps) {
     <div>
       <div className="sticky top-0 z-10 bg-white border-b border-gray-200 px-4 md:px-8 py-4 flex items-center justify-between">
         <h1 className="text-lg font-semibold">Користувачі</h1>
-        <span className="text-sm text-gray-400">{filtered.length} записів</span>
+        <span className="text-sm text-gray-400">{filtered.length} з {totalCount}</span>
       </div>
 
       <div className="px-4 md:px-8 py-3 border-b border-gray-100">
@@ -34,6 +51,12 @@ export default function UsersClient({ users }: UsersClientProps) {
         />
       </div>
 
+      {totalCount > 0 && (
+        <div className="px-4 md:px-8 py-2 text-xs text-gray-400 border-b border-gray-100">
+          {totalCount} користувачів · сторінка {page} з {totalPages}
+        </div>
+      )}
+
       {filtered.length === 0 && (
         <div className="px-4 md:px-8 py-16 text-center text-gray-400 text-sm">Нікого не знайдено</div>
       )}
@@ -42,6 +65,7 @@ export default function UsersClient({ users }: UsersClientProps) {
         {filtered.map(user => {
           const isFrozen = user.freeze_until && new Date(user.freeze_until) > new Date()
           const name = user.full_name || user.id.slice(0, 8)
+          const strikeCount = user.strikes ?? 0
 
           return (
             <div key={user.id} className={`px-4 md:px-8 py-4 hover:bg-gray-50 ${user.is_banned ? 'opacity-60' : ''}`}>
@@ -61,8 +85,8 @@ export default function UsersClient({ users }: UsersClientProps) {
                     {isFrozen && (
                       <span className="text-xs bg-yellow-100 text-yellow-700 px-1.5 py-0.5 rounded font-medium">FREEZE</span>
                     )}
-                    {(user.strikes ?? 0) > 0 && (
-                      <span className="text-xs text-orange-600 font-medium">{'⚡'.repeat(Math.min(user.strikes, 3))} {user.strikes}</span>
+                    {strikeCount > 0 && (
+                      <span className="text-xs text-orange-600 font-medium">{'⚡'.repeat(Math.min(strikeCount, 3))} {strikeCount}</span>
                     )}
                   </div>
                   <div className="flex flex-wrap gap-x-3 gap-y-0.5 mt-0.5 text-xs text-gray-400">
@@ -92,11 +116,11 @@ export default function UsersClient({ users }: UsersClientProps) {
                     onDone={() => router.refresh()}
                   />
                 )}
-                <ActionButton
-                  label={`⚡ Страйк (${user.strikes ?? 0})`}
+                  <ActionButton
+                  label={`⚡ Страйк (${strikeCount})`}
                   variant="outline"
                   useUndo
-                  action={() => addStrike(user.id, user.strikes ?? 0)}
+                  action={() => addStrike(user.id, strikeCount)}
                   onDone={() => router.refresh()}
                 />
                 <ActionButton
@@ -118,6 +142,30 @@ export default function UsersClient({ users }: UsersClientProps) {
           )
         })}
       </div>
+
+      {totalPages > 1 && (
+        <div className="px-4 md:px-8 py-4 border-t border-gray-100 flex items-center justify-between gap-2">
+          <Link
+            href={`/users?page=${page - 1}`}
+            className={`text-xs px-3 py-1.5 rounded-md border transition-colors ${page <= 1 ? 'pointer-events-none opacity-30 border-gray-200' : 'border-gray-200 hover:border-gray-400'}`}
+            aria-disabled={page <= 1}
+          >
+            ← Попередня
+          </Link>
+
+          <span className="text-xs text-gray-400">
+            сторінка {page} з {totalPages}
+          </span>
+
+          <Link
+            href={`/users?page=${page + 1}`}
+            className={`text-xs px-3 py-1.5 rounded-md border transition-colors ${page >= totalPages ? 'pointer-events-none opacity-30 border-gray-200' : 'border-gray-200 hover:border-gray-400'}`}
+            aria-disabled={page >= totalPages}
+          >
+            Наступна →
+          </Link>
+        </div>
+      )}
     </div>
   )
 }
