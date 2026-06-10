@@ -1,4 +1,5 @@
 import { supabase } from './supabaseClient.js';
+import { requireAuth } from './auth.js';
 import {
   initIngredientBuilder,
   getIngredients,
@@ -422,7 +423,11 @@ async function saveRecipe() {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    showToast('Увійдіть, щоб зберігати рецепти', 'error');
+    // Не втрачаємо введений рецепт: відкриваємо логін і зберігаємо
+    // saveRecipe як відкладену дію. Після входу (email/password або Google)
+    // SIGNED_IN → runPendingAction знову викличе saveRecipe — поля форми
+    // лишаються на місці, рецепт збережеться без повторного вводу.
+    requireAuth(() => saveRecipe());
     return;
   }
 

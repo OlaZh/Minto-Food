@@ -5,7 +5,11 @@
 .auth-modal {
   position: fixed;
   inset: 0;
-  z-index: 2000;
+  // Вище за модалку рецепта (.modal-overlay z2000) і сканер (z2100),
+  // щоб логін з'являвся ПОВЕРХ відкритої модалки рецепта при відкладеному
+  // збереженні (requireAuth з saveRecipe). Інакше при рівному z-index логін
+  // ховається під модалкою рецепта.
+  z-index: 2200;
   display: flex;
   align-items: center;
   justify-content: center;
