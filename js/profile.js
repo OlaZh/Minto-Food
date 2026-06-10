@@ -18,6 +18,7 @@ import {
   setTheme,
   getLang,
   setLang,
+  getWaterNorm,
 } from './storage.js';
 import { initCustomSelect, setSelectValue, initSelectsGlobalListener, showConfirmModal } from './ui-components.js';
 
@@ -92,6 +93,16 @@ let statisticsCharts = {
   lastWeekChart: null,
   thisWeekChart: null,
 };
+
+function renderStatsEmptyState(container, message, compact = false) {
+  if (!container) return;
+
+  container.innerHTML = `
+    <div class="stats-empty-state${compact ? ' stats-empty-state--compact' : ''}">
+      <span class="stats-empty-state__text">${message}</span>
+    </div>
+  `;
+}
 
 // =====================================
 // WEIGHT CHART
@@ -361,7 +372,7 @@ async function initStatisticsCharts() {
   const dateFrom = fmt(new Date(today.getFullYear(), today.getMonth(), today.getDate() - 13));
   const dateTo = fmt(today);
 
-  const { data: meals } = await supabase
+  const { data: meals, error: mealsError } = await supabase
     .from('meals')
     .select('date, meal_type, kcal, protein, fat, carbs, name, weight')
     .eq('user_id', user.id)
@@ -369,12 +380,20 @@ async function initStatisticsCharts() {
     .lte('date', dateTo)
     .order('date', { ascending: true });
 
+  if (mealsError) {
+    console.warn('meals fetch:', mealsError.message);
+  }
+
   const rows = meals || [];
+  const hasStatisticsData = rows.length > 0;
 
   // ─── Розбивка по тижнях ──────────────────────────────────
   const thisWeekStart = fmt(new Date(today.getFullYear(), today.getMonth(), today.getDate() - 6));
   const thisWeek = rows.filter((r) => r.date >= thisWeekStart);
   const lastWeek = rows.filter((r) => r.date < thisWeekStart);
+  const thisWeekDaysLogged = new Set(thisWeek.map((r) => r.date)).size;
+  const hasThisWeekData = thisWeek.length > 0;
+  const hasLastWeekData = lastWeek.length > 0;
 
   // ─── Підсумок макро ──────────────────────────────────────
   function sumMacros(list) {
@@ -438,7 +457,10 @@ async function initStatisticsCharts() {
 
   const topsListEl = document.getElementById('statsTopsListEl');
   if (topsListEl) {
-    if (topDishes.length > 0) {
+    if (mealsError) {
+      topsListEl.innerHTML =
+        '<li class="stats-tops__empty">Не вдалося завантажити топи тижня. Спробуй оновити сторінку трохи пізніше.</li>';
+    } else if (topDishes.length > 0) {
       topsListEl.innerHTML = topDishes
         .map((d, i) => {
           const rankClass = i === 0 ? 'stats-tops__rank--gold' : '';
@@ -480,16 +502,24 @@ async function initStatisticsCharts() {
   const deltaEl = document.getElementById('compareDelta');
   const pctEl = document.getElementById('comparePct');
   if (deltaEl) {
-    deltaEl.textContent = (deltaKcal >= 0 ? '+' : '') + deltaKcal + ' г';
-    deltaEl.className = 'profile-compare__delta ' + (deltaKcal >= 0 ? 'pos' : 'neg');
+    if (hasThisWeekData || hasLastWeekData) {
+      deltaEl.textContent = (deltaKcal >= 0 ? '+' : '') + deltaKcal + ' ккал';
+      deltaEl.className = 'profile-compare__delta ' + (deltaKcal >= 0 ? 'pos' : 'neg');
+    } else {
+      deltaEl.textContent = '—';
+      deltaEl.className = 'profile-compare__delta';
+    }
   }
   if (pctEl) {
-    pctEl.textContent = (deltaPct >= 0 ? '+' : '') + deltaPct + '%';
+    pctEl.textContent = hasThisWeekData || hasLastWeekData ? (deltaPct >= 0 ? '+' : '') + deltaPct + '%' : '—';
   }
 
   // ─── Рекомендації ────────────────────────────────────────
   const tipsList = document.getElementById('statsTipsList');
-  if (tipsList && thisWeek.length > 0) {
+  if (tipsList && mealsError) {
+    const iconSvg = `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4m0 4h.01"/></svg>`;
+    tipsList.innerHTML = `<li class="stats-tips__item"><span class="stats-tips__icon">${iconSvg}</span><span class="stats-tips__text">Не вдалося завантажити рекомендації. Спробуй оновити сторінку трохи пізніше.</span></li>`;
+  } else if (tipsList && hasThisWeekData) {
     const tips = [];
     const { protein: tp2, fat: tf2, carbs: tc2, kcal: tk2 } = thisTotals;
     const macroTotal = tp2 + tf2 + tc2;
@@ -503,12 +533,15 @@ async function initStatisticsCharts() {
       if (fatPct > 0.4)
         tips.push({ title: 'Жири займають понад 40%', sub: 'Спробуй легші вечері або менше олії' });
     }
-    const avgKcal = tk2 / 7;
+    const avgKcal = thisWeekDaysLogged > 0 ? tk2 / thisWeekDaysLogged : 0;
     if (avgKcal > 0 && avgKcal < 1200)
       tips.push({ title: 'Калорійність дуже низька', sub: 'Середнє ' + Math.round(avgKcal) + ' ккал/день — стеж за нормою' });
-    if (mealTypeCounts.dinner < 3)
+    if (thisWeekDaysLogged >= 4 && mealTypeCounts.dinner < 3)
       tips.push({ title: 'Додайте овочі до вечері', sub: 'Це підвищить кількість клітковини' });
-    tips.push({ title: 'Пийте більше води зранку', sub: 'Ваша норма — 2.0 л на день' });
+    tips.push({ title: 'Пийте достатньо води протягом дня', sub: 'Ваша норма — ' + getWaterNorm().toFixed(1) + ' л на день' });
+    if (!tips.length) {
+      tips.push({ title: 'Тиждень виглядає рівно', sub: 'Продовжуй логувати страви — так рекомендації стануть точнішими' });
+    }
 
     const iconSvg = `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="m9 12 2 2 4-4"/></svg>`;
     tipsList.innerHTML = tips
@@ -761,15 +794,18 @@ async function initStatisticsCharts() {
   const balanceEl = document.getElementById('balancePieChart');
   if (balanceEl) {
     const { protein: p, fat: f, carbs: c } = thisTotals;
-    const series = p + f + c > 0 ? [Math.round(p), Math.round(f), Math.round(c)] : [1, 1, 1];
-    renderSvgDonut(balanceEl, series, 260, 'БЖВ');
+    if (p + f + c > 0) {
+      renderSvgDonut(balanceEl, [Math.round(p), Math.round(f), Math.round(c)], 260, 'БЖВ');
+    } else {
+      renderStatsEmptyState(balanceEl, mealsError ? 'Не вдалося завантажити баланс БЖВ' : 'Немає даних за цей тиждень');
+    }
   }
 
   // ─── 2. Динаміка калорій (7 днів) ────────────────────────
   const kbjuEl = document.getElementById('kbjuLineChart');
   if (kbjuEl) {
     statisticsCharts.kbjuLineChart = new ApexCharts(kbjuEl, {
-      series: [{ name: 'Калорії', data: dayKcal }],
+      series: hasStatisticsData ? [{ name: 'Калорії', data: dayKcal }] : [],
       chart: {
         type: 'area',
         height: 260,
@@ -833,7 +869,7 @@ async function initStatisticsCharts() {
     const counts = Object.values(mealTypeCounts);
     const maxCount = Math.max(...counts, 1);
     statisticsCharts.usefulnessBarChart = new ApexCharts(usefulnessEl, {
-      series: [{ name: 'Разів', data: counts }],
+      series: hasThisWeekData ? [{ name: 'Разів', data: counts }] : [],
       chart: {
         type: 'bar',
         height: 260,
@@ -896,15 +932,21 @@ async function initStatisticsCharts() {
   const lastWeekEl = document.getElementById('lastWeekChart');
   if (lastWeekEl) {
     const { protein: p, fat: f, carbs: c } = lastTotals;
-    const series = p + f + c > 0 ? [Math.round(p), Math.round(f), Math.round(c)] : [1, 1, 1];
-    renderSvgDonut(lastWeekEl, series, 190, 'БЖВ');
+    if (p + f + c > 0) {
+      renderSvgDonut(lastWeekEl, [Math.round(p), Math.round(f), Math.round(c)], 190, 'БЖВ');
+    } else {
+      renderStatsEmptyState(lastWeekEl, mealsError ? 'Помилка завантаження' : 'Немає даних', true);
+    }
   }
 
   const thisWeekEl = document.getElementById('thisWeekChart');
   if (thisWeekEl) {
     const { protein: p, fat: f, carbs: c } = thisTotals;
-    const series = p + f + c > 0 ? [Math.round(p), Math.round(f), Math.round(c)] : [1, 1, 1];
-    renderSvgDonut(thisWeekEl, series, 190, 'БЖВ');
+    if (p + f + c > 0) {
+      renderSvgDonut(thisWeekEl, [Math.round(p), Math.round(f), Math.round(c)], 190, 'БЖВ');
+    } else {
+      renderStatsEmptyState(thisWeekEl, mealsError ? 'Помилка завантаження' : 'Немає даних', true);
+    }
   }
 }
 
@@ -1910,18 +1952,14 @@ function initSettings(user) {
     btn.addEventListener('click', () => {
       setLang(btn.dataset.lang);
       syncLangBtns();
+      showToast('Мову збережено. Повний переклад профілю ще в роботі.', 'info');
     });
   });
 
-  // Unit buttons (UI only — no backend yet)
-  const savedUnit = localStorage.getItem('units') || 'metric';
+  // Unit buttons are intentionally disabled until conversions are wired to the UI.
   document.querySelectorAll('.settings-unit-btn').forEach((btn) => {
-    btn.classList.toggle('active', btn.dataset.unit === savedUnit);
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('.settings-unit-btn').forEach((b) => b.classList.remove('active'));
-      btn.classList.add('active');
-      localStorage.setItem('units', btn.dataset.unit);
-    });
+    btn.disabled = true;
+    btn.setAttribute('aria-disabled', 'true');
   });
 
   // Nickname editor
@@ -1933,16 +1971,12 @@ function initSettings(user) {
     window.location.href = 'index.html';
   });
 
-  // Delete account (confirmation only — no backend yet)
-  document.getElementById('deleteAccountBtn')?.addEventListener('click', () => {
-    showConfirmModal({
-      title: 'Видалити акаунт?',
-      message: 'Цю дію неможливо скасувати. Всі дані буде втрачено назавжди.',
-      confirmText: 'Так, видалити',
-      onConfirm: () => {
-        showToast('Функція видалення акаунту незабаром буде доступна', 'info');
-      },
-    });
+  // Pending controls stay disabled so the settings UI reflects the current product state.
+  ['toggleMealReminders', 'toggleWaterReminders', 'deleteAccountBtn'].forEach((id) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.disabled = true;
+    el.setAttribute('aria-disabled', 'true');
   });
 }
 
