@@ -473,7 +473,15 @@ document.addEventListener('DOMContentLoaded', async () => {
   function openModal(mealKey, item = null) {
     activeMealKey = mealKey;
 
-    selectedFood = item ? { ...item, kcal: item.kcal / (item.weight / 100) } : null;
+    selectedFood = item
+      ? {
+          ...item,
+          kcal: item.kcal / (item.weight / 100),
+          protein: item.protein / (item.weight / 100),
+          fat: item.fat / (item.weight / 100),
+          carbs: item.carbs / (item.weight / 100),
+        }
+      : null;
 
     resultsList.innerHTML = '';
     confirmBtn.disabled = !item;
