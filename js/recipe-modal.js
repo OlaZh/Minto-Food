@@ -41,6 +41,15 @@ function formatMacroValue(value, decimals = 1) {
   return num.toFixed(decimals).replace('.', ',');
 }
 
+// Значення для <input type="number">: десятковий роздільник — КРАПКА.
+// Number-input не приймає кому ("26,7" → браузер відхиляє + warning),
+// тож для цих службових readonly-полів використовуємо крапку, не formatMacroValue.
+function macroInputValue(value, decimals = 1) {
+  const num = Number(value) || 0;
+  if (decimals === 0) return String(Math.round(num));
+  return num.toFixed(decimals);
+}
+
 function getDisplayedNutrition(totals, totalWeight) {
   if (!totalWeight) {
     return {
@@ -74,10 +83,10 @@ function updateRecipeNutritionPreview(totals = getTotals()) {
   const carbsEl = document.getElementById('rm-carbs');
   const noteEl = document.getElementById('rm-macros-note');
 
-  if (kcalEl) kcalEl.value = formatMacroValue(displayed.kcal, 0);
-  if (proteinEl) proteinEl.value = formatMacroValue(displayed.protein, 1);
-  if (fatEl) fatEl.value = formatMacroValue(displayed.fat, 1);
-  if (carbsEl) carbsEl.value = formatMacroValue(displayed.carbs, 1);
+  if (kcalEl) kcalEl.value = macroInputValue(displayed.kcal, 0);
+  if (proteinEl) proteinEl.value = macroInputValue(displayed.protein, 1);
+  if (fatEl) fatEl.value = macroInputValue(displayed.fat, 1);
+  if (carbsEl) carbsEl.value = macroInputValue(displayed.carbs, 1);
 
   if (noteEl) {
     noteEl.textContent = displayed.mode === 'cooked'
