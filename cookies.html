@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="uk">
   <head>
     <meta charset="UTF-8" />
@@ -10,7 +10,7 @@
     <link rel="icon" href="img/favicon.ico" />
   </head>
   <body class="page page--legal">
-                                    ﻿    ﻿    ﻿    ﻿    ﻿    <header class="header">
+                                                                    <header class="header">
       <div class="header__container">
         <a href="index.html" class="header__logo"
           ><img src="img/logo.svg" alt="Logo" data-i18n="logo" class="logo--default"
@@ -167,7 +167,7 @@
       </div>
     </main>
 
-                                    ﻿    ﻿    ﻿    ﻿    ﻿    <footer class="site-footer">
+                                                                    <footer class="site-footer">
       <div class="site-footer__inner">
 
         <div class="site-footer__brand">
@@ -261,10 +261,9 @@
     <script type="module" src="js/theme-toggle.js"></script>
     <script type="module" src="js/auth.js"></script>
     <script type="module">
-      import { initCookieConsent } from './js/cookie-consent.js';
+      import { reopenCookieBanner } from './js/cookie-consent.js';
       document.getElementById('reopenCookieBanner')?.addEventListener('click', () => {
-        localStorage.removeItem('minto_consent');
-        initCookieConsent();
+        reopenCookieBanner();
       });
     </script>
   </body>

@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="uk">
   <head>
     <meta charset="UTF-8" />
@@ -10,7 +10,7 @@
     <link rel="icon" href="img/favicon.ico" />
   </head>
   <body class="page page--legal">
-    <header class="header">
+        <header class="header">
       <div class="header__container">
         <a href="index.html" class="header__logo"
           ><img src="img/logo.svg" alt="Logo" data-i18n="logo" class="logo--default"
@@ -19,34 +19,84 @@
 
         <nav class="header__nav">
           <ul class="header__nav-list">
-            <li><a href="index.html" class="header__nav-link" data-i18n="navDayMenu">Меню на день</a></li>
-            <li><a href="week-menu.html" class="header__nav-link" data-i18n="navWeekMenu">Меню на тиждень</a></li>
-            <li><a href="recipes.html" class="header__nav-link" data-i18n="navRecipes">Рецепти</a></li>
-            <li><a href="product-guide.html" class="header__nav-link" data-i18n="navProductGuide">Путівник по продуктам</a></li>
-            <li><a href="shopping-list.html" class="header__nav-link" data-i18n="navShoppingList">Список покупок</a></li>
-            <li><a href="cookbook.html" class="header__nav-link" data-i18n="navCookbook">Книга рецептів</a></li>
+            <li>
+              <a href="index.html" class="header__nav-link" data-i18n="navDayMenu">Меню на день</a>
+            </li>
+            <li>
+              <a href="week-menu.html" class="header__nav-link" data-i18n="navWeekMenu"
+                >Меню на тиждень</a
+              >
+            </li>
+            <li>
+              <a href="recipes.html" class="header__nav-link" data-i18n="navRecipes">Рецепти</a>
+            </li>
+            <li>
+              <a href="product-guide.html" class="header__nav-link" data-i18n="navProductGuide"
+                >Путівник по продуктам</a
+              >
+            </li>
+            <li>
+              <a href="shopping-list.html" class="header__nav-link" data-i18n="navShoppingList"
+                >Список покупок</a
+              >
+            </li>
+            <li>
+              <a href="cookbook.html" class="header__nav-link" data-i18n="navCookbook"
+                >Книга рецептів</a
+              >
+            </li>
           </ul>
         </nav>
 
         <div class="header__actions">
-          <button class="theme-toggle" type="button" aria-label="Змінити тему" data-i18n-aria="toggleTheme">
-            <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <button
+            class="theme-toggle"
+            type="button"
+            aria-label="Змінити тему"
+            data-i18n-aria="toggleTheme">
+            <svg
+              class="sun-icon"
+              xmlns="http://www.w3.org/2000/svg"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round">
               <circle cx="12" cy="12" r="5"></circle>
-              <line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line>
-              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-              <line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line>
-              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+              <line x1="12" y1="1" x2="12" y2="3"></line>
+              <line x1="12" y1="21" x2="12" y2="23"></line>
+              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+              <line x1="1" y1="12" x2="3" y2="12"></line>
+              <line x1="21" y1="12" x2="23" y2="12"></line>
+              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
             </svg>
-            <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg
+              class="moon-icon"
+              xmlns="http://www.w3.org/2000/svg"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round">
               <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
             </svg>
           </button>
         </div>
         <div class="header__right">
-          <a href="#" id="headerAuthBtn" class="header__profile-name" data-i18n="login">Увійти</a>
+          <a href="#" id="headerAuthBtn" class="header__profile-name" data-i18n="login"> Увійти </a>
         </div>
         <button class="header__burger" aria-label="Меню" aria-expanded="false">
-          <span></span><span></span><span></span>
+          <span></span>
+          <span></span>
+          <span></span>
         </button>
       </div>
       <div class="header__nav-overlay"></div>
@@ -169,14 +219,16 @@
       </div>
     </main>
 
-    <footer class="site-footer">
+        <footer class="site-footer">
       <div class="site-footer__inner">
+
         <div class="site-footer__brand">
           <a href="index.html" class="site-footer__logo">
             <img src="img/logo.svg" alt="MintoFood" />
           </a>
           <p class="site-footer__tagline">Харчові звички набувають форми</p>
         </div>
+
         <div class="site-footer__col">
           <h3 class="site-footer__heading">Продукт</h3>
           <ul class="site-footer__links">
@@ -188,6 +240,7 @@
             <li><a href="shopping-list.html">Список покупок</a></li>
           </ul>
         </div>
+
         <div class="site-footer__col">
           <h3 class="site-footer__heading">Підтримка</h3>
           <ul class="site-footer__links">
@@ -196,6 +249,7 @@
             <li><a href="mailto:support@mintofood.com">Повідомити про помилку</a></li>
           </ul>
         </div>
+
         <div class="site-footer__col">
           <h3 class="site-footer__heading">Компанія</h3>
           <ul class="site-footer__links">
@@ -207,7 +261,9 @@
             <li><a href="dmca.html">DMCA</a></li>
           </ul>
         </div>
+
       </div>
+
       <div class="site-footer__accordion">
         <details>
           <summary>Продукт</summary>
@@ -240,6 +296,7 @@
           </ul>
         </details>
       </div>
+
       <div class="site-footer__bottom">
         <p class="site-footer__copyright">© 2026 MintoFood</p>
         <nav class="site-footer__lang" aria-label="Мова">
@@ -255,5 +312,6 @@
     <script type="module" src="js/mobile-nav.js"></script>
     <script type="module" src="js/theme-toggle.js"></script>
     <script type="module" src="js/auth.js"></script>
+  <script type="module" src="js/cookie-consent.js"></script>
   </body>
 </html>

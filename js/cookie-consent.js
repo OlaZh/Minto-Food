@@ -231,7 +231,14 @@ function bindAuthListener() {
   });
 }
 
+let _consentInitDone = false;
+
 export async function initCookieConsent() {
+  // Захист від подвійного запуску: авто-init при завантаженні + можливий
+  // ручний виклик (напр. кнопка "перевідкрити" на cookies.html).
+  if (_consentInitDone) return;
+  _consentInitDone = true;
+
   bindAuthListener();
 
   const userId = await getUserId();
@@ -263,4 +270,25 @@ export async function initCookieConsent() {
   if (getConsent()) return;
   if (seenForCurrentVersion()) return;
   showBanner(null);
+}
+
+// Примусово перевідкрити банер (кнопка "Налаштування cookies" на cookies.html).
+// Скидає збережений вибір і показує банер незалежно від попереднього стану.
+export async function reopenCookieBanner() {
+  localStorage.removeItem(STORAGE_KEY);
+  localStorage.removeItem(SEEN_KEY);
+  document.querySelector('.cookie-banner')?.remove();
+  const userId = await getUserId();
+  showBanner(userId);
+}
+
+// ─── Авто-ініціалізація ─────────────────────────────────────
+// Підключається як <script type="module" src="js/cookie-consent.js"> на всіх
+// сторінках — банер сам показується раз, без ручного виклику в кожному файлі.
+if (typeof document !== 'undefined') {
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => initCookieConsent());
+  } else {
+    initCookieConsent();
+  }
 }

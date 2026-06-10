@@ -656,7 +656,7 @@ footer
 
 ### 🍪 Cookie consent banner
 
-- [x] Self-built — `js/cookie-consent.js` + `scss/components/_cookie-consent.scss`
+- [x] Self-built — `js/cookie-consent.js` + `scss/components/_cookie-consent.scss` (auto-init, підключено на всіх 14 публічних сторінках через `build.js`)
 - [x] Категорії cookies: Necessary / Analytics / Marketing
 - [x] Granular toggles (панель "Налаштувати")
 - [x] Reject All на тому ж рівні видимості що Accept All (compliance)
