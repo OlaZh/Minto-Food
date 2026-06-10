@@ -97,6 +97,17 @@ export async function initAuth(onAuthChange = null) {
       // Виконуємо відкладену дію (працює для email/password І Google OAuth).
       // Для email/password submit-обробник більше дію не запускає — лише тут.
       runPendingAction();
+
+      // Якщо є збережена чернетка рецепта, а логін стався на іншій сторінці
+      // (логін часто редіректить на головну) — повертаємо на recipes.html,
+      // де restorePendingRecipeDraft() відновить форму.
+      try {
+        if (sessionStorage.getItem('mintofood:pending-recipe') &&
+            !location.pathname.endsWith('/recipes.html') &&
+            !location.pathname.endsWith('recipes.html')) {
+          location.href = 'recipes.html';
+        }
+      } catch (_) {}
     }
 
     if (event === 'SIGNED_OUT') {
@@ -187,12 +198,11 @@ export function requireAuth(action = null) {
     return true;
   }
 
-  // Зберігаємо дію щоб виконати після логіну
+  // Зберігаємо дію щоб виконати після логіну (в межах однієї сторінки).
+  // Дії, що мають пережити навігацію після логіну (напр. збереження рецепта),
+  // зберігаються окремо у sessionStorage — див. recipe-modal.js.
   if (action) {
     pendingAction = action;
-    console.log('[A3] requireAuth saved pendingAction, opening login');
-  } else {
-    console.log('[A3] requireAuth called WITHOUT action, opening login');
   }
 
   openAuthModal();
@@ -205,12 +215,10 @@ let pendingAction = null;
 // повторного запуску. Викликається з гілки SIGNED_IN (спільна для
 // email/password і Google OAuth).
 function runPendingAction() {
-  console.log('[A3] runPendingAction called, pendingAction =', pendingAction ? 'SET' : 'null');
   if (!pendingAction) return;
   const action = pendingAction;
   pendingAction = null;
-  console.log('[A3] executing pendingAction');
-  Promise.resolve(action()).catch((e) => console.error('[A3] pendingAction threw:', e));
+  Promise.resolve(action()).catch((e) => console.error('pendingAction threw:', e));
 }
 
 // =============================================================

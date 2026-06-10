@@ -314,6 +314,78 @@ export async function initRecipeModal() {
 
   initVisibilityToggle();
   bindIngredientBuilder();
+
+  // Відновлюємо чернетку рецепта, якщо користувач почав створювати рецепт
+  // незалогіненим і щойно увійшов (логін міг редіректнути сюди з іншої сторінки).
+  await restorePendingRecipeDraft();
+}
+
+// Ключ чернетки рецепта, що переживає навігацію після логіну.
+const PENDING_RECIPE_KEY = 'mintofood:pending-recipe';
+
+// Збирає поточні поля форми у чернетку й кладе в sessionStorage.
+function savePendingRecipeDraft() {
+  const draft = {
+    name_ua: document.getElementById('rm-name')?.value ?? '',
+    steps: document.getElementById('rm-steps')?.value ?? '',
+    total_weight: document.getElementById('rm-total-weight')?.value ?? '',
+    category: document.getElementById('rm-category')?.value ?? '',
+    image: document.getElementById('rm-image-url')?.value ?? '',
+    ingredients: getIngredientsText(),
+    visibility: recipeVisibility,
+  };
+  try {
+    sessionStorage.setItem(PENDING_RECIPE_KEY, JSON.stringify(draft));
+  } catch (_) {}
+}
+
+// Якщо є збережена чернетка і користувач залогінений — відкриває модалку
+// з відновленими полями. Чернетка одразу видаляється, щоб не відновлюватись повторно.
+async function restorePendingRecipeDraft() {
+  let raw;
+  try {
+    raw = sessionStorage.getItem(PENDING_RECIPE_KEY);
+  } catch (_) {
+    return;
+  }
+  if (!raw) return;
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return; // ще не залогінений — чекаємо
+
+  sessionStorage.removeItem(PENDING_RECIPE_KEY);
+
+  let draft;
+  try {
+    draft = JSON.parse(raw);
+  } catch (_) {
+    return;
+  }
+
+  onRecipeSavedCallback = null;
+  editingRecipeId = null;
+  editingRecipeOriginal = null;
+  resetRecipeForm();
+
+  if (recipeModalInstance) {
+    recipeModalInstance.classList.add('is-active');
+    lockScroll('recipe-create-modal');
+  }
+
+  await showRecipeForm();
+
+  setInputVal('rm-name', draft.name_ua);
+  setInputVal('rm-steps', draft.steps);
+  setInputVal('rm-total-weight', draft.total_weight);
+  setInputVal('rm-category', draft.category || 'lunch');
+  setInputVal('rm-image-url', draft.image);
+  await setIngredientsFromText(draft.ingredients || '');
+  if (draft.visibility) setVisibilityToggle(draft.visibility);
+  updateRecipeNutritionPreview();
+
+  showToast('Ваш рецепт збережено. Натисніть «Зберегти рецепт», щоб завершити.', 'info');
 }
 
 export async function openRecipeModal(onSaved = null) {
@@ -418,18 +490,17 @@ async function showRecipeForm(data = null) {
 }
 
 async function saveRecipe() {
-  console.log('[A3] saveRecipe called');
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  console.log('[A3] saveRecipe user =', user ? user.id : 'null');
 
   if (!user) {
-    // Не втрачаємо введений рецепт: відкриваємо логін і зберігаємо
-    // saveRecipe як відкладену дію. Після входу (email/password або Google)
-    // SIGNED_IN → runPendingAction знову викличе saveRecipe — поля форми
-    // лишаються на місці, рецепт збережеться без повторного вводу.
-    requireAuth(() => saveRecipe());
+    // Не втрачаємо введений рецепт. Логін часто редіректить на іншу сторінку,
+    // тож дію в пам'яті не зберегти — пишемо чернетку у sessionStorage.
+    // Після входу restorePendingRecipeDraft() (на recipes.html) відновить
+    // форму. requireAuth відкриває вікно логіну.
+    savePendingRecipeDraft();
+    requireAuth();
     return;
   }
 
