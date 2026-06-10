@@ -249,6 +249,7 @@ export async function approveProduct(productId: number, rawEdible: string) {
   throwIfError(error, 'Не вдалося схвалити продукт')
   await logAction(supabase, admin.id, 'products', String(productId), 'approve', { raw_edible: rawEdible })
   revalidatePath('/products')
+  revalidatePath('/dashboard')
 
   return { ok: true as const }
 }
@@ -276,6 +277,7 @@ export async function softDeleteProduct(productId: number) {
   throwIfError(error, 'Не вдалося видалити продукт')
   await logAction(supabase, admin.id, 'products', String(productId), 'soft_delete')
   revalidatePath('/products')
+  revalidatePath('/dashboard')
 
   return { ok: true as const }
 }
@@ -288,6 +290,7 @@ export async function mergeProduct(fromId: number, toId: number) {
   throwIfError(error, 'Не вдалося обʼєднати продукти')
   await logAction(supabase, admin.id, 'products', String(fromId), 'merge', { merged_into: toId })
   revalidatePath('/products')
+  revalidatePath('/dashboard')
 
   return { ok: true }
 }
@@ -326,6 +329,7 @@ export async function restoreProduct(productId: number) {
   throwIfError(error, 'Не вдалося відновити продукт')
   await logAction(supabase, admin.id, 'products', String(productId), 'restore')
   revalidatePath('/archive')
+  revalidatePath('/dashboard')
 
   return { ok: true as const }
 }

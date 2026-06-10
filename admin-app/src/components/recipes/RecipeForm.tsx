@@ -24,7 +24,7 @@ import { createRecipe, updateRecipe } from '@/app/actions/recipes'
 import { generateRecipeTags } from '@/lib/auto-tags'
 import { calculateNutrition } from '@/lib/nutrition'
 import type {
-  Recipe, IngredientRow, RecipeAuthorProfile, Product,
+  Recipe, IngredientRow, RecipeAuthorProfile, Product, Tag,
   RecipeStatus,
 } from '@/lib/types'
 import {
@@ -73,9 +73,14 @@ function toNum(v: string) { return v ? parseFloat(v) : undefined }
 export default function RecipeForm({ recipe, initialIngredients = [] }: RecipeFormProps) {
   const router = useRouter()
   const isEdit = !!recipe
+  const recipeTagSlugs = recipe?.tags?.map(tag => tag.slug) ?? []
 
   const [ingredients, setIngredients] = useState<IngredientRow[]>(initialIngredients)
   const [authors, setAuthors] = useState<RecipeAuthorProfile[]>([])
+  const [allTags, setAllTags] = useState<Tag[]>([])
+  const [manualSelectedTagSlugs, setManualSelectedTagSlugs] = useState<string[] | null>(
+    isEdit ? recipeTagSlugs : null
+  )
   const [saving, setSaving] = useState(false)
 
   const { register, control, handleSubmit, setValue } = useForm<FormValues>({
@@ -101,7 +106,7 @@ export default function RecipeForm({ recipe, initialIngredients = [] }: RecipeFo
       fat: recipe?.fat?.toString() ?? '',
       carbs: recipe?.carbs?.toString() ?? '',
       total_weight: recipe?.total_weight?.toString() ?? '',
-      yield_ratio: recipe?.yield_ratio?.toString() ?? '0.85',
+      yield_ratio: recipe?.yield_ratio?.toString() ?? '',
       recipe_yield: recipe?.recipe_yield?.toString() ?? '',
       status: recipe?.status ?? 'draft',
       is_public: recipe?.is_public ?? true,
@@ -117,28 +122,63 @@ export default function RecipeForm({ recipe, initialIngredients = [] }: RecipeFo
   const watchedStatus = useWatch({ control, name: 'status' })
   const watchedYieldRatio = useWatch({ control, name: 'yield_ratio' })
 
-  // Load authors
+  // Load authors and tags
   useEffect(() => {
     async function load() {
       const supabase = createClient()
-      const { data } = await supabase
-        .from('recipe_author_profiles')
-        .select('*')
-        .order('display_name')
-      setAuthors(data ?? [])
+      const [{ data: authorRows }, { data: tagRows }] = await Promise.all([
+        supabase
+          .from('recipe_author_profiles')
+          .select('*')
+          .order('display_name'),
+        supabase
+          .from('tags')
+          .select('id, slug, name_ua, name_en, name_pl')
+          .order('slug'),
+      ])
+      setAuthors(authorRows ?? [])
+      setAllTags(tagRows ?? [])
     }
     load()
   }, [])
 
-  const previewTags = generateRecipeTags(
+  const suggestedTagSlugs = generateRecipeTags(
     ingredients,
     watchedCategory,
     watchedType,
     watchedCookingMethod
   )
+  const selectedTagSlugs = manualSelectedTagSlugs ?? suggestedTagSlugs
+
+  function toggleTag(slug: string) {
+    setManualSelectedTagSlugs(
+      selectedTagSlugs.includes(slug)
+        ? selectedTagSlugs.filter(currentSlug => currentSlug !== slug)
+        : [...selectedTagSlugs, slug]
+    )
+  }
+
+  function applySuggestedTags() {
+    setManualSelectedTagSlugs(suggestedTagSlugs)
+  }
+
+  function clearSelectedTags() {
+    setManualSelectedTagSlugs([])
+  }
+
+  function getTagLabel(slug: string) {
+    const tag = allTags.find(currentTag => currentTag.slug === slug)
+    return tag?.name_ua || tag?.name_en || slug
+  }
 
   async function autoCalculate() {
     if (!ingredients.length) { toast.info('Спочатку додайте інгредієнти'); return }
+
+    const yieldRatio = toNum(watchedYieldRatio)
+    if (!yieldRatio || yieldRatio <= 0) {
+      toast.error('Yield ratio must be greater than 0 before nutrition calculation')
+      return
+    }
 
     const supabase = createClient()
     const ids = ingredients.map(i => i.product_id).filter(Boolean)
@@ -155,8 +195,7 @@ export default function RecipeForm({ recipe, initialIngredients = [] }: RecipeFo
       product: productMap.get(ing.product_id) as Product,
     })).filter(ing => ing.product)
 
-    const yieldRatio = toNum(watchedYieldRatio) ?? 0.85
-    const result = calculateNutrition(withProducts, yieldRatio > 0 ? yieldRatio : 0.85)
+    const result = calculateNutrition(withProducts, yieldRatio)
 
     setValue('kcal', result.kcal.toString())
     setValue('protein', result.protein.toString())
@@ -171,6 +210,11 @@ export default function RecipeForm({ recipe, initialIngredients = [] }: RecipeFo
     if (!data.name_ua.trim()) { toast.error('Назва (UA) обовʼязкова'); return }
     if (ingredients.some(i => !i.product_id)) {
       toast.error('Деякі інгредієнти не мають продукту'); return
+    }
+
+    if (data.yield_ratio.trim() !== '' && !(toNum(data.yield_ratio)! > 0)) {
+      toast.error('Yield ratio must be greater than 0')
+      return
     }
 
     setSaving(true)
@@ -207,8 +251,8 @@ export default function RecipeForm({ recipe, initialIngredients = [] }: RecipeFo
       }
 
       const result = isEdit
-        ? await updateRecipe(recipe.id, payload, ingredients)
-        : await createRecipe(payload, ingredients)
+        ? await updateRecipe(recipe.id, payload, ingredients, selectedTagSlugs)
+        : await createRecipe(payload, ingredients, selectedTagSlugs)
 
       if ('error' in result) {
         toast.error(result.error)
@@ -406,7 +450,7 @@ export default function RecipeForm({ recipe, initialIngredients = [] }: RecipeFo
                 Розрахувати КБЖУ
               </Button>
             </div>
-            <div className="text-xs text-gray-400 flex gap-4 font-medium px-8 -mb-1">
+            <div className="text-xs text-gray-400 flex gap-4 font-medium px-8">
               <span className="flex-1">Продукт</span>
               <span className="w-20 text-center">Кількість</span>
               <span className="w-20 text-center">Одиниця</span>
@@ -525,15 +569,110 @@ export default function RecipeForm({ recipe, initialIngredients = [] }: RecipeFo
 
           <Separator />
 
-          {/* Auto Tags */}
           <section className="space-y-3">
+            <div className="flex items-center gap-1.5">
+              <Tags className="h-3.5 w-3.5 text-gray-400" />
+              <h2 className="text-sm font-semibold text-gray-900 uppercase tracking-wide">Теги</h2>
+            </div>
+
+            <div className="space-y-3">
+              <div className="space-y-2">
+                <div className="flex items-center justify-between gap-2">
+                  <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Обрані</p>
+                  <div className="flex items-center gap-2">
+                    {suggestedTagSlugs.length > 0 && (
+                      <Button type="button" variant="ghost" size="xs" onClick={applySuggestedTags}>
+                        Прийняти авто
+                      </Button>
+                    )}
+                    {selectedTagSlugs.length > 0 && (
+                      <Button type="button" variant="ghost" size="xs" onClick={clearSelectedTags}>
+                        Очистити
+                      </Button>
+                    )}
+                  </div>
+                </div>
+
+                {selectedTagSlugs.length ? (
+                  <div className="flex flex-wrap gap-1.5">
+                    {selectedTagSlugs.map(slug => (
+                      <button
+                        key={slug}
+                        type="button"
+                        onClick={() => toggleTag(slug)}
+                        className="inline-flex items-center rounded-full border border-gray-300 bg-white px-2.5 py-1 text-xs font-medium text-gray-700 hover:border-gray-500"
+                      >
+                        {getTagLabel(slug)} · {slug}
+                      </button>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-xs text-gray-400">Обери теги вручну або застосуй авто-підказки.</p>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Авто-підказки</p>
+                {suggestedTagSlugs.length ? (
+                  <div className="flex flex-wrap gap-1.5">
+                    {suggestedTagSlugs.map(slug => {
+                      const isSelected = selectedTagSlugs.includes(slug)
+
+                      return (
+                        <button
+                          key={slug}
+                          type="button"
+                          onClick={() => toggleTag(slug)}
+                          className={`inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-medium transition-colors ${
+                            isSelected
+                              ? 'border-emerald-500 bg-emerald-50 text-emerald-700'
+                              : 'border-amber-300 bg-amber-50 text-amber-700 hover:border-amber-400'
+                          }`}
+                        >
+                          {getTagLabel(slug)}
+                        </button>
+                      )
+                    })}
+                  </div>
+                ) : (
+                  <p className="text-xs text-gray-400">Авто-підказки зʼявляться після вибору інгредієнтів або базових параметрів рецепта.</p>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Усі теги</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {allTags.map(tag => {
+                    const isSelected = selectedTagSlugs.includes(tag.slug)
+
+                    return (
+                      <button
+                        key={tag.id}
+                        type="button"
+                        onClick={() => toggleTag(tag.slug)}
+                        className={`inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-medium transition-colors ${
+                          isSelected
+                            ? 'border-gray-900 bg-gray-900 text-white'
+                            : 'border-gray-200 bg-white text-gray-600 hover:border-gray-400'
+                        }`}
+                      >
+                        {tag.name_ua || tag.name_en || tag.slug}
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section className="hidden">
             <div className="flex items-center gap-1.5">
               <Tags className="h-3.5 w-3.5 text-gray-400" />
               <h2 className="text-sm font-semibold text-gray-900 uppercase tracking-wide">Теги (авто)</h2>
             </div>
             <div className="flex flex-wrap gap-1.5">
-              {previewTags.length ? (
-                previewTags.map(slug => (
+              {suggestedTagSlugs.length ? (
+                suggestedTagSlugs.map(slug => (
                   <Badge key={slug} variant="secondary" className="text-xs font-normal">
                     {slug}
                   </Badge>

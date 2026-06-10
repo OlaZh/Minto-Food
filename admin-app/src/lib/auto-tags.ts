@@ -10,6 +10,7 @@ interface TagContext {
   category: string
   type: string
   cookingMethod: string
+  hasIngredients: boolean
 }
 
 function hasIngredient(names: string[], keywords: string[]): boolean {
@@ -50,12 +51,14 @@ const RULES: TagRule[] = [
   // Diet flags
   {
     slug: 'vegetarian',
-    test: c => !hasIngredient(c.ingredientNames, MEAT_KEYWORDS) &&
+    test: c => c.hasIngredients &&
+               !hasIngredient(c.ingredientNames, MEAT_KEYWORDS) &&
                !hasIngredient(c.ingredientNames, ['fish','риба','salmon','тунець','seafood','морепродукт']),
   },
   {
     slug: 'vegan',
-    test: c => !hasIngredient(c.ingredientNames, MEAT_KEYWORDS) &&
+    test: c => c.hasIngredients &&
+               !hasIngredient(c.ingredientNames, MEAT_KEYWORDS) &&
                !hasIngredient(c.ingredientNames, ['fish','риба','salmon']) &&
                !hasIngredient(c.ingredientNames, ['egg','яйц','milk','молоко','cheese','сир','yogurt','йогурт','cream','вершки','butter','масло вершкове','honey','мед']),
   },
@@ -74,8 +77,8 @@ const RULES: TagRule[] = [
 
   // Nutrition flags (decided by ingredient types — simple heuristics)
   { slug: 'high-protein', test: c => hasIngredient(c.ingredientNames, ['chicken','курка','beef','яловичина','turkey','індичка','tuna','тунець','protein','протеїн','whey','яйц','egg','сир кисломолочний','cottage']) },
-  { slug: 'low-carb',     test: c => !hasIngredient(c.ingredientNames, ['rice','рис','bread','хліб','pasta','макарон','potato','картопл','flour','борошн','oats','вівс','corn','кукурудз']) },
-  { slug: 'gluten-free',  test: c => !hasIngredient(c.ingredientNames, ['flour','борошн','wheat','пшениц','bread','хліб','pasta','макарон','barley','ячмінь','rye','жито','oat','вівс']) },
+  { slug: 'low-carb',     test: c => c.hasIngredients && !hasIngredient(c.ingredientNames, ['rice','рис','bread','хліб','pasta','макарон','potato','картопл','flour','борошн','oats','вівс','corn','кукурудз']) },
+  { slug: 'gluten-free',  test: c => c.hasIngredients && !hasIngredient(c.ingredientNames, ['flour','борошн','wheat','пшениц','bread','хліб','pasta','макарон','barley','ячмінь','rye','жито','oat','вівс']) },
 
   // Quick meals
   { slug: 'quick', test: c => hasIngredient(c.ingredientNames, ['egg','яйц','tuna','тунець','cottage','сир кисломолочний']) && !hasIngredient(c.ingredientNames, ['beef','яловичина','pork','свинина','chicken leg','куряча нога']) },
@@ -87,7 +90,13 @@ export function generateRecipeTags(
   type: string,
   cookingMethod: string
 ): string[] {
-  const ingredientNames = ingredients.map(i => i.product_name)
-  const ctx: TagContext = { ingredientNames, category, type, cookingMethod }
+  const ingredientNames = ingredients.map(i => i.product_name).filter(name => name.trim().length > 0)
+  const ctx: TagContext = {
+    ingredientNames,
+    category,
+    type,
+    cookingMethod,
+    hasIngredients: ingredientNames.length > 0,
+  }
   return RULES.filter(r => r.test(ctx)).map(r => r.slug)
 }

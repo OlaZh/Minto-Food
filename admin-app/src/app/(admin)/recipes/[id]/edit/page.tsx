@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import RecipeForm from '@/components/recipes/RecipeForm'
-import type { IngredientRow, Recipe, RecipeAuthorProfile } from '@/lib/types'
+import type { IngredientRow, Recipe, RecipeAuthorProfile, Tag } from '@/lib/types'
 
 type IngredientProductRow = {
   id: number
@@ -16,6 +16,10 @@ type ProductRecipeRow = {
   product: IngredientProductRow | IngredientProductRow[] | null
 }
 
+type RecipeTagRow = {
+  tag: Tag | Tag[] | null
+}
+
 function getIngredientProduct(value: ProductRecipeRow['product']): IngredientProductRow | null {
   if (Array.isArray(value)) return value[0] ?? null
   return value ?? null
@@ -24,6 +28,11 @@ function getIngredientProduct(value: ProductRecipeRow['product']): IngredientPro
 function getAuthorProfile(value: unknown): RecipeAuthorProfile | undefined {
   if (Array.isArray(value)) return value[0] as RecipeAuthorProfile | undefined
   return value as RecipeAuthorProfile | undefined
+}
+
+function getTag(value: RecipeTagRow['tag']): Tag | null {
+  if (Array.isArray(value)) return value[0] ?? null
+  return value ?? null
 }
 
 interface EditRecipePageProps {
@@ -54,6 +63,13 @@ export default async function EditRecipePage({ params }: EditRecipePageProps) {
     `)
     .eq('recipe_id', id)
 
+  const { data: rawTags } = await supabase
+    .from('recipe_tags')
+    .select(`
+      tag:tags(id, slug, name_ua, name_en, name_pl)
+    `)
+    .eq('recipe_id', id)
+
   const ingredients: IngredientRow[] = (rawIngredients ?? []).map((row: ProductRecipeRow) => {
     const product = getIngredientProduct(row.product)
 
@@ -68,6 +84,9 @@ export default async function EditRecipePage({ params }: EditRecipePageProps) {
   const normalizedRecipe: Recipe = {
     ...(recipe as Recipe),
     author_profile: getAuthorProfile((recipe as { author_profile?: unknown }).author_profile),
+    tags: (rawTags ?? [])
+      .map((row: RecipeTagRow) => getTag(row.tag))
+      .filter((tag): tag is Tag => Boolean(tag)),
   }
 
   return <RecipeForm recipe={normalizedRecipe} initialIngredients={ingredients} />

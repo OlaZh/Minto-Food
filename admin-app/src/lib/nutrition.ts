@@ -31,7 +31,7 @@ function normalizeToGrams(quantity: number, unit: string): number {
 
 export function calculateNutrition(
   ingredients: ProductWithNutrition[],
-  recipeYield: number = 1
+  recipeYield: number
 ): NutritionResult {
   let totalWeight = 0
   let totalKcal = 0
@@ -51,7 +51,7 @@ export function calculateNutrition(
     totalCarbs += (ing.product.carbs ?? 0) * factor
   }
 
-  const preparedWeight = totalWeight * (recipeYield > 0 ? recipeYield : 0.85)
+  const preparedWeight = totalWeight * recipeYield
   const per100Factor = preparedWeight > 0 ? 100 / preparedWeight : 0
 
   return {
@@ -60,6 +60,6 @@ export function calculateNutrition(
     fat: Math.round(totalFat * per100Factor * 10) / 10,
     carbs: Math.round(totalCarbs * per100Factor * 10) / 10,
     total_weight: Math.round(totalWeight),
-    yield_ratio: recipeYield > 0 ? recipeYield : 0.85,
+    yield_ratio: recipeYield,
   }
 }

@@ -1,7 +1,6 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
-import { generateRecipeTags } from '@/lib/auto-tags'
 import { revalidatePath } from 'next/cache'
 import type { IngredientRow } from '@/lib/types'
 
@@ -38,7 +37,8 @@ export interface RecipePayload {
 
 export async function createRecipe(
   payload: RecipePayload,
-  ingredients: IngredientRow[]
+  ingredients: IngredientRow[],
+  selectedTagSlugs: string[]
 ): Promise<{ id: string } | { error: string }> {
   const supabase = await createClient()
 
@@ -51,7 +51,7 @@ export async function createRecipe(
   if (error || !recipe) return { error: error?.message ?? 'Insert failed' }
 
   await syncIngredients(recipe.id, ingredients)
-  await syncTags(recipe.id, payload, ingredients)
+  await syncTags(recipe.id, selectedTagSlugs)
 
   revalidatePath('/recipes')
   return { id: recipe.id }
@@ -60,7 +60,8 @@ export async function createRecipe(
 export async function updateRecipe(
   id: string,
   payload: Partial<RecipePayload>,
-  ingredients: IngredientRow[]
+  ingredients: IngredientRow[],
+  selectedTagSlugs: string[]
 ): Promise<{ ok: true } | { error: string }> {
   const supabase = await createClient()
 
@@ -72,7 +73,7 @@ export async function updateRecipe(
   if (error) return { error: error.message }
 
   await syncIngredients(id, ingredients)
-  await syncTags(id, payload as RecipePayload, ingredients)
+  await syncTags(id, selectedTagSlugs)
 
   revalidatePath('/recipes')
   revalidatePath(`/recipes/${id}/edit`)
@@ -100,17 +101,10 @@ async function syncIngredients(recipeId: string, ingredients: IngredientRow[]) {
 
 async function syncTags(
   recipeId: string,
-  payload: Partial<RecipePayload>,
-  ingredients: IngredientRow[]
+  selectedTagSlugs: string[]
 ) {
   const supabase = await createClient()
-
-  const slugs = generateRecipeTags(
-    ingredients,
-    payload.category ?? '',
-    payload.type ?? '',
-    payload.cooking_method ?? ''
-  )
+  const slugs = [...new Set(selectedTagSlugs.filter(Boolean))]
 
   if (!slugs.length) {
     await supabase.from('recipe_tags').delete().eq('recipe_id', recipeId)
@@ -122,7 +116,10 @@ async function syncTags(
     .select('id, slug')
     .in('slug', slugs)
 
-  if (!tags?.length) return
+  if (!tags?.length) {
+    await supabase.from('recipe_tags').delete().eq('recipe_id', recipeId)
+    return
+  }
 
   await supabase.from('recipe_tags').delete().eq('recipe_id', recipeId)
   await supabase.from('recipe_tags').insert(
