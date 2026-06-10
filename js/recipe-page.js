@@ -56,7 +56,7 @@ async function init() {
   // Отримуємо рецепт по slug
   const { data: recipe, error } = await supabase
     .from('recipes')
-    .select('id, name_ua, name_en, slug, image, kcal, protein, fat, carbs, steps, category, rating, user_id, created_at, prep_time_min, cook_time_min, total_time_min, recipe_yield')
+    .select('id, name_ua, name_en, name_pl, slug, image, kcal, protein, fat, carbs, steps, steps_en, steps_pl, category, rating, user_id, created_at, prep_time_min, cook_time_min, total_time_min, recipe_yield')
     .eq('slug', _slug)
     .eq('status', 'published')
     .is('deleted_at', null)
@@ -150,7 +150,7 @@ function _renderRecipe(recipe, authorName, ingredients) {
        </ul>`
     : '';
 
-  const steps = (recipe.steps_ua || recipe.steps || '')
+  const steps = _getLocalizedSteps(recipe, _getLang())
     .split(/\\n|\n/)
     .map(s => s.replace(/^\d+\.\s*/, '').trim())
     .filter(Boolean);
@@ -325,8 +325,16 @@ function _injectHreflang(canonical) {
 }
 
 function _getLocalizedName(recipe, lang) {
-  if (lang === 'en' || lang === 'pl') return recipe.name_en || recipe.name_ua || 'Recipe';
+  if (lang === 'pl') return recipe.name_pl || recipe.name_ua || 'Przepis';
+  if (lang === 'en') return recipe.name_en || recipe.name_ua || 'Recipe';
   return recipe.name_ua || recipe.name_en || 'Рецепт';
+}
+
+// steps = UA (база), steps_pl/steps_en — переклади; фолбек на UA
+function _getLocalizedSteps(recipe, lang) {
+  if (lang === 'pl') return recipe.steps_pl || recipe.steps || '';
+  if (lang === 'en') return recipe.steps_en || recipe.steps || '';
+  return recipe.steps || '';
 }
 
 function _getCategoryLabel(category, lang) {
@@ -377,7 +385,7 @@ function _setMeta(attr, key, value) {
 
 function _injectSchemaOrg(recipe, authorName, ingredients) {
   const name  = recipe.name_ua || recipe.name_en || 'Рецепт';
-  const steps = (recipe.steps_ua || recipe.steps || '').split(/\\n|\n/).map(s => s.replace(/^\d+\.\s*/, '').trim()).filter(Boolean);
+  const steps = (recipe.steps || '').split(/\\n|\n/).map(s => s.replace(/^\d+\.\s*/, '').trim()).filter(Boolean);
 
   const schema = {
     '@context': 'https://schema.org',
