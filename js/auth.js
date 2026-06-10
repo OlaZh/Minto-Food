@@ -93,6 +93,10 @@ export async function initAuth(onAuthChange = null) {
       // Дата останнього показу зберігається в БД (profiles.welcome_seen_on),
       // тому не залежить від пристрою чи чистки кешу.
       if (userId) await _maybeShowDailyWelcome(userId);
+
+      // Виконуємо відкладену дію (працює для email/password І Google OAuth).
+      // Для email/password submit-обробник більше дію не запускає — лише тут.
+      runPendingAction();
     }
 
     if (event === 'SIGNED_OUT') {
@@ -193,6 +197,16 @@ export function requireAuth(action = null) {
 }
 
 let pendingAction = null;
+
+// Виконує відкладену дію один раз і одразу очищає її, щоб уникнути
+// повторного запуску. Викликається з гілки SIGNED_IN (спільна для
+// email/password і Google OAuth).
+function runPendingAction() {
+  if (!pendingAction) return;
+  const action = pendingAction;
+  pendingAction = null;
+  action();
+}
 
 // =============================================================
 // ЛОГІН ЧЕРЕЗ GOOGLE
@@ -578,12 +592,8 @@ function initAuthModal() {
       errorEl.hidden = false;
     } else {
       errorEl.hidden = true;
-
-      // Виконуємо відкладену дію якщо є
-      if (pendingAction) {
-        pendingAction();
-        pendingAction = null;
-      }
+      // pendingAction виконається у гілці SIGNED_IN (onAuthStateChange),
+      // спільній для email/password і Google OAuth — тут не дублюємо.
     }
   });
 
