@@ -33,8 +33,9 @@ export function showToast(message, type = 'success', duration = 3000) {
 
   toast.innerHTML = `
     <span class="toast-icon">${icon}</span>
-    <span class="toast-text">${message}</span>
+    <span class="toast-text"></span>
   `;
+  toast.querySelector('.toast-text').textContent = message;
 
   document.body.appendChild(toast);
 
