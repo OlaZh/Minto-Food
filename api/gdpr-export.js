@@ -17,7 +17,11 @@ async function query(table, filter, serviceKey) {
       Accept:        'application/json',
     },
   });
-  return res.ok ? res.json() : [];
+  if (!res.ok) {
+    const body = await res.text().catch(() => '');
+    throw new Error(`Query failed for "${table}" (${res.status}): ${body.slice(0, 200)}`);
+  }
+  return res.json();
 }
 
 async function verifyJwt(token) {
@@ -54,29 +58,23 @@ export default async function handler(req, res) {
   const uid = user.id;
   const uidFilter = `user_id=eq.${uid}`;
 
-  const [
-    profile,
-    recipes,
-    cookbooks,
-    gdprRequests,
-  ] = await Promise.all([
-    query('profiles', `id=eq.${uid}`, SERVICE_KEY),
-    query('recipes',  `${uidFilter}&deleted_at=is.null`, SERVICE_KEY),
-    query('cookbooks', uidFilter, SERVICE_KEY),
-    query('gdpr_requests', uidFilter, SERVICE_KEY),
-  ]);
+  let profile, recipes, cookbooks, gdprRequests;
+  try {
+    [profile, recipes, cookbooks, gdprRequests] = await Promise.all([
+      query('profiles', `id=eq.${uid}`, SERVICE_KEY),
+      query('recipes',  `${uidFilter}&deleted_at=is.null`, SERVICE_KEY),
+      query('cookbooks', uidFilter, SERVICE_KEY),
+      query('gdpr_requests', uidFilter, SERVICE_KEY),
+    ]);
+  } catch (err) {
+    console.error('GDPR export failed:', err);
+    // Логуємо невдалу спробу — НЕ віддаємо неповний архів як успіх
+    await logRequest(uid, 'failed').catch(() => {});
+    return res.status(500).json({ error: 'Export failed. Please try again.' });
+  }
 
-  // Логуємо export запит
-  await fetch(`${SUPABASE_URL}/rest/v1/gdpr_requests`, {
-    method: 'POST',
-    headers: {
-      apikey:        SERVICE_KEY,
-      Authorization: `Bearer ${SERVICE_KEY}`,
-      'Content-Type': 'application/json',
-      Prefer:         'return=minimal',
-    },
-    body: JSON.stringify({ user_id: uid, type: 'export', status: 'completed', completed_at: new Date().toISOString() }),
-  });
+  // Логуємо успішний export запит
+  await logRequest(uid, 'completed').catch(() => {});
 
   const exportData = {
     exported_at: new Date().toISOString(),
@@ -92,4 +90,17 @@ export default async function handler(req, res) {
   res.setHeader('Content-Disposition', `attachment; filename="mintofood-export-${uid.slice(0, 8)}.json"`);
   res.setHeader('Cache-Control', 'no-store');
   res.status(200).json(exportData);
+}
+
+function logRequest(uid, status) {
+  return fetch(`${SUPABASE_URL}/rest/v1/gdpr_requests`, {
+    method: 'POST',
+    headers: {
+      apikey:        SERVICE_KEY,
+      Authorization: `Bearer ${SERVICE_KEY}`,
+      'Content-Type': 'application/json',
+      Prefer:         'return=minimal',
+    },
+    body: JSON.stringify({ user_id: uid, type: 'export', status, completed_at: new Date().toISOString() }),
+  });
 }
