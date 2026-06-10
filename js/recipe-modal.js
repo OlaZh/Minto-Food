@@ -418,9 +418,11 @@ async function showRecipeForm(data = null) {
 }
 
 async function saveRecipe() {
+  console.log('[A3] saveRecipe called');
   const {
     data: { user },
   } = await supabase.auth.getUser();
+  console.log('[A3] saveRecipe user =', user ? user.id : 'null');
 
   if (!user) {
     // Не втрачаємо введений рецепт: відкриваємо логін і зберігаємо

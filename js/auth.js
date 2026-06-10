@@ -190,6 +190,9 @@ export function requireAuth(action = null) {
   // Зберігаємо дію щоб виконати після логіну
   if (action) {
     pendingAction = action;
+    console.log('[A3] requireAuth saved pendingAction, opening login');
+  } else {
+    console.log('[A3] requireAuth called WITHOUT action, opening login');
   }
 
   openAuthModal();
@@ -202,10 +205,12 @@ let pendingAction = null;
 // повторного запуску. Викликається з гілки SIGNED_IN (спільна для
 // email/password і Google OAuth).
 function runPendingAction() {
+  console.log('[A3] runPendingAction called, pendingAction =', pendingAction ? 'SET' : 'null');
   if (!pendingAction) return;
   const action = pendingAction;
   pendingAction = null;
-  action();
+  console.log('[A3] executing pendingAction');
+  Promise.resolve(action()).catch((e) => console.error('[A3] pendingAction threw:', e));
 }
 
 // =============================================================
