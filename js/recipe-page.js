@@ -141,10 +141,15 @@ function _renderRecipe(recipe, authorName, ingredients) {
        <ul class="rp-ings">
          ${ingredients.map(i => {
            const ingName = i.ingredient?.name_ua || i.ingredient?.name_en || '—';
+           // Показуємо міру лише коли є кількість. Інакше (напр. "за смаком")
+           // нічого не показуємо замість фейкового "1 шт"/"null г".
+           const amountLabel = (i.amount != null && i.amount !== '')
+             ? `${i.amount}${i.unit || 'г'}`
+             : (i.unit || '');
            return `<li class="rp-ing">
              <span class="rp-ing__dot"></span>
              <span>${_esc(ingName)}</span>
-             <span class="rp-ing__amount">${i.amount}${i.unit || 'г'}</span>
+             <span class="rp-ing__amount">${_esc(amountLabel)}</span>
            </li>`;
          }).join('')}
        </ul>`
@@ -403,7 +408,10 @@ function _injectSchemaOrg(recipe, authorName, ingredients) {
     recipeCuisine: 'Ukrainian',
     recipeIngredient: ingredients.map(i => {
       const n = i.ingredient?.name_ua || i.ingredient?.name_en || '';
-      return `${i.amount}${i.unit || 'г'} ${n}`.trim();
+      const amountLabel = (i.amount != null && i.amount !== '')
+        ? `${i.amount}${i.unit || 'г'}`
+        : (i.unit || '');
+      return `${amountLabel} ${n}`.trim();
     }),
     recipeInstructions: steps.map((text, idx) => ({
       '@type':    'HowToStep',

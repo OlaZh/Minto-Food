@@ -282,10 +282,12 @@ async function parseAndAddIngredients(text) {
         name_pl: product?.name_pl || null,
         original: item.original,
         weight: grams,
-        parsedAmount: item.amount || 1,
-        parsedUnit: item.unit || 'шт',
+        // Не вигадуємо "1 шт", коли парсер не виділив кількість/одиницю
+        // (напр. "перець на смак"). null → рендер не покаже фейкову міру.
+        parsedAmount: item.amount ?? null,
+        parsedUnit: item.unit || null,
         unitType: item.unitType,
-        unit: hasWeight ? 'g' : (item.unit || 'шт'),
+        unit: hasWeight ? 'g' : (item.unit || null),
         kcal: matched ? Math.round((product.kcal || 0) * factor) : 0,
         protein: matched ? parseFloat(((product.protein || 0) * factor).toFixed(1)) : 0,
         fat: matched ? parseFloat(((product.fat || 0) * factor).toFixed(1)) : 0,
