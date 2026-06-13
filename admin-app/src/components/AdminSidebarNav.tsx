@@ -8,6 +8,7 @@ import {
   AlertTriangle,
   BookOpen,
   Database,
+  HelpCircle,
   LayoutDashboard,
   Package,
   ScanBarcode,
@@ -31,6 +32,7 @@ const moderationNav = [
   { href: '/products', label: 'Продукти', icon: Package },
   { href: '/catalog', label: 'Каталог', icon: Database },
   { href: '/corrections', label: 'Правки ШК', icon: ScanBarcode },
+  { href: '/unmatched', label: 'Нерозпізнані', icon: HelpCircle },
   { href: '/archive', label: 'Архів', icon: Archive },
 ]
 

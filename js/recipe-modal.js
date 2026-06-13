@@ -658,6 +658,22 @@ async function saveRecipe() {
   }
 
   const ingredients = getIngredients();
+
+  // Нерозпізнані інгредієнти (без product_id) → у чергу для адміна:
+  // популярні "червоні" продукти видно й можна додати в БД. Тихо, не блокує.
+  ingredients
+    .filter((ing) => !ing.id && !ing.fromBarcode)
+    .forEach((ing) => {
+      const raw = ing.originalQuery || ing.name_ua || ing.original;
+      if (raw) {
+        supabase.rpc('log_unmatched_term', {
+          p_raw: raw,
+          p_lang: localStorage.getItem('lang') || 'ua',
+          p_source: 'recipe',
+        }).catch(() => { /* необов'язкове логування */ });
+      }
+    });
+
   if (editingRecipeId !== null && data?.id) {
     const { error: deleteIngredientsError } = await supabase
       .from('product_recipe')

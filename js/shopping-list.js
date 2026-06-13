@@ -449,6 +449,8 @@ async function copyToActiveList(item) {
   const { canonicalName, category } = await resolveProduct(item.name);
   const finalName = canonicalName || item.name;
 
+  if (!canonicalName) logUnmatched(item.name);
+
   const existing = activeItems.find(i =>
     i.name.toLowerCase() === finalName.toLowerCase() &&
     (i.unit || '') === (item.unit || '') && !i.is_checked
@@ -607,6 +609,9 @@ async function addItem(name, amount, unit) {
   // рядок навіть за різного написання. Невідомі продукти лишаються як введено.
   const { canonicalName, category } = await resolveProduct(name);
   const finalName = canonicalName || name;
+
+  // Продукт невідомий БД → у чергу нерозпізнаних (популярні додам у БД).
+  if (!canonicalName) logUnmatched(name);
 
   // Сумуємо якщо та сама (канонічна) назва + одиниця
   const existing = activeItems.find(i =>
@@ -1527,4 +1532,16 @@ async function resolveViaAlias(name) {
 // Тонка обгортка для місць, де потрібна лише категорія (імпорт тижневого меню).
 async function lookupCategory(name) {
   return (await resolveProduct(name)).category;
+}
+
+// Тихо логуємо нерозпізнаний продукт у чергу для адміна (популярні → в БД).
+// Не блокуємо UX: помилки/офлайн/RLS ігноруємо.
+async function logUnmatched(rawName) {
+  try {
+    await supabase.rpc('log_unmatched_term', {
+      p_raw: rawName,
+      p_lang: localStorage.getItem('lang') || 'ua',
+      p_source: 'shopping',
+    });
+  } catch { /* необов'язкове логування */ }
 }
