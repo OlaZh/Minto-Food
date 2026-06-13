@@ -444,15 +444,20 @@ async function deletePanelItem(id, liEl, container) {
 async function copyToActiveList(item) {
   if (!mainListId) return;
 
+  // Канонізуємо назву (як в addItem), щоб копія з шаблону зливалася з
+  // наявним продуктом навіть за іншого написання.
+  const { canonicalName, category } = await resolveProduct(item.name);
+  const finalName = canonicalName || item.name;
+
   const existing = activeItems.find(i =>
-    i.name.toLowerCase() === item.name.toLowerCase() &&
+    i.name.toLowerCase() === finalName.toLowerCase() &&
     (i.unit || '') === (item.unit || '') && !i.is_checked
   );
 
   if (existing) {
     const newAmt = (parseFloat(existing.amount) || 0) + (parseFloat(item.amount) || 0);
     await updateItemAmount(existing.id, newAmt || null);
-    showToast(`"${item.name}" оновлено`);
+    showToast(`"${finalName}" оновлено`);
     return;
   }
 
@@ -460,8 +465,8 @@ async function copyToActiveList(item) {
     .from('shopping_items')
     .insert([{
       list_id: mainListId, user_id: currentUser.id,
-      name: item.name, amount: item.amount || null,
-      unit: item.unit || null, category: item.category || await lookupCategory(item.name),
+      name: finalName, amount: item.amount || null,
+      unit: item.unit || null, category: item.category || category,
       is_checked: false,
     }])
     .select().single();
@@ -471,7 +476,7 @@ async function copyToActiveList(item) {
   activeItems.push(data);
   renderActiveList();
   renderProgress();
-  showToast(`"${item.name}" додано до списку`);
+  showToast(`"${finalName}" додано до списку`);
 }
 
 /* ============================================================
@@ -597,9 +602,15 @@ async function addItem(name, amount, unit) {
   if (!currentUser) { showToast('Увійдіть в акаунт', 'error'); return; }
   if (!mainListId)  { showToast('Помилка ініціалізації', 'error'); return; }
 
-  // Сумуємо якщо та сама назва + одиниця
+  // Резолв до канонічного продукту БД: "яблоко"/"apple"/"яблуко" → "Яблуко".
+  // Зберігаємо під канонічною назвою, тому однакові продукти зливаються в один
+  // рядок навіть за різного написання. Невідомі продукти лишаються як введено.
+  const { canonicalName, category } = await resolveProduct(name);
+  const finalName = canonicalName || name;
+
+  // Сумуємо якщо та сама (канонічна) назва + одиниця
   const existing = activeItems.find(i =>
-    i.name.toLowerCase() === name.toLowerCase() &&
+    i.name.toLowerCase() === finalName.toLowerCase() &&
     (i.unit || '').toLowerCase() === (unit || '').toLowerCase() &&
     !i.is_checked
   );
@@ -614,8 +625,8 @@ async function addItem(name, amount, unit) {
     .from('shopping_items')
     .insert([{
       list_id: mainListId, user_id: currentUser.id,
-      name, amount: amount || null, unit: unit || null,
-      category: await lookupCategory(name), is_checked: false,
+      name: finalName, amount: amount || null, unit: unit || null,
+      category, is_checked: false,
     }])
     .select().single();
 
@@ -1447,12 +1458,19 @@ async function categoryIdToBucket(categoryId) {
   return topNameOf(categoryId) || null;
 }
 
-// Шукає категорію (бакет списку) для довільної назви продукту.
-// Порядок: точна/префіксна назва в products → аліаси → ключові слова.
-async function lookupCategory(name) {
+// Резолвить довільну назву продукту до канонічного продукту в БД.
+// Повертає { canonicalName, category }:
+//   • canonicalName — products.name_ua (канон) або null, якщо в БД не знайдено;
+//   • category — бакет списку (топ-категорія БД) або keyword-fallback.
+// Порядок пошуку: точна/префіксна назва в products → аліаси → ключові слова.
+// Канонічна назва потрібна для дедупу: "яблоко"/"apple"/"яблуко" → одна "Яблуко".
+async function resolveProduct(name) {
   const term = name.trim().toLowerCase();
-  if (term.length < 3) return guessCategory(name);
+  if (term.length < 3) {
+    return { canonicalName: null, category: guessCategory(name) };
+  }
 
+  // products за назвою-префіксом → найкоротша назва = найпряміший збіг
   const tryPrefix = async (prefix) => {
     const { data } = await supabase
       .from('products')
@@ -1461,32 +1479,29 @@ async function lookupCategory(name) {
       .not('category_id', 'is', null)
       .limit(5);
     if (!data?.length) return null;
-    // Найкоротша назва = найпряміший збіг
     data.sort((a, b) => a.name_ua.length - b.name_ua.length);
-    return categoryIdToBucket(data[0].category_id);
+    return data[0];
   };
 
-  // 1. Повний термін як префікс: "молоко%"
-  const full = await tryPrefix(term);
-  if (full) return full;
+  let prod = await tryPrefix(term);
+  if (!prod && term.length > 5) prod = await tryPrefix(term.slice(0, 5));
 
-  // 2. Перші 5 символів: "молоч%"
-  if (term.length > 5) {
-    const short = await tryPrefix(term.slice(0, 5));
-    if (short) return short;
+  // Аліаси: люди пишуть по-різному ("яблоко"→"яблуко", "яйце"→"яйце куряче").
+  if (!prod) prod = await resolveViaAlias(name);
+
+  if (prod) {
+    return {
+      canonicalName: prod.name_ua || null,
+      category: (await categoryIdToBucket(prod.category_id)) || guessCategory(name),
+    };
   }
 
-  // 3. Аліаси: люди пишуть по-різному ("яблоко"→"яблуко", "яйце"→"яйце куряче").
-  // product_aliases.alias_normalized → product_id → category_id → бакет.
-  // Та сама нормалізація, що й у parse-food.js, інакше збігу не буде.
-  const aliasCat = await lookupCategoryViaAlias(name);
-  if (aliasCat) return aliasCat;
-
-  // 4. Ключові слова — fallback
-  return guessCategory(name);
+  // Невідомий продукт → keyword-fallback, без канонічної назви.
+  return { canonicalName: null, category: guessCategory(name) };
 }
 
-async function lookupCategoryViaAlias(name) {
+// alias_normalized → product { name_ua, category_id }, або null.
+async function resolveViaAlias(name) {
   const normalized = normalizeKey(name);
   if (normalized.length < 2) return null;
   try {
@@ -1499,12 +1514,17 @@ async function lookupCategoryViaAlias(name) {
 
     const { data: prod } = await supabase
       .from('products')
-      .select('category_id')
+      .select('name_ua, category_id')
       .eq('id', aliasRows[0].product_id)
       .maybeSingle();
-    return categoryIdToBucket(prod?.category_id);
+    return prod || null;
   } catch {
     // alias search unavailable → хай спрацює keyword-fallback
     return null;
   }
+}
+
+// Тонка обгортка для місць, де потрібна лише категорія (імпорт тижневого меню).
+async function lookupCategory(name) {
+  return (await resolveProduct(name)).category;
 }
