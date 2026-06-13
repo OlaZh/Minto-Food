@@ -6,7 +6,7 @@
    ============================================================ */
 
 import { supabase } from './supabaseClient.js';
-import { escapeHTML } from './utils.js';
+import { escapeHTML, showToast } from './utils.js';
 
 const token = new URLSearchParams(location.search).get('token');
 
@@ -57,14 +57,25 @@ async function fetchItems(initial) {
 
 async function toggleItem(id, checked) {
   const item = items.find(i => i.id === id);
-  if (item) item.is_checked = checked;
+  if (!item) return;
+
+  const prev = item.is_checked;
+  // Оптимістичний UI: міняємо одразу, але запам'ятовуємо попередній стан.
+  item.is_checked = checked;
   render(new Set());
 
-  await supabase.rpc('toggle_shared_item', {
+  const { error } = await supabase.rpc('toggle_shared_item', {
     p_token:   token,
     p_item_id: Number(id),
     p_checked: checked,
   });
+
+  if (error) {
+    // RPC не пройшов → відкочуємо UI, щоб стан не брехав.
+    item.is_checked = prev;
+    render(new Set());
+    showToast('Не вдалося оновити список. Спробуйте ще раз.', 'error');
+  }
 }
 
 function render(newIds) {
