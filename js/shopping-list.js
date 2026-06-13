@@ -47,8 +47,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   currentUser = await initAuth();
   if (currentUser) {
     await initLists();
-    subscribeToMainList();
-    startPolling();
+    subscribeToMainList(); // polling вмикається сам як fallback, якщо realtime відвалиться
     checkWeekMenuImport();
   }
   bindEvents();
@@ -840,21 +839,65 @@ async function importFromWeekMenu() {
    REALTIME — синхронізація з поділеним списком
    ============================================================ */
 
+let realtimeChannel = null;
+let pollTimer = null;
+let lastRealtimeActivity = 0;
+let realtimeWatchdog = null;
+
+// Скільки терпимо тишу від realtime, перш ніж підстрахуватись polling-ом.
+const REALTIME_SILENCE_MS = 20000;
+
 function subscribeToMainList() {
   if (!mainListId) return;
-  supabase
+
+  lastRealtimeActivity = Date.now();
+  realtimeChannel = supabase
     .channel(`list-${mainListId}`)
     .on('postgres_changes', {
       event: '*',
       schema: 'public',
       table: 'shopping_items',
       filter: `list_id=eq.${mainListId}`,
-    }, handleRealtimeEvent)
-    .subscribe();
+    }, payload => {
+      lastRealtimeActivity = Date.now();
+      // Realtime живий → fallback-polling більше не потрібен.
+      stopPolling();
+      handleRealtimeEvent(payload);
+    })
+    .subscribe(status => {
+      // Канал не зміг/перестав отримувати події → вмикаємо polling.
+      if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
+        startPolling();
+      } else if (status === 'SUBSCRIBED') {
+        lastRealtimeActivity = Date.now();
+      }
+    });
+
+  // Watchdog: realtime може «тихо» відвалитись уже після успішного конекту
+  // (RLS/мережа), не змінивши статусу. Якщо подій нема надто довго —
+  // підстраховуємось одноразовою синхронізацією + вмикаємо polling.
+  if (realtimeWatchdog) clearInterval(realtimeWatchdog);
+  realtimeWatchdog = setInterval(() => {
+    if (!mainListId || !currentUser) return;
+    if (pollTimer) return; // polling уже працює — watchdog не потрібен
+    if (Date.now() - lastRealtimeActivity > REALTIME_SILENCE_MS) {
+      // Тиха звірка: якщо realtime живий, вона нічого не змінить (і оновить мітку
+      // лише за наявності реальних змін). Якщо ні — підхопимо розбіжності.
+      syncActiveItems();
+    }
+  }, REALTIME_SILENCE_MS);
 }
 
 function startPolling() {
-  setInterval(syncActiveItems, 5000);
+  if (pollTimer) return; // ідемпотентно: не плодимо інтервали
+  pollTimer = setInterval(syncActiveItems, 5000);
+}
+
+function stopPolling() {
+  if (pollTimer) {
+    clearInterval(pollTimer);
+    pollTimer = null;
+  }
 }
 
 async function syncActiveItems() {
@@ -880,7 +923,13 @@ async function syncActiveItems() {
   activeItems = activeItems.filter(i => data.some(d => d.id === i.id));
   if (activeItems.length !== before) changed = true;
 
-  if (changed) { renderActiveList(); renderProgress(); }
+  if (changed) {
+    renderActiveList();
+    renderProgress();
+    // Знайшли розбіжність поза polling-ом → realtime пропускає події.
+    // Вмикаємо постійний polling як надійний fallback.
+    if (!pollTimer) startPolling();
+  }
 }
 
 function handleRealtimeEvent(payload) {
