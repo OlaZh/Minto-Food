@@ -10,6 +10,7 @@ import { initAuth } from './auth.js';
 import { showToast, escapeHTML } from './utils.js';
 import { lockScroll, unlockScroll } from './scroll-lock.js';
 import { getWeekShoppingList, clearWeekShoppingList } from './storage.js';
+import { normalizeKey } from './parse-food.js';
 import { iconLock, iconPin, iconMoreVertical, iconChevronRight, iconEdit, iconTrash, iconLink, iconBroom } from './icons.js';
 import { showConfirmModal } from './ui-components.js';
 
@@ -493,7 +494,12 @@ function renderActiveList() {
     groups[cat].push(item);
   });
 
-  Object.entries(groups).forEach(([category, items]) => {
+  // Стабільний порядок секцій (як топ-категорії БД + хім./Інше в кінці).
+  const sortedGroups = Object.entries(groups).sort(
+    ([a], [b]) => categoryOrderIndex(a) - categoryOrderIndex(b)
+  );
+
+  sortedGroups.forEach(([category, items]) => {
     const section = document.createElement('div');
     section.className = 'shop-category';
     section.innerHTML = `
@@ -983,7 +989,9 @@ function printList() {
   });
   let html = '<html><head><title>Список покупок</title></head><body>';
   html += '<h1>Список покупок</h1>';
-  Object.entries(groups).forEach(([cat, items]) => {
+  Object.entries(groups)
+    .sort(([a], [b]) => categoryOrderIndex(a) - categoryOrderIndex(b))
+    .forEach(([cat, items]) => {
     html += `<h2>${cat}</h2><ul>`;
     items.forEach(i => {
       html += `<li>${i.name}${i.amount ? ' — ' + i.amount + (i.unit ? ' ' + i.unit : '') : ''}</li>`;
@@ -1100,79 +1108,160 @@ function bindEvents() {
    УТИЛІТИ
    ============================================================ */
 
+// Порядок секцій у списку = топ-категорії БД (id 1..20) + хім./Інше в кінці.
+const CATEGORY_ORDER = [
+  'Овочі', 'Гриби', 'Зелень', 'Фрукти', 'Ягоди',
+  'Молочні продукти', 'М\'ясо', 'Риба', 'Морепродукти', 'Яйця',
+  'Хліб і випічка', 'Бакалія', 'Напівфабрикати', 'Готові страви',
+  'Олії та жири', 'Соуси та заправки', 'Солодощі', 'Напої', 'Алкоголь',
+  'Спеції та добавки', 'Гігієна та побутова хімія',
+];
+function categoryOrderIndex(name) {
+  const i = CATEGORY_ORDER.indexOf(name);
+  return i === -1 ? CATEGORY_ORDER.length : i; // невідомі/"Інше" — в кінець
+}
+
+// Бакети fallback мають збігатися з топ-категоріями БД (categories.name_ua),
+// щоб keyword-вгадування й БД-резолв давали ОДНАКОВІ назви груп.
+// Порядок важливий: перше співпадіння виграє → специфічніші правила раніше.
 const CATEGORY_RULES = [
   {
-    name: 'Овочі та фрукти',
+    name: 'Зелень',
     words: [
-      // UA
-      'помідор', 'томат', 'огір', 'морква', 'цибуля', 'часник', 'картопл', 'капуст',
-      'перець', 'баклажан', 'кабачок', 'гарбуз', 'буряк', 'редиск', 'салат', 'шпинат',
-      'петрушк', 'кріп', 'селера', 'броколі', 'цвітна', 'зелень', 'зелений',
+      // UA (свіжа зелень/трави; сушені — в "Спеції та добавки" нижче за БД)
+      'петрушк', 'кріп', 'кінза', 'коріандр', 'базилік свіж', 'рукол', 'шпинат',
+      'щавель', 'зелена цибул', 'зелень',
+      // RU
+      'петрушк', 'укроп', 'кинза', 'руккол', 'шпинат', 'щавель',
+      // EN / PL
+      'parsley', 'dill', 'cilantro', 'arugula', 'rocket', 'spinach',
+      'pietruszka', 'koperek', 'kolendra', 'rukola', 'szpinak',
+    ],
+  },
+  {
+    name: 'Гриби',
+    words: [
+      'гриб', 'печериц', 'шампіньон', 'глив', 'лисичк', 'опен', 'білий гриб', 'трюфел',
+      'грибы', 'шампиньон', 'вешенк', 'лисичк',
+      'mushroom', 'champignon', 'porcini', 'chanterelle', 'truffle',
+      'grzyb', 'pieczark', 'borowik',
+    ],
+  },
+  {
+    name: 'Ягоди',
+    words: [
+      'полуниц', 'суниц', 'малин', 'ожин', 'смородин', 'аґрус', 'агрус',
+      'журавлин', 'чорниц', 'лохин', 'обліпих', 'брусниц', 'клюкв', 'годжі',
+      'клубник', 'черник', 'ежевик', 'крыжовник', 'брусник', 'голубик',
+      'strawberry', 'raspberry', 'blackberry', 'blueberry', 'currant', 'cranberry', 'gooseberry',
+      'truskawk', 'malin', 'jagod', 'borówk', 'porzeczk', 'żurawin',
+    ],
+  },
+  {
+    name: 'Фрукти',
+    words: [
       'яблук', 'груш', 'банан', 'апельсин', 'мандарин', 'лимон', 'грейпфрут', 'виноград',
-      'полуниц', 'черешн', 'вишн', 'слив', 'персик', 'абрикос', 'нектарин',
-      'кавун', 'диня', 'ківі', 'манго', 'ананас', 'авокадо', 'гриб', 'шампіньон',
+      'черешн', 'вишн', 'слив', 'персик', 'абрикос', 'нектарин',
+      'кавун', 'диня', 'ківі', 'манго', 'ананас', 'авокадо',
+      'гранат', 'папай', 'хурма', 'інжир', 'фейхоа', 'личі', 'маракуй', 'помело', 'айв',
+      // RU
+      'яблок', 'апельсін', 'абрікос', 'грейпфрут', 'вишн', 'черешн', 'хурм',
       // EN
-      'tomato', 'cucumber', 'carrot', 'onion', 'garlic', 'potato', 'cabbage',
-      'pepper', 'eggplant', 'zucchini', 'pumpkin', 'beetroot', 'radish', 'lettuce',
-      'spinach', 'parsley', 'dill', 'celery', 'broccoli', 'cauliflower', 'mushroom',
       'apple', 'pear', 'banana', 'orange', 'tangerine', 'lemon', 'grapefruit', 'grape',
-      'strawberry', 'cherry', 'plum', 'peach', 'apricot', 'nectarine',
-      'watermelon', 'melon', 'kiwi', 'mango', 'pineapple', 'avocado',
+      'cherry', 'plum', 'peach', 'apricot', 'nectarine',
+      'watermelon', 'melon', 'kiwi', 'mango', 'pineapple', 'avocado', 'pomegranate',
       // PL
-      'pomidor', 'ogórek', 'marchew', 'cebula', 'czosnek', 'ziemniak', 'kapusta',
-      'papryka', 'bakłażan', 'cukinia', 'dynia', 'burak', 'rzodkiew', 'sałata',
-      'szpinak', 'pietruszka', 'koper', 'seler', 'brokuł', 'kalafior', 'grzyb', 'pieczarka',
       'jabłko', 'gruszka', 'banan', 'pomarańcza', 'mandarynka', 'cytryna', 'winogrono',
-      'truskawka', 'czereśnia', 'wiśnia', 'śliwka', 'brzoskwinia', 'morela', 'nektaryna',
+      'czereśnia', 'wiśnia', 'śliwka', 'brzoskwinia', 'morela', 'nektaryna',
       'arbuz', 'melon', 'kiwi', 'mango', 'ananas', 'awokado',
     ],
   },
   {
-    name: 'М\'ясо та риба',
+    name: 'Овочі',
     words: [
-      // UA
+      'помідор', 'томат', 'огір', 'морква', 'цибуля', 'часник', 'картопл', 'капуст',
+      'перець', 'баклажан', 'кабачок', 'гарбуз', 'буряк', 'редиск', 'салат',
+      'селера', 'броколі', 'цвітна', 'редьк', 'патисон', 'спаржа', 'кукурудз',
+      // RU
+      'свекл', 'огур', 'помид', 'кабачок', 'чеснок', 'тыкв', 'морков', 'картош', 'капуст',
+      // EN
+      'tomato', 'cucumber', 'carrot', 'onion', 'garlic', 'potato', 'cabbage',
+      'pepper', 'eggplant', 'zucchini', 'pumpkin', 'beetroot', 'radish', 'lettuce',
+      'celery', 'broccoli', 'cauliflower', 'asparagus', 'corn',
+      // PL
+      'pomidor', 'ogórek', 'marchew', 'cebula', 'czosnek', 'ziemniak', 'kapusta',
+      'papryka', 'bakłażan', 'cukinia', 'dynia', 'burak', 'rzodkiew', 'sałata',
+      'seler', 'brokuł', 'kalafior', 'szparag', 'kukurydz',
+    ],
+  },
+  {
+    name: 'Морепродукти',
+    words: [
+      'креветк', 'кальмар', 'краб', 'мідії', 'устриц', 'гребінц', 'восьминіг', 'лангустин',
+      'креветк', 'кальмар', 'краб', 'мидии', 'устриц', 'осьминог',
+      'shrimp', 'prawn', 'squid', 'crab', 'mussel', 'oyster', 'scallop', 'octopus', 'seafood',
+      'krewetk', 'kalmary', 'małże', 'ostryg', 'ośmiornic',
+    ],
+  },
+  {
+    name: 'Риба',
+    words: [
+      'риба', 'лосось', 'сьомга', 'тунець', 'оселедець', 'скумбрія', 'мінтай',
+      'карп', 'судак', 'форель', 'кета', 'хек', 'тріск', 'камбал', 'дорад', 'сібас', 'ікра',
+      'рыба', 'лосось', 'сёмга', 'тунец', 'селёдк', 'скумбри', 'минтай', 'треск', 'икра',
+      'fish', 'salmon', 'tuna', 'herring', 'mackerel', 'cod', 'trout', 'carp', 'caviar',
+      'ryba', 'łosoś', 'tuńczyk', 'śledź', 'makrela', 'dorsz', 'pstrąg', 'karp', 'kawior',
+    ],
+  },
+  {
+    name: 'М\'ясо',
+    words: [
       'курк', 'курич', 'свинин', 'яловичин', 'баранин', 'індич', 'качк', 'кролик',
       'фарш', 'стейк', 'відбивн', 'котлет', 'шашлик', 'печінк', 'нирк',
-      'ковбас', 'сосиск', 'шинка', 'бекон', 'буженин', 'карбонад', 'паштет',
-      'риба', 'лосось', 'сьомга', 'тунець', 'оселедець', 'скумбрія', 'мінтай',
-      'карп', 'судак', 'форель', 'креветк', 'кальмар', 'краб', 'мідії', 'кета',
+      'ковбас', 'сосиск', 'шинка', 'бекон', 'буженин', 'карбонад', 'паштет', 'сало',
+      // RU
+      'куриц', 'свинин', 'говядин', 'баранин', 'индейк', 'утк', 'кролик', 'фарш', 'колбас', 'сосиск', 'ветчин',
       // EN
       'chicken', 'pork', 'beef', 'lamb', 'turkey', 'duck', 'rabbit',
       'mince', 'minced', 'steak', 'chop', 'cutlet', 'liver', 'kidney',
       'sausage', 'ham', 'bacon', 'salami', 'pepperoni', 'pate',
-      'fish', 'salmon', 'tuna', 'herring', 'mackerel', 'cod', 'trout',
-      'carp', 'shrimp', 'prawn', 'squid', 'crab', 'mussel',
       // PL
       'kurczak', 'wieprzowina', 'wołowina', 'baranina', 'indyk', 'kaczka', 'królik',
       'mielone', 'stek', 'kotlet', 'wątróbka',
       'kiełbas', 'szynka', 'boczek', 'pasztet', 'kabanos',
-      'ryba', 'łosoś', 'tuńczyk', 'śledź', 'makrela', 'dorsz', 'pstrąg',
-      'karp', 'krewetk', 'kalmary', 'małże',
+    ],
+  },
+  {
+    name: 'Яйця',
+    words: [
+      'яйц', 'яйк', 'яєчн', 'білок яєчн', 'жовток',
+      'яйц', 'яйк', 'яичн', 'желток', 'белок яичн',
+      'egg', 'eggs', 'egg white', 'egg yolk',
+      'jajk', 'jajc', 'jajo', 'białko jaj', 'żółtko',
     ],
   },
   {
     name: 'Молочні продукти',
     words: [
-      // UA
-      'молоко', 'кефір', 'йогурт', 'сметан', 'вершк', 'ряжанк', 'простокваш',
-      'сир', 'творог', 'творожок', 'рикотт', 'моцарел', 'пармезан', 'бринз',
-      'яйц', 'яйко',
+      'молоко', 'кефір', 'йогурт', 'сметан', 'вершк', 'ряжанк', 'простокваш', 'масло вершков',
+      'сир', 'творог', 'творожок', 'рикотт', 'моцарел', 'пармезан', 'бринз', 'фета',
+      // RU
+      'молок', 'кефир', 'йогурт', 'сметан', 'сливк', 'творог', 'ряженк', 'сыр',
       // EN
       'milk', 'kefir', 'yogurt', 'yoghurt', 'sour cream', 'cream', 'buttermilk',
-      'cheese', 'cottage cheese', 'ricotta', 'mozzarella', 'parmesan', 'cheddar',
-      'butter', 'egg', 'eggs',
+      'cheese', 'cottage cheese', 'ricotta', 'mozzarella', 'parmesan', 'cheddar', 'butter',
       // PL
       'mleko', 'kefir', 'jogurt', 'śmietana', 'śmietank', 'maślanka',
-      'ser', 'twaróg', 'ricotta', 'mozzarella', 'parmezan',
-      'masło', 'jajk', 'jajc',
+      'ser', 'twaróg', 'ricotta', 'mozzarella', 'parmezan', 'masło',
     ],
   },
   {
-    name: 'Хліб та випічка',
+    name: 'Хліб і випічка',
     words: [
-      // UA
       'хліб', 'батон', 'булочк', 'багет', 'піта', 'лаваш', 'круасан', 'рогалик',
-      'торт', 'тістечк', 'кекс', 'мафін', 'пиріг', 'пиріжок', 'рулет', 'штрудель',
+      'торт', 'тістечк', 'кекс', 'мафін', 'пиріг', 'пиріжок', 'рулет', 'штрудель', 'сухар',
+      // RU
+      'хлеб', 'батон', 'булочк', 'багет', 'лаваш', 'круассан', 'пирог', 'пирожок', 'кекс',
       // EN
       'bread', 'loaf', 'bun', 'baguette', 'pita', 'croissant', 'roll',
       'cake', 'pastry', 'muffin', 'pie', 'strudel', 'bagel', 'toast',
@@ -1182,110 +1271,120 @@ const CATEGORY_RULES = [
     ],
   },
   {
-    name: 'Крупи та макарони',
+    name: 'Напівфабрикати',
     words: [
-      // UA
-      'рис', 'гречк', 'вівсянк', 'вівсяні', 'манк', 'пшоно', 'перловк', 'булгур',
-      'кускус', 'полента', 'крупа', 'пластівц',
-      'макарон', 'спагет', 'феттучін', 'пенне', 'лазань', 'лапш',
-      'борошно', 'крохмал',
-      // EN
-      'rice', 'buckwheat', 'oat', 'oatmeal', 'semolina', 'millet', 'barley', 'bulgur',
-      'couscous', 'polenta', 'cereal', 'flakes', 'groat',
-      'pasta', 'spaghetti', 'fettuccine', 'penne', 'lasagna', 'noodle',
-      'flour', 'starch',
-      // PL
-      'ryż', 'kasza', 'gryczana', 'owsian', 'płatki', 'manna', 'proso', 'bulgur',
-      'kuskus', 'polenta',
-      'makaron', 'spaghetti', 'penne', 'lasagne',
-      'mąka', 'skrobia',
+      'замороже', 'пельмен', 'вареник', 'млинц', 'налисник', 'голубц', 'котлети заморож', 'чебурек',
+      'заморож', 'пельмен', 'вареник', 'блинчик', 'голубц',
+      'frozen', 'dumpling',
+      'mrożon', 'pierogi', 'kopytka',
     ],
   },
   {
-    name: 'Консерви та соуси',
+    name: 'Бакалія',
     words: [
-      // UA
-      'консерв', 'тушонк', 'кетчуп', 'майонез', 'гірчиц', 'соус', 'томатна паст',
-      'аджик', 'хрін', 'оцет', 'соєвий',
-      'оливк', 'корнішон', 'квасол', 'нут', 'сочевиц', 'боби',
+      'рис', 'гречк', 'вівсянк', 'вівсяні', 'манк', 'пшоно', 'перловк', 'булгур',
+      'кускус', 'полента', 'крупа', 'пластівц', 'мюслі', 'гранол',
+      'макарон', 'спагет', 'феттучін', 'пенне', 'лазань', 'лапш', 'вермішел',
+      'борошно', 'крохмал', 'квасол', 'нут', 'сочевиц', 'боби', 'горох',
+      'горіх', 'горішк', 'оріш', 'мигдаль', 'фундук', 'кешью', 'арахіс', 'фісташк',
+      // RU
+      'рис', 'гречк', 'овсян', 'пшено', 'перловк', 'крупа', 'мука', 'макарон', 'вермишел',
+      'фасол', 'чечевиц', 'горох', 'орех', 'миндал', 'фундук', 'арахис',
       // EN
-      'canned', 'tinned', 'ketchup', 'mayonnaise', 'mustard', 'sauce', 'tomato paste',
-      'adjika', 'horseradish', 'vinegar', 'soy sauce',
-      'olive', 'gherkin', 'pickle', 'bean', 'chickpea', 'lentil',
+      'rice', 'buckwheat', 'oat', 'oatmeal', 'semolina', 'millet', 'barley', 'bulgur',
+      'couscous', 'polenta', 'cereal', 'flakes', 'groat', 'muesli', 'granola',
+      'pasta', 'spaghetti', 'fettuccine', 'penne', 'lasagna', 'noodle',
+      'flour', 'starch', 'bean', 'chickpea', 'lentil', 'pea',
+      'nut', 'almond', 'hazelnut', 'cashew', 'peanut', 'pistachio',
       // PL
+      'ryż', 'kasza', 'gryczana', 'owsian', 'płatki', 'manna', 'proso', 'bulgur',
+      'kuskus', 'polenta', 'makaron', 'spaghetti', 'penne', 'lasagne',
+      'mąka', 'skrobia', 'fasola', 'ciecierzyca', 'soczewica', 'groch',
+      'orzech', 'migdał', 'orzeszk',
+    ],
+  },
+  {
+    name: 'Соуси та заправки',
+    words: [
+      'кетчуп', 'майонез', 'гірчиц', 'соус', 'томатна паст', 'аджик', 'хрін', 'оцет',
+      'соєвий', 'песто', 'табаско', 'заправк', 'консерв', 'тушонк', 'оливк', 'корнішон',
+      'кетчуп', 'майонез', 'горчиц', 'соус', 'аджик', 'хрен', 'уксус', 'оливк',
+      'canned', 'tinned', 'ketchup', 'mayonnaise', 'mustard', 'sauce', 'tomato paste',
+      'horseradish', 'vinegar', 'soy sauce', 'pesto', 'olive', 'gherkin', 'pickle',
       'konserw', 'ketchup', 'majonez', 'musztarda', 'sos', 'passata', 'koncentrat',
-      'chrzan', 'ocet', 'oliwki', 'korniszon', 'fasola', 'ciecierzyca', 'soczewica',
+      'chrzan', 'ocet', 'oliwki', 'korniszon',
+    ],
+  },
+  {
+    name: 'Алкоголь',
+    words: [
+      'пиво', 'вино', 'шампанськ', 'коньяк', 'горілк', 'ром', 'віскі', 'лікер', 'джин', 'текіл', 'сидр', 'вермут',
+      'пиво', 'вино', 'шампанск', 'коньяк', 'водк', 'ром', 'виски', 'ликёр', 'джин',
+      'beer', 'wine', 'champagne', 'cognac', 'vodka', 'rum', 'whisky', 'whiskey', 'liqueur', 'gin', 'tequila', 'cider',
+      'piwo', 'wino', 'szampan', 'koniak', 'wódka', 'rum', 'whisky', 'likier', 'gin',
     ],
   },
   {
     name: 'Напої',
     words: [
-      // UA
-      'вода', 'мінеральна', 'сік', 'нектар', 'компот', 'морс', 'лимонад', 'кола',
-      'спрайт', 'фанта', 'пепсі', 'енергетик',
-      'чай', 'кава', 'какао', 'цикорій',
-      'пиво', 'вино', 'шампанськ', 'коньяк', 'горілк', 'ром', 'віскі',
-      // EN
-      'water', 'mineral', 'juice', 'nectar', 'lemonade', 'cola', 'sprite', 'fanta',
-      'pepsi', 'energy drink', 'tea', 'coffee', 'cocoa',
-      'beer', 'wine', 'champagne', 'cognac', 'vodka', 'rum', 'whisky', 'whiskey',
-      // PL
-      'woda', 'mineralna', 'sok', 'nektar', 'lemoniada', 'cola', 'napój', 'energetyk',
+      'вода', 'мінеральна', 'сік', 'нектар', 'компот', 'морс', 'лимонад', 'кока-кола',
+      'спрайт', 'фанта', 'пепсі', 'енергетик', 'чай', 'кава', 'какао', 'цикорій', 'смузі',
+      'вода', 'минерал', 'сок', 'компот', 'лимонад', 'чай', 'кофе', 'какао',
+      'water', 'mineral', 'juice', 'nectar', 'lemonade', 'coca-cola', 'sprite', 'fanta',
+      'pepsi', 'energy drink', 'tea', 'coffee', 'cocoa', 'smoothie',
+      'woda', 'mineralna', 'sok', 'nektar', 'lemoniada', 'coca-cola', 'napój', 'energetyk',
       'herbata', 'kawa', 'kakao',
-      'piwo', 'wino', 'szampan', 'koniak', 'wódka', 'rum', 'whisky',
     ],
   },
   {
-    name: 'Заморожені продукти',
+    name: 'Солодощі',
     words: [
-      // UA
-      'замороже', 'пельмен', 'вареник', 'млинц', 'налисник', 'морозив',
-      // EN
-      'frozen', 'ice cream', 'gelato', 'sorbet', 'dumpling',
-      // PL
-      'mrożon', 'lody', 'pierogi mrożone', 'kopytka',
-    ],
-  },
-  {
-    name: 'Солодощі та снеки',
-    words: [
-      // UA
       'цукерк', 'шоколад', 'мармелад', 'зефір', 'халва', 'карамель', 'льодяник',
-      'чіпс', 'сухарик', 'поп-корн', 'попкорн', 'крекер', 'вафл',
-      'горіх', 'горішк', 'оріш', 'мигдаль', 'фундук', 'кешью', 'арахіс', 'фісташк', 'насіння',
-      'мед', 'варення', 'джем', 'повидло', 'нутелл', 'цукор',
+      'чіпс', 'сухарик', 'поп-корн', 'попкорн', 'крекер', 'вафл', 'печив', 'пряник', 'батончик',
+      'мед', 'варення', 'джем', 'повидло', 'нутелл', 'морозив', 'снек', 'мармел',
+      // RU
+      'конфет', 'шоколад', 'печень', 'пряник', 'зефир', 'халв', 'сухар', 'мёд', 'варень', 'мороженое', 'чипс',
       // EN
       'candy', 'chocolate', 'marshmallow', 'caramel', 'lollipop', 'halva',
       'chip', 'crisp', 'popcorn', 'cracker', 'wafer', 'waffle',
-      'nut', 'almond', 'hazelnut', 'cashew', 'peanut', 'pistachio', 'seed',
-      'honey', 'jam', 'jelly', 'nutella', 'sugar',
+      'honey', 'jam', 'jelly', 'nutella', 'ice cream', 'gelato', 'sorbet', 'snack',
       // PL
       'cukierek', 'czekolada', 'żelki', 'pianka', 'karmel', 'lizak',
       'chipsy', 'chrupki', 'popcorn', 'krakersy', 'wafelek',
-      'orzech', 'migdał', 'orzechy', 'pestki', 'słonecznik',
-      'miód', 'dżem', 'marmolada', 'nutella', 'cukier',
+      'miód', 'dżem', 'marmolada', 'nutella', 'lody',
     ],
   },
   {
-    name: 'Спеції та олія',
+    name: 'Олії та жири',
     words: [
-      // UA
-      'сіль', 'паприк', 'куркум', 'кориц', 'ванілін', 'ваніль', 'мускатн',
-      'кардамон', 'лавров', 'приправ', 'спеці', 'базилік', 'орегано', 'розмарин',
-      'олія', 'соняшников',
-      // EN
-      'salt', 'paprika', 'turmeric', 'cinnamon', 'vanilla', 'nutmeg',
-      'cardamom', 'bay leaf', 'spice', 'seasoning', 'basil', 'oregano', 'rosemary',
-      'thyme', 'cumin', 'ginger', 'clove',
-      'oil', 'olive oil', 'sunflower oil', 'coconut oil',
-      // PL
-      'sól', 'papryka', 'kurkuma', 'cynamon', 'wanilia', 'gałka muszkatołowa',
-      'kardamon', 'liść laurowy', 'przyprawa', 'zioła', 'bazylia', 'oregano', 'rozmaryn',
-      'tymianek', 'kminek', 'imbir', 'goździki',
-      'olej', 'oliwa',
+      'олія', 'соняшников', 'оливков', 'кокосов', 'маргарин', 'смалець', 'жир', 'масло вершкове',
+      'масло подсолн', 'масло оливк', 'растительное масло', 'маргарин', 'жир',
+      'oil', 'olive oil', 'sunflower oil', 'coconut oil', 'margarine', 'lard',
+      'olej', 'oliwa', 'margaryna', 'smalec',
     ],
   },
   {
+    name: 'Спеції та добавки',
+    words: [
+      'сіль', 'паприк', 'куркум', 'кориц', 'ванілін', 'ваніль', 'мускатн', 'цукор',
+      'кардамон', 'лавров', 'приправ', 'спеці', 'орегано', 'розмарин', 'чебрец', 'кмин',
+      'імбир сушен', 'сода', 'розпушув', 'желатин', 'дріжджі', 'насіння',
+      // сушені трави = спеції (як у БД)
+      'базилік сушен', 'петрушка сушен', 'кріп сушен', 'часник сушен', 'часник гранул',
+      // RU
+      'соль', 'паприк', 'куркум', 'корица', 'ваниль', 'приправ', 'специ', 'орегано', 'сахар', 'разрыхлит', 'дрожж', 'семечк', 'семен',
+      // EN
+      'salt', 'paprika', 'turmeric', 'cinnamon', 'vanilla', 'nutmeg', 'sugar',
+      'cardamom', 'bay leaf', 'spice', 'seasoning', 'oregano', 'rosemary',
+      'thyme', 'cumin', 'ginger', 'clove', 'baking soda', 'baking powder', 'yeast', 'gelatin', 'seed',
+      // PL
+      'sól', 'papryka', 'kurkuma', 'cynamon', 'wanilia', 'cukier',
+      'kardamon', 'liść laurowy', 'przyprawa', 'zioła', 'oregano', 'rozmaryn',
+      'tymianek', 'kminek', 'imbir', 'goździki', 'drożdż', 'żelatyn', 'soda',
+    ],
+  },
+  {
+    // Поза БД-категоріями — лишається лише для списку покупок (не їжа).
     name: 'Гігієна та побутова хімія',
     words: [
       // UA
@@ -1317,11 +1416,39 @@ function guessCategory(name) {
   return 'Інше';
 }
 
-// Шукає категорію через БД продуктів.
-// Стратегія: starts-with (без провідного %) щоб уникнути хибних спрацювань
-// типу "молочко" → "Пташине молочко" (цукерки).
-// Якщо результатів декілька — бере найкоротшу назву (найпряміший збіг).
-// Fallback: guessCategory (ключові слова).
+// Категорії в БД ієрархічні: products.category_id вказує на ПІД-категорію
+// (напр. 401 "Свіжі" parent_id=4 "Фрукти"). Бакет списку покупок = назва
+// ТОП-категорії БД напряму (Фрукти, Овочі, Яйця, ...) — 1:1 з базою.
+// Embed products→categories через PostgREST не працює (немає FK у схемі),
+// тож резолвимо category_id вручну через закешовану таблицю categories.
+
+// category_id → name_ua топ-категорії. Завантажується один раз.
+let _categoryIndex = null;
+async function getCategoryIndex() {
+  if (_categoryIndex) return _categoryIndex;
+  const { data } = await supabase
+    .from('categories')
+    .select('id, name_ua, parent_id');
+  const byId = new Map((data || []).map(c => [c.id, c]));
+  const topNameOf = (id) => {
+    let cur = byId.get(id);
+    let guard = 0;
+    while (cur && cur.parent_id != null && guard++ < 10) cur = byId.get(cur.parent_id);
+    return cur?.name_ua || null;
+  };
+  _categoryIndex = { byId, topNameOf };
+  return _categoryIndex;
+}
+
+// category_id (з products) → назва топ-категорії БД (= бакет списку), або null.
+async function categoryIdToBucket(categoryId) {
+  if (categoryId == null) return null;
+  const { topNameOf } = await getCategoryIndex();
+  return topNameOf(categoryId) || null;
+}
+
+// Шукає категорію (бакет списку) для довільної назви продукту.
+// Порядок: точна/префіксна назва в products → аліаси → ключові слова.
 async function lookupCategory(name) {
   const term = name.trim().toLowerCase();
   if (term.length < 3) return guessCategory(name);
@@ -1329,17 +1456,17 @@ async function lookupCategory(name) {
   const tryPrefix = async (prefix) => {
     const { data } = await supabase
       .from('products')
-      .select('name_ua, category_id, categories!inner(name_ua)')
+      .select('name_ua, category_id')
       .ilike('name_ua', `${prefix}%`)
       .not('category_id', 'is', null)
       .limit(5);
     if (!data?.length) return null;
     // Найкоротша назва = найпряміший збіг
     data.sort((a, b) => a.name_ua.length - b.name_ua.length);
-    return data[0].categories.name_ua;
+    return categoryIdToBucket(data[0].category_id);
   };
 
-  // 1. Повний термін як префікс: "молочко%"
+  // 1. Повний термін як префікс: "молоко%"
   const full = await tryPrefix(term);
   if (full) return full;
 
@@ -1349,6 +1476,35 @@ async function lookupCategory(name) {
     if (short) return short;
   }
 
-  // 3. Ключові слова — fallback
+  // 3. Аліаси: люди пишуть по-різному ("яблоко"→"яблуко", "яйце"→"яйце куряче").
+  // product_aliases.alias_normalized → product_id → category_id → бакет.
+  // Та сама нормалізація, що й у parse-food.js, інакше збігу не буде.
+  const aliasCat = await lookupCategoryViaAlias(name);
+  if (aliasCat) return aliasCat;
+
+  // 4. Ключові слова — fallback
   return guessCategory(name);
+}
+
+async function lookupCategoryViaAlias(name) {
+  const normalized = normalizeKey(name);
+  if (normalized.length < 2) return null;
+  try {
+    const { data: aliasRows } = await supabase
+      .from('product_aliases')
+      .select('product_id')
+      .ilike('alias_normalized', normalized)
+      .limit(1);
+    if (!aliasRows?.length) return null;
+
+    const { data: prod } = await supabase
+      .from('products')
+      .select('category_id')
+      .eq('id', aliasRows[0].product_id)
+      .maybeSingle();
+    return categoryIdToBucket(prod?.category_id);
+  } catch {
+    // alias search unavailable → хай спрацює keyword-fallback
+    return null;
+  }
 }
