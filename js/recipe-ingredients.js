@@ -603,12 +603,6 @@ export async function setIngredientsFromText(text) {
   await parseAndAddIngredients(normalizedText);
 }
 
-export function setIngredients(ingredients) {
-  ingredientsList = ingredients || [];
-  renderIngredientsList();
-  updateTotals();
-}
-
 export function setLanguage(lang) {
   currentLang = lang;
 

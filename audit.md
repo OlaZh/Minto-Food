@@ -236,7 +236,7 @@ toast.querySelector('.toast-text').textContent = message;
 - `openClearCellConfirm()` — [week-menu.js:243](js/week-menu.js#L243) — 1 входження (саме оголошення). ⏳ ще не чіпав (делікатніший UX-хук).
 - ⚠️ `openCoverPicker()` — недопідключений шлях, кандидат. **АЛЕ `createCoverPickerModal()` — НЕ мертва**: викликається в [cookbook.js:108](js/cookbook.js#L108) (поправка ШІ-рев'ю). Видаляти лише `openCoverPicker`, не всю cover-picker гілку.
 - ✅ Мертві імпорти ВИДАЛЕНО (коміт 59cf278): `removeRecipeFromBook/removeRecipeFromAllBooks/getRecipeBooks` (add-recipe), `iconCheck/iconVeg/iconPlate` (meals), `getWeightHistory/addWeightRecord` (profile).
-- ✅ Невикористані експорти: `getBooks/removeRecipeFromAllBooks` ВИДАЛЕНО (коміт 660ca53) + `getWeightHistory/addWeightRecord` із storage (коміт b41eee6). ⏳ `setIngredients` [recipe-ingredients.js:604](js/recipe-ingredients.js#L604) — ще не перевіряв.
+- ✅ Невикористані експорти: `getBooks/removeRecipeFromAllBooks` ВИДАЛЕНО (коміт 660ca53) + `getWeightHistory/addWeightRecord` із storage (коміт b41eee6) + `setIngredients` із recipe-ingredients.js (0 споживачів; `setIngredientsFromText` — інша, жива).
 - ✅ Константи `WEIGHT_HISTORY_KEY/ACTIVITY_HISTORY_KEY` (profile.js) + осиротілий `STORAGE_KEYS.WEIGHT_HISTORY` — ВИДАЛЕНО (коміт b41eee6).
 
 ### ⚠️ УВАГА — НЕ переплутати (тут легко зламати):
