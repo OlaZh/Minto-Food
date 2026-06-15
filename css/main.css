@@ -5247,19 +5247,6 @@ svg[viewBox="0 0 24 24"] {
 .report-modal__actions button {
   flex: 1;
 }
-.report-modal .btn-danger {
-  background: #e74c3c;
-  color: white;
-  border: none;
-  padding: 12px 20px;
-  border-radius: 10px;
-  cursor: pointer;
-  font-weight: 600;
-  transition: background 0.2s ease;
-}
-.report-modal .btn-danger:hover {
-  background: #c0392b;
-}
 
 .cookbook-book__edit-btn {
   width: 32px;
@@ -15395,3 +15382,5 @@ input[type=date].admin-select {
   font-family: inherit;
   cursor: pointer;
 }
+
+/*# sourceMappingURL=main.css.map */

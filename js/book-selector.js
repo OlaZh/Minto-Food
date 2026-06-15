@@ -509,7 +509,7 @@ export function openReportModal(recipeId, recipeName = '') {
           
           <div class="report-modal__actions">
             <button type="button" class="btn-secondary" id="report-cancel">Скасувати</button>
-            <button type="submit" class="btn-danger">Надіслати скаргу</button>
+            <button type="submit" class="btn-confirm">Надіслати скаргу</button>
           </div>
         </form>
       </div>
