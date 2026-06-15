@@ -191,7 +191,8 @@ toast.querySelector('.toast-text').textContent = message;
 
 > Правило з [_buttons.scss:4](scss/components/_buttons.scss#L4): нові кнопки — через `@extend`. Порушено в кількох місцях.
 
-### D1. Прибрати override `.btn-danger` ⬜ НЕ ЗРОБЛЕНО (override досі на [_book-selector.scss:488](scss/components/_book-selector.scss#L488))
+### D1. Прибрати override `.btn-danger` ✅ ЗРОБЛЕНО (коміт e4951b4)
+**Як (2026-06-15):** локальний `.btn-danger` у report-modal був НЕ дублем, а іншою кнопкою — суцільно-червоний фон/білий текст проти світло-рожевої глобальної. Кнопка «Надіслати скаргу» — submit головної дії форми (не видалення), тож переведено клас на `btn-confirm` (`@extend %button-primary`) і прибрано локальний override (хардкод `#e74c3c`, без dark-теми). Глобальна `.btn-danger` недоторкана. `css/main.css` перекомпільовано.
 **Файл:** [_book-selector.scss:488](scss/components/_book-selector.scss#L488) — `.report-modal .btn-danger` перемальовує глобальну [.btn-danger](scss/components/_buttons.scss#L70).
 **Фікс:** прибрати локальний блок, лишити глобальну; якщо потрібен відступ — лише його, без кольору.
 **Ризик:** низький — звірити вигляд кнопки в report-modal до/після.
