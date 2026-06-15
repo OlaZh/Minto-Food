@@ -101,7 +101,7 @@ toast.querySelector('.toast-text').textContent = message;
 
 ## 🟡 БЛОК B. Локалізація (контент показується не тією мовою)
 
-> **Статус (2026-06-15): ✅ ВЕСЬ БЛОК B ЗРОБЛЕНО** (B1, B2, B3, B4). Деталі по кожному пункту нижче.
+> **Статус (2026-06-15): ✅ ВЕСЬ БЛОК B ЗРОБЛЕНО** (B1, B2, B3, B4) — після ШІ-рев'ю дочищено хвости B2 (базові матчери) і B4 (footer/share/CTA/404). Єдине свідоме виключення — Schema.org JSON-LD лишається UA-базою (SEO). Деталі по кожному пункту нижче.
 
 ### B1. product-guide рендерить `name_ua`/`short_desc` напряму ✅ ЗРОБЛЕНО
 **Зроблено (2026-06-15):** картка ([:142](js/product-guide.js#L142)) і модалка ([:447](js/product-guide.js#L447)/[:459](js/product-guide.js#L459)) тепер через наявні геттери `nameForLang()`/`txt(row,'short_desc')`. Бонус: пошук-фільтр ([:217](js/product-guide.js#L217)) тепер матчить і локалізовані назву/опис, не лише UA.
@@ -110,13 +110,14 @@ toast.querySelector('.toast-text').textContent = message;
 **Фікс:** додати локалізований геттер (як у recipe) і вживати його замість прямого `name_ua`.
 **Ризик:** низький — фолбек на UA лишається.
 
-### B2. parse-food: пошук не по `name_pl` 🟨 ЧАСТКОВО
+### B2. parse-food: пошук не по `name_pl` ✅ ЗРОБЛЕНО (усі шляхи)
 **Файл:** [parse-food.js:367](js/parse-food.js#L367), [parse-food.js:527](js/parse-food.js#L527)
 **Що не так:** прямий пошук інгредієнтів іде по `name_ua`/`name_en`, але не по `name_pl` → гірше розпізнавання для PL.
 **Фікс:** додати `name_pl` у пошукові умови.
 **Ризик:** низький.
-**✅ ЗРОБЛЕНО (2026-06-15):** у дропдаун-пошуку `searchProductsForDropdown` додано третю гілку `andTokens(... 'name_pl')` паралельно до UA/EN і влито `prodPl` у `productsMap` ([parse-food.js:546](js/parse-food.js#L546), [:571](js/parse-food.js#L571)).
-**ℹ️ Свідомо НЕ чіпав** `searchProduct`/`searchRecipe` ([parse-food.js:400](js/parse-food.js#L400)) — це тихий парсинг інгредієнтів із багатоступеневою логікою (exact→alias→starts→AND), де PL-гілка могла б перебити кращий UA-збіг. Аліаси там уже містять переклади. Якщо знадобиться PL і там — окрема обережна задача.
+**✅ ЗРОБЛЕНО (2026-06-15), у два заходи:**
+1. Дропдаун-пошук `searchProductsForDropdown`: третя гілка `andTokens(... 'name_pl')` + влито `prodPl` у `productsMap`.
+2. **Базові матчери теж** (після ШІ-рев'ю): `searchRecipe` ([:373](js/parse-food.js#L373)) і `searchProduct` ([:400](js/parse-food.js#L400)) переведено з `.ilike('name_ua', …)` на `.or(name_ua|name_en|name_pl …)` у всіх гілках (exact / starts / AND), включно з пошуком у `scanned_products`. UA лишається пріоритетною завдяки сортуванню «найкоротша назва». Додано хелпер `_orEsc()` для екранування `,()` у PostgREST `.or()`.
 
 ### B3. mobile-tab-bar захардкоджені укр. підписи ✅ ЗРОБЛЕНО
 **Зроблено (2026-06-15):** додано ключі `navDay/navWeek/.../navAriaLabel` у [i18n.js](js/i18n.js) (ua/pl/en); у [mobile-tab-bar.js](js/mobile-tab-bar.js) додано хелпер `t(key)=i18n[getLang()][key]`, локалізовано TABS, SHEET_LINKS, заголовок шторки «Інше» та aria-label «Навігація».
@@ -131,6 +132,8 @@ toast.querySelector('.toast-text').textContent = message;
 - Додано словник `UI_LABELS` (uk/en/pl) + геттер `_t(key)` у [recipe-page.js](js/recipe-page.js).
 - `_renderRecipe`: `name` → `_getLocalizedName`, `catLabel` → `_getCategoryLabel`; локалізовано timeParts (Підготовка/Готування/Час/Порцій), Автор/Поділитися, макроси (ккал/Білки/Жири/Вуглев.), заголовки «Інгредієнти»/«Приготування».
 - Назва інгредієнта тепер локалізована; у select інгредієнтів ([:106](js/recipe-page.js#L106)) додано `name_pl` (раніше вантажились лише `name_ua, name_en`).
+- **Дочищено після ШІ-рев'ю:** футер-лінк, текст «Посилання скопійовано» в share, обидва стани CTA-блоку (залогінений/гість) і весь 404-екран теж переведено на `UI_LABELS`/`_t()`. Перевірено grep'ом кирилиці — усі видимі рядки локалізовані.
+- **Свідомо лишається UA:** `_injectSchemaOrg` (JSON-LD `name`/`description`, [:457](js/recipe-page.js#L457)) — структуровані дані прив'язані до канонічного UA-URL + hreflang; це SEO-рішення, не видимий UI. `_buildDescription` (meta) вже має повні UA/EN/PL гілки.
 **Що не так:** EN/PL-словники використані лише в `<meta>`/Schema.org, а видимі лейбли — UA.
 **Фікс:** у `_renderRecipe` обрати словник за `_getLang()`.
 **Ризик:** низький. Робити **після A2** (бо A2 теж про recipe-page).

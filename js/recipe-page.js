@@ -33,6 +33,16 @@ const UI_LABELS = {
     prep: 'Підготовка', cook: 'Готування', time: 'Час', servings: 'Порцій',
     min: 'хв', kcal: 'ккал', proteins: 'Білки', fats: 'Жири', carbs: 'Вуглев.',
     ingredients: 'Інгредієнти', steps: 'Приготування',
+    allRecipes: 'Переглянути всі рецепти →', linkCopied: 'Посилання скопійовано',
+    ctaTitleIn: 'Сподобався рецепт?',
+    ctaSubIn: 'Збережіть у свою книгу рецептів і повертайтесь коли захочеться приготувати',
+    ctaSave: 'Зберегти в книгу', ctaAll: 'Всі рецепти',
+    ctaTitleOut: 'Готуйте більше з Minto',
+    ctaSubOut: 'Увійдіть щоб зберегти рецепт у свою книгу, планувати меню на тиждень і рахувати КБЖУ',
+    ctaLogin: 'Увійти / Зареєструватись', ctaBrowse: 'Переглянути рецепти',
+    notFoundTitle: 'Рецепт не знайдено', notFoundDocTitle: 'Рецепт не знайдено — Minto',
+    notFoundSub: 'Можливо, його видалено або посилання застаріло.',
+    notFoundBtn: 'Переглянути всі рецепти',
   },
   en: {
     author: 'Author', share: 'Share',
@@ -40,6 +50,16 @@ const UI_LABELS = {
     prep: 'Prep', cook: 'Cook', time: 'Time', servings: 'Servings',
     min: 'min', kcal: 'kcal', proteins: 'Protein', fats: 'Fats', carbs: 'Carbs',
     ingredients: 'Ingredients', steps: 'Instructions',
+    allRecipes: 'View all recipes →', linkCopied: 'Link copied',
+    ctaTitleIn: 'Liked the recipe?',
+    ctaSubIn: 'Save it to your cookbook and come back whenever you want to cook',
+    ctaSave: 'Save to cookbook', ctaAll: 'All recipes',
+    ctaTitleOut: 'Cook more with Minto',
+    ctaSubOut: 'Sign in to save recipes to your cookbook, plan weekly menus and track macros',
+    ctaLogin: 'Sign in / Sign up', ctaBrowse: 'Browse recipes',
+    notFoundTitle: 'Recipe not found', notFoundDocTitle: 'Recipe not found — Minto',
+    notFoundSub: 'It may have been deleted or the link is outdated.',
+    notFoundBtn: 'View all recipes',
   },
   pl: {
     author: 'Autor', share: 'Udostępnij',
@@ -47,6 +67,16 @@ const UI_LABELS = {
     prep: 'Przygotowanie', cook: 'Gotowanie', time: 'Czas', servings: 'Porcje',
     min: 'min', kcal: 'kcal', proteins: 'Białko', fats: 'Tłuszcze', carbs: 'Węglow.',
     ingredients: 'Składniki', steps: 'Przygotowanie',
+    allRecipes: 'Zobacz wszystkie przepisy →', linkCopied: 'Skopiowano link',
+    ctaTitleIn: 'Spodobał się przepis?',
+    ctaSubIn: 'Zapisz go w swojej książce przepisów i wróć, kiedy zechcesz gotować',
+    ctaSave: 'Zapisz do książki', ctaAll: 'Wszystkie przepisy',
+    ctaTitleOut: 'Gotuj więcej z Minto',
+    ctaSubOut: 'Zaloguj się, aby zapisywać przepisy, planować menu na tydzień i liczyć makra',
+    ctaLogin: 'Zaloguj / Zarejestruj się', ctaBrowse: 'Przeglądaj przepisy',
+    notFoundTitle: 'Nie znaleziono przepisu', notFoundDocTitle: 'Nie znaleziono przepisu — Minto',
+    notFoundSub: 'Mógł zostać usunięty lub link jest nieaktualny.',
+    notFoundBtn: 'Zobacz wszystkie przepisy',
   },
 };
 
@@ -220,7 +250,7 @@ function _renderRecipe(recipe, authorName, ingredients) {
     </div>
     <footer class="rp-footer">
       <span>© Minto ${new Date().getFullYear()}</span>
-      <a href="recipes.html">Переглянути всі рецепти →</a>
+      <a href="recipes.html">${_t('allRecipes')}</a>
     </footer>
   `;
 
@@ -242,7 +272,7 @@ function _shareRecipe(recipe) {
       const btn = document.getElementById('rpShareBtn');
       if (!btn) return;
       const orig = btn.innerHTML;
-      btn.textContent = 'Посилання скопійовано';
+      btn.textContent = _t('linkCopied');
       btn.disabled = true;
       setTimeout(() => { btn.innerHTML = orig; btn.disabled = false; }, 2000);
     }).catch(() => {});
@@ -258,20 +288,20 @@ function _updateSaveCTA(loggedIn) {
   if (loggedIn) {
     el.innerHTML = `
       <div class="rp-cta__icon">${iconBookOpen}</div>
-      <p class="rp-cta__title">Сподобався рецепт?</p>
-      <p class="rp-cta__sub">Збережіть у свою книгу рецептів і повертайтесь коли захочеться приготувати</p>
+      <p class="rp-cta__title">${_t('ctaTitleIn')}</p>
+      <p class="rp-cta__sub">${_t('ctaSubIn')}</p>
       <div class="rp-cta__actions">
-        <a href="recipes.html?recipe=${_recipe.id}" class="btn btn--primary">Зберегти в книгу</a>
-        <a href="recipes.html" class="btn btn--ghost">Всі рецепти</a>
+        <a href="recipes.html?recipe=${_recipe.id}" class="btn btn--primary">${_t('ctaSave')}</a>
+        <a href="recipes.html" class="btn btn--ghost">${_t('ctaAll')}</a>
       </div>`;
   } else {
     el.innerHTML = `
       <div class="rp-cta__icon">${iconLeaf}</div>
-      <p class="rp-cta__title">Готуйте більше з Minto</p>
-      <p class="rp-cta__sub">Увійдіть щоб зберегти рецепт у свою книгу, планувати меню на тиждень і рахувати КБЖУ</p>
+      <p class="rp-cta__title">${_t('ctaTitleOut')}</p>
+      <p class="rp-cta__sub">${_t('ctaSubOut')}</p>
       <div class="rp-cta__actions">
-        <button class="btn btn--primary" id="rpCtaLogin">Увійти / Зареєструватись</button>
-        <a href="recipes.html" class="btn btn--ghost">Переглянути рецепти</a>
+        <button class="btn btn--primary" id="rpCtaLogin">${_t('ctaLogin')}</button>
+        <a href="recipes.html" class="btn btn--ghost">${_t('ctaBrowse')}</a>
       </div>`;
     document.getElementById('rpCtaLogin')
       ?.addEventListener('click', () => openAuthModal('login'));
@@ -281,13 +311,13 @@ function _updateSaveCTA(loggedIn) {
 // ── 404 ───────────────────────────────────────────────────────
 
 function _show404() {
-  document.title = 'Рецепт не знайдено — Minto';
+  document.title = _t('notFoundDocTitle');
   _root.innerHTML = `
     <div class="rp-404">
       <div class="rp-404__icon">${iconLeaf}</div>
-      <h1 class="rp-404__title">Рецепт не знайдено</h1>
-      <p class="rp-404__sub">Можливо, його видалено або посилання застаріло.</p>
-      <a href="recipes.html" class="btn btn--primary">Переглянути всі рецепти</a>
+      <h1 class="rp-404__title">${_t('notFoundTitle')}</h1>
+      <p class="rp-404__sub">${_t('notFoundSub')}</p>
+      <a href="recipes.html" class="btn btn--primary">${_t('notFoundBtn')}</a>
     </div>`;
 }
 

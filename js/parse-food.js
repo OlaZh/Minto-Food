@@ -367,20 +367,30 @@ function recipeToPer100(recipe) {
   };
 }
 
+// Екранує кому/дужки в значенні для PostgREST .or() (синтаксис: col.op.val,col.op.val).
+function _orEsc(v) {
+  return String(v).replace(/([,()])/g, '\\$1');
+}
+
 // Шукає готову страву в recipes за всіма словами запиту (AND).
+// Пошук по name_ua + name_en + name_pl — UA лишається пріоритетною завдяки
+// сортуванню "найкоротша назва" в AND-гілці; мовні колонки лише ДОДАЮТЬ збіги.
 async function searchRecipe(term) {
-  // 1. Точний збіг
+  const NAME_COLS = ['name_ua', 'name_en', 'name_pl'];
+
+  // 1. Точний збіг (по будь-якій мовній колонці)
+  const exactOr = NAME_COLS.map((c) => `${c}.ilike.${_orEsc(term)}`).join(',');
   const { data: exact } = await supabase
     .from('recipes')
     .select('*')
-    .ilike('name_ua', term)
+    .or(exactOr)
     .limit(1);
   if (exact?.length > 0) return { ...recipeToPer100(exact[0]), _matchedVia: 'recipe-exact' };
 
-  // 2. Усі слова присутні (AND), у будь-якому порядку
+  // 2. Усі слова присутні (AND), у будь-якому порядку — кожне слово в будь-якій мовній колонці
   let q = supabase.from('recipes').select('*');
   for (const w of termWords(term)) {
-    q = q.ilike('name_ua', `%${w}%`);
+    q = q.or(NAME_COLS.map((c) => `${c}.ilike.%${_orEsc(w)}%`).join(','));
   }
   const { data: all } = await q.limit(10);
   if (all?.length > 0) {
@@ -398,11 +408,14 @@ async function searchRecipe(term) {
 // =====================================
 
 async function searchProduct(term) {
+  const NAME_COLS = ['name_ua', 'name_en', 'name_pl'];
   const base = () =>
     supabase.from('products').select('*').is('deleted_at', null).is('user_id', null);
 
-  // 1. Точний збіг по name_ua
-  const { data: exact } = await base().ilike('name_ua', term).limit(1);
+  // 1. Точний збіг (по будь-якій мовній колонці)
+  const { data: exact } = await base()
+    .or(NAME_COLS.map((c) => `${c}.ilike.${_orEsc(term)}`).join(','))
+    .limit(1);
   if (exact?.length > 0) return { ...exact[0], _matchedVia: 'exact' };
 
   // 2. Точний збіг в аліасах — "яйце" → "яйце куряче"
@@ -419,17 +432,18 @@ async function searchProduct(term) {
     }
   } catch { /* alias search unavailable */ }
 
-  // 3. Назва починається з терміну
+  // 3. Назва починається з терміну (по будь-якій мовній колонці)
   const { data: starts } = await base()
-    .ilike('name_ua', `${term}%`)
+    .or(NAME_COLS.map((c) => `${c}.ilike.${_orEsc(term)}%`).join(','))
     .order('name_ua', { ascending: true })
     .limit(1);
   if (starts?.length > 0) return { ...starts[0], _matchedVia: 'starts' };
 
-  // 4. Усі слова присутні (AND) — беремо найкоротшу назву (базовий продукт)
+  // 4. Усі слова присутні (AND) — беремо найкоротшу назву (базовий продукт).
+  // Кожне слово має бути в будь-якій з мовних колонок.
   let q = base();
   for (const w of termWords(term)) {
-    q = q.ilike('name_ua', `%${w}%`);
+    q = q.or(NAME_COLS.map((c) => `${c}.ilike.%${_orEsc(w)}%`).join(','));
   }
   const { data: andMatch } = await q.limit(10);
   if (andMatch?.length > 0) {
@@ -457,11 +471,11 @@ async function searchScanned(query, term) {
     if (data) return { ...data, _source: 'barcode', _matchedVia: 'barcode' };
   }
 
-  // За назвою (точний збіг)
+  // За назвою (точний збіг, по будь-якій мовній колонці)
   const { data: exact } = await supabase
     .from('scanned_products')
     .select('*')
-    .ilike('name_ua', term)
+    .or(['name_ua', 'name_en', 'name_pl'].map((c) => `${c}.ilike.${_orEsc(term)}`).join(','))
     .not('kcal', 'is', null)
     .limit(1);
   if (exact?.length > 0) return { ...exact[0], _source: 'barcode', _matchedVia: 'scanned-exact' };
