@@ -52,10 +52,6 @@ async function loadBooks() {
 // ОТРИМАННЯ КНИГ
 // =============================================================
 
-export function getBooks() {
-  return cachedBooks;
-}
-
 export function getDefaultBook() {
   return cachedBooks.find((b) => b.is_default) || cachedBooks[0] || null;
 }
@@ -174,28 +170,6 @@ export async function removeRecipeFromBook(recipeId, bookId) {
   }
 
   showToast('Видалено з книги');
-  return true;
-}
-
-export async function removeRecipeFromAllBooks(recipeId) {
-  if (!currentUserId) return false;
-
-  const bookIds = cachedBooks.map((b) => b.id);
-  if (!bookIds.length) return false;
-
-  const { error } = await supabase
-    .from('cookbook_recipes')
-    .delete()
-    .eq('recipe_id', recipeId)
-    .in('cookbook_id', bookIds);
-
-  if (error) {
-    console.error('Error removing from all books:', error);
-    showToast('Помилка видалення', 'error');
-    return false;
-  }
-
-  showToast('Видалено зі збережених');
   return true;
 }
 
