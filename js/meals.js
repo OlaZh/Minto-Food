@@ -1,5 +1,5 @@
 import { updateStats, updateWaterUI } from './stats.js';
-import { iconTrash, iconPlus, iconCheck, iconVeg, iconPlate, iconBarcode } from './icons.js';
+import { iconTrash, iconPlus, iconBarcode } from './icons.js';
 import { i18n } from './i18n.js';
 import { supabase } from './supabaseClient.js';
 import { initAuth, requireAuth } from './auth.js';

@@ -13,8 +13,6 @@ import {
 import { initAuth, requireAuth, getCurrentUser, openAuthModal, signOut } from './auth.js';
 import { showToast } from './utils.js';
 import {
-  getWeightHistory,
-  addWeightRecord,
   setTheme,
   getLang,
   setLang,
