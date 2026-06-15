@@ -49,9 +49,6 @@ const recordWeightBtn = document.getElementById('saveWeightBtn');
 // CONSTANTS
 // =====================================
 
-const WEIGHT_HISTORY_KEY = 'weightHistory';
-const ACTIVITY_HISTORY_KEY = 'activityHistory';
-
 // Виправлено: об'єкт активностей з name та caloriesPerMinute
 const ACTIVITIES = {
   walking:    { icon: iconWalk,       label: 'Ходьба',             caloriesPerMinute: 4 },

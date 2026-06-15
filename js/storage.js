@@ -33,7 +33,6 @@ export const STORAGE_KEYS = {
   TODAY_BURNED_CALORIES: 'todayBurnedCalories',
 
   // Історія
-  WEIGHT_HISTORY: 'weightHistory',
   ACTIVITY_HISTORY: 'activityHistory',
 
   // Тимчасові дані
@@ -211,46 +210,6 @@ export function saveUserProfile(profile) {
   if (profile.gender) setItem(STORAGE_KEYS.USER_GENDER, profile.gender);
   if (profile.activity) setItem(STORAGE_KEYS.USER_ACTIVITY, profile.activity);
   if (profile.goal) setItem(STORAGE_KEYS.USER_GOAL, profile.goal);
-}
-
-// =============================================================
-// ІСТОРІЯ ВАГИ
-// =============================================================
-
-/**
- * Отримати історію ваги
- * @returns {Array} - [{ date, weight }]
- */
-export function getWeightHistory() {
-  return getItem(STORAGE_KEYS.WEIGHT_HISTORY, []);
-}
-
-/**
- * Додати запис ваги
- * @param {number} weight - Вага
- * @param {string} date - Дата (опціонально, за замовчуванням сьогодні)
- */
-export function addWeightRecord(weight, date = null) {
-  const history = getWeightHistory();
-  const recordDate = date || new Date().toLocaleDateString('uk-UA');
-
-  // Перевірити чи вже є запис на цю дату
-  const existingIndex = history.findIndex((r) => r.date === recordDate);
-
-  if (existingIndex >= 0) {
-    history[existingIndex].weight = weight;
-  } else {
-    history.push({ date: recordDate, weight });
-  }
-
-  // Сортувати по даті
-  history.sort((a, b) => {
-    const [d1, m1, y1] = a.date.split('.');
-    const [d2, m2, y2] = b.date.split('.');
-    return new Date(y1, m1 - 1, d1) - new Date(y2, m2 - 1, d2);
-  });
-
-  setItem(STORAGE_KEYS.WEIGHT_HISTORY, history);
 }
 
 // =============================================================

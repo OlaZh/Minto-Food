@@ -52,7 +52,6 @@ let ownRecipesCache = [];
 let savedRecipeIdsCache = [];
 
 // Пошук/browsing state
-let searchOwnShowAll = false;
 let searchCommunityShowAll = false;
 const SEARCH_PREVIEW_LIMIT = 4;
 
@@ -1290,7 +1289,6 @@ async function filterRecipes(query) {
     (r.ingredients || '').toLowerCase().includes(q)
   );
 
-  searchOwnShowAll = false;
   searchCommunityShowAll = false;
   displayRecipes(filtered, true);
 }
