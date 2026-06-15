@@ -14,7 +14,9 @@
 
 ## 🔴 БЛОК A. Функціональні баги (виправити першими — вони псують дані/поведінку)
 
-### A1. Подвійне масштабування Б/Ж/В при редагуванні страви
+> **✅ БЛОК A ПОВНІСТЮ ЗРОБЛЕНО** (звірено в коді 2026-06-15). Деталі по кожному пункту нижче.
+
+### A1. Подвійне масштабування Б/Ж/В при редагуванні страви ✅ ЗРОБЛЕНО
 **Файл:** [meals.js:476](js/meals.js#L476) + [meals.js:1031](js/meals.js#L1031)
 **Що не так:** при відкритті страви на редагування нормалізується назад тільки `kcal`
 (`item.kcal / (item.weight/100)`), а `protein/fat/carbs` лишаються абсолютними (на стару вагу).
@@ -33,7 +35,8 @@ selectedFood = item ? {
 приходить з пошуку вже на 100 г — переконатись, що ділення не застосовується двічі).
 **Перевірка:** додати страву 200 г → відредагувати вагу на 100 г → Б/Ж/В мають стати рівно вдвічі менші, а не вчетверо.
 
-### A2. recipe-page: не вантажаться `name_pl` і `steps_ua`
+### A2. recipe-page: не вантажаться `name_pl` і `steps_ua` ✅ ЗРОБЛЕНО (steps_pl, не steps_ua — бо steps_ua не існує)
+> **Хвіст закрито 2026-06-15:** видимий `<h1>`/назва ([recipe-page.js:122](js/recipe-page.js#L122)) і шаринг ([recipe-page.js:235](js/recipe-page.js#L235)) тепер через `_getLocalizedName(recipe, _getLang())`, а не `recipe.name_ua` напряму. Раніше локалізувалися лише `<title>`/og + кроки, а видима назва лишалася UA. Заразом усе тіло сторінки переведено на словник `UI_LABELS`/`_t()` (категорія, час, макроси, лейбли «Інгредієнти»/«Приготування»), а select інгредієнтів підтягує `name_pl` — тобто закрито й хвіст B4. Schema.org JSON-LD ([recipe-page.js:427](js/recipe-page.js#L427)) свідомо лишається UA-базою (структуровані дані прив'язані до канонічного UA + hreflang).
 **Файл:** [recipe-page.js:59](js/recipe-page.js#L59) (select), використання на [:153](js/recipe-page.js#L153), [:328](js/recipe-page.js#L328), [:380](js/recipe-page.js#L380)
 **Що не так:** `select(...)` бере `name_en` і `steps`, але **не** `name_pl` і `steps_ua`,
 хоча рендер на них розраховує. Плюс `_getLocalizedName` для `pl` повертає `name_en`.
@@ -46,7 +49,7 @@ selectedFood = item ? {
 **Ризик:** мінімальний — додаємо поля, нічого не прибираємо. `||`-фолбеки лишають UA, якщо PL порожній.
 **Перевірка:** відкрити рецепт `?lang=pl` → польська назва й кроки; `?lang=ua` → без змін.
 
-### A3. pendingAction губиться після Google OAuth
+### A3. pendingAction губиться після Google OAuth ✅ ЗРОБЛЕНО
 **Файл:** [auth.js:181](js/auth.js#L181) (зберігає), [auth.js:583](js/auth.js#L583) (виконує тільки після submit форми), гілка `SIGNED_IN` [auth.js:81](js/auth.js#L81) (не виконує)
 **Що не так:** відкладена дія (напр. «зберегти в книгу після логіну») працює для email/password,
 але після Google OAuth гілка `SIGNED_IN` її не запускає.
@@ -55,7 +58,7 @@ selectedFood = item ? {
 **Ризик:** середній — не виконати дію двічі. Очищати `pendingAction` одразу після запуску.
 **Перевірка:** розлогінитись → натиснути «зберегти в книгу» → залогінитись через Google → дія має виконатись один раз.
 
-### A4. shopping-list: подвійна синхронізація (realtime + polling)
+### A4. shopping-list: подвійна синхронізація (realtime + polling) ✅ ЗРОБЛЕНО (коміт 9165dbe)
 **Файл:** [shopping-list.js:50-51](js/shopping-list.js#L50) — викликаються **і** `subscribeToMainList()` (realtime), **і** `startPolling()` (кожні 5 с)
 **Що не так:** обидва пишуть в `activeItems` і ререндерять. Зайве навантаження + зайві ререндери.
 **Фікс (обережний):** лишити realtime як основний, а polling зробити **fallback**.
@@ -68,7 +71,7 @@ selectedFood = item ? {
 Тому **не видаляти polling повністю**, а зробити умовним і слухати зміни статусу каналу, а не лише первинний результат.
 **Перевірка:** відкрити список у двох вкладках → зміна в одній зʼявляється в іншій; вимкнути realtime (девтулз) → polling підхоплює.
 
-### A5. XSS у toast через innerHTML
+### A5. XSS у toast через innerHTML ✅ ЗРОБЛЕНО
 **Файл:** [utils.js:34](js/utils.js#L34) — `message` вставляється через `innerHTML`; виклики з даними з БД, напр. [shopping-list.js:682](js/shopping-list.js#L682) (`data.name`), [book-selector.js:138](js/book-selector.js#L138)
 **Що не так:** назва книги/списку (користувацький ввід) потрапляє в `innerHTML` без екранування.
 **Фікс:** екранувати текст у `showToast` — іконка лишається HTML, текст через `textContent`:
@@ -79,7 +82,7 @@ toast.querySelector('.toast-text').textContent = message;
 **Ризик:** мінімальний. Перевірити, що жоден виклик `showToast` навмисно не передає HTML (схоже, ні).
 **Перевірка:** створити список з назвою `<img src=x onerror=alert(1)>` → у toast має показатись текст, без алерту.
 
-### A6. GDPR export тихо повертає `[]` при помилці
+### A6. GDPR export тихо повертає `[]` при помилці ✅ ЗРОБЛЕНО
 **Файл:** [gdpr-export.js:11](js/gdpr-export.js#L11), [gdpr-export.js:20](js/gdpr-export.js#L20)
 **Що не так:** будь-який non-200 → повертає `[]`, тобто помилка маскується під «даних немає».
 Для експорту персональних даних це небезпечно (віддає неповний архів мовчки).
@@ -87,7 +90,7 @@ toast.querySelector('.toast-text').textContent = message;
 **Ризик:** низький; це лише робить наявну помилку видимою.
 **Перевірка:** заблокувати один із запитів (девтулз) → експорт має показати помилку, а не «успішно».
 
-### A7. shared-list: оптимістичний UI без rollback
+### A7. shared-list: оптимістичний UI без rollback ✅ ЗРОБЛЕНО (коміт 05d039c)
 **Файл:** [shared-list.js:58](js/shared-list.js#L58) (одразу міняє UI), [shared-list.js:63](js/shared-list.js#L63) (чекає RPC)
 **Що не так:** UI міняється до підтвердження RPC; при помилці стан бреше.
 **Фікс:** при помилці RPC — відкотити UI у попередній стан + toast про помилку.
@@ -98,26 +101,36 @@ toast.querySelector('.toast-text').textContent = message;
 
 ## 🟡 БЛОК B. Локалізація (контент показується не тією мовою)
 
-### B1. product-guide рендерить `name_ua`/`short_desc` напряму
+> **Статус (2026-06-15): ✅ ВЕСЬ БЛОК B ЗРОБЛЕНО** (B1, B2, B3, B4). Деталі по кожному пункту нижче.
+
+### B1. product-guide рендерить `name_ua`/`short_desc` напряму ✅ ЗРОБЛЕНО
+**Зроблено (2026-06-15):** картка ([:142](js/product-guide.js#L142)) і модалка ([:447](js/product-guide.js#L447)/[:459](js/product-guide.js#L459)) тепер через наявні геттери `nameForLang()`/`txt(row,'short_desc')`. Бонус: пошук-фільтр ([:217](js/product-guide.js#L217)) тепер матчить і локалізовані назву/опис, не лише UA.
 **Файл:** [product-guide.js:142-143](js/product-guide.js#L142), [product-guide.js:447](js/product-guide.js#L447), [product-guide.js:459](js/product-guide.js#L459)
 **Що не так:** картки й модалка беруть `name_ua` напряму, ігноруючи мову з localStorage.
 **Фікс:** додати локалізований геттер (як у recipe) і вживати його замість прямого `name_ua`.
 **Ризик:** низький — фолбек на UA лишається.
 
-### B2. parse-food: пошук не по `name_pl`
+### B2. parse-food: пошук не по `name_pl` 🟨 ЧАСТКОВО
 **Файл:** [parse-food.js:367](js/parse-food.js#L367), [parse-food.js:527](js/parse-food.js#L527)
 **Що не так:** прямий пошук інгредієнтів іде по `name_ua`/`name_en`, але не по `name_pl` → гірше розпізнавання для PL.
 **Фікс:** додати `name_pl` у пошукові умови.
 **Ризик:** низький.
+**✅ ЗРОБЛЕНО (2026-06-15):** у дропдаун-пошуку `searchProductsForDropdown` додано третю гілку `andTokens(... 'name_pl')` паралельно до UA/EN і влито `prodPl` у `productsMap` ([parse-food.js:546](js/parse-food.js#L546), [:571](js/parse-food.js#L571)).
+**ℹ️ Свідомо НЕ чіпав** `searchProduct`/`searchRecipe` ([parse-food.js:400](js/parse-food.js#L400)) — це тихий парсинг інгредієнтів із багатоступеневою логікою (exact→alias→starts→AND), де PL-гілка могла б перебити кращий UA-збіг. Аліаси там уже містять переклади. Якщо знадобиться PL і там — окрема обережна задача.
 
-### B3. mobile-tab-bar захардкоджені укр. підписи
+### B3. mobile-tab-bar захардкоджені укр. підписи ✅ ЗРОБЛЕНО
+**Зроблено (2026-06-15):** додано ключі `navDay/navWeek/.../navAriaLabel` у [i18n.js](js/i18n.js) (ua/pl/en); у [mobile-tab-bar.js](js/mobile-tab-bar.js) додано хелпер `t(key)=i18n[getLang()][key]`, локалізовано TABS, SHEET_LINKS, заголовок шторки «Інше» та aria-label «Навігація».
 **Файл:** [mobile-tab-bar.js:40](js/mobile-tab-bar.js#L40)
 **Що не так:** підписи нижньої навігації не локалізуються.
 **Фікс:** взяти підписи з i18n-словника.
 **Ризик:** низький.
 
-### B4. recipe-page: тіло сторінки завжди українською
+### B4. recipe-page: тіло сторінки завжди українською ✅ ЗРОБЛЕНО
 **Файл:** [recipe-page.js](js/recipe-page.js) — `CATEGORY_LABELS`, хардкод «Інгредієнти»/«Приготування»
+**Зроблено (2026-06-15):**
+- Додано словник `UI_LABELS` (uk/en/pl) + геттер `_t(key)` у [recipe-page.js](js/recipe-page.js).
+- `_renderRecipe`: `name` → `_getLocalizedName`, `catLabel` → `_getCategoryLabel`; локалізовано timeParts (Підготовка/Готування/Час/Порцій), Автор/Поділитися, макроси (ккал/Білки/Жири/Вуглев.), заголовки «Інгредієнти»/«Приготування».
+- Назва інгредієнта тепер локалізована; у select інгредієнтів ([:106](js/recipe-page.js#L106)) додано `name_pl` (раніше вантажились лише `name_ua, name_en`).
 **Що не так:** EN/PL-словники використані лише в `<meta>`/Schema.org, а видимі лейбли — UA.
 **Фікс:** у `_renderRecipe` обрати словник за `_getLang()`.
 **Ризик:** низький. Робити **після A2** (бо A2 теж про recipe-page).
@@ -125,6 +138,8 @@ toast.querySelector('.toast-text').textContent = message;
 ---
 
 ## 🟠 БЛОК C. Уніфікація модалок (найбільший архітектурний борг)
+
+> **Статус (2026-06-15): ⬜ не розпочато** (C1–C4). z-токени не введені, JS-контракт `openModal` досі додає три класи, модалки не мігровані.
 
 > Це найбільша робота. Робимо **поступово й адитивно** — спочатку додаємо спільні
 > плейсхолдери, мігруємо модалки по одній, нічого не видаляючи, поки не переведені всі.
@@ -173,7 +188,7 @@ toast.querySelector('.toast-text').textContent = message;
 
 > Правило з [_buttons.scss:4](scss/components/_buttons.scss#L4): нові кнопки — через `@extend`. Порушено в кількох місцях.
 
-### D1. Прибрати override `.btn-danger`
+### D1. Прибрати override `.btn-danger` ⬜ НЕ ЗРОБЛЕНО (override досі на [_book-selector.scss:488](scss/components/_book-selector.scss#L488))
 **Файл:** [_book-selector.scss:488](scss/components/_book-selector.scss#L488) — `.report-modal .btn-danger` перемальовує глобальну [.btn-danger](scss/components/_buttons.scss#L70).
 **Фікс:** прибрати локальний блок, лишити глобальну; якщо потрібен відступ — лише його, без кольору.
 **Ризик:** низький — звірити вигляд кнопки в report-modal до/після.
@@ -201,6 +216,8 @@ toast.querySelector('.toast-text').textContent = message;
 ---
 
 ## ⚪ БЛОК E. Мертвий код (видаляти ОБЕРЕЖНО — спершу переконатись, що 0 використань)
+
+> **Статус (2026-06-15): ⬜ не розпочато.** `lang-switcher-ui.js` і `feature-flag.js` ще на місці; `searchOwnShowAll` ([add-recipe.js:58](js/add-recipe.js#L58)), storage-версії `getActivityHistory/saveActivity` ([storage.js:266](js/storage.js#L266)) теж присутні.
 
 > Перед видаленням кожного перевіряти **ТРИ** місця, не два:
 > 1. grep по `js/` (імпорти, виклики);
@@ -239,6 +256,8 @@ toast.querySelector('.toast-text').textContent = message;
 
 ## 🔵 БЛОК F. Дублі-хелпери (рефакторинг, низький пріоритет, робити в кінці)
 
+> **Статус (2026-06-15): ⬜ не розпочато.** Спільний `pluralUA` не створено; `formatAmount` досі двічі.
+
 - **formatAmount** — двічі: [utils.js:207](js/utils.js#L207) і [parse-food.js:719](js/parse-food.js#L719) → лишити одну.
 - **Локалізація назви рецепта** — `getRecipeDisplayName` ([recipe-utils.js](js/recipe-utils.js)) ≈ `getLocalizedName` ([utils.js](js/utils.js)) → звести до однієї (вживається перша).
 - **Плюралізація UA** — 4 копії: `getDishWord` ([meal-accordion.js:48](js/meal-accordion.js#L48)), `getDayWord` ([streak.js:31](js/streak.js#L31)), `recipesLabel` ([cookbook.js:258](js/cookbook.js#L258)), inline `countWord` ([week-menu.js:1013](js/week-menu.js#L1013)) → один `pluralUA(n,[one,few,many])`.
@@ -260,8 +279,8 @@ toast.querySelector('.toast-text').textContent = message;
 
 ## 📋 Рекомендований порядок виконання
 
-**Етап 1 — баги, що псують дані (швидко, високий ефект):**
-A1 (макроси) → A2 (recipe-page select) → A5 (toast XSS) → A6 (GDPR) → A3 (OAuth) → A4 (синхронізація) → A7 (rollback).
+**Етап 1 — баги, що псують дані (швидко, високий ефект): ✅ ВЕСЬ ЕТАП ЗРОБЛЕНО**
+~~A1 (макроси) → A2 (recipe-page select) → A5 (toast XSS) → A6 (GDPR) → A3 (OAuth) → A4 (синхронізація) → A7 (rollback).~~
 
 **Етап 2 — локалізація:**
 B1 → B2 → B3 → B4.

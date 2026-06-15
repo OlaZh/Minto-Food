@@ -1,11 +1,15 @@
 import { lockScroll, unlockScroll } from './scroll-lock.js';
 import { isAdmin, openAdminPanel } from './auth.js';
+import { i18n } from './i18n.js';
+import { getLang } from './storage.js';
 import {
   iconCalendar, iconGrid, iconUtensils, iconListChecks, iconMoreVertical,
   iconBookOpen, iconLeaf, iconUser, iconShield,
 } from './icons.js';
 
 (() => {
+  const t = (key) => i18n[getLang()]?.[key] ?? i18n.ua[key] ?? key;
+
   const PAGE_MAP = [
     { match: 'week-menu', tab: 'week' },
     { match: 'recipes', tab: 'recipes' },
@@ -37,18 +41,18 @@ import {
   };
 
   const TABS = [
-    { tab: 'day', href: 'index.html', label: 'День' },
-    { tab: 'week', href: 'week-menu.html', label: 'Тиждень' },
-    { tab: 'recipes', href: 'recipes.html', label: 'Рецепти' },
-    { tab: 'shopping', href: 'shopping-list.html', label: 'Список покупок' },
-    { tab: 'more', href: null, label: 'Ще' },
+    { tab: 'day', href: 'index.html', label: t('navDay') },
+    { tab: 'week', href: 'week-menu.html', label: t('navWeek') },
+    { tab: 'recipes', href: 'recipes.html', label: t('navRecipes') },
+    { tab: 'shopping', href: 'shopping-list.html', label: t('navShopping') },
+    { tab: 'more', href: null, label: t('navMore') },
   ];
 
   const SHEET_LINKS = [
-    { href: 'cookbook.html',     label: 'Книга рецептів', icon: iconBookOpen },
-    { href: 'product-guide.html',label: 'Путівник',       icon: iconLeaf    },
-    { href: 'profile.html',      label: 'Профіль',        icon: iconUser    },
-    { href: '#', label: 'Адмінка', icon: iconShield, adminOnly: true },
+    { href: 'cookbook.html',     label: t('navCookbook'), icon: iconBookOpen },
+    { href: 'product-guide.html',label: t('navGuide'),    icon: iconLeaf    },
+    { href: 'profile.html',      label: t('navProfile'),  icon: iconUser    },
+    { href: '#', label: t('navAdmin'), icon: iconShield, adminOnly: true },
   ];
 
   function buildTabBar(activeTab) {
@@ -68,7 +72,7 @@ import {
       `;
     }).join('');
 
-    return `<nav class="mobile-tab-bar" role="navigation" aria-label="Навігація">${items}</nav>`;
+    return `<nav class="mobile-tab-bar" role="navigation" aria-label="${t('navAriaLabel')}">${items}</nav>`;
   }
 
   function buildBottomSheet() {
@@ -83,7 +87,7 @@ import {
         <div class="bottom-sheet__overlay" data-sheet-close></div>
         <div class="bottom-sheet__card">
           <div class="bottom-sheet__handle"></div>
-          <p class="bottom-sheet__title">Інше</p>
+          <p class="bottom-sheet__title">${t('navSheetTitle')}</p>
           ${links}
         </div>
       </div>

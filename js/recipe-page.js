@@ -25,6 +25,36 @@ const CATEGORY_LABELS_PL = {
   bakery:    'Pieczywo',  fast:   'Szybki', no_power: 'Bez prądu',
 };
 
+// UI-лейбли тіла сторінки рецепту (ключі _getLang(): 'uk' | 'en' | 'pl')
+const UI_LABELS = {
+  uk: {
+    author: 'Автор', share: 'Поділитися',
+    shareTitle: 'Поділитися рецептом',
+    prep: 'Підготовка', cook: 'Готування', time: 'Час', servings: 'Порцій',
+    min: 'хв', kcal: 'ккал', proteins: 'Білки', fats: 'Жири', carbs: 'Вуглев.',
+    ingredients: 'Інгредієнти', steps: 'Приготування',
+  },
+  en: {
+    author: 'Author', share: 'Share',
+    shareTitle: 'Share recipe',
+    prep: 'Prep', cook: 'Cook', time: 'Time', servings: 'Servings',
+    min: 'min', kcal: 'kcal', proteins: 'Protein', fats: 'Fats', carbs: 'Carbs',
+    ingredients: 'Ingredients', steps: 'Instructions',
+  },
+  pl: {
+    author: 'Autor', share: 'Udostępnij',
+    shareTitle: 'Udostępnij przepis',
+    prep: 'Przygotowanie', cook: 'Gotowanie', time: 'Czas', servings: 'Porcje',
+    min: 'min', kcal: 'kcal', proteins: 'Białko', fats: 'Tłuszcze', carbs: 'Węglow.',
+    ingredients: 'Składniki', steps: 'Przygotowanie',
+  },
+};
+
+function _t(key) {
+  const lang = _getLang();
+  return UI_LABELS[lang]?.[key] ?? UI_LABELS.uk[key] ?? key;
+}
+
 // Detect current lang: ?lang= param → localStorage → 'uk'
 function _getLang() {
   const fromUrl = new URLSearchParams(window.location.search).get('lang');
@@ -73,7 +103,7 @@ async function init() {
       : Promise.resolve({ data: null }),
     supabase
       .from('product_recipe')
-      .select('amount, unit, ingredient:products(name_ua, name_en)')
+      .select('amount, unit, ingredient:products(name_ua, name_en, name_pl)')
       .eq('recipe_id', recipe.id),
   ]);
 
@@ -89,30 +119,30 @@ async function init() {
 // ── Render recipe ─────────────────────────────────────────────
 
 function _renderRecipe(recipe, authorName, ingredients) {
-  const name     = recipe.name_ua || recipe.name_en || 'Без назви';
-  const catLabel = CATEGORY_LABELS[recipe.category] ?? recipe.category ?? '';
+  const name     = _getLocalizedName(recipe, _getLang());
+  const catLabel = _getCategoryLabel(recipe.category, _getLang());
 
   const heroHtml = recipe.image
     ? `<img class="rp-hero" src="${recipe.image}" alt="${_esc(name)}" loading="eager" decoding="async">`
     : `<div class="rp-hero--empty">${iconPlate}</div>`;
 
   const timeParts = [];
-  if (recipe.prep_time_min)  timeParts.push(`Підготовка: ${recipe.prep_time_min} хв`);
-  if (recipe.cook_time_min)  timeParts.push(`Готування: ${recipe.cook_time_min} хв`);
-  if (!timeParts.length && recipe.total_time_min) timeParts.push(`Час: ${recipe.total_time_min} хв`);
-  if (recipe.recipe_yield)   timeParts.push(`Порцій: ${recipe.recipe_yield}`);
+  if (recipe.prep_time_min)  timeParts.push(`${_t('prep')}: ${recipe.prep_time_min} ${_t('min')}`);
+  if (recipe.cook_time_min)  timeParts.push(`${_t('cook')}: ${recipe.cook_time_min} ${_t('min')}`);
+  if (!timeParts.length && recipe.total_time_min) timeParts.push(`${_t('time')}: ${recipe.total_time_min} ${_t('min')}`);
+  if (recipe.recipe_yield)   timeParts.push(`${_t('servings')}: ${recipe.recipe_yield}`);
 
   const metaItems = [
-    authorName ? `<span>Автор: <b>${_esc(authorName)}</b></span>` : '',
+    authorName ? `<span>${_t('author')}: <b>${_esc(authorName)}</b></span>` : '',
     catLabel   ? `<span class="rp-meta__chip">${catLabel}</span>`  : '',
     recipe.rating > 0
       ? `<span class="rp-meta__rating">${iconStar} ${Number(recipe.rating).toFixed(1)}</span>`
       : '',
     ...timeParts.map(t => `<span class="rp-meta__dot">${_esc(t)}</span>`),
     `<span>${_formatDate(recipe.created_at)}</span>`,
-    `<button class="rp-share-btn" id="rpShareBtn" title="Поділитися рецептом" type="button">
+    `<button class="rp-share-btn" id="rpShareBtn" title="${_t('shareTitle')}" type="button">
       ${iconShare.replace('<svg ', '<svg width="16" height="16" aria-hidden="true" ')}
-      Поділитися
+      ${_t('share')}
     </button>`,
   ].filter(Boolean).join('');
 
@@ -120,27 +150,32 @@ function _renderRecipe(recipe, authorName, ingredients) {
     <div class="rp-macros">
       <div class="rp-macro">
         <span class="rp-macro__val">${recipe.kcal}</span>
-        <span class="rp-macro__lbl">ккал</span>
+        <span class="rp-macro__lbl">${_t('kcal')}</span>
       </div>
       <div class="rp-macro">
         <span class="rp-macro__val">${recipe.protein ?? '—'}г</span>
-        <span class="rp-macro__lbl">Білки</span>
+        <span class="rp-macro__lbl">${_t('proteins')}</span>
       </div>
       <div class="rp-macro">
         <span class="rp-macro__val">${recipe.fat ?? '—'}г</span>
-        <span class="rp-macro__lbl">Жири</span>
+        <span class="rp-macro__lbl">${_t('fats')}</span>
       </div>
       <div class="rp-macro">
         <span class="rp-macro__val">${recipe.carbs ?? '—'}г</span>
-        <span class="rp-macro__lbl">Вуглев.</span>
+        <span class="rp-macro__lbl">${_t('carbs')}</span>
       </div>
     </div>` : '';
 
   const ingsHtml = ingredients.length
-    ? `<h2 class="rp-h2">Інгредієнти</h2>
+    ? `<h2 class="rp-h2">${_t('ingredients')}</h2>
        <ul class="rp-ings">
          ${ingredients.map(i => {
-           const ingName = i.ingredient?.name_ua || i.ingredient?.name_en || '—';
+           const ing = i.ingredient ?? {};
+           const lang = _getLang();
+           const ingName =
+             (lang === 'pl' && ing.name_pl) ? ing.name_pl :
+             (lang === 'en' && ing.name_en) ? ing.name_en :
+             ing.name_ua || ing.name_en || '—';
            // Показуємо міру лише коли є кількість. Інакше (напр. "за смаком")
            // нічого не показуємо замість фейкового "1 шт"/"null г".
            const amountLabel = (i.amount != null && i.amount !== '')
@@ -161,7 +196,7 @@ function _renderRecipe(recipe, authorName, ingredients) {
     .filter(Boolean);
 
   const stepsHtml = steps.length
-    ? `<h2 class="rp-h2">Приготування</h2>
+    ? `<h2 class="rp-h2">${_t('steps')}</h2>
        <div class="rp-steps">
          ${steps.map((step, i) => `
            <div class="rp-step">
@@ -197,7 +232,7 @@ function _renderRecipe(recipe, authorName, ingredients) {
 }
 
 function _shareRecipe(recipe) {
-  const name = recipe.name_ua || recipe.name_en || 'Рецепт';
+  const name = _getLocalizedName(recipe, _getLang());
   const url  = _canonicalUrl();
 
   if (navigator.share) {

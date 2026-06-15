@@ -72,6 +72,18 @@ export const i18n = {
     // Картка рецепту
     cardMin:     'хв',
     cardG:       'г',
+    // Нижня навігація (mobile-tab-bar)
+    navDay:        'День',
+    navWeek:       'Тиждень',
+    navRecipes:    'Рецепти',
+    navShopping:   'Список покупок',
+    navMore:       'Ще',
+    navCookbook:   'Книга рецептів',
+    navGuide:      'Путівник',
+    navProfile:    'Профіль',
+    navAdmin:      'Адмінка',
+    navSheetTitle: 'Інше',
+    navAriaLabel:  'Навігація',
   },
   pl: {
     // Прийоми їжі
@@ -146,6 +158,18 @@ export const i18n = {
     // Karta przepisu
     cardMin:     'min',
     cardG:       'g',
+    // Dolna nawigacja (mobile-tab-bar)
+    navDay:        'Dzień',
+    navWeek:       'Tydzień',
+    navRecipes:    'Przepisy',
+    navShopping:   'Lista zakupów',
+    navMore:       'Więcej',
+    navCookbook:   'Książka przepisów',
+    navGuide:      'Przewodnik',
+    navProfile:    'Profil',
+    navAdmin:      'Panel admina',
+    navSheetTitle: 'Inne',
+    navAriaLabel:  'Nawigacja',
   },
   en: {
     // Прийоми їжі
@@ -220,5 +244,17 @@ export const i18n = {
     // Recipe card
     cardMin:     'min',
     cardG:       'g',
+    // Bottom navigation (mobile-tab-bar)
+    navDay:        'Day',
+    navWeek:       'Week',
+    navRecipes:    'Recipes',
+    navShopping:   'Shopping list',
+    navMore:       'More',
+    navCookbook:   'Cookbook',
+    navGuide:      'Guide',
+    navProfile:    'Profile',
+    navAdmin:      'Admin',
+    navSheetTitle: 'Other',
+    navAriaLabel:  'Navigation',
   },
 };

@@ -533,7 +533,7 @@ export async function findAllMatches(query, limit = 10) {
 
   try {
     const [
-      { data: prodUa }, { data: prodEn }, { data: scannedData }, { data: aliasRows },
+      { data: prodUa }, { data: prodEn }, { data: prodPl }, { data: scannedData }, { data: aliasRows },
     ] = await Promise.all([
       andTokens(
         supabase.from('products').select(PROD_COLS).is('deleted_at', null).is('user_id', null),
@@ -542,6 +542,10 @@ export async function findAllMatches(query, limit = 10) {
       andTokens(
         supabase.from('products').select(PROD_COLS).is('deleted_at', null).is('user_id', null),
         'name_en',
+      ).limit(limit),
+      andTokens(
+        supabase.from('products').select(PROD_COLS).is('deleted_at', null).is('user_id', null),
+        'name_pl',
       ).limit(limit),
       andTokens(
         supabase.from('scanned_products')
@@ -566,9 +570,9 @@ export async function findAllMatches(query, limit = 10) {
         : Promise.resolve({ data: [] }),
     ]);
 
-    // Злиття прямих збігів по name_ua + name_en (дедуп по id).
+    // Злиття прямих збігів по name_ua + name_en + name_pl (дедуп по id).
     const productsMap = new Map();
-    for (const p of [...(prodUa || []), ...(prodEn || [])]) {
+    for (const p of [...(prodUa || []), ...(prodEn || []), ...(prodPl || [])]) {
       if (!productsMap.has(p.id)) productsMap.set(p.id, p);
     }
     const productsData = [...productsMap.values()];

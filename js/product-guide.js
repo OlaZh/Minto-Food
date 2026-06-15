@@ -139,8 +139,8 @@ function renderProducts(items) {
              onerror="this.src='img/placeholder.jpg'">
       </div>
       <div class="product-card__content">
-        <h3 class="product-card__name">${escapeHTML(product.name_ua) || 'Без назви'}</h3>
-        <p class="product-card__desc">${escapeHTML(product.short_desc) || ''}</p>
+        <h3 class="product-card__name">${escapeHTML(nameForLang(product)) || 'Без назви'}</h3>
+        <p class="product-card__desc">${escapeHTML(txt(product, 'short_desc')) || ''}</p>
         <div class="product-card__footer">
           <span class="product-card__kcal">${product.kcal || 0} ккал</span>
           <button class="product-card__btn">Детальніше</button>
@@ -215,15 +215,19 @@ const applyFilters = () => {
   }
 
   const filtered = products.filter((p) => {
-    const nameStr = String(p.name_ua    || '').toLowerCase();
-    const altStr  = String(p.alt_names  || '').toLowerCase();
-    const descStr = String(p.short_desc || '').toLowerCase();
+    const nameStr = String(p.name_ua          || '').toLowerCase();
+    const nameLocStr = String(nameForLang(p)  || '').toLowerCase();
+    const altStr  = String(p.alt_names        || '').toLowerCase();
+    const descStr = String(p.short_desc       || '').toLowerCase();
+    const descLocStr = String(txt(p, 'short_desc') || '').toLowerCase();
 
     const matchesSearch =
       !searchText ||
       nameStr.includes(searchText) ||
+      nameLocStr.includes(searchText) ||
       altStr.includes(searchText) ||
-      descStr.includes(searchText);
+      descStr.includes(searchText) ||
+      descLocStr.includes(searchText);
 
     const matchesChips = activeChips.every((chip) => checkCondition(p, chip));
 
@@ -444,7 +448,7 @@ async function openProductModal(product) {
 
   // Базова інфо — відображаємо одразу
   const nameEl = modal.querySelector('[data-i18n="productName"]');
-  if (nameEl) nameEl.textContent = product.name_ua || '';
+  if (nameEl) nameEl.textContent = nameForLang(product) || '';
 
   const imgEl = modal.querySelector('.product-modal__image');
   if (imgEl) {
@@ -456,7 +460,7 @@ async function openProductModal(product) {
   }
 
   const descEl = modal.querySelector('[data-i18n="productShortDesc"]');
-  if (descEl) descEl.textContent = product.short_desc || '';
+  if (descEl) descEl.textContent = txt(product, 'short_desc') || '';
 
   const kcalEl = modal.querySelector('[data-i18n="kcal"]');
   if (kcalEl) kcalEl.textContent = `${product.kcal || 0} ккал`;
