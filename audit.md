@@ -232,12 +232,12 @@ toast.querySelector('.toast-text').textContent = message;
 
 ### Підтверджено мертве (безпечно):
 - **Файли цілком:** ~~lang-switcher-ui.js~~ ✅ ВИДАЛЕНО (2026-06-15). ⚠️ `feature-flag.js` — **НЕ видаляти** (заготовка з [Roadmap_v2.md:632](Roadmap_v2.md#L632), а не мертвий код; аудит тут помилявся).
-- `searchOwnShowAll` — [add-recipe.js:58](js/add-recipe.js#L58) — оголошена+скидається, ніде не читається.
-- `openClearCellConfirm()` — [week-menu.js:243](js/week-menu.js#L243) — 1 входження (саме оголошення).
-- `openCoverPicker()`+`createCoverPickerModal()` — [cookbook.js:767](js/cookbook.js#L767) — не викликаються.
-- Мертві імпорти: `removeRecipeFromBook/removeRecipeFromAllBooks/getRecipeBooks` у [add-recipe.js:29](js/add-recipe.js#L29); `iconCheck/iconVeg/iconPlate` у [meals.js:2](js/meals.js#L2); `getWeightHistory/addWeightRecord` у profile.js.
-- Невикористані експорти: `setIngredients` [recipe-ingredients.js:604](js/recipe-ingredients.js#L604), `getBooks/removeRecipeFromAllBooks` [book-selector.js:55](js/book-selector.js#L55).
-- Константи `WEIGHT_HISTORY_KEY/ACTIVITY_HISTORY_KEY` — [profile.js:54](js/profile.js#L54).
+- ✅ `searchOwnShowAll` — ВИДАЛЕНО (коміт b41eee6). Перевірено асиметрію з живим `searchCommunityShowAll`.
+- `openClearCellConfirm()` — [week-menu.js:243](js/week-menu.js#L243) — 1 входження (саме оголошення). ⏳ ще не чіпав (делікатніший UX-хук).
+- ⚠️ `openCoverPicker()` — недопідключений шлях, кандидат. **АЛЕ `createCoverPickerModal()` — НЕ мертва**: викликається в [cookbook.js:108](js/cookbook.js#L108) (поправка ШІ-рев'ю). Видаляти лише `openCoverPicker`, не всю cover-picker гілку.
+- ✅ Мертві імпорти ВИДАЛЕНО (коміт 59cf278): `removeRecipeFromBook/removeRecipeFromAllBooks/getRecipeBooks` (add-recipe), `iconCheck/iconVeg/iconPlate` (meals), `getWeightHistory/addWeightRecord` (profile).
+- ✅ Невикористані експорти: `getBooks/removeRecipeFromAllBooks` ВИДАЛЕНО (коміт 660ca53) + `getWeightHistory/addWeightRecord` із storage (коміт b41eee6). ⏳ `setIngredients` [recipe-ingredients.js:604](js/recipe-ingredients.js#L604) — ще не перевіряв.
+- ✅ Константи `WEIGHT_HISTORY_KEY/ACTIVITY_HISTORY_KEY` (profile.js) + осиротілий `STORAGE_KEYS.WEIGHT_HISTORY` — ВИДАЛЕНО (коміт b41eee6).
 
 ### ⚠️ УВАГА — НЕ переплутати (тут легко зламати):
 - **storage.js** `getActivityHistory/saveActivity/deleteActivity` ([storage.js:262](js/storage.js#L262)) — deprecated localStorage-версії, **безпечно видалити**.
