@@ -242,7 +242,12 @@ toast.querySelector('.toast-text').textContent = message;
 **Фікс:** єдиний `%dropdown`/`%menu` плейсхолдер; мігрувати по одному.
 **Ризик:** середній. Робити **після** модалок або взагалі окремим етапом.
 
-### D4. custom-select fork у profile
+### D4. custom-select fork у profile ✅ ЗРОБЛЕНО (2026-06-16)
+> **Зроблено:** ручний `setupActivitySelect` (activityTypeSelect — тип фіз-активності з іконками) переведено на shared `initCustomSelect`. ~40 рядків клон-нод-логіки → виклик `initCustomSelect('activityTypeSelect','activityTypeInput', onChange)`, де `onChange` робить спецлогіку (показ `otherActivityInput` для `other` + `updateCaloriesPreview`). `injectActivityIcons()` лишився (готує опції перед init). clone-node для зняття listeners прибрано — guard `activityTrackerInitialized` гарантує одноразовий виклик.
+> - **Розширено shared `initCustomSelect`+`setSelectValue`** ([ui-components.js](js/ui-components.js)): тригер тепер бере `option.innerHTML`, а не `textContent` → іконка `.nav-icon` зберігається. Безпечно для всіх споживачів (опції — статична розмітка в коді, не користувацький ввід; для опцій без іконок innerHTML===textContent). Споживачі: gender/activity/goal/report-reason/rm-category/activityType.
+> - **Reset активності** (після додавання) лишився ручним — скидає в плейсхолдер «Оберіть активність...», для якого нема опції з data-value (setSelectValue не підходить).
+> - `initSelectsGlobalListener()` уже є на сторінці ([:2076](js/profile.js#L2076)) → закриття по кліку поза селектом працює. Синтаксис перевірено (`node --check`).
+> - ⏳ **Перевірка в браузері:** профіль → трекер активності → відкрити «Оберіть активність» (іконки в опціях ТА в тригері після вибору), вибрати «Інше» → зʼявляється поле власної назви, вибрати звичайну → поле ховається; превʼю калорій рахується; після «Додати» форма скидається в плейсхолдер.
 **Файл:** [profile.js:1356](js/profile.js#L1356) (ручна логіка activity select) поряд з shared `initCustomSelect` [profile.js:2108](js/profile.js#L2108)
 **Фікс:** перевести activity select на shared `initCustomSelect`, прибрати ручну гілку.
 **Ризик:** середній — перевірити, що зміна активності зберігається.

@@ -1348,51 +1348,17 @@ function setupActivitySelect() {
     return;
   }
 
-  const trigger = select.querySelector('.custom-select__trigger');
-  const options = select.querySelectorAll('.custom-select__option');
-
-  // Видаляємо старі listeners
-  const newTrigger = trigger.cloneNode(true);
-  trigger.parentNode.replaceChild(newTrigger, trigger);
-
-  newTrigger.addEventListener('click', (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-
-    document.querySelectorAll('.custom-select').forEach((s) => {
-      if (s !== select) s.classList.remove('open');
-    });
-
-    select.classList.toggle('open');
-  });
-
-  options.forEach((option) => {
-    const newOption = option.cloneNode(true);
-    option.parentNode.replaceChild(newOption, option);
-
-    newOption.addEventListener('click', (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-
-      select
-        .querySelectorAll('.custom-select__option')
-        .forEach((o) => o.classList.remove('selected'));
-      newOption.classList.add('selected');
-      select.querySelector('.custom-select__trigger span').innerHTML = newOption.innerHTML;
-      input.value = newOption.dataset.value;
-      select.classList.remove('open');
-      const otherInput = document.getElementById('otherActivityInput');
-
-      otherInput.hidden = newOption.dataset.value !== 'other';
-
-      updateCaloriesPreview();
-    });
+  // Спільний компонент (initCustomSelect тепер переносить innerHTML опції в
+  // тригер → іконка .nav-icon зберігається). Викликається один раз — guard
+  // activityTrackerInitialized гарантує відсутність дублів listeners.
+  initCustomSelect('activityTypeSelect', 'activityTypeInput', (value) => {
+    const otherInput = document.getElementById('otherActivityInput');
+    if (otherInput) otherInput.hidden = value !== 'other';
+    updateCaloriesPreview();
   });
 
   if (durationInput) {
-    const newDurationInput = durationInput.cloneNode(true);
-    durationInput.parentNode.replaceChild(newDurationInput, durationInput);
-    newDurationInput.addEventListener('input', updateCaloriesPreview);
+    durationInput.addEventListener('input', updateCaloriesPreview);
   }
 }
 

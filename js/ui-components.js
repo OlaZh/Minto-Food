@@ -39,7 +39,8 @@ export function initCustomSelect(selectId, inputId, onChange = null) {
     option.addEventListener('click', () => {
       options.forEach((o) => o.classList.remove('selected'));
       option.classList.add('selected');
-      triggerText.textContent = option.textContent;
+      // innerHTML, а не textContent — опція може містити іконку (.nav-icon)
+      triggerText.innerHTML = option.innerHTML;
       input.value = option.dataset.value;
       select.classList.remove('open');
 
@@ -70,7 +71,8 @@ export function setSelectValue(selectId, inputId, value) {
     option.classList.add('selected');
     const triggerSpan = select.querySelector('.custom-select__trigger span');
     if (triggerSpan) {
-      triggerSpan.textContent = option.textContent;
+      // innerHTML, а не textContent — опція може містити іконку (.nav-icon)
+      triggerSpan.innerHTML = option.innerHTML;
     }
   }
 }
