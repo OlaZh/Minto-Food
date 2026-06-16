@@ -20,6 +20,10 @@ const FOOTER_END   = '</footer>';
 // Модуль сам себе ініціалізує (auto-init), тому достатньо тега <script>.
 const COOKIE_SCRIPT = '<script type="module" src="js/cookie-consent.js"></script>';
 
+// Глобальний застосувач перекладів (G): проходить data-i18n у header/footer
+// (і будь-де на сторінці) + оживляє перемикач мови. Auto-init, як cookie.
+const I18N_SCRIPT = '<script type="module" src="js/i18n-apply.js"></script>';
+
 const pages = [
   'index.html',
   'week-menu.html',
@@ -75,6 +79,15 @@ for (const page of pages) {
     const bodyClose = html.lastIndexOf('</body>');
     if (bodyClose !== -1) {
       html = html.slice(0, bodyClose) + COOKIE_SCRIPT + '\n  ' + html.slice(bodyClose);
+      changed = true;
+    }
+  }
+
+  // Інжектимо i18n-застосувач перед </body>, якщо його ще немає (ідемпотентно).
+  if (!html.includes('js/i18n-apply.js')) {
+    const bodyClose = html.lastIndexOf('</body>');
+    if (bodyClose !== -1) {
+      html = html.slice(0, bodyClose) + I18N_SCRIPT + '\n  ' + html.slice(bodyClose);
       changed = true;
     }
   }
