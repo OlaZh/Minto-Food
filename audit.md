@@ -247,7 +247,13 @@ toast.querySelector('.toast-text').textContent = message;
 **Фікс:** перевести activity select на shared `initCustomSelect`, прибрати ручну гілку.
 **Ризик:** середній — перевірити, що зміна активності зберігається.
 
-### D5. Нативні `<select>` обходять кастомний компонент (виявлено 2026-06-16)
+### D5. Нативні `<select>` обходять кастомний компонент ✅ ЗРОБЛЕНО (2026-06-16)
+> **Зроблено:** обидва нативні `<select>` публічного сайту переведено на наявний `custom-select` (нічого нового не винайдено, admin-app не чіпали).
+> - **report-reason-select** ([book-selector.js](js/book-selector.js)): `<select class="form-select">` → `.custom-select` + hidden `<input id="report-reason-input" required>`. `initCustomSelect`+`initSelectsGlobalListener` один раз при створенні модалки; читання у `onsubmit` з hidden input ([:559](js/book-selector.js#L559)) + валідація «оберіть причину» (бо `required` на div не нативний); хелпер `resetReportReasonSelect()` скидає у плейсхолдер при кожному відкритті.
+> - **rm-category** ([recipe-modal.js](js/recipe-modal.js)): `<select id="rm-category">` → `.custom-select id="rm-category-select"` + hidden `<input id="rm-category" value="lunch">`. **Hidden input навмисно зберіг id `rm-category`** → обидва читання `.value` ([:341](js/recipe-modal.js#L341)/[:571](js/recipe-modal.js#L571)) без змін; два записи `setInputVal` → `setSelectValue('rm-category-select','rm-category',…)`. `data-i18n` на опціях збережені.
+> - **SCSS не чіпали** — `.custom-select` уже глобальний ([_profile.scss:278](scss/pages/_profile.scss#L278)), потрапляє в єдиний `main.css`. Синтаксис обох JS перевірено (`node --check`).
+> - ⏳ **Перевірка в браузері (накопичено):** скарга на рецепт (дропдаун у темі сайту, сабміт без причини=помилка, з причиною=ОК); створення рецепта (категорія в темі сайту, вибір зберігається при редагуванні); відновлення чернетки після логіну; випадайка не обрізається скролом модалки.
+> - **Нюанс на потім (не блокер):** стилі `.custom-select` лежать у `_profile.scss`, хоч компонент глобальний — винести в `components/` під час D3.
 **Що не так:** у публічному сайті лишилися **нативні браузерні `<select>`** — у темному режимі/iOS вони виглядають системно (сірий фон, синє виділення опцій, системний шрифт), не в стилі сайту. Видно на report-modal (скріншот користувача).
 **Де (лише публічний сайт, admin-app НЕ чіпати):**
 - `report-reason-select` (`class="form-select"`) — [book-selector.js:489](js/book-selector.js#L489).

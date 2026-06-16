@@ -21,6 +21,7 @@ import {
   saveRecipeToBooks,
   refreshBooks,
 } from './book-selector.js';
+import { initCustomSelect, setSelectValue, initSelectsGlobalListener } from './ui-components.js';
 
 let recipeVisibility = 'private';
 let recipeModalInstance = null;
@@ -163,17 +164,24 @@ function createRecipeModalHTML() {
 
               <div class="form-group">
                 <label data-i18n="category">Категорія</label>
-                <select id="rm-category">
-                  <option value="breakfast" data-i18n="filterBreakfast">Сніданок</option>
-                  <option value="lunch" data-i18n="filterLunch">Обід</option>
-                  <option value="dinner" data-i18n="filterDinner">Вечеря</option>
-                  <option value="snack" data-i18n="filterSnack">Перекус</option>
-                  <option value="dessert" data-i18n="filterDessert">Десерт</option>
-                  <option value="drinks" data-i18n="filterDrinks">Напої</option>
-                  <option value="bakery" data-i18n="filterBakery">Випічка</option>
-                  <option value="fast" data-i18n="filterFast">Швидкі рецепти</option>
-                  <option value="no_power" data-i18n="filterNoPower">Без світла</option>
-                </select>
+                <div class="custom-select" id="rm-category-select">
+                  <div class="custom-select__trigger">
+                    <span data-i18n="filterLunch">Обід</span>
+                    <div class="arrow"></div>
+                  </div>
+                  <div class="custom-select__options">
+                    <span class="custom-select__option" data-value="breakfast" data-i18n="filterBreakfast">Сніданок</span>
+                    <span class="custom-select__option selected" data-value="lunch" data-i18n="filterLunch">Обід</span>
+                    <span class="custom-select__option" data-value="dinner" data-i18n="filterDinner">Вечеря</span>
+                    <span class="custom-select__option" data-value="snack" data-i18n="filterSnack">Перекус</span>
+                    <span class="custom-select__option" data-value="dessert" data-i18n="filterDessert">Десерт</span>
+                    <span class="custom-select__option" data-value="drinks" data-i18n="filterDrinks">Напої</span>
+                    <span class="custom-select__option" data-value="bakery" data-i18n="filterBakery">Випічка</span>
+                    <span class="custom-select__option" data-value="fast" data-i18n="filterFast">Швидкі рецепти</span>
+                    <span class="custom-select__option" data-value="no_power" data-i18n="filterNoPower">Без світла</span>
+                  </div>
+                </div>
+                <input type="hidden" id="rm-category" value="lunch" />
               </div>
 
               <div class="form-group">
@@ -323,6 +331,8 @@ export async function initRecipeModal() {
 
   initVisibilityToggle();
   bindIngredientBuilder();
+  initCustomSelect('rm-category-select', 'rm-category');
+  initSelectsGlobalListener();
 
   // Відновлюємо чернетку рецепта, якщо користувач почав створювати рецепт
   // незалогіненим і щойно увійшов (логін міг редіректнути сюди з іншої сторінки).
@@ -388,7 +398,7 @@ async function restorePendingRecipeDraft() {
   setInputVal('rm-name', draft.name_ua);
   setInputVal('rm-steps', draft.steps);
   setInputVal('rm-total-weight', draft.total_weight);
-  setInputVal('rm-category', draft.category || 'lunch');
+  setSelectValue('rm-category-select', 'rm-category', draft.category || 'lunch');
   setInputVal('rm-image-url', draft.image);
   await setIngredientsFromText(draft.ingredients || '');
   if (draft.visibility) setVisibilityToggle(draft.visibility);
@@ -476,7 +486,7 @@ async function showRecipeForm(data = null) {
     setInputVal('rm-name', data.name_ua || data.name || data.title);
     setInputVal('rm-steps', data.steps);
     setInputVal('rm-total-weight', data.total_weight);
-    setInputVal('rm-category', data.category || 'lunch');
+    setSelectValue('rm-category-select', 'rm-category', data.category || 'lunch');
     setInputVal('rm-image-url', data.image);
     setVisibilityToggle(data.is_public ? 'public' : 'private');
 

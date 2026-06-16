@@ -6,6 +6,7 @@ import { supabase } from './supabaseClient.js';
 import { showToast, escapeHTML } from './utils.js';
 import { lockScroll, unlockScroll } from './scroll-lock.js';
 import { BOOK_ICONS, iconFlag } from './icons.js';
+import { initCustomSelect, initSelectsGlobalListener } from './ui-components.js';
 
 // =============================================================
 // СТАН
@@ -466,6 +467,17 @@ export async function reportRecipe(recipeId, reason) {
   return true;
 }
 
+// Скидає кастомний селект причини у початковий стан (плейсхолдер).
+function resetReportReasonSelect(modal) {
+  const input = modal.querySelector('#report-reason-input');
+  if (input) input.value = '';
+  const triggerText = modal.querySelector('#report-reason-select .custom-select__trigger span');
+  if (triggerText) triggerText.textContent = 'Оберіть причину...';
+  modal
+    .querySelectorAll('#report-reason-select .custom-select__option')
+    .forEach((o) => o.classList.remove('selected'));
+}
+
 // Модалка скарги
 export function openReportModal(recipeId, recipeName = '') {
   let modal = document.getElementById('report-recipe-modal');
@@ -486,20 +498,26 @@ export function openReportModal(recipeId, recipeName = '') {
         <form id="report-form">
           <div class="form-group">
             <label>Причина скарги</label>
-            <select id="report-reason-select" class="form-select" required>
-              <option value="">Оберіть причину...</option>
-              <option value="inappropriate">Неприйнятний вміст</option>
-              <option value="nsfw">NSFW</option>
-              <option value="copyright">Порушення авторських прав</option>
-              <option value="spam">Спам або реклама</option>
-              <option value="hate_speech">Мова ненависті</option>
-              <option value="scam">Шахрайство</option>
-              <option value="misinformation">Небезпечна дезінформація</option>
-              <option value="suspicious_links">Підозрілі посилання</option>
-              <option value="bot_activity">Активність бота</option>
-              <option value="incorrect">Некоректна інформація</option>
-              <option value="other">Інше</option>
-            </select>
+            <div class="custom-select" id="report-reason-select">
+              <div class="custom-select__trigger">
+                <span>Оберіть причину...</span>
+                <div class="arrow"></div>
+              </div>
+              <div class="custom-select__options">
+                <span class="custom-select__option" data-value="inappropriate">Неприйнятний вміст</span>
+                <span class="custom-select__option" data-value="nsfw">NSFW</span>
+                <span class="custom-select__option" data-value="copyright">Порушення авторських прав</span>
+                <span class="custom-select__option" data-value="spam">Спам або реклама</span>
+                <span class="custom-select__option" data-value="hate_speech">Мова ненависті</span>
+                <span class="custom-select__option" data-value="scam">Шахрайство</span>
+                <span class="custom-select__option" data-value="misinformation">Небезпечна дезінформація</span>
+                <span class="custom-select__option" data-value="suspicious_links">Підозрілі посилання</span>
+                <span class="custom-select__option" data-value="bot_activity">Активність бота</span>
+                <span class="custom-select__option" data-value="incorrect">Некоректна інформація</span>
+                <span class="custom-select__option" data-value="other">Інше</span>
+              </div>
+            </div>
+            <input type="hidden" id="report-reason-input" required />
           </div>
           
           <div class="form-group">
@@ -522,11 +540,15 @@ export function openReportModal(recipeId, recipeName = '') {
     modal.addEventListener('click', (e) => {
       if (e.target === modal) closeReportModal();
     });
+
+    // Кастомний селект причини (єдиний раз при створенні модалки)
+    initCustomSelect('report-reason-select', 'report-reason-input');
+    initSelectsGlobalListener();
   }
 
   modal.dataset.recipeId = recipeId;
   modal.querySelector('.report-modal__recipe-name').textContent = recipeName;
-  modal.querySelector('#report-reason-select').value = '';
+  resetReportReasonSelect(modal);
   modal.querySelector('#report-comment').value = '';
 
   // Обробник форми
@@ -534,7 +556,11 @@ export function openReportModal(recipeId, recipeName = '') {
   form.onsubmit = async (e) => {
     e.preventDefault();
 
-    const reasonSelect = modal.querySelector('#report-reason-select').value;
+    const reasonSelect = modal.querySelector('#report-reason-input').value;
+    if (!reasonSelect) {
+      showToast('Оберіть причину скарги', 'error');
+      return;
+    }
     const comment = modal.querySelector('#report-comment').value.trim();
     const fullReason = comment ? `${reasonSelect}: ${comment}` : reasonSelect;
 
