@@ -32,9 +32,6 @@ export const STORAGE_KEYS = {
   WATER_TODAY: 'waterTodayMl',
   TODAY_BURNED_CALORIES: 'todayBurnedCalories',
 
-  // Історія
-  ACTIVITY_HISTORY: 'activityHistory',
-
   // Тимчасові дані
   WEEK_SHOPPING_LIST: 'week_shopping_list',
   COPIED_WEEK: 'copied_week',
@@ -210,44 +207,6 @@ export function saveUserProfile(profile) {
   if (profile.gender) setItem(STORAGE_KEYS.USER_GENDER, profile.gender);
   if (profile.activity) setItem(STORAGE_KEYS.USER_ACTIVITY, profile.activity);
   if (profile.goal) setItem(STORAGE_KEYS.USER_GOAL, profile.goal);
-}
-
-// =============================================================
-// ІСТОРІЯ АКТИВНОСТІ
-// @deprecated Активність перенесена в Supabase (таблиця user_activities).
-// Ці localStorage-функції більше не використовуються — лишені тимчасово.
-// =============================================================
-
-/**
- * Отримати історію активностей
- * @returns {Array} - Масив активностей
- */
-export function getActivityHistory() {
-  return getItem(STORAGE_KEYS.ACTIVITY_HISTORY, []);
-}
-
-/**
- * Зберегти активність
- * @param {Object} activity - { id, type, name, duration, calories, date }
- */
-export function saveActivity(activity) {
-  const history = getActivityHistory();
-  history.unshift(activity);
-
-  // Обмежити історію 100 записами
-  if (history.length > 100) history.pop();
-
-  setItem(STORAGE_KEYS.ACTIVITY_HISTORY, history);
-}
-
-/**
- * Видалити активність
- * @param {string} activityId - ID активності
- */
-export function deleteActivity(activityId) {
-  let history = getActivityHistory();
-  history = history.filter((a) => a.id !== activityId);
-  setItem(STORAGE_KEYS.ACTIVITY_HISTORY, history);
 }
 
 // =============================================================
