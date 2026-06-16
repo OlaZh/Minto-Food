@@ -560,3 +560,20 @@
   border-radius: 18px;
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.18);
 }
+
+// ============================================================
+// DROPDOWN MENU ПЛЕЙСХОЛДЕР (D3)
+// Спільне ядро 5 паралельних menu-панелей (lang/user dropdown у хедері,
+// recipe-actions, shopping-item, week-mobile). Лише СТРУКТУРА КОНТЕЙНЕРА:
+// поверхня + рамка + тінь + overlay-позиціонування. НЕ зашиває показ
+// ([hidden] vs .is-open різняться між ужитками), НЕ зашиває min-width /
+// border-radius / z-index / top-right-офсет / стилі пунктів — це кожен
+// ужиток задає сам поверх. Адитивно, як %modal-card: нульовий візуальний
+// ризик (placeholder без @extend у вивід не потрапляє).
+%dropdown-menu {
+  position: absolute;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-3);
+  overflow: hidden;
+}

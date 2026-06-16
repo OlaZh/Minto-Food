@@ -237,7 +237,20 @@ toast.querySelector('.toast-text').textContent = message;
 кнопки-дії → `%button-secondary`/`%button-primary`. Кожну групу мігрувати окремо й звіряти вигляд.
 **Ризик:** низький-середній — звіряти вигляд кожної групи; робити по одній групі, не гуртом.
 
-### D3. Дропдауни/меню — звести до одного компонента (велике, низький пріоритет)
+### D3. Дропдауни/меню — звести до одного компонента ✅ ЗРОБЛЕНО (2026-06-16)
+> **Зроблено (адитивно, як C2 — нуль візуального ризику):** додано плейсхолдер `%dropdown-menu` ([_design-system.scss](scss/utils/_design-system.scss)) — лише **спільне ядро контейнера** випадайки: `position:absolute; background:surface; border:1px solid border; box-shadow:--shadow-3; overflow:hidden`. Мігровано **6 menu-панелей** через `@extend` (по одній, кожну звірено в скомпільованому CSS):
+> - `lang-dropdown__menu` + `header__user-dropdown` ([_header.scss](scss/layout/_header.scss)),
+> - `recipe-actions-menu__dropdown` ([_book-selector.scss](scss/components/_book-selector.scss)),
+> - `shop-list-item__dropdown` ([_shopping-list.scss](scss/pages/_shopping-list.scss)),
+> - `week-mobile__dropdown` ([_week-menu.scss](scss/pages/_week-menu.scss)),
+> - **`day-menu-actions__dropdown`** ([_day-menu.scss](scss/pages/_day-menu.scss)) — **6-й, якого аудит не називав** (швидкі дії на «Меню на день»); знайдено в скомпільованому CSS.
+>
+> **Що СВІДОМО НЕ чіпали (тому нуль ризику):**
+> - **Показ** — лишився різний у кожного: 3× `[hidden]` (lang/user/shop), 1× `[hidden]` (week-mobile), 2× анімований `opacity/transform`+`.is-open` (recipe-actions/day-menu). Уніфікація показу = окремий крок (як C3 для модалок), не робили.
+> - **Пункти (items)** — структура/padding/font/danger-варіанти різні в кожного, НЕ зводили (дорого й крихко).
+> - **Власні overrides збережено:** week-mobile й day-menu мають **легшу власну тінь** (`0 8px 24px` / `0 6px 20px`, не `--shadow-3`) — лишено через override після `@extend`. user-dropdown і day-menu НЕ мали `overflow` → повернуто `overflow:visible` (ядро додає `hidden`). Доведено: обчислені значення кожного селектора байт-у-байт = оригінал.
+> - **bottom-sheet / ingredient-picker** (згадані в аудиті) — це **шторки/пікери**, не absolute-dropdown panels; інша структура показу → НЕ входять у `%dropdown-menu`, окремо.
+> - **custom-select__options** теж не чіпали — це частина окремого custom-select компонента (D4/D5), не header-menu.
 **Файли:** language/user dropdown ([_header.scss:115/312](scss/layout/_header.scss#L115)), recipe-actions ([_book-selector.scss:266](scss/components/_book-selector.scss#L266)), shopping ([_shopping-list.scss:630](scss/pages/_shopping-list.scss#L630)), week-mobile ([_week-menu.scss:1236](scss/pages/_week-menu.scss#L1236)), bottom-sheet, ingredient-picker — 7 окремих реалізацій.
 **Фікс:** єдиний `%dropdown`/`%menu` плейсхолдер; мігрувати по одному.
 **Ризик:** середній. Робити **після** модалок або взагалі окремим етапом.

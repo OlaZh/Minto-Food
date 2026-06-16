@@ -784,16 +784,17 @@
   }
 
   &__dropdown {
-    position: absolute;
+    @extend %dropdown-menu;
     top: calc(100% + 6px);
     right: 0;
     z-index: 300;
     min-width: 190px;
 
-    background: var(--color-surface);
-    border: 1px solid var(--color-border);
     border-radius: var(--radius-md);
+    // власна, легша тінь (не --shadow-3) — зберігаємо вигляд як було
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+    // оригінал не мав overflow:hidden — повертаємо дефолт (ядро додає hidden)
+    overflow: visible;
 
     opacity: 0;
     pointer-events: none;

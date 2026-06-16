@@ -156,19 +156,15 @@
 }
 
 .lang-dropdown__menu {
-  position: absolute;
+  @extend %dropdown-menu;
   top: calc(100% + 6px);
   right: 0;
   z-index: 400;
   min-width: 80px;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
   border-radius: var(--radius-xs);
-  box-shadow: var(--shadow-3);
   list-style: none;
   padding: 4px;
   margin: 0;
-  overflow: hidden;
 
   &[hidden] {
     display: none;
@@ -310,16 +306,14 @@
 /* ---------- USER DROPDOWN ---------- */
 
 .header__user-dropdown {
-  position: absolute;
+  @extend %dropdown-menu;
   top: calc(100% + 8px);
   right: 0;
   z-index: var(--z-dropdown);
   min-width: 180px;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-3);
   padding: 6px;
+  overflow: visible;
 
   &[hidden] {
     display: none;
