@@ -1680,30 +1680,10 @@
 }
 
 .period-btn {
+  @extend %chip-toggle;
+
   padding: 7px 14px;
-  border: 1px solid var(--color-border);
-  background: transparent;
-  color: var(--color-text-secondary);
-  border-radius: 20px;
   font-size: 13px;
-  font-weight: 600;
-  font-family: inherit;
-  cursor: pointer;
-  transition:
-    background 0.18s ease,
-    border-color 0.18s ease,
-    color 0.18s ease;
-
-  &:hover {
-    border-color: var(--color-accent);
-    color: var(--color-text-primary);
-  }
-
-  &.active {
-    background: var(--color-accent-soft);
-    color: var(--color-accent);
-    border-color: var(--color-accent);
-  }
 }
 
 /* Список активностей — горизонтальний layout */
@@ -2007,31 +1987,10 @@
 .settings-theme-btn,
 .settings-lang-btn,
 .settings-unit-btn {
+  @extend %chip-toggle;
+
   padding: 6px 12px;
-  border: 1px solid var(--color-border);
-  background: transparent;
-  color: var(--color-text-secondary);
-  border-radius: 20px;
   font-size: 12px;
-  font-weight: 600;
-  font-family: inherit;
-  cursor: pointer;
-  transition:
-    background 0.18s ease,
-    border-color 0.18s ease,
-    color 0.18s ease;
-  white-space: nowrap;
-
-  &:hover {
-    border-color: var(--color-accent);
-    color: var(--color-text-primary);
-  }
-
-  &.active {
-    background: var(--color-accent-soft);
-    color: var(--color-accent);
-    border-color: var(--color-accent);
-  }
 
   &:disabled {
     cursor: not-allowed;

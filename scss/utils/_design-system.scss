@@ -236,6 +236,40 @@
   }
 }
 
+// Чіп-перемикач — pill-кнопка з "м'яким" активним станом (світлий фон +
+// акцентний текст), на відміну від %chip-filter (суцільний акцент + білий).
+// Приклад: перемикачі налаштувань (тема/мова/одиниці), вибір періоду у
+// статистиці профілю. Власне ядро (не через %chip-base — інші розміри/без
+// min-height); padding/font задає кожен ужиток.
+%chip-toggle {
+  border: 1px solid var(--color-border);
+  background: transparent;
+  color: var(--color-text-secondary);
+
+  border-radius: 20px;
+  font-family: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+
+  transition:
+    background 0.18s ease,
+    border-color 0.18s ease,
+    color 0.18s ease;
+
+  &:hover {
+    border-color: var(--color-accent);
+    color: var(--color-text-primary);
+  }
+
+  &.active,
+  &.is-active {
+    background: var(--color-accent-soft);
+    color: var(--color-accent);
+    border-color: var(--color-accent);
+  }
+}
+
 // Чіп дня тижня — окремий варіант, більший і з датою
 // Приклад: горизонтальний тижневий селектор на "Меню на день"
 %chip-day {
