@@ -761,27 +761,7 @@
 }
 
 .week-modal__manual-submit {
-  padding: 12px;
-  border-radius: 12px;
-  border: none;
-  background: var(--color-accent);
-  color: var(--color-text-inverse);
-  font-family: var(--font-body);
-  font-weight: 700;
-  font-size: 14px;
-  cursor: pointer;
-  transition: all 0.25s ease;
-  box-shadow: 0 4px 12px rgba(111, 207, 186, 0.3);
-
-  &:hover {
-    background: var(--color-accent-hover);
-    transform: translateY(-1px);
-    box-shadow: 0 8px 20px rgba(111, 207, 186, 0.4);
-  }
-
-  &:active {
-    transform: translateY(0);
-  }
+  @extend %button-primary;
 }
 
 /* ================= КОНСТРУКТОР СТРАВИ ================= */
