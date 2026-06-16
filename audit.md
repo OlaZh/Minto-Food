@@ -308,7 +308,8 @@ toast.querySelector('.toast-text').textContent = message;
 ### ⚠️ УВАГА — НЕ переплутати (тут легко зламати):
 - ✅ **storage.js** `getActivityHistory/saveActivity/deleteActivity` — ВИДАЛЕНО (коміт f8560c6). deprecated localStorage-версії (0 import-ів, 0 в html). Прибрано й осиротілий ключ `STORAGE_KEYS.ACTIVITY_HISTORY`.
   profile.js має ВЛАСНІ однойменні `getActivityHistory`/`deleteActivity` (Supabase-версії, виставлена `window.deleteActivity`, inline `onclick`) — **НЕ чіпали**, це локальні функції, не import зі storage.
-- `utils.js` невживані: `getLocalizedName, getCurrentLang, formatDateShort/Full, truncateText, convertToBaseUnit, throttle, isNotEmpty, generateId, initAutoResizeTextareas` — частина «бібліотека на майбутнє». Видаляти лише якщо точно вирішили, що не потрібні; інакше лишити.
+- `utils.js` невживані: `getCurrentLang, formatDateShort/Full, truncateText, throttle, isNotEmpty, generateId, initAutoResizeTextareas` — частина «бібліотека на майбутнє». Видаляти лише якщо точно вирішили, що не потрібні; інакше лишити.
+  - **Оновлено в межах F (2026-06-16):** `getLocalizedName` і `formatAmount` ВИДАЛЕНО (були мертві дублі, див. блок F). `convertToBaseUnit` тепер **ЖИВИЙ** — week-menu імпортує його як єдине джерело конвертації одиниць (F).
 
 ### E1. Розмазана/дубльована ініціалізація на сторінці рецептів (cleanup)
 **Файли:** [add-recipe.js:1464-1481](js/add-recipe.js#L1464), [recipe-modal.js:281](js/recipe-modal.js#L281)
@@ -324,13 +325,13 @@ toast.querySelector('.toast-text').textContent = message;
 
 ## 🔵 БЛОК F. Дублі-хелпери (рефакторинг, низький пріоритет, робити в кінці)
 
-> **Статус (2026-06-15): ⬜ не розпочато.** Спільний `pluralUA` не створено; `formatAmount` досі двічі.
+> **✅ БЛОК F ПОВНІСТЮ ЗРОБЛЕНО (2026-06-16)** — по одному хелперу, кожен із перевіркою всіх викликів + `node --check`. Деталі нижче.
 
-- **formatAmount** — двічі: [utils.js:207](js/utils.js#L207) і [parse-food.js:719](js/parse-food.js#L719) → лишити одну.
-- **Локалізація назви рецепта** — `getRecipeDisplayName` ([recipe-utils.js](js/recipe-utils.js)) ≈ `getLocalizedName` ([utils.js](js/utils.js)) → звести до однієї (вживається перша).
-- **Плюралізація UA** — 4 копії: `getDishWord` ([meal-accordion.js:48](js/meal-accordion.js#L48)), `getDayWord` ([streak.js:31](js/streak.js#L31)), `recipesLabel` ([cookbook.js:258](js/cookbook.js#L258)), inline `countWord` ([week-menu.js:1013](js/week-menu.js#L1013)) → один `pluralUA(n,[one,few,many])`.
-- **Конвертація одиниць** (кг→г/л→мл) — тричі: `UNIT_CONVERSIONS` (utils.js), [week-menu.js:703](js/week-menu.js#L703), [parse-food.js:15](js/parse-food.js#L15) → одне джерело.
-- `resolveScannedProduct` — однойменні в [barcode-scanner.js:457](js/barcode-scanner.js#L457) і [parse-food.js:665](js/parse-food.js#L665), різна логіка → перейменувати одну для ясності (не конфліктують, але плутають).
+- ✅ **formatAmount** — НЕ дубль-зведення, а **видалення мертвого**: utils-копія мала 0 імпортів (мертвий експорт), жива версія — `parse-food.formatAmount` (єдиний споживач add-recipe). utils-копію видалено.
+- ✅ **Локалізація назви рецепта** — теж видалення мертвого: `utils.getLocalizedName` мав 0 справжніх споживачів (recipe-page має ВЛАСНУ локальну `_getLocalizedName`, не імпорт). Жива — `getRecipeDisplayName` (recipe-utils, споживачі add-recipe/week-menu). utils.getLocalizedName видалено. `getCurrentLang` лишено (E тримає, не дубль).
+- ✅ **Плюралізація UA** — створено `pluralUA(n,[one,few,many])` в [utils.js](js/utils.js). Зведено **5 копій** (аудит називав 4, знайшовся 5-й — `getDayWord` у profile.js): `getDishWord` (meal-accordion), `getDayWord` (streak), `getDayWord` (profile), `recipesLabel` (cookbook), inline `countWord` (week-menu). **Бонус-фікс:** week-menu мав баг `count<5` → 'страви' для 12-14; тепер коректно 'страв'. Unit-тест граничних чисел пройдено.
+- ✅ **Конвертація одиниць** — week-menu `unitConversion` (локальна `{base,factor}`) = дубль `utils.UNIT_CONVERSIONS`; переведено week-menu на **`convertToBaseUnit`** (utils) як єдине джерело → мертвий експорт ОЖИВ. **parse-food.UNIT_CONVERSIONS НЕ чіпали** — це інша семантика (плоска мапа «одиниця→грамів» з oz/lb/синонімами, частина парсера), не дубль.
+- ✅ **resolveScannedProduct** — приватну версію в barcode-scanner перейменовано на `applyUserCorrections` (описова назва: застосовує особисту правку макросів). parse-food export-версію (створення продукту в БД, споживач recipe-ingredients) недоторкано. Колізія імен усунена.
 
 **Ризик усього блоку F:** середній (рефакторинг спільних функцій зачіпає багато місць).
 Робити **останнім**, по одному хелперу, з перевіркою всіх викликів.

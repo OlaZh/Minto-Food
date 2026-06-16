@@ -2,7 +2,7 @@
 import { i18n } from './i18n.js';
 import { initRecipeModal, openRecipeModal } from './recipe-modal.js';
 import { initAuth, requireAuth } from './auth.js';
-import { showToast, getLocalDateString, pluralUA } from './utils.js';
+import { showToast, getLocalDateString, pluralUA, convertToBaseUnit } from './utils.js';
 import { showLoading, showEmpty, showConfirmModal } from './ui-components.js';
 import { getLang, setLang, saveWeekShoppingList, setItem, getItem } from './storage.js';
 import { getRecipeDisplayName } from './recipe-utils.js';
@@ -679,11 +679,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Групуємо інгредієнти
     const grouped = {};
 
-    const unitConversion = {
-      кг: { base: 'г', factor: 1000 },
-      л: { base: 'мл', factor: 1000 },
-    };
-
     (productRecipes || []).forEach((pr) => {
       const productName =
         lang === 'pl'
@@ -694,14 +689,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       if (!productName) return;
 
-      let amount = parseFloat(pr.amount) || 0;
-      let unit = pr.unit || 'шт';
-
       // Конвертуємо кг → г, л → мл для правильного підсумовування
-      if (unitConversion[unit]) {
-        amount = amount * unitConversion[unit].factor;
-        unit = unitConversion[unit].base;
-      }
+      const converted = convertToBaseUnit(parseFloat(pr.amount) || 0, pr.unit || 'шт');
+      const amount = converted.amount;
+      const unit = converted.unit;
 
       const key = `${productName}__${unit}`;
 

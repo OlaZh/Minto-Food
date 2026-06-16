@@ -454,7 +454,9 @@ function canonicalMacros(p) {
 
 // Підтягуємо ОСОБИСТУ правку користувача (якщо є) і прикріплюємо канон.
 // Спільна scanned_products не змінюється — лише показ для цього юзера.
-async function resolveScannedProduct(product) {
+// (Назва відрізняється від parse-food.resolveScannedProduct — там інша
+//  логіка: створення/пошук продукту в БД для парсера.)
+async function applyUserCorrections(product) {
   const canonical = canonicalMacros(product);
   const result = { ...product, _canonical: canonical };
 
@@ -553,7 +555,7 @@ async function handleBarcodeScan(barcode) {
     if (localProduct) {
       if (hasNutritionData(localProduct)) {
         console.log('Знайдено локально:', localProduct);
-        onProductFoundHandler(await resolveScannedProduct(localProduct));
+        onProductFoundHandler(await applyUserCorrections(localProduct));
       } else {
         // Кешований "порожній" запис (лишок зі старих сканувань) → даємо виправити
         console.warn('Локальний запис без КБЖУ — пропонуємо ручне введення:', localProduct);
@@ -571,7 +573,7 @@ async function handleBarcodeScan(barcode) {
       if (hasNutritionData(offProduct)) {
         console.log('Знайдено в Open Food Facts:', offProduct);
         await saveToLocalDatabase(offProduct);
-        onProductFoundHandler(await resolveScannedProduct(offProduct));
+        onProductFoundHandler(await applyUserCorrections(offProduct));
       } else {
         // Назва є, але КБЖУ нулі → НЕ зберігаємо сміття, пропонуємо ввести вручну
         console.warn('OFF повернув продукт без КБЖУ — не кешуємо:', offProduct);
