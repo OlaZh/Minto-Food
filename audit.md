@@ -142,7 +142,7 @@ toast.querySelector('.toast-text').textContent = message;
 
 ## 🟠 БЛОК C. Уніфікація модалок (найбільший архітектурний борг)
 
-> **Статус (2026-06-15): ⬜ не розпочато** (C1–C4). z-токени не введені, JS-контракт `openModal` досі додає три класи, модалки не мігровані.
+> **Статус (2026-06-16): 🟨 C1 ✅, C2 ✅ — далі C4 (міграція модалок), потім C3.** z-шкала введена в токени (коміт 9dc6a40), плейсхолдери `%overlay`/`%modal-card` створені (коміт eb68cfb). JS-контракт `openModal` ще додає три класи (C3 — в кінці), модалки ще не мігровані (C4).
 
 > Це найбільша робота. Робимо **поступово й адитивно** — спочатку додаємо спільні
 > плейсхолдери, мігруємо модалки по одній, нічого не видаляючи, поки не переведені всі.
@@ -158,13 +158,15 @@ toast.querySelector('.toast-text').textContent = message;
 Підтверджено в коді: z-index 1000/2000/2100 ([_modal.scss:8/451/556](scss/components/_modal.scss#L8)),
 а `openModal` ([ui-components.js:187](js/ui-components.js#L187)) для підстраховки додає `'active'`, `'is-active'` **і** `hidden=false` одночасно — ознака, що JS не знає контракту.
 
-### C1. Ввести z-index шкалу в токени (зробити ПЕРШИМ — безпечно)
+### C1. Ввести z-index шкалу в токени (зробити ПЕРШИМ — безпечно) ✅ ЗРОБЛЕНО (коміт 9dc6a40)
+**Як (2026-06-16):** додано `--z-base/sticky/dropdown/tab-bar/modal/modal-top/scanner/auth/cookie/toast` у `:root` ([_tokens.scss](scss/base/_tokens.scss)) зі значеннями, що ДОРІВНЮЮТЬ наявним магічним числам (нічого не зсунуто). Мігровано однозначні випадки (toast/cookie/auth/scanner/modal-overlay/modal/header-dropdown/tab-bar). Локальні stacking-контексти (1/2/10), book-selector 3000, week/shopping 300 свідомо лишені на потім (D3/C4).
 **Файл:** [scss/base/_tokens.scss](scss/base/_tokens.scss) (або `_variables.scss`)
 **Фікс:** додати `--z-dropdown: 500; --z-modal: 1000; --z-modal-top: 2000; --z-scanner: 2100; --z-toast: 10000;`
 і поступово замінити магічні числа на змінні.
 **Ризик:** мінімальний, якщо зберегти ті самі числові значення → візуально нічого не зміниться.
 
-### C2. Створити спільні плейсхолдери (адитивно, нічого не ламає)
+### C2. Створити спільні плейсхолдери (адитивно, нічого не ламає) ✅ ЗРОБЛЕНО (коміт eb68cfb)
+**Як (2026-06-16):** додано `%overlay` (fixed+inset+flex center+blur, показ через `.is-open`) і `%modal-card` (поверхня+радіус+тінь) у [_design-system.scss](scss/utils/_design-system.scss). Доведено нульовий ризик: скомпільований css байт-у-байт ідентичний до/після (placeholder без `@extend` не потрапляє у вивід).
 **Файл:** [scss/utils/_design-system.scss](scss/utils/_design-system.scss)
 **Фікс:** додати `%overlay` (fixed+inset:0+flex center+blur) і `%modal-card`.
 **На цьому кроці нічого не мігруємо** — лише створюємо інструмент.
