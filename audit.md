@@ -142,7 +142,7 @@ toast.querySelector('.toast-text').textContent = message;
 
 ## 🟠 БЛОК C. Уніфікація модалок (найбільший архітектурний борг)
 
-> **Статус (2026-06-16): 🟨 C1 ✅, C2 ✅ — далі C4 (міграція модалок), потім C3.** z-шкала введена в токени (коміт 9dc6a40), плейсхолдери `%overlay`/`%modal-card` створені (коміт eb68cfb). JS-контракт `openModal` ще додає три класи (C3 — в кінці), модалки ще не мігровані (C4).
+> **Статус (2026-06-16): 🟨 C1 ✅, C2 ✅, C4 розпочато (1/N модалок).** z-шкала введена (коміт 9dc6a40), плейсхолдери `%overlay`/`%modal-card` створені (коміт eb68cfb). C4: report-modal мігровано+перевірено (коміт b44f3dc), scanner свідомо пропущено (структурно не пасує — деталі нижче). JS-контракт `openModal` ще додає три класи (C3 — в кінці, лише коли ВСІ модалки на `.is-open`).
 
 > Це найбільша робота. Робимо **поступово й адитивно** — спочатку додаємо спільні
 > плейсхолдери, мігруємо модалки по одній, нічого не видаляючи, поки не переведені всі.
@@ -187,6 +187,11 @@ toast.querySelector('.toast-text').textContent = message;
 **Після кожної:** перевірити відкриття/закриття/клік по фону/Esc/scroll-lock саме цієї модалки.
 **Ризик:** середній на кожній, але ізольований — ламається максимум одна модалка, одразу видно.
 
+**Прогрес C4:**
+- ✅ **report-modal** — ЗРОБЛЕНО + ПЕРЕВІРЕНО в браузері (коміт b44f3dc, 2026-06-16). Власний `.report-overlay @extend %overlay` (center, ізольовано від глобального `.modal-overlay` з flex-start+scroll для довгих модалок), `.report-modal @extend %modal-card`, показ `.is-active`→`.is-open`, close-кнопка відв'язана від глобального `.modal-card__close`. Глобальні класи НЕ змінені — recipe/book-selector/cookbook/shopping як раніше. Скріншот: центр/фон+blur/картка/форма/тост — ОК.
+- ⏭️ **scanner — ПРОПУЩЕНО** (хоч аудит ставив першим): структурно НЕ пасує `%overlay`. Фон малює ОКРЕМИЙ вкладений div `.scanner-modal__overlay`, показ через `hidden`-атрибут у JS (не `.is-open`), `.scanner-modal` сам — лише центруючий контейнер. Потребує перебудови розмітки+JS (камера, native+fallback). Повернутись окремо, коли решта простіших зроблена.
+- ⬜ далі за планом: product/day → book-selector → recipe-modal → auth → onboarding/admin.
+
 ---
 
 ## 🟢 БЛОК D. Кнопки/чіпи/картки (дублі стилів — косметика, але борг)
@@ -218,6 +223,17 @@ toast.querySelector('.toast-text').textContent = message;
 **Файл:** [profile.js:1356](js/profile.js#L1356) (ручна логіка activity select) поряд з shared `initCustomSelect` [profile.js:2108](js/profile.js#L2108)
 **Фікс:** перевести activity select на shared `initCustomSelect`, прибрати ручну гілку.
 **Ризик:** середній — перевірити, що зміна активності зберігається.
+
+### D5. Нативні `<select>` обходять кастомний компонент (виявлено 2026-06-16)
+**Що не так:** у публічному сайті лишилися **нативні браузерні `<select>`** — у темному режимі/iOS вони виглядають системно (сірий фон, синє виділення опцій, системний шрифт), не в стилі сайту. Видно на report-modal (скріншот користувача).
+**Де (лише публічний сайт, admin-app НЕ чіпати):**
+- `report-reason-select` (`class="form-select"`) — [book-selector.js:489](js/book-selector.js#L489).
+- `rm-category` — [recipe-modal.js:166](js/recipe-modal.js#L166).
+**Готове рішення в репо:** компонент `custom-select` уже існує і стилізований у темі сайту — `initCustomSelect`/`setSelectValue`/`initSelectsGlobalListener` ([ui-components.js:18](js/ui-components.js#L18)), стилі `.custom-select` глобальні ([_profile.scss:278](scss/pages/_profile.scss#L278), вживається в профілі gender/activity/goal). **НЕ винаходити новий** — перевести обидва нативні select на цей патерн.
+**Фікс:** розмітка `.custom-select` + `__trigger`(span) + `__options`/`__option[data-value]` + hidden `<input>`; навісити `initCustomSelect(selectId, inputId)`; читати значення з hidden input (не з `.value` select); додати `initSelectsGlobalListener()` на сторінці, якщо ще нема. Для report — оновити читання у `report-form.onsubmit` ([book-selector.js:537](js/book-selector.js#L537)).
+**⚠️ Окремий нюанс (не блокер):** стилі `.custom-select` семантично лежать у `_profile.scss`, хоч компонент глобальний — варто винести в `components/` (напр. `_inputs.scss` чи окремий партіал) під час цього ж пункту або D3.
+**Ризик:** низький-середній — перевірити, що значення коректно зчитується при сабміті (report-скарга, збереження категорії рецепта).
+**Пріоритет:** косметика/UX, поза C4. Робити після уніфікації модалок або як окремий захід.
 
 ---
 
