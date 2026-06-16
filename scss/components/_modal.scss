@@ -5,7 +5,7 @@
 .modal {
   position: fixed;
   inset: 0;
-  z-index: 1000;
+  z-index: var(--z-modal);
 
   display: flex;
   align-items: center;
@@ -448,7 +448,7 @@
 .modal-overlay {
   position: fixed;
   inset: 0;
-  z-index: 2000;
+  z-index: var(--z-modal-top);
 
   display: none;
   justify-content: center;
@@ -553,7 +553,7 @@
 .scanner-modal {
   position: fixed;
   inset: 0;
-  z-index: 2100; // вище за addFoodModal і за модалку рецепта (.modal-overlay z2000)
+  z-index: var(--z-scanner); // вище за addFoodModal і за модалку рецепта (.modal-overlay z2000)
   display: flex;
   align-items: center;
   justify-content: center;
