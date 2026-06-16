@@ -189,6 +189,8 @@ toast.querySelector('.toast-text').textContent = message;
 
 **Прогрес C4:**
 - ✅ **report-modal** — ЗРОБЛЕНО + ПЕРЕВІРЕНО в браузері (коміт b44f3dc, 2026-06-16). Власний `.report-overlay @extend %overlay` (center, ізольовано від глобального `.modal-overlay` з flex-start+scroll для довгих модалок), `.report-modal @extend %modal-card`, показ `.is-active`→`.is-open`, close-кнопка відв'язана від глобального `.modal-card__close`. Глобальні класи НЕ змінені — recipe/book-selector/cookbook/shopping як раніше. Скріншот: центр/фон+blur/картка/форма/тост — ОК.
+- ✅ **book-selector** — ЗРОБЛЕНО (коміт 294fe8e, 2026-06-16), ⏳ перевірка в браузері. Дзеркально до report: `.book-selector-overlay @extend %overlay` (компактна, список має власний `max-height:300px`+scroll → center пасує), z-index **3000** збережено (над модалкою рецепта), `.book-selector @extend %modal-card`, показ `.is-active`→`.is-open`, власний `__close`. Глобальні класи недоторкані. **Перевірити:** на сторінці рецепта «Зберегти в книгу» (гість і залогінений) → відкриття/центр/чекбокси/«Усі книги…»/«Зберегти»/клік по фону/Esc.
+- ⚠️ **Дубль на потім:** `.report-modal__close` і `.book-selector__close` тепер однакові блоки. Коли мігруємо ще модалки — звести в спільний `%modal-close` (наприкінці C4, разом з C3).
 - ⏭️ **scanner — ПРОПУЩЕНО** (хоч аудит ставив першим): структурно НЕ пасує `%overlay`. Фон малює ОКРЕМИЙ вкладений div `.scanner-modal__overlay`, показ через `hidden`-атрибут у JS (не `.is-open`), `.scanner-modal` сам — лише центруючий контейнер. Потребує перебудови розмітки+JS (камера, native+fallback). Повернутись окремо, коли решта простіших зроблена.
 - ⬜ далі за планом: product/day → book-selector → recipe-modal → auth → onboarding/admin.
 
