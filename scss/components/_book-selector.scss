@@ -6,13 +6,39 @@
 // МОДАЛКА ВИБОРУ КНИГ
 // =============================================================
 
-.book-selector-modal {
+// Контейнер-overlay вибору книг: компактна модалка фіксованої висоти (список
+// має власний max-height+scroll), тож центруємо (%overlay). z-index 3000 —
+// вище за модалку рецепта, з якої викликається (над --z-modal-top: 2000).
+// Ізольовано від глобального .modal-overlay. Показ через .is-open.
+.book-selector-overlay {
+  @extend %overlay;
   z-index: 3000;
 }
 
 .book-selector {
+  @extend %modal-card;
+
   max-width: 400px;
   width: 90%;
+  margin: 16px auto 24px;
+  padding: 24px;
+
+  &__close {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+
+    background: none;
+    border: none;
+
+    font-size: 28px;
+    color: var(--color-text-secondary);
+    cursor: pointer;
+
+    &:hover {
+      color: var(--color-accent);
+    }
+  }
 
   &__header {
     text-align: center;

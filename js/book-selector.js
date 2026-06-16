@@ -209,10 +209,10 @@ function createSelectorModal() {
 
   const modal = document.createElement('div');
   modal.id = 'book-selector-modal';
-  modal.className = 'modal-overlay book-selector-modal';
+  modal.className = 'book-selector-overlay';
   modal.innerHTML = `
-    <div class="modal-card book-selector">
-      <button class="modal-card__close" id="book-selector-close">&times;</button>
+    <div class="book-selector">
+      <button class="book-selector__close" id="book-selector-close">&times;</button>
       
       <div class="book-selector__header">
         <h3>Зберегти в книгу</h3>
@@ -300,13 +300,13 @@ export async function openBookSelector(recipeId, onSelect = null) {
 
   renderBooksList(false);
 
-  selectorModal.classList.add('is-active');
+  selectorModal.classList.add('is-open');
   lockScroll('book-selector-modal');
 }
 
 function closeBookSelector() {
   if (selectorModal) {
-    selectorModal.classList.remove('is-active');
+    selectorModal.classList.remove('is-open');
     unlockScroll('book-selector-modal');
     onSelectCallback = null;
   }
