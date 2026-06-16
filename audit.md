@@ -218,11 +218,13 @@ toast.querySelector('.toast-text').textContent = message;
 **Фікс:** прибрати локальний блок, лишити глобальну; якщо потрібен відступ — лише його, без кольору.
 **Ризик:** низький — звірити вигляд кнопки в report-modal до/після.
 
-### D2. Перевести вручну-намальовані кнопки на `@extend`
-> **Статус (2026-06-16): 🟨 2/3 групи зроблено.**
-> - ✅ **Група 1 — головні зелені submit** (`auth-modal__submit`, `week-modal__manual-submit`) → `@extend %button-primary` (коміт 81a338c). Узгоджено канонічний вигляд (дрібні візуальні зміни radius/тінь/hover свідомі). ⏳ перевірити: auth «Увійти»/«Створити акаунт», week ручне додавання страви.
-> - ✅ **Група 2 — перемикачі** (`settings-theme/lang/unit-btn`, `period-btn`) → `@extend %chip-toggle` (коміт 2729a42). Новий плейсхолдер `%chip-toggle` (м'який active, легітимний 2-й патерн чіпа) — вигляд НЕ змінено (доведено діфом). ⏳ перевірити: профіль → перемикання теми/мови/одиниць, статистика → вибір періоду.
-> - ⬜ **Група 3 — кнопки-дії** (`settings-edit-btn`, `settings-action-btn`, [settings-delete-btn](scss/pages/_profile.scss#L2200), `profile-actions__btn`) → `%button-secondary`/`%button-primary`. Ще не робив.
+### D2. Перевести вручну-намальовані кнопки на `@extend` ✅ ЗРОБЛЕНО (3/3 групи)
+> **Статус (2026-06-16): ✅ всі 3 групи зроблено** (розбито за СЕНСОМ, по групі, кожну звірено).
+> - ✅ **Група 1 — головні зелені submit** (`auth-modal__submit`, `week-modal__manual-submit`) → `@extend %button-primary` (коміт 81a338c). Узгоджено канонічний вигляд (дрібні візуальні зміни radius/тінь/hover свідомі).
+> - ✅ **Група 2 — перемикачі** (`settings-theme/lang/unit-btn`, `period-btn`) → `@extend %chip-toggle` (коміт 2729a42). Новий плейсхолдер `%chip-toggle` (м'який active, легітимний 2-й патерн чіпа) — вигляд НЕ змінено (доведено діфом).
+> - ✅ **Група 3 — кнопки-дії** (коміт 828df65): `settings-edit-btn`→`%button-secondary`; `profile-actions__btn`→`%button-primary`; `settings-delete-btn`→новий `%button-danger` (видалення акаунту); `settings-action-btn` («Вийти»)→`%button-secondary`+червоний hover. Додано плейсхолдер `%button-danger`.
+> - **Нові плейсхолдери з D2:** `%chip-toggle` (м'який чіп-перемикач), `%button-danger` (outline-червона деструктивна, ≠ рожева глобальна `.btn-danger`).
+> - ⏳ **Перевірка в браузері (накопичено):** auth «Увійти»/«Створити акаунт»; week ручне додавання страви; профіль → тема/мова/одиниці + «Змінити»; статистика → період; «Оновити дані»; «Вийти з акаунту» (hover червоний); «Видалити акаунт».
 >
 > **⚠️ Дубль close-кнопок (з C4):** `.report-modal__close` + `.book-selector__close` + глобальний `.modal-card__close` однакові — звести в `%modal-close` (з C3, або тут).
 
