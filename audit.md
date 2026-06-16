@@ -221,7 +221,7 @@ toast.querySelector('.toast-text').textContent = message;
 
 ## ⚪ БЛОК E. Мертвий код (видаляти ОБЕРЕЖНО — спершу переконатись, що 0 використань)
 
-> **Статус (2026-06-15): 🟨 розпочато.** ✅ Видалено `lang-switcher-ui.js` (потрійна перевірка: 0 import-ів, 0 в html, `#langSwitcher` у meals/week-menu — це DOM-елемент, не цей модуль). ⛔ `feature-flag.js` **лишено** — НЕ мертвий: [Roadmap_v2.md:632](Roadmap_v2.md#L632) тримає його як готову заготовку фіча-флагів (наступний крок — адмінка toggle). Решта (`searchOwnShowAll`, storage `getActivityHistory/saveActivity` тощо) — ще на місці.
+> **Статус (2026-06-16): 🟨 майже завершено.** ✅ Видалено `lang-switcher-ui.js` (потрійна перевірка: 0 import-ів, 0 в html, `#langSwitcher` у meals/week-menu — це DOM-елемент, не цей модуль). ✅ storage `getActivityHistory/saveActivity/deleteActivity` + ключ `ACTIVITY_HISTORY` (коміт f8560c6). ✅ `openClearCellConfirm` (коміт 8131583). ✅ мертвий cover-picker шлях у cookbook — `openCoverPicker`+`selectCover`+`createCoverPickerModal`+SCSS (коміт 8412fd9). ⛔ `feature-flag.js` **лишено** — НЕ мертвий: [Roadmap_v2.md:632](Roadmap_v2.md#L632) тримає його як готову заготовку фіча-флагів (наступний крок — адмінка toggle). Лишилось хіба `utils.js` «бібліотека на майбутнє» (свідомо тримаємо).
 
 > Перед видаленням кожного перевіряти **ТРИ** місця, не два:
 > 1. grep по `js/` (імпорти, виклики);
@@ -234,16 +234,15 @@ toast.querySelector('.toast-text').textContent = message;
 ### Підтверджено мертве (безпечно):
 - **Файли цілком:** ~~lang-switcher-ui.js~~ ✅ ВИДАЛЕНО (2026-06-15). ⚠️ `feature-flag.js` — **НЕ видаляти** (заготовка з [Roadmap_v2.md:632](Roadmap_v2.md#L632), а не мертвий код; аудит тут помилявся).
 - ✅ `searchOwnShowAll` — ВИДАЛЕНО (коміт b41eee6). Перевірено асиметрію з живим `searchCommunityShowAll`.
-- `openClearCellConfirm()` — [week-menu.js:243](js/week-menu.js#L243) — 1 входження (саме оголошення). ⏳ ще не чіпав (делікатніший UX-хук).
-- ⚠️ `openCoverPicker()` — недопідключений шлях, кандидат. **АЛЕ `createCoverPickerModal()` — НЕ мертва**: викликається в [cookbook.js:108](js/cookbook.js#L108) (поправка ШІ-рев'ю). Видаляти лише `openCoverPicker`, не всю cover-picker гілку.
+- ✅ `openClearCellConfirm()` (week-menu.js) — ВИДАЛЕНО (коміт 8131583). Мало лише оголошення, 0 викликів. `showConfirmModal` лишився (живий в інших місцях).
+- ✅ Мертвий cover-picker шлях у cookbook — ВИДАЛЕНО (коміт 8412fd9). **Поправка до аудиту:** `createCoverPickerModal()` теж виявилась мертвою — вона створювала `#coverPickerModal`, але заповнював/відкривав її ВИКЛЮЧНО `openCoverPicker` (0 викликів), тож обидві + `selectCover` видалено разом із викликом з `_onUserReady` і осиротілим SCSS `.cookbook-cover-picker-modal`. Жива cover-picker іде через `editCoverGrid`/`renderCoverGridHTML` — не чіпали.
 - ✅ Мертві імпорти ВИДАЛЕНО (коміт 59cf278): `removeRecipeFromBook/removeRecipeFromAllBooks/getRecipeBooks` (add-recipe), `iconCheck/iconVeg/iconPlate` (meals), `getWeightHistory/addWeightRecord` (profile).
 - ✅ Невикористані експорти: `getBooks/removeRecipeFromAllBooks` ВИДАЛЕНО (коміт 660ca53) + `getWeightHistory/addWeightRecord` із storage (коміт b41eee6) + `setIngredients` із recipe-ingredients.js (0 споживачів; `setIngredientsFromText` — інша, жива).
 - ✅ Константи `WEIGHT_HISTORY_KEY/ACTIVITY_HISTORY_KEY` (profile.js) + осиротілий `STORAGE_KEYS.WEIGHT_HISTORY` — ВИДАЛЕНО (коміт b41eee6).
 
 ### ⚠️ УВАГА — НЕ переплутати (тут легко зламати):
-- **storage.js** `getActivityHistory/saveActivity/deleteActivity` ([storage.js:262](js/storage.js#L262)) — deprecated localStorage-версії, **безпечно видалити**.
-  АЛЕ: у **profile.js є СВОЯ `deleteActivity`** ([profile.js:1488](js/profile.js#L1488)) — Supabase-версія, **РОБОЧА**, виставлена як `window.deleteActivity` ([profile.js:1500](js/profile.js#L1500)) і викликається inline `onclick` ([profile.js:1600](js/profile.js#L1600)).
-  **Однакова назва, різні функції.** Видаляти тільки storage-версію, profile-версію НЕ чіпати.
+- ✅ **storage.js** `getActivityHistory/saveActivity/deleteActivity` — ВИДАЛЕНО (коміт f8560c6). deprecated localStorage-версії (0 import-ів, 0 в html). Прибрано й осиротілий ключ `STORAGE_KEYS.ACTIVITY_HISTORY`.
+  profile.js має ВЛАСНІ однойменні `getActivityHistory`/`deleteActivity` (Supabase-версії, виставлена `window.deleteActivity`, inline `onclick`) — **НЕ чіпали**, це локальні функції, не import зі storage.
 - `utils.js` невживані: `getLocalizedName, getCurrentLang, formatDateShort/Full, truncateText, convertToBaseUnit, throttle, isNotEmpty, generateId, initAutoResizeTextareas` — частина «бібліотека на майбутнє». Видаляти лише якщо точно вирішили, що не потрібні; інакше лишити.
 
 ### E1. Розмазана/дубльована ініціалізація на сторінці рецептів (cleanup)
