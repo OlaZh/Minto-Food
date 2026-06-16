@@ -2,7 +2,6 @@
 // UI COMPONENTS — спільні UI компоненти
 // =====================================
 
-import { lockScroll, unlockScroll } from './scroll-lock.js';
 import { iconInbox } from './icons.js';
 
 // =====================================
@@ -174,146 +173,12 @@ export function showConfirmModal({
   };
 }
 
-// =====================================
-// GENERIC MODAL
-// =====================================
-
-/**
- * Відкриває модалку по ID
- * @param {string} modalId - ID модалки
- */
-export function openModal(modalId) {
-  const modal = document.getElementById(modalId);
-  if (!modal) return;
-
-  modal.classList.add('active', 'is-active');
-  modal.hidden = false;
-  lockScroll(`modal:${modalId}`);
-}
-
-/**
- * Закриває модалку по ID
- * @param {string} modalId - ID модалки
- */
-export function closeModal(modalId) {
-  const modal = document.getElementById(modalId);
-  if (!modal) return;
-
-  modal.classList.remove('active', 'is-active');
-  modal.hidden = true;
-  unlockScroll(`modal:${modalId}`);
-}
-
-/**
- * Ініціалізує модалку з кнопками закриття та overlay
- * @param {string} modalId - ID модалки
- * @param {Object} options
- * @param {string} options.closeSelector - Селектор кнопки закриття
- * @param {string} options.overlaySelector - Селектор overlay
- * @param {Function} options.onClose - Колбек при закритті
- */
-export function initModal(modalId, options = {}) {
-  const modal = document.getElementById(modalId);
-  if (!modal) return;
-
-  const {
-    closeSelector = '.modal__close',
-    overlaySelector = '.modal__overlay',
-    onClose = () => {},
-  } = options;
-
-  const closeBtn = modal.querySelector(closeSelector);
-  const overlay = modal.querySelector(overlaySelector);
-
-  const close = () => {
-    closeModal(modalId);
-    onClose();
-  };
-
-  if (closeBtn) {
-    closeBtn.addEventListener('click', close);
-  }
-
-  if (overlay) {
-    overlay.addEventListener('click', close);
-  }
-
-  // Закриття по Escape
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && !modal.hidden) {
-      close();
-    }
-  });
-}
-
-// =====================================
-// TABS
-// =====================================
-
-/**
- * Ініціалізує табси
- * @param {Object} options
- * @param {string} options.buttonsSelector - Селектор кнопок табів
- * @param {string} options.sectionsSelector - Селектор секцій контенту
- * @param {string} options.activeClass - Клас активного табу
- * @param {Function} options.onTabChange - Колбек при зміні табу (tab, section)
- */
-export function initTabs({
-  buttonsSelector,
-  sectionsSelector,
-  activeClass = 'active',
-  onTabChange = () => {},
-}) {
-  const buttons = document.querySelectorAll(buttonsSelector);
-  const sections = document.querySelectorAll(sectionsSelector);
-
-  if (!buttons.length || !sections.length) return;
-
-  // Початковий стан — перший таб активний
-  sections.forEach((section, index) => {
-    if (index === 0) {
-      section.removeAttribute('hidden');
-      section.style.display = 'block';
-    } else {
-      section.setAttribute('hidden', '');
-      section.style.display = 'none';
-    }
-  });
-
-  buttons[0]?.classList.add(activeClass);
-  buttons[0]?.setAttribute('aria-selected', 'true');
-
-  buttons.forEach((btn) => {
-    btn.addEventListener('click', () => {
-      // Деактивуємо всі кнопки
-      buttons.forEach((b) => {
-        b.classList.remove(activeClass);
-        b.setAttribute('aria-selected', 'false');
-      });
-
-      // Активуємо поточну кнопку
-      btn.classList.add(activeClass);
-      btn.setAttribute('aria-selected', 'true');
-
-      const tab = btn.dataset.tab;
-
-      // Перемикаємо секції
-      sections.forEach((section) => {
-        const sectionTab = section.dataset.profileSection || section.dataset.tab;
-        const isActive = sectionTab === tab;
-
-        if (isActive) {
-          section.removeAttribute('hidden');
-          section.style.display = 'block';
-          onTabChange(tab, section);
-        } else {
-          section.setAttribute('hidden', '');
-          section.style.display = 'none';
-        }
-      });
-    });
-  });
-}
+// Примітка: спільні openModal/closeModal/initModal/initTabs видалено в
+// межах C3 — це були мертві експорти (0 імпортів). Кожна модалка має
+// власну автономну логіку показу (cookbook/meals — локальні open/close,
+// система B — .is-active/.is-open). Саме існування цих функцій з трьома
+// контрактами (active+is-active+hidden) і створювало ілюзію
+// «непослідовного контракту», описану в аудиті.
 
 // =====================================
 // LOADING INDICATOR
