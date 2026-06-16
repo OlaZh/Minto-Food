@@ -185,6 +185,27 @@
   }
 }
 
+// Деструктивна кнопка — outline-червона, hover суцільно-червоний.
+// Семантика "явне видалення/незворотна дія" (видалити акаунт/книгу).
+// Відрізняється від глобальної .btn-danger (та світло-рожева, м'якша).
+%button-danger {
+  @extend %button-base;
+
+  background: transparent;
+  color: #ef4444;
+  border-color: #ef4444;
+
+  &:hover:not(:disabled) {
+    background: #ef4444;
+    color: #fff;
+  }
+
+  &:disabled {
+    background: transparent;
+    color: #ef4444;
+  }
+}
+
 // ============================================================
 //  3. CHIPS (pill-shaped filter buttons)
 // ============================================================

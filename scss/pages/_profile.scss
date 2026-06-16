@@ -647,32 +647,11 @@
   margin-top: 10px;
 
   &__btn {
+    @extend %button-primary;
+
+    // специфіка: на всю ширину секції, трохи більший
     width: 100%;
     padding: 13px;
-    border-radius: 12px;
-    border: none;
-    background: var(--color-accent);
-    color: var(--color-text-inverse);
-    font-size: 15px;
-    font-weight: 700;
-    font-family: inherit;
-    cursor: pointer;
-    box-shadow:
-      0 8px 20px rgba(0, 0, 0, 0.18),
-      inset 0 1px 0 rgba(255, 255, 255, 0.2);
-    transition:
-      transform 0.15s ease,
-      box-shadow 0.15s ease;
-    box-sizing: border-box;
-
-    &:hover {
-      transform: translateY(-1px);
-      background: var(--color-accent-hover);
-    }
-
-    &:active {
-      transform: translateY(0);
-    }
   }
 }
 
@@ -2003,24 +1982,13 @@
 
 /* Кнопка "Змінити" */
 .settings-edit-btn {
-  padding: 6px 14px;
-  border: 1px solid var(--color-border);
-  background: transparent;
-  color: var(--color-text-secondary);
-  border-radius: 8px;
-  font-size: 13px;
-  font-weight: 600;
-  font-family: inherit;
-  cursor: pointer;
-  flex-shrink: 0;
-  transition:
-    border-color 0.18s ease,
-    color 0.18s ease;
+  @extend %button-secondary;
 
-  &:hover {
-    border-color: var(--color-accent);
-    color: var(--color-accent);
-  }
+  // специфіка: компактніша, не розтягується в рядку налаштувань
+  padding: 6px 14px;
+  min-height: 0;
+  font-size: 13px;
+  flex-shrink: 0;
 }
 
 /* Кнопки дій акаунту */
@@ -2031,22 +1999,14 @@
 }
 
 .settings-action-btn {
-  width: 100%;
-  padding: 10px 14px;
-  font-size: 13px;
-  font-weight: 600;
-  font-family: inherit;
-  color: var(--color-text-secondary);
-  background: transparent;
-  border: 1px solid var(--color-border);
-  border-radius: 10px;
-  cursor: pointer;
-  transition:
-    border-color 0.18s ease,
-    color 0.18s ease,
-    background 0.18s ease;
+  // "Вийти з акаунту" — нейтральна вторинна, але з червоним hover-натяком
+  // (дія оборотна, тож не повноцінний %button-danger)
+  @extend %button-secondary;
 
-  &:hover {
+  width: 100%;
+  font-size: 13px;
+
+  &:hover:not(:disabled) {
     border-color: #ef4444;
     color: #ef4444;
     background: rgba(239, 68, 68, 0.06);
@@ -2157,30 +2117,10 @@
 }
 
 .settings-delete-btn {
+  @extend %button-danger;
+
+  // специфіка розміру
   padding: 10px 20px;
-  background: transparent;
-  border: 1px solid #ef4444;
-  color: #ef4444;
-  border-radius: 10px;
-  font-size: 14px;
-  font-weight: 600;
-  font-family: inherit;
-  cursor: pointer;
-  transition:
-    background 0.18s ease,
-    color 0.18s ease;
-
-  &:hover {
-    background: #ef4444;
-    color: #fff;
-  }
-
-  &:disabled {
-    cursor: not-allowed;
-    opacity: 0.6;
-    background: transparent;
-    color: #ef4444;
-  }
 }
 
 /* ===============================================================
