@@ -34,7 +34,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   function t(key) {
-    return i18n[lang][key];
+    // норм. uk→ua (recipe-page вживає uk) + фолбек: lang → ua → сам ключ
+    const l = lang === 'uk' ? 'ua' : lang;
+    const dict = i18n[l] || i18n.ua;
+    return dict?.[key] ?? i18n.ua?.[key] ?? key;
   }
 
   // ================== STATE ==================
@@ -196,11 +199,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     const snapshot = JSON.parse(JSON.stringify(mealsState));
     const hasItems = Object.values(snapshot).some((arr) => arr.length > 0);
     if (!hasItems) {
-      showToast('Немає страв для копіювання', 'info');
+      showToast(t('copyNoMeals'), 'info');
       return;
     }
     setItem('copied_day', snapshot);
-    showToast('День скопійовано');
+    showToast(t('dayCopied'));
   }
 
   async function pasteDay() {
@@ -208,7 +211,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const saved = getItem('copied_day');
     if (!saved) {
-      showToast('Немає скопійованого дня', 'info');
+      showToast(t('noCopiedDay'), 'info');
       return;
     }
 
@@ -227,7 +230,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
     const { error: deleteError } = await deleteQuery;
     if (deleteError) {
-      showToast('Помилка вставки', 'error');
+      showToast(t('pasteError'), 'error');
       return;
     }
 
@@ -250,16 +253,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     if (rows.length === 0) {
-      showToast('Скопійований день порожній', 'info');
+      showToast(t('copiedDayEmpty'), 'info');
       return;
     }
 
     const { error: insertError } = await supabase.from('meals').insert(rows);
     if (!insertError) {
       await loadMealsFromSupabase(currentSelectedDate);
-      showToast('День вставлено');
+      showToast(t('dayPasted'));
     } else {
-      showToast('Помилка вставки', 'error');
+      showToast(t('pasteError'), 'error');
     }
   }
 
@@ -341,8 +344,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   // ================== DELETE CONFIRM ==================
   function openDeleteConfirm(mealKey, index) {
     showConfirmModal({
-      title: 'Точно видалити?',
-      confirmText: 'Так',
+      title: t('deleteConfirmTitle'),
+      confirmText: t('yes'),
       onConfirm: async () => {
         const itemToDelete = mealsState[mealKey][index];
         const {
@@ -397,7 +400,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const brandEl = scannedCard.querySelector('.scanned-card__brand');
     const clearBtn = scannedCard.querySelector('.scanned-card__clear');
 
-    const displayName = product.name_ua || product.name_en || product.name || 'Без назви';
+    const displayName = product.name_ua || product.name_en || product.name || t('noName');
 
     nameEl.textContent = displayName;
     brandEl.textContent = product.brand || '';
@@ -415,8 +418,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     const hintEl = scannedCard.querySelector('.scanned-card__hint');
     if (hintEl) {
       hintEl.textContent = product._hasPersonalCorrection
-        ? 'Ваші збережені значення · на 100 г · можна редагувати'
-        : 'На 100 г · можна редагувати';
+        ? t('savedValuesHint')
+        : t('per100Hint');
     }
 
     scannedCard.hidden = false;
@@ -720,7 +723,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (topProducts.length > 0) {
       const headerProducts = document.createElement('li');
       headerProducts.className = 'modal__group-header';
-      headerProducts.textContent = lang === 'ua' ? 'Продукти' : 'Products';
+      headerProducts.textContent = t('searchProducts');
       resultsList.appendChild(headerProducts);
 
       topProducts.forEach((food) => {
@@ -732,7 +735,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (topRecipes.length > 0) {
       const headerRecipes = document.createElement('li');
       headerRecipes.className = 'modal__group-header';
-      headerRecipes.textContent = lang === 'ua' ? 'Страви' : 'Dishes';
+      headerRecipes.textContent = t('searchDishes');
       resultsList.appendChild(headerRecipes);
 
       topRecipes.forEach((recipe) => {
@@ -746,7 +749,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       const emptyLi = document.createElement('li');
       emptyLi.className = 'modal__item modal__item--empty';
       emptyLi.innerHTML = `
-        <div>${lang === 'ua' ? 'Нічого не знайдено' : 'Nothing found'}</div>
+        <div>${t('nothingFound')}</div>
       `;
       resultsList.appendChild(emptyLi);
     }
@@ -755,7 +758,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const createBtn = document.createElement('li');
     createBtn.className = 'modal__item modal__item--create';
     createBtn.innerHTML = `
-      <span>${iconPlus} ${lang === 'ua' ? 'Створити свій продукт' : 'Create custom product'}</span>
+      <span>${iconPlus} ${t('createCustomProduct')}</span>
     `;
     createBtn.addEventListener('click', () => {
       openCreateProductModal(nameInput.value.trim());
@@ -774,17 +777,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     const isScanned = food._isScanned ? true : false;
 
     const scannedBadge = isScanned
-      ? ` <span class="modal__badge modal__badge--scanned" title="${lang === 'ua' ? 'Раніше відсканований продукт' : 'Previously scanned product'}">${iconBarcode}</span>`
+      ? ` <span class="modal__badge modal__badge--scanned" title="${t('scannedProductTitle')}">${iconBarcode}</span>`
       : '';
 
     // Продукт, який зазвичай готують, але інколи їдять сирим → позначка "(сире)".
     const rawHint = type === 'product' && food.raw_edible === 'sometimes'
-      ? ` <em class="modal__raw-hint">(${lang === 'ua' ? 'сире' : lang === 'pl' ? 'surowe' : 'raw'})</em>`
+      ? ` <em class="modal__raw-hint">(${t('rawHint')})</em>`
       : '';
 
     li.innerHTML = `
       <div>
-        <strong>${name}</strong>${rawHint}${isOwn ? ' <span class="modal__badge">Мій</span>' : ''}${scannedBadge}
+        <strong>${name}</strong>${rawHint}${isOwn ? ` <span class="modal__badge">${t('ownBadge')}</span>` : ''}${scannedBadge}
         <div style="font-size:12px; opacity:0.7;">
           ${kcal} ${t('kcal')} / ${t('per100')}
         </div>
@@ -926,7 +929,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const label_type = currentLabelType;
 
     if (!name) {
-      alert(lang === 'ua' ? 'Введіть назву продукту' : 'Enter product name');
+      alert(t('enterProductName'));
       return;
     }
 
@@ -948,7 +951,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       if (error) {
         console.error('Помилка збереження:', error);
-        alert(lang === 'ua' ? 'Помилка збереження' : 'Save error');
+        alert(t('saveError'));
         return;
       }
       savedProduct = { ...data, name: data.name_ua };
@@ -962,7 +965,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       if (error) {
         console.error('Помилка збереження:', error);
-        alert(lang === 'ua' ? 'Помилка збереження' : 'Save error');
+        alert(t('saveError'));
         return;
       }
       savedProduct = { ...data, name: data.name_ua };
@@ -1029,7 +1032,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (grams <= 0) return;
 
     const factor = grams / 100;
-    const gramsLabel = lang === 'ua' ? 'гр' : lang === 'pl' ? 'g' : 'g';
+    const gramsLabel = t('gramsLabel');
     const baseName = nameInput.value.trim() || selectedFood.name;
 
     const newItem = {
@@ -1182,8 +1185,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     clearMenuBtn.addEventListener('click', () => {
       closeActionsMenu();
       showConfirmModal({
-        title: 'Очистити весь день?',
-        confirmText: 'Так',
+        title: t('clearDayConfirmTitle'),
+        confirmText: t('yes'),
         onConfirm: clearDay,
       });
     });
