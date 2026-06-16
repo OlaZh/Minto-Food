@@ -1911,9 +1911,11 @@ function initSettings(user) {
 
   document.querySelectorAll('.settings-lang-btn').forEach((btn) => {
     btn.addEventListener('click', () => {
+      if (btn.dataset.lang === getLang()) return; // вже ця мова
       setLang(btn.dataset.lang);
-      syncLangBtns();
-      showToast('Мову збережено. Повний переклад профілю ще в роботі.', 'info');
+      // reload — як footer-перемикач: чисто перемальовує весь контент
+      // (статику через applyTranslations + динамічний JS-рендер профілю).
+      location.reload();
     });
   });
 
