@@ -239,27 +239,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
-  // Підтвердження очищення цілого прийому їжі
-  function openClearCellConfirm(day, mealType) {
-    showConfirmModal({
-      title: 'Очистити прийом їжі?',
-      confirmText: 'Так, очистити',
-      onConfirm: async () => {
-        const items = weekMealsState[day][mealType] || [];
-        const ids = items.map((item) => item.id);
-        if (ids.length > 0) {
-          const { error } = await supabase.from('week_meals').delete().in('id', ids);
-          if (!error) {
-            weekMealsState[day][mealType] = [];
-            renderCell(day, mealType);
-            renderDaySummary(day);
-            renderMobileView();
-          }
-        }
-      },
-    });
-  }
-
   function renderDaySummary(day) {
     const row = document.querySelector(`.week-grid__row[data-day="${day}"]`);
     if (!row) return;
