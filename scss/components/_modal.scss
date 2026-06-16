@@ -445,15 +445,18 @@
    MODAL-OVERLAY (RECIPES PAGE)
    =============================== */
 
+// Глобальний overlay системи B (recipe-modal, recipe-detail, shop-edit,
+// cookbook). Спільне ядро з %overlay (C2), але для ДОВГИХ модалок: замість
+// центрування — align:flex-start + padding + вертикальний scroll, щоб довгу
+// форму не обрізало. Показ поки через .is-active (JS цих модалок не чіпаємо;
+// перехід на .is-open — у C3, коли всі модалки готові). %overlay додає
+// .is-open-показ як бонус-синонім.
 .modal-overlay {
-  position: fixed;
-  inset: 0;
+  @extend %overlay;
   z-index: var(--z-modal-top);
 
-  display: none;
-  justify-content: center;
+  // override під довгі модалки (поверх center з %overlay)
   align-items: flex-start;
-
   padding: 20px;
   overflow-y: auto;
   scrollbar-width: thin;
@@ -470,26 +473,19 @@
     border-radius: 4px;
   }
 
-  background: rgba(0, 0, 0, 0.7);
-  backdrop-filter: blur(8px);
-
   &.is-active {
     display: flex;
   }
 }
 
 .modal-card {
-  position: relative;
-  width: 100%;
-  max-width: 460px;
-  height: auto;
+  @extend %modal-card;
 
+  // override під цю систему (поверх %modal-card) — зберігаємо точний вигляд:
+  height: auto;
   margin: 16px auto 24px;
   padding: 24px;
-
-  background: var(--color-surface);
-  border-radius: 18px;
-  box-shadow: 0 20px 50px rgba(46, 204, 113, 0.1);
+  box-shadow: 0 20px 50px rgba(46, 204, 113, 0.1); // зеленувата тінь (не нейтральна з %modal-card)
 
   &__close {
     position: absolute;
