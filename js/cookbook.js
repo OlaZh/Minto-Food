@@ -2,7 +2,7 @@
 // Логіка сторінки "Книга рецептів"
 import { initAuth, openAuthModal } from './auth.js';
 import { supabase } from './supabaseClient.js';
-import { showToast, escapeHTML } from './utils.js';
+import { showToast, escapeHTML, pluralUA } from './utils.js';
 import { BOOK_ICONS as _BOOK_ICONS, iconClose, iconCheck, iconEdit, iconChevronRight, iconPlate } from './icons.js';
 import { showConfirmModal } from './ui-components.js';
 import { lockScroll, unlockScroll } from './scroll-lock.js';
@@ -253,13 +253,6 @@ async function createBookElement(book) {
   const recipeCount = count || 0;
   const isDefault = book.is_default;
 
-  // Правильне відмінювання
-  function recipesLabel(n) {
-    if (n % 10 === 1 && n % 100 !== 11) return `${n} рецепт`;
-    if ([2, 3, 4].includes(n % 10) && ![12, 13, 14].includes(n % 100)) return `${n} рецепти`;
-    return `${n} рецептів`;
-  }
-
   const article = document.createElement('article');
   article.className = `cookbook-book${isDefault ? ' cookbook-book--main' : ''}`;
   article.dataset.bookId = book.id;
@@ -296,7 +289,7 @@ async function createBookElement(book) {
         ${isDefault ? '<span class="cookbook-book__default-badge">Головна</span>' : ''}
       </h3>
       <div class="cookbook-book__meta">
-        <span class="cookbook-book__count">${recipesLabel(recipeCount)}</span>
+        <span class="cookbook-book__count">${recipeCount} ${pluralUA(recipeCount, ['рецепт', 'рецепти', 'рецептів'])}</span>
         <div class="cookbook-book__arrow">
           ${iconChevronRight.replace('<svg ', '<svg width="14" height="14" ')}
         </div>

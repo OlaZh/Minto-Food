@@ -11,7 +11,7 @@ import {
   iconUser, iconSettings,
 } from './icons.js';
 import { initAuth, requireAuth, getCurrentUser, openAuthModal, signOut } from './auth.js';
-import { showToast } from './utils.js';
+import { showToast, pluralUA } from './utils.js';
 import {
   setTheme,
   getLang,
@@ -2008,15 +2008,6 @@ function initCaloriesInlineEdit() {
 // INIT
 // =====================================
 
-function getDayWord(n) {
-  const l2 = n % 100,
-    l1 = n % 10;
-  if (l2 >= 11 && l2 <= 14) return 'днів';
-  if (l1 === 1) return 'день';
-  if (l1 >= 2 && l1 <= 4) return 'дні';
-  return 'днів';
-}
-
 async function loadProfileStreak(userId) {
   const currentEl = document.getElementById('profileCurrentStreak');
   const longestEl = document.getElementById('profileLongestStreak');
@@ -2028,7 +2019,7 @@ async function loadProfileStreak(userId) {
     const s = data?.[0];
     if (s) {
       currentEl.textContent = s.current_streak;
-      if (wordEl) wordEl.textContent = getDayWord(s.current_streak) + ' поспіль';
+      if (wordEl) wordEl.textContent = pluralUA(s.current_streak, ['день', 'дні', 'днів']) + ' поспіль';
       if (longestEl) longestEl.textContent = s.longest_streak;
     }
   } catch {

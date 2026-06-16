@@ -199,27 +199,9 @@ export function convertToBaseUnit(amount, unit) {
   return { amount, unit };
 }
 
-/**
- * Форматувати кількість з одиницею (auto-конвертація назад)
- * @param {number} amount - Кількість у базових одиницях
- * @param {string} baseUnit - Базова одиниця (г, мл)
- * @returns {string} - Відформатована строка
- */
-export function formatAmount(amount, baseUnit) {
-  if (baseUnit === 'г' && amount >= 1000) {
-    return `${(amount / 1000).toFixed(1)} кг`;
-  }
-  if (baseUnit === 'мл' && amount >= 1000) {
-    return `${(amount / 1000).toFixed(1)} л`;
-  }
-  if (baseUnit === 'g' && amount >= 1000) {
-    return `${(amount / 1000).toFixed(1)} kg`;
-  }
-  if (baseUnit === 'ml' && amount >= 1000) {
-    return `${(amount / 1000).toFixed(1)} l`;
-  }
-  return `${Math.round(amount)} ${baseUnit}`;
-}
+// Примітка: formatAmount живе лише в parse-food.js (єдиний споживач —
+// add-recipe.js). Дубль-копія з utils була мертвим експортом (0 імпортів)
+// і видалена в межах F.
 
 // =============================================================
 // DEBOUNCE / THROTTLE
@@ -331,19 +313,25 @@ export function getCurrentLang() {
 }
 
 /**
- * Отримати локалізовану назву продукту/рецепту
- * @param {Object} item - Об'єкт з name_ua, name_en, name_pl
- * @param {string} lang - Код мови (опціонально)
- * @returns {string} - Локалізована назва
+ * Українська плюралізація: обирає форму слова за числом.
+ * @param {number} n - Число
+ * @param {[string, string, string]} forms - [одна, дві-чотири, п'ять+]
+ *        напр. ['страва','страви','страв'], ['день','дні','днів']
+ * @returns {string} - Правильна форма (без самого числа)
  */
-export function getLocalizedName(item, lang = null) {
-  const currentLang = lang || getCurrentLang();
-  if (!item) return '';
-
-  if (currentLang === 'pl' && item.name_pl) return item.name_pl;
-  if (currentLang === 'en' && item.name_en) return item.name_en;
-  return item.name_ua || item.name_en || item.name_pl || item.name || '';
+export function pluralUA(n, [one, few, many]) {
+  const lastTwo = n % 100;
+  const lastOne = n % 10;
+  if (lastTwo >= 11 && lastTwo <= 14) return many;
+  if (lastOne === 1) return one;
+  if (lastOne >= 2 && lastOne <= 4) return few;
+  return many;
 }
+
+// Примітка: локалізація назви рецепта живе в getRecipeDisplayName
+// (recipe-utils.js — споживачі: add-recipe, week-menu). Дубль-копія
+// getLocalizedName тут була мертвим експортом (0 імпортів) і видалена в
+// межах F. getCurrentLang лишено (тонка обгортка над getLang, E тримає).
 
 // =============================================================
 // UUID GENERATOR

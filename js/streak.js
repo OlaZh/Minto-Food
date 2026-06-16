@@ -8,6 +8,7 @@
 
 import { supabase } from './supabaseClient.js';
 import { iconGym, iconSprout, iconTrophy, iconStar } from './icons.js';
+import { pluralUA } from './utils.js';
 
 // ============================================================
 //  DOM ELEMENTS
@@ -20,23 +21,7 @@ const streakSubEl = streakCardEl?.querySelector('.streak-card__sub');
 const streakCountMobileEl = document.getElementById('streakCountMobile');
 const streakSubMobileEl   = document.getElementById('streakSubMobile');
 
-// ============================================================
-//  УКРАЇНСЬКА ПЛЮРАЛІЗАЦІЯ
-// ============================================================
-
-/**
- * Повертає правильну форму слова "день" для українського числа
- * 1 день, 2-4 дні, 5+ днів
- */
-function getDayWord(count) {
-  const lastTwo = count % 100;
-  const lastOne = count % 10;
-
-  if (lastTwo >= 11 && lastTwo <= 14) return 'днів';
-  if (lastOne === 1) return 'день';
-  if (lastOne >= 2 && lastOne <= 4) return 'дні';
-  return 'днів';
-}
+// den-форма: pluralUA(n, ['день','дні','днів'])
 
 // ============================================================
 //  МОТИВАЦІЙНІ ПОВІДОМЛЕННЯ
@@ -73,7 +58,7 @@ function updateStreakUI({ current_streak, longest_streak, is_active }) {
   // Оновлюємо текст "день поспіль" з правильною плюралізацією
   const countWrapper = streakCardEl.querySelector('.streak-card__count');
   if (countWrapper) {
-    countWrapper.innerHTML = `<span id="streakCount">${current_streak}</span> ${getDayWord(current_streak)} поспіль`;
+    countWrapper.innerHTML = `<span id="streakCount">${current_streak}</span> ${pluralUA(current_streak, ['день', 'дні', 'днів'])} поспіль`;
   }
 
   // Мотиваційне повідомлення
@@ -83,7 +68,7 @@ function updateStreakUI({ current_streak, longest_streak, is_active }) {
 
   // Mobile streak strip
   if (streakCountMobileEl) {
-    streakCountMobileEl.textContent = `${current_streak} ${getDayWord(current_streak)} поспіль`;
+    streakCountMobileEl.textContent = `${current_streak} ${pluralUA(current_streak, ['день', 'дні', 'днів'])} поспіль`;
   }
   if (streakSubMobileEl) {
     streakSubMobileEl.innerHTML = getMotivationalText(current_streak, is_active);

@@ -2,7 +2,7 @@
 import { i18n } from './i18n.js';
 import { initRecipeModal, openRecipeModal } from './recipe-modal.js';
 import { initAuth, requireAuth } from './auth.js';
-import { showToast, getLocalDateString } from './utils.js';
+import { showToast, getLocalDateString, pluralUA } from './utils.js';
 import { showLoading, showEmpty, showConfirmModal } from './ui-components.js';
 import { getLang, setLang, saveWeekShoppingList, setItem, getItem } from './storage.js';
 import { getRecipeDisplayName } from './recipe-utils.js';
@@ -989,7 +989,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const items = weekMealsState[day][mealType] || [];
         const count = items.length;
         const kcal = items.reduce((s, it) => s + (Number(it.kcal) || 0), 0);
-        const countWord = count === 1 ? 'страва' : count < 5 ? 'страви' : 'страв';
+        const countWord = pluralUA(count, ['страва', 'страви', 'страв']);
 
         const accordion = document.createElement('div');
         accordion.className = 'week-mobile__accordion';

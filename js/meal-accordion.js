@@ -4,6 +4,8 @@
 //  у згорнутому стані (кількість страв · ккал)
 // ============================================================
 
+import { pluralUA } from './utils.js';
+
 document.addEventListener('DOMContentLoaded', () => {
   const meals = document.querySelectorAll('.meal');
 
@@ -44,16 +46,6 @@ document.addEventListener('DOMContentLoaded', () => {
 // ============================================================
 //  УКРАЇНСЬКА ПЛЮРАЛІЗАЦІЯ
 // ============================================================
-
-function getDishWord(count) {
-  const lastTwo = count % 100;
-  const lastOne = count % 10;
-
-  if (lastTwo >= 11 && lastTwo <= 14) return 'страв';
-  if (lastOne === 1) return 'страва';
-  if (lastOne >= 2 && lastOne <= 4) return 'страви';
-  return 'страв';
-}
 
 // ============================================================
 //  ПІДРАХУНОК ССУМИ КАЛОРІЙ ДЛЯ MEAL
@@ -97,7 +89,7 @@ function updateMealSummary(meal, list) {
   }
 
   const totalKcal = calculateMealKcal(list);
-  const dishWord = getDishWord(itemsCount);
+  const dishWord = pluralUA(itemsCount, ['страва', 'страви', 'страв']);
 
   summaryEl.innerHTML = `
     <span class="meal__summary-count">${itemsCount} ${dishWord}</span>
