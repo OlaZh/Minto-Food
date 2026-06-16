@@ -454,9 +454,38 @@
 // МОДАЛКА СКАРГИ
 // =============================================================
 
+// Контейнер-overlay репорт-модалки: коротка модалка → центруємо (%overlay),
+// ізольовано від глобального .modal-overlay (той align:flex-start+scroll для
+// довгих модалок). Показ через .is-open (новий контракт C4/C3).
+.report-overlay {
+  @extend %overlay;
+  z-index: var(--z-modal-top);
+}
+
 .report-modal {
+  @extend %modal-card;
+
   max-width: 420px;
   width: 90%;
+  margin: 16px auto 24px;
+  padding: 24px;
+
+  &__close {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+
+    background: none;
+    border: none;
+
+    font-size: 28px;
+    color: var(--color-text-secondary);
+    cursor: pointer;
+
+    &:hover {
+      color: var(--color-accent);
+    }
+  }
 
   &__header {
     text-align: center;

@@ -473,10 +473,10 @@ export function openReportModal(recipeId, recipeName = '') {
   if (!modal) {
     modal = document.createElement('div');
     modal.id = 'report-recipe-modal';
-    modal.className = 'modal-overlay';
+    modal.className = 'report-overlay';
     modal.innerHTML = `
-      <div class="modal-card report-modal">
-        <button class="modal-card__close" id="report-modal-close">&times;</button>
+      <div class="report-modal">
+        <button class="report-modal__close" id="report-modal-close">&times;</button>
         
         <div class="report-modal__header">
           <h3>${iconFlag} Поскаржитись на рецепт</h3>
@@ -544,14 +544,14 @@ export function openReportModal(recipeId, recipeName = '') {
     }
   };
 
-  modal.classList.add('is-active');
+  modal.classList.add('is-open');
   lockScroll('report-modal');
 }
 
 function closeReportModal() {
   const modal = document.getElementById('report-recipe-modal');
   if (modal) {
-    modal.classList.remove('is-active');
+    modal.classList.remove('is-open');
     unlockScroll('report-modal');
   }
 }
