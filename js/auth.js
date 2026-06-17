@@ -67,6 +67,11 @@ export async function initAuth(onAuthChange = null) {
     initAuthModal();
   }
 
+  // Відновлюємо клікабельний гостьовий CTA одразу, не чекаючи getSession().
+  if (!currentUser) {
+    updateAuthUI();
+  }
+
   // Слухаємо зміни стану авторизації
   supabase.auth.onAuthStateChange(async (event, session) => {
     currentUser = session?.user || null;
