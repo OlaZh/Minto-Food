@@ -490,9 +490,10 @@ async function initStatisticsCharts() {
 
   // ─── Легенда макро ───────────────────────────────────────
   const { protein: tp, fat: tf, carbs: tc } = thisTotals;
-  setEl('legendProtein', Math.round(tp) + ' г');
-  setEl('legendFat', Math.round(tf) + ' г');
-  setEl('legendCarbs', Math.round(tc) + ' г');
+  const gUnit = ' ' + t('gramsLabel');
+  setEl('legendProtein', Math.round(tp) + gUnit);
+  setEl('legendFat', Math.round(tf) + gUnit);
+  setEl('legendCarbs', Math.round(tc) + gUnit);
 
   // ─── Дельта порівняння ───────────────────────────────────
   const thisTotal = thisTotals.kcal;
@@ -1193,46 +1194,50 @@ function generateWeightAdvice() {
   let progressHTML = '';
 
   // ІМТ статус
+  const bmiLabel = t('bmiYour').replace('{bmi}', bmi);
+  const idealRange = (key) => t(key).replace('{min}', idealWeightMin).replace('{max}', idealWeightMax);
   if (bmi < 18.5) {
-    adviceHTML += `<div class="advice-item advice-item--info"><span class="advice-icon">${iconBarChart}</span><div class="advice-text"><strong>Ваш ІМТ: ${bmi}</strong> — недостатня вага. Рекомендована вага: ${idealWeightMin}–${idealWeightMax} кг.</div></div>`;
+    adviceHTML += `<div class="advice-item advice-item--info"><span class="advice-icon">${iconBarChart}</span><div class="advice-text"><strong>${bmiLabel}</strong> ${idealRange('adviceUnder')}</div></div>`;
   } else if (bmi >= 18.5 && bmi < 25) {
-    adviceHTML += `<div class="advice-item advice-item--success"><span class="advice-icon">${iconCheckCircle}</span><div class="advice-text"><strong>Ваш ІМТ: ${bmi}</strong> — вага в нормі! Чудово!</div></div>`;
+    adviceHTML += `<div class="advice-item advice-item--success"><span class="advice-icon">${iconCheckCircle}</span><div class="advice-text"><strong>${bmiLabel}</strong> ${t('adviceNormal')}</div></div>`;
   } else if (bmi >= 25 && bmi < 30) {
-    adviceHTML += `<div class="advice-item advice-item--warning"><span class="advice-icon">${iconAlert}</span><div class="advice-text"><strong>Ваш ІМТ: ${bmi}</strong> — надмірна вага. Рекомендована: ${idealWeightMin}–${idealWeightMax} кг.</div></div>`;
+    adviceHTML += `<div class="advice-item advice-item--warning"><span class="advice-icon">${iconAlert}</span><div class="advice-text"><strong>${bmiLabel}</strong> ${idealRange('adviceOver')}</div></div>`;
   } else if (bmi >= 30) {
-    adviceHTML += `<div class="advice-item advice-item--alert"><span class="advice-icon">${iconXCircle}</span><div class="advice-text"><strong>Ваш ІМТ: ${bmi}</strong> — ожиріння. Рекомендуємо консультацію лікаря.</div></div>`;
+    adviceHTML += `<div class="advice-item advice-item--alert"><span class="advice-icon">${iconXCircle}</span><div class="advice-text"><strong>${bmiLabel}</strong> ${t('adviceObese')}</div></div>`;
   }
 
   // Поради по цілі
   if (goal === 'lose') {
-    adviceHTML += `<div class="advice-item"><span class="advice-icon">${iconSalad}</span><div class="advice-text"><strong>Ціль — схуднути.</strong> Дефіцит 300-500 ккал/день = 0.5-1 кг/тиждень.</div></div>`;
-    adviceHTML += `<div class="advice-item"><span class="advice-icon">${iconWalk}</span><div class="advice-text">30 хвилин ходьби = 150-200 ккал додатково.</div></div>`;
+    adviceHTML += `<div class="advice-item"><span class="advice-icon">${iconSalad}</span><div class="advice-text"><strong>${t('goalLoseTitle')}</strong> ${t('goalLoseTip')}</div></div>`;
+    adviceHTML += `<div class="advice-item"><span class="advice-icon">${iconWalk}</span><div class="advice-text">${t('goalWalkTip')}</div></div>`;
   } else if (goal === 'gain') {
-    adviceHTML += `<div class="advice-item"><span class="advice-icon">${iconFlame}</span><div class="advice-text"><strong>Ціль — набрати.</strong> +300-500 ккал, акцент на білок.</div></div>`;
+    adviceHTML += `<div class="advice-item"><span class="advice-icon">${iconFlame}</span><div class="advice-text"><strong>${t('goalGainTitle')}</strong> ${t('goalGainTip')}</div></div>`;
   } else {
-    adviceHTML += `<div class="advice-item"><span class="advice-icon">${iconScale}</span><div class="advice-text"><strong>Ціль — підтримка.</strong> Дотримуйтесь норми калорій.</div></div>`;
+    adviceHTML += `<div class="advice-item"><span class="advice-icon">${iconScale}</span><div class="advice-text"><strong>${t('goalMaintainTitle')}</strong> ${t('goalMaintainTip')}</div></div>`;
   }
 
   // Прогрес
   if (targetWeight > 0 && weight > 0) {
     const diff = Math.abs(weightDiff);
-    const direction = weightDiff > 0 ? 'скинути' : 'набрати';
+    const direction = weightDiff > 0 ? t('goalLoseVerb') : t('goalGainVerb');
     const startWeight = parseFloat(localStorage.getItem('startWeight') || weight);
     const totalToLose = Math.abs(startWeight - targetWeight);
     const alreadyLost = Math.abs(startWeight - weight);
     const progressPercent =
       totalToLose > 0 ? Math.min(100, Math.round((alreadyLost / totalToLose) * 100)) : 0;
 
+    const weeksStr = `${Math.ceil(diff / 0.5)} ${t('progWeeks')}`;
+    const kg = t('kgUnit');
     progressHTML = `
       <div class="progress-status">
-        <div class="progress-header"><span>Поточна: <strong>${weight} кг</strong></span><span>Ціль: <strong>${targetWeight} кг</strong></span></div>
+        <div class="progress-header"><span>${t('progCurrent')} <strong>${weight} ${kg}</strong></span><span>${t('progGoal')} <strong>${targetWeight} ${kg}</strong></span></div>
         <div class="progress-bar-container"><div class="progress-bar" style="width: ${progressPercent}%"></div></div>
-        <div class="progress-footer"><span>Залишилось ${direction}: <strong>${diff} кг</strong></span><span class="progress-percent">${progressPercent}%</span></div>
+        <div class="progress-footer"><span>${t('progRemaining').replace('{dir}', direction)} <strong>${diff} ${kg}</strong></span><span class="progress-percent">${progressPercent}%</span></div>
       </div>
-      <div class="progress-estimate"><span class="progress-icon">${iconCalendar}</span><div class="progress-text">При 0.5 кг/тиждень — ціль за <strong>${Math.ceil(diff / 0.5)} тижнів</strong>.</div></div>
+      <div class="progress-estimate"><span class="progress-icon">${iconCalendar}</span><div class="progress-text">${t('progEstimate').replace('{weeks}', weeksStr)}</div></div>
     `;
   } else {
-    progressHTML = `<div class="progress-status progress-status--empty"><span class="progress-icon">${iconTarget}</span><div class="progress-text">Встановіть бажану вагу для відстеження прогресу.</div></div>`;
+    progressHTML = `<div class="progress-status progress-status--empty"><span class="progress-icon">${iconTarget}</span><div class="progress-text">${t('progSetGoal')}</div></div>`;
   }
 
   adviceContainer.innerHTML = adviceHTML;
@@ -1382,7 +1387,7 @@ function updateCaloriesPreview() {
     previewEl.textContent = `${totalCalories} ккал`;
     previewEl.classList.add('has-value');
   } else {
-    previewEl.textContent = '— ккал';
+    previewEl.textContent = '— ' + t('kcalShort');
     previewEl.classList.remove('has-value');
   }
 }
@@ -1407,7 +1412,7 @@ function setupActivityForm() {
     // Виправлено: використовуємо ACTIVITIES
     const activityData = ACTIVITIES[activityType];
     const caloriesPerMin = activityData ? activityData.caloriesPerMinute : 5;
-    const activityLabel = activityData ? activityData.label : 'Активність';
+    const activityLabel = activityData ? activityData.label : t('activityLabel');
     const activityIcon  = activityData ? activityData.icon  : '';
     const caloriesBurned = Math.round(caloriesPerMin * duration);
 
@@ -1495,9 +1500,10 @@ function updateCalorieImpact(burnedCalories) {
   const burnedEl = document.getElementById('impactBurnedCalories');
   const totalEl = document.getElementById('impactTotalCalories');
 
-  if (baseEl) baseEl.textContent = baseCalories ? `${baseCalories} ккал` : '—';
-  if (burnedEl) burnedEl.textContent = `${burnedCalories} ккал`;
-  if (totalEl) totalEl.textContent = baseCalories ? `${totalCalories} ккал` : '—';
+  const kc = t('kcalShort');
+  if (baseEl) baseEl.textContent = baseCalories ? `${baseCalories} ${kc}` : '—';
+  if (burnedEl) burnedEl.textContent = `${burnedCalories} ${kc}`;
+  if (totalEl) totalEl.textContent = baseCalories ? `${totalCalories} ${kc}` : '—';
 }
 
 function setupPeriodFilter() {

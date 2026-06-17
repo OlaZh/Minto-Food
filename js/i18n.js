@@ -279,6 +279,19 @@ export const i18n = {
     weightLabel: 'Вага', timesLabel: 'Разів',
     userDefault: 'Користувач', goalLoseVerb: 'скинути', goalGainVerb: 'набрати',
     nickOnlyChars: 'Тільки літери, цифри, пробіл, . - _', nickChecking: 'Перевіряємо…', nickSaving: 'Збереження…', nickTaken: 'Це ім\'я вже зайняте, спробуй інше',
+    // Поради по вазі (weight-advice) — {bmi}/{min}/{max} замінюються в коді
+    bmiYour: 'Ваш ІМТ: {bmi}',
+    adviceUnder: '— недостатня вага. Рекомендована вага: {min}–{max} кг.',
+    adviceNormal: '— вага в нормі! Чудово!',
+    adviceOver: '— надмірна вага. Рекомендована: {min}–{max} кг.',
+    adviceObese: '— ожиріння. Рекомендуємо консультацію лікаря.',
+    goalLoseTitle: 'Ціль — схуднути.', goalLoseTip: 'Дефіцит 300-500 ккал/день = 0.5-1 кг/тиждень.',
+    goalWalkTip: '30 хвилин ходьби = 150-200 ккал додатково.',
+    goalGainTitle: 'Ціль — набрати.', goalGainTip: '+300-500 ккал, акцент на білок.',
+    goalMaintainTitle: 'Ціль — підтримка.', goalMaintainTip: 'Дотримуйтесь норми калорій.',
+    progCurrent: 'Поточна:', progGoal: 'Ціль:', progRemaining: 'Залишилось {dir}:',
+    progEstimate: 'При 0.5 кг/тиждень — ціль за {weeks}.', progWeeks: 'тижнів',
+    progSetGoal: 'Встановіть бажану вагу для відстеження прогресу.', kgUnit: 'кг',
   },
   pl: {
     // Прийоми їжі
@@ -560,6 +573,19 @@ export const i18n = {
     weightLabel: 'Waga', timesLabel: 'Razy',
     userDefault: 'Użytkownik', goalLoseVerb: 'schudnąć', goalGainVerb: 'przytyć',
     nickOnlyChars: 'Tylko litery, cyfry, spacja, . - _', nickChecking: 'Sprawdzamy…', nickSaving: 'Zapisywanie…', nickTaken: 'Ta nazwa jest już zajęta, spróbuj innej',
+    // Porady wagowe (weight-advice)
+    bmiYour: 'Twoje BMI: {bmi}',
+    adviceUnder: '— niedowaga. Zalecana waga: {min}–{max} kg.',
+    adviceNormal: '— waga w normie! Świetnie!',
+    adviceOver: '— nadwaga. Zalecana: {min}–{max} kg.',
+    adviceObese: '— otyłość. Zalecamy konsultację z lekarzem.',
+    goalLoseTitle: 'Cel — schudnąć.', goalLoseTip: 'Deficyt 300-500 kcal/dzień = 0.5-1 kg/tydzień.',
+    goalWalkTip: '30 minut chodzenia = 150-200 kcal dodatkowo.',
+    goalGainTitle: 'Cel — przytyć.', goalGainTip: '+300-500 kcal, nacisk na białko.',
+    goalMaintainTitle: 'Cel — utrzymanie.', goalMaintainTip: 'Trzymaj się normy kalorii.',
+    progCurrent: 'Obecna:', progGoal: 'Cel:', progRemaining: 'Pozostało {dir}:',
+    progEstimate: 'Przy 0.5 kg/tydzień — cel za {weeks}.', progWeeks: 'tygodni',
+    progSetGoal: 'Ustaw docelową wagę, aby śledzić postęp.', kgUnit: 'kg',
   },
   en: {
     // Прийоми їжі
@@ -841,5 +867,18 @@ export const i18n = {
     weightLabel: 'Weight', timesLabel: 'Times',
     userDefault: 'User', goalLoseVerb: 'lose', goalGainVerb: 'gain',
     nickOnlyChars: 'Only letters, digits, space, . - _', nickChecking: 'Checking…', nickSaving: 'Saving…', nickTaken: 'This name is already taken, try another',
+    // Weight advice
+    bmiYour: 'Your BMI: {bmi}',
+    adviceUnder: '— underweight. Recommended weight: {min}–{max} kg.',
+    adviceNormal: '— weight is normal! Great!',
+    adviceOver: '— overweight. Recommended: {min}–{max} kg.',
+    adviceObese: '— obese. We recommend consulting a doctor.',
+    goalLoseTitle: 'Goal — lose weight.', goalLoseTip: 'Deficit 300-500 kcal/day = 0.5-1 kg/week.',
+    goalWalkTip: '30 minutes of walking = 150-200 kcal extra.',
+    goalGainTitle: 'Goal — gain weight.', goalGainTip: '+300-500 kcal, focus on protein.',
+    goalMaintainTitle: 'Goal — maintain.', goalMaintainTip: 'Stick to your calorie norm.',
+    progCurrent: 'Current:', progGoal: 'Goal:', progRemaining: 'Remaining to {dir}:',
+    progEstimate: 'At 0.5 kg/week — goal in {weeks}.', progWeeks: 'weeks',
+    progSetGoal: 'Set a target weight to track progress.', kgUnit: 'kg',
   },
 };
