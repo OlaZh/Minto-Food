@@ -12,6 +12,7 @@ import {
 } from './icons.js';
 import { initAuth, requireAuth, getCurrentUser, openAuthModal, signOut } from './auth.js';
 import { showToast, pluralUA } from './utils.js';
+import { t } from './i18n-apply.js';
 import {
   setTheme,
   getLang,
@@ -50,25 +51,27 @@ const recordWeightBtn = document.getElementById('saveWeightBtn');
 // =====================================
 
 // Виправлено: об'єкт активностей з name та caloriesPerMinute
+// label через t() — обчислюється раз при завантаженні модуля; перемикач
+// мови робить location.reload(), тож мова фіксована на момент load.
 const ACTIVITIES = {
-  walking:    { icon: iconWalk,       label: 'Ходьба',             caloriesPerMinute: 4 },
-  running:    { icon: iconRun,        label: 'Біг',                caloriesPerMinute: 10 },
-  cycling:    { icon: iconBike,       label: 'Велосипед',          caloriesPerMinute: 8 },
-  swimming:   { icon: iconSwim,       label: 'Плавання',           caloriesPerMinute: 9 },
-  yoga:       { icon: iconYoga,       label: 'Йога',               caloriesPerMinute: 3 },
-  fitness:    { icon: iconGym,        label: 'Фітнес',             caloriesPerMinute: 7 },
-  dancing:    { icon: iconDance,      label: 'Танці',              caloriesPerMinute: 6 },
-  hiking:     { icon: iconHike,       label: 'Похід',              caloriesPerMinute: 6 },
-  tennis:     { icon: iconTennis,     label: 'Теніс',              caloriesPerMinute: 8 },
-  basketball: { icon: iconBall,       label: 'Баскетбол',          caloriesPerMinute: 9 },
-  football:   { icon: iconBall,       label: 'Футбол',             caloriesPerMinute: 9 },
-  stretching: { icon: iconStretch,    label: 'Розтяжка',           caloriesPerMinute: 2 },
-  cleaning:   { icon: iconGym,        label: 'Прибирання',         caloriesPerMinute: 3 },
-  gardening:  { icon: iconGarden,     label: 'Садівництво',        caloriesPerMinute: 4 },
-  gym:        { icon: iconGym,        label: 'Тренування в залі',  caloriesPerMinute: 7 },
-  pilates:    { icon: iconYoga,       label: 'Пілатес',            caloriesPerMinute: 3 },
-  elliptical: { icon: iconElliptical, label: 'Орбітрек',           caloriesPerMinute: 7 },
-  other:      { icon: iconPlus,       label: 'Інша активність',    caloriesPerMinute: 5 },
+  walking:    { icon: iconWalk,       label: t('actWalking'),    caloriesPerMinute: 4 },
+  running:    { icon: iconRun,        label: t('actRunning'),    caloriesPerMinute: 10 },
+  cycling:    { icon: iconBike,       label: t('actCycling'),    caloriesPerMinute: 8 },
+  swimming:   { icon: iconSwim,       label: t('actSwimming'),   caloriesPerMinute: 9 },
+  yoga:       { icon: iconYoga,       label: t('actYoga'),       caloriesPerMinute: 3 },
+  fitness:    { icon: iconGym,        label: t('actFitness'),    caloriesPerMinute: 7 },
+  dancing:    { icon: iconDance,      label: t('actDancing'),    caloriesPerMinute: 6 },
+  hiking:     { icon: iconHike,       label: t('actHiking'),     caloriesPerMinute: 6 },
+  tennis:     { icon: iconTennis,     label: t('actTennis'),     caloriesPerMinute: 8 },
+  basketball: { icon: iconBall,       label: t('actBasketball'), caloriesPerMinute: 9 },
+  football:   { icon: iconBall,       label: t('actFootball'),   caloriesPerMinute: 9 },
+  stretching: { icon: iconStretch,    label: t('actStretching'), caloriesPerMinute: 2 },
+  cleaning:   { icon: iconGym,        label: t('actCleaning'),   caloriesPerMinute: 3 },
+  gardening:  { icon: iconGarden,     label: t('actGardening'),  caloriesPerMinute: 4 },
+  gym:        { icon: iconGym,        label: t('actGym'),        caloriesPerMinute: 7 },
+  pilates:    { icon: iconYoga,       label: t('actPilates'),    caloriesPerMinute: 3 },
+  elliptical: { icon: iconElliptical, label: t('actElliptical'), caloriesPerMinute: 7 },
+  other:      { icon: iconPlus,       label: t('actOther'),      caloriesPerMinute: 5 },
 };
 
 // =====================================
@@ -219,7 +222,7 @@ function buildWeightChart(canvasId, history, chartRef) {
   const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
 
   const chart = new ApexCharts(container, {
-    series: [{ name: 'Вага', data: weights }],
+    series: [{ name: t('weightLabel'), data: weights }],
     chart: {
       type: 'area',
       height: 220,
@@ -251,7 +254,7 @@ function buildWeightChart(canvasId, history, chartRef) {
     grid: { borderColor: 'rgba(156,163,175,0.12)', strokeDashArray: 3 },
     markers: { size: 4, colors: ['#4ab584'], strokeColors: '#fff', strokeWidth: 2 },
     tooltip: { theme: isDark ? 'dark' : 'light', y: { formatter: (v) => v + ' кг' } },
-    noData: { text: 'Немає даних', style: { color: '#9ca3af', fontSize: '14px' } },
+    noData: { text: t('noData'), style: { color: '#9ca3af', fontSize: '14px' } },
   });
   chart.render();
   return chart;
@@ -283,19 +286,19 @@ async function recordNewWeight() {
 
   const weight = parseFloat(weightNowInput.value.replace(',', '.'));
   if (isNaN(weight) || weight < 20 || weight > 400) {
-    showToast('Введіть коректну вагу', 'error');
+    showToast(t('weightInvalid'), 'error');
     return;
   }
 
   const user = await getCurrentUser();
   if (!user) {
-    showToast('Увійдіть в акаунт', 'error');
+    showToast(t('signInRequired'), 'error');
     return;
   }
 
   const ok = await saveWeightToSupabase(user.id, weight);
   if (!ok) {
-    showToast('Помилка збереження', 'error');
+    showToast(t('saveError'), 'error');
     return;
   }
 
@@ -409,10 +412,12 @@ async function initStatisticsCharts() {
   // ─── Калорії по днях (останні 7 днів) ────────────────────
   const dayLabels = [];
   const dayKcal = [];
-  const DAY_UA = ['Нд', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'];
+  const DAY_NAMES = [
+    t('daySun'), t('dayMon'), t('dayTue'), t('dayWed'), t('dayThu'), t('dayFri'), t('daySat'),
+  ];
   for (let i = 6; i >= 0; i--) {
     const d = new Date(today.getFullYear(), today.getMonth(), today.getDate() - i);
-    dayLabels.push(DAY_UA[d.getDay()]);
+    dayLabels.push(DAY_NAMES[d.getDay()]);
     const dateStr = fmt(d);
     const dayTotal = rows
       .filter((r) => r.date === dateStr)
@@ -422,10 +427,10 @@ async function initStatisticsCharts() {
 
   // ─── Прийоми їжі по типах (цей тиждень) ─────────────────
   const mealTypeLabels = {
-    breakfast: 'Сніданок',
-    lunch: 'Обід',
-    dinner: 'Вечеря',
-    snack: 'Перекус',
+    breakfast: t('breakfast'),
+    lunch: t('lunch'),
+    dinner: t('dinner'),
+    snack: t('snack'),
   };
   const mealTypeCounts = { breakfast: 0, lunch: 0, dinner: 0, snack: 0 };
   thisWeek.forEach((r) => {
@@ -454,7 +459,7 @@ async function initStatisticsCharts() {
   if (topsListEl) {
     if (mealsError) {
       topsListEl.innerHTML =
-        '<li class="stats-tops__empty">Не вдалося завантажити топи тижня. Спробуй оновити сторінку трохи пізніше.</li>';
+        `<li class="stats-tops__empty">${t('topsLoadError')}</li>`;
     } else if (topDishes.length > 0) {
       topsListEl.innerHTML = topDishes
         .map((d, i) => {
@@ -479,7 +484,7 @@ async function initStatisticsCharts() {
         .join('');
     } else {
       topsListEl.innerHTML =
-        '<li class="stats-tops__empty">Залогуй страви за тиждень — тут зʼявляться твої топи</li>';
+        `<li class="stats-tops__empty">${t('topsEmpty')}</li>`;
     }
   }
 
@@ -522,20 +527,20 @@ async function initStatisticsCharts() {
       const protPct = tp2 / macroTotal;
       const fatPct = tf2 / macroTotal;
       if (protPct >= 0.25 && fatPct <= 0.35)
-        tips.push({ title: 'Чудовий баланс БЖВ цього тижня', sub: 'Білки, жири та вуглеводи у здоровому співвідношенні' });
+        tips.push({ title: t('tipBalanceTitle'), sub: t('tipBalanceSub') });
       if (protPct < 0.2)
-        tips.push({ title: 'Додай більше білкових страв', sub: 'Їх частка менше 20% — спробуй м\'ясо, яйця, бобові' });
+        tips.push({ title: t('tipProteinTitle'), sub: t('tipProteinSub') });
       if (fatPct > 0.4)
-        tips.push({ title: 'Жири займають понад 40%', sub: 'Спробуй легші вечері або менше олії' });
+        tips.push({ title: t('tipFatTitle'), sub: t('tipFatSub') });
     }
     const avgKcal = thisWeekDaysLogged > 0 ? tk2 / thisWeekDaysLogged : 0;
     if (avgKcal > 0 && avgKcal < 1200)
-      tips.push({ title: 'Калорійність дуже низька', sub: 'Середнє ' + Math.round(avgKcal) + ' ккал/день — стеж за нормою' });
+      tips.push({ title: t('tipKcalTitle'), sub: t('tipKcalSubA') + Math.round(avgKcal) + t('tipKcalSubB') });
     if (thisWeekDaysLogged >= 4 && mealTypeCounts.dinner < 3)
-      tips.push({ title: 'Додайте овочі до вечері', sub: 'Це підвищить кількість клітковини' });
-    tips.push({ title: 'Пийте достатньо води протягом дня', sub: 'Ваша норма — ' + getWaterNorm().toFixed(1) + ' л на день' });
+      tips.push({ title: t('tipVegTitle'), sub: t('tipVegSub') });
+    tips.push({ title: t('tipWaterTitle'), sub: t('tipWaterSubA') + getWaterNorm().toFixed(1) + t('tipWaterSubB') });
     if (!tips.length) {
-      tips.push({ title: 'Тиждень виглядає рівно', sub: 'Продовжуй логувати страви — так рекомендації стануть точнішими' });
+      tips.push({ title: t('tipEvenTitle'), sub: t('tipEvenSub') });
     }
 
     const iconSvg = `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="m9 12 2 2 4-4"/></svg>`;
@@ -547,14 +552,14 @@ async function initStatisticsCharts() {
       .join('');
   } else if (tipsList) {
     const iconSvg = `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4m0 4h.01"/></svg>`;
-    tipsList.innerHTML = `<li class="stats-tips__item"><span class="stats-tips__icon">${iconSvg}</span><span class="stats-tips__text">Залогуй страви за тиждень — з'являться рекомендації</span></li>`;
+    tipsList.innerHTML = `<li class="stats-tips__item"><span class="stats-tips__icon">${iconSvg}</span><span class="stats-tips__text">${t('tipEmptyState')}</span></li>`;
   }
 
   const COLORS = ['#6fcfba', '#f5a623', '#7b9cda'];
-  const LABELS = ['Білки', 'Жири', 'Вуглеводи'];
+  const LABELS = [t('proteins'), t('fats'), t('carbsFull')];
   const APEX_GRID = { borderColor: 'rgba(156,163,175,0.08)', strokeDashArray: 4 };
   const APEX_TEXT = { colors: '#9ca3af', fontSize: '11px', fontFamily: 'inherit' };
-  const NO_DATA = { text: 'Немає даних', style: { color: '#9ca3af', fontSize: '14px' } };
+  const NO_DATA = { text: t('noData'), style: { color: '#9ca3af', fontSize: '14px' } };
 
   // Колір зазорів = фон картки (світла/темна тема)
   const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
@@ -629,7 +634,7 @@ async function initStatisticsCharts() {
               },
               total: {
                 show: true,
-                label: totalLabel || 'БЖВ',
+                label: totalLabel || t('pfcShort'),
                 color: LABEL_COLOR,
                 fontSize: big ? '13px' : '11px',
                 fontWeight: '600',
@@ -790,9 +795,9 @@ async function initStatisticsCharts() {
   if (balanceEl) {
     const { protein: p, fat: f, carbs: c } = thisTotals;
     if (p + f + c > 0) {
-      renderSvgDonut(balanceEl, [Math.round(p), Math.round(f), Math.round(c)], 260, 'БЖВ');
+      renderSvgDonut(balanceEl, [Math.round(p), Math.round(f), Math.round(c)], 260, t('pfcShort'));
     } else {
-      renderStatsEmptyState(balanceEl, mealsError ? 'Не вдалося завантажити баланс БЖВ' : 'Немає даних за цей тиждень');
+      renderStatsEmptyState(balanceEl, mealsError ? t('balanceLoadError') : t('noDataThisWeek'));
     }
   }
 
@@ -800,7 +805,7 @@ async function initStatisticsCharts() {
   const kbjuEl = document.getElementById('kbjuLineChart');
   if (kbjuEl) {
     statisticsCharts.kbjuLineChart = new ApexCharts(kbjuEl, {
-      series: hasStatisticsData ? [{ name: 'Калорії', data: dayKcal }] : [],
+      series: hasStatisticsData ? [{ name: t('caloriesFull'), data: dayKcal }] : [],
       chart: {
         type: 'area',
         height: 260,
@@ -864,7 +869,7 @@ async function initStatisticsCharts() {
     const counts = Object.values(mealTypeCounts);
     const maxCount = Math.max(...counts, 1);
     statisticsCharts.usefulnessBarChart = new ApexCharts(usefulnessEl, {
-      series: hasThisWeekData ? [{ name: 'Разів', data: counts }] : [],
+      series: hasThisWeekData ? [{ name: t('timesLabel'), data: counts }] : [],
       chart: {
         type: 'bar',
         height: 260,
@@ -928,9 +933,9 @@ async function initStatisticsCharts() {
   if (lastWeekEl) {
     const { protein: p, fat: f, carbs: c } = lastTotals;
     if (p + f + c > 0) {
-      renderSvgDonut(lastWeekEl, [Math.round(p), Math.round(f), Math.round(c)], 190, 'БЖВ');
+      renderSvgDonut(lastWeekEl, [Math.round(p), Math.round(f), Math.round(c)], 190, t('pfcShort'));
     } else {
-      renderStatsEmptyState(lastWeekEl, mealsError ? 'Помилка завантаження' : 'Немає даних', true);
+      renderStatsEmptyState(lastWeekEl, mealsError ? t('loadError') : t('noData'), true);
     }
   }
 
@@ -938,9 +943,9 @@ async function initStatisticsCharts() {
   if (thisWeekEl) {
     const { protein: p, fat: f, carbs: c } = thisTotals;
     if (p + f + c > 0) {
-      renderSvgDonut(thisWeekEl, [Math.round(p), Math.round(f), Math.round(c)], 190, 'БЖВ');
+      renderSvgDonut(thisWeekEl, [Math.round(p), Math.round(f), Math.round(c)], 190, t('pfcShort'));
     } else {
-      renderStatsEmptyState(thisWeekEl, mealsError ? 'Помилка завантаження' : 'Немає даних', true);
+      renderStatsEmptyState(thisWeekEl, mealsError ? t('loadError') : t('noData'), true);
     }
   }
 }
@@ -967,12 +972,12 @@ function updateBMI(weight, height) {
   if (bmiStatusEl) {
     bmiStatusEl.textContent =
       bmi < 18.5
-        ? 'Недостатня вага'
+        ? t('bmiUnder')
         : bmi < 25
-          ? 'Вага в нормі'
+          ? t('bmiNormal')
           : bmi < 30
-            ? 'Надмірна вага'
-            : 'Ожиріння';
+            ? t('bmiOver')
+            : t('bmiObese');
   }
 
   if (bmiAdviceEl) {
@@ -1079,7 +1084,7 @@ async function updateProfileHeader(user) {
     user.user_metadata?.full_name ||
     user.user_metadata?.name ||
     user.email?.split('@')[0] ||
-    'Користувач';
+    t('userDefault');
   const email = user.email || '';
   const avatar = user.user_metadata?.avatar_url || '';
 
@@ -1146,12 +1151,12 @@ async function saveProfileToSupabase(data) {
 
   if (error) {
     console.error('Помилка збереження профілю:', error);
-    showToast('Помилка збереження', 'error');
+    showToast(t('saveError'), 'error');
     return;
   }
 
   localStorage.setItem('userProfile', JSON.stringify(data));
-  showToast('Профіль збережено');
+  showToast(t('profileSaved'));
 }
 
 // =====================================
@@ -1396,8 +1401,8 @@ function setupActivityForm() {
     const durationEl = document.getElementById('activityDuration');
     const duration = parseInt(durationEl?.value || 0);
 
-    if (!activityType) return showToast('Оберіть вид активності', 'error');
-    if (!duration || duration < 1) return showToast('Введіть тривалість', 'error');
+    if (!activityType) return showToast(t('selectActivityType'), 'error');
+    if (!duration || duration < 1) return showToast(t('enterDuration'), 'error');
 
     // Виправлено: використовуємо ACTIVITIES
     const activityData = ACTIVITIES[activityType];
@@ -1424,7 +1429,7 @@ function setupActivityForm() {
 
     const saved = await saveActivityToSupabase(activity);
     if (!saved) {
-      showToast('Помилка збереження активності', 'error');
+      showToast(t('activitySaveError'), 'error');
       return;
     }
 
@@ -1432,7 +1437,7 @@ function setupActivityForm() {
     if (durationEl) durationEl.value = '';
     document.getElementById('activityTypeInput').value = '';
     const triggerSpan = document.querySelector('#activityTypeSelect .custom-select__trigger span');
-    if (triggerSpan) triggerSpan.textContent = 'Оберіть активність...';
+    if (triggerSpan) triggerSpan.textContent = t('selectActivityPlaceholder');
     document
       .querySelectorAll('#activityTypeSelect .custom-select__option')
       .forEach((o) => o.classList.remove('selected'));
@@ -1449,7 +1454,7 @@ function setupActivityForm() {
 async function deleteActivity(activityId) {
   const ok = await deleteActivityFromSupabase(activityId);
   if (!ok) {
-    showToast('Помилка видалення', 'error');
+    showToast(t('deleteError'), 'error');
     return;
   }
 
@@ -1596,7 +1601,7 @@ function initActivityChart() {
   const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
 
   activityChart = new ApexCharts(container, {
-    series: [{ name: 'Спалено ккал', data: caloriesData }],
+    series: [{ name: t('burnedKcal'), data: caloriesData }],
     chart: {
       type: 'bar',
       height: 280,
@@ -1634,7 +1639,7 @@ function initActivityChart() {
     grid: { borderColor: 'rgba(156,163,175,0.12)', strokeDashArray: 3, padding: { right: 24, left: 8 } },
     legend: { show: false },
     tooltip: { theme: isDark ? 'dark' : 'light', y: { formatter: (v) => v + ' ккал' } },
-    noData: { text: 'Немає активностей', style: { color: '#9ca3af', fontSize: '14px' } },
+    noData: { text: t('noActivities'), style: { color: '#9ca3af', fontSize: '14px' } },
   });
   activityChart.render();
 }
@@ -1644,11 +1649,11 @@ function initActivityChart() {
 
 function initSidebarIcons() {
   const map = {
-    profileData:   { icon: iconUser,     label: 'Мої дані' },
-    weightControl: { icon: iconScale,    label: 'Контроль ваги' },
-    activity:      { icon: iconRun,      label: 'Активність' },
-    statistics:    { icon: iconBarChart, label: 'Статистика' },
-    settings:      { icon: iconSettings, label: 'Налаштування' },
+    profileData:   { icon: iconUser,     label: t('tabMyData') },
+    weightControl: { icon: iconScale,    label: t('weightControl') },
+    activity:      { icon: iconRun,      label: t('tabActivity') },
+    statistics:    { icon: iconBarChart, label: t('tabStatistics') },
+    settings:      { icon: iconSettings, label: t('tabSettings') },
   };
   document.querySelectorAll('.profile-sidebar__item[data-tab]').forEach(btn => {
     const entry = map[btn.dataset.tab];
@@ -1792,9 +1797,9 @@ function _initNicknameEditor(user) {
 
     if (!val) { _setNbHint(hint, `від ${_NB_MIN} до ${_NB_MAX} символів`, ''); return; }
     if (val.length < _NB_MIN) { _setNbHint(hint, `Мінімум ${_NB_MIN} символи`, '#e74c3c'); input.style.borderColor = '#e74c3c'; return; }
-    if (!_NB_ALLOWED.test(val)) { _setNbHint(hint, 'Тільки літери, цифри, пробіл, . - _', '#e74c3c'); input.style.borderColor = '#e74c3c'; return; }
+    if (!_NB_ALLOWED.test(val)) { _setNbHint(hint, t('nickOnlyChars'), '#e74c3c'); input.style.borderColor = '#e74c3c'; return; }
 
-    _setNbHint(hint, 'Перевіряємо…', '#3f7558');
+    _setNbHint(hint, t('nickChecking'), '#3f7558');
     clearTimeout(_nbDebounce);
     _nbDebounce = setTimeout(() => _checkNbUnique(val, user.id), 450);
   });
@@ -1806,7 +1811,7 @@ function _initNicknameEditor(user) {
     if (!_nbValid || !val) return;
 
     saveBtn.disabled = true;
-    saveBtn.textContent = 'Збереження…';
+    saveBtn.textContent = t('nickSaving');
 
     const { error } = await supabase
       .from('profiles')
@@ -1823,7 +1828,7 @@ function _initNicknameEditor(user) {
     editor.hidden = true;
     editBtn.hidden = false;
     saveBtn.textContent = 'Зберегти';
-    showToast('Нікнейм збережено');
+    showToast(t('nicknameSaved'));
   });
 }
 
@@ -1842,7 +1847,7 @@ async function _checkNbUnique(val, userId) {
   if (input.value.trim() !== val) return; // stale check
 
   if (count > 0) {
-    _setNbHint(hint, 'Це ім\'я вже зайняте, спробуй інше', '#e74c3c');
+    _setNbHint(hint, t('nickTaken'), '#e74c3c');
     input.style.borderColor = '#e74c3c';
     _nbValid = false;
     if (saveBtn) saveBtn.disabled = true;
@@ -1984,7 +1989,7 @@ function initCaloriesInlineEdit() {
         .from('user_profiles')
         .upsert({ user_id: user.id, calories: val }, { onConflict: 'user_id' });
     }
-    showToast('Калорії оновлено');
+    showToast(t('caloriesUpdated'));
   }
 
   function cancelEdit() {
@@ -2010,6 +2015,14 @@ function initCaloriesInlineEdit() {
 // INIT
 // =====================================
 
+// Локалізований лейбл серії днів: "N днів поспіль" / "N dni z rzędu" / "N days in a row"
+function _streakLabel(n) {
+  const lang = getLang() === 'uk' ? 'ua' : getLang();
+  if (lang === 'pl') return `${n === 1 ? 'dzień' : 'dni'} z rzędu`;
+  if (lang === 'en') return `${n === 1 ? 'day' : 'days'} in a row`;
+  return pluralUA(n, ['день', 'дні', 'днів']) + ' поспіль';
+}
+
 async function loadProfileStreak(userId) {
   const currentEl = document.getElementById('profileCurrentStreak');
   const longestEl = document.getElementById('profileLongestStreak');
@@ -2021,7 +2034,7 @@ async function loadProfileStreak(userId) {
     const s = data?.[0];
     if (s) {
       currentEl.textContent = s.current_streak;
-      if (wordEl) wordEl.textContent = pluralUA(s.current_streak, ['день', 'дні', 'днів']) + ' поспіль';
+      if (wordEl) wordEl.textContent = _streakLabel(s.current_streak);
       if (longestEl) longestEl.textContent = s.longest_streak;
     }
   } catch {
