@@ -261,7 +261,7 @@ export const i18n = {
     actWalking: 'Ходьба', actRunning: 'Біг', actCycling: 'Велосипед', actSwimming: 'Плавання',
     actYoga: 'Йога', actFitness: 'Фітнес', actDancing: 'Танці', actHiking: 'Похід',
     actTennis: 'Теніс', actBasketball: 'Баскетбол', actFootball: 'Футбол', actStretching: 'Розтяжка',
-    actCleaning: 'Прибирання', actGardening: 'Садівництво', actGym: 'Тренування в залі',
+    actCleaning: 'Прибирання', actGardening: 'Садівництво', actGym: 'Тренування в залі', actBodyweight: 'Вправи з власною вагою',
     actPilates: 'Пілатес', actElliptical: 'Орбітрек', actOther: 'Інша активність',
     // Рекомендації статистики (title/sub)
     tipBalanceTitle: 'Чудовий баланс БЖВ цього тижня', tipBalanceSub: 'Білки, жири та вуглеводи у здоровому співвідношенні',
@@ -555,7 +555,7 @@ export const i18n = {
     actWalking: 'Chodzenie', actRunning: 'Bieganie', actCycling: 'Rower', actSwimming: 'Pływanie',
     actYoga: 'Joga', actFitness: 'Fitness', actDancing: 'Taniec', actHiking: 'Wędrówka',
     actTennis: 'Tenis', actBasketball: 'Koszykówka', actFootball: 'Piłka nożna', actStretching: 'Rozciąganie',
-    actCleaning: 'Sprzątanie', actGardening: 'Ogrodnictwo', actGym: 'Trening na siłowni',
+    actCleaning: 'Sprzątanie', actGardening: 'Ogrodnictwo', actGym: 'Trening na siłowni', actBodyweight: 'Ćwiczenia z masą ciała',
     actPilates: 'Pilates', actElliptical: 'Orbitrek', actOther: 'Inna aktywność',
     // Rekomendacje statystyk (title/sub)
     tipBalanceTitle: 'Świetny bilans BTW w tym tygodniu', tipBalanceSub: 'Białka, tłuszcze i węglowodany w zdrowych proporcjach',
@@ -849,7 +849,7 @@ export const i18n = {
     actWalking: 'Walking', actRunning: 'Running', actCycling: 'Cycling', actSwimming: 'Swimming',
     actYoga: 'Yoga', actFitness: 'Fitness', actDancing: 'Dancing', actHiking: 'Hiking',
     actTennis: 'Tennis', actBasketball: 'Basketball', actFootball: 'Football', actStretching: 'Stretching',
-    actCleaning: 'Cleaning', actGardening: 'Gardening', actGym: 'Gym workout',
+    actCleaning: 'Cleaning', actGardening: 'Gardening', actGym: 'Gym workout', actBodyweight: 'Bodyweight exercises',
     actPilates: 'Pilates', actElliptical: 'Elliptical', actOther: 'Other activity',
     // Statistics recommendations (title/sub)
     tipBalanceTitle: 'Great PFC balance this week', tipBalanceSub: 'Proteins, fats and carbs in a healthy ratio',

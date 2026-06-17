@@ -59,6 +59,7 @@ const ACTIVITIES = {
   cycling:    { icon: iconBike,       label: t('actCycling'),    caloriesPerMinute: 8 },
   swimming:   { icon: iconSwim,       label: t('actSwimming'),   caloriesPerMinute: 9 },
   yoga:       { icon: iconYoga,       label: t('actYoga'),       caloriesPerMinute: 3 },
+  bodyweight: { icon: iconStretch,    label: t('actBodyweight'), caloriesPerMinute: 5 },
   fitness:    { icon: iconGym,        label: t('actFitness'),    caloriesPerMinute: 7 },
   dancing:    { icon: iconDance,      label: t('actDancing'),    caloriesPerMinute: 6 },
   hiking:     { icon: iconHike,       label: t('actHiking'),     caloriesPerMinute: 6 },
@@ -1341,7 +1342,9 @@ function injectActivityIcons() {
   document.querySelectorAll('#activityTypeSelect .custom-select__option').forEach(opt => {
     const icon = iconMap[opt.dataset.value];
     const label = ACTIVITIES[opt.dataset.value]?.label ?? opt.textContent.replace(/^\S+\s*/, '').trim();
-    if (icon && !opt.querySelector('.nav-icon')) {
+    // Завжди перебудовуємо: HTML-опції містять UA-текст, ACTIVITIES.label
+    // локалізований через t() — інакше PL/EN-опції лишались би українськими.
+    if (icon) {
       opt.innerHTML = `<span class="nav-icon">${icon}</span>${label}`;
     }
   });
