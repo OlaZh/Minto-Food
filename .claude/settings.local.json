@@ -56,7 +56,8 @@
       "Bash(xargs wc -l)",
       "Bash(grep -v \"^\\\\s*$\")",
       "Bash(node --check js/profile.js)",
-      "Bash(node --check js/storage.js)"
+      "Bash(node --check js/storage.js)",
+      "Bash(node --input-type=module -e ' *)"
     ]
   }
 }
