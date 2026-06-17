@@ -60,6 +60,18 @@ export function applyTranslations(root = document) {
     if (val != null) el.setAttribute('aria-label', val);
   });
 
+  // title / document.title
+  root.querySelectorAll('[data-i18n-title]').forEach((el) => {
+    const key = el.dataset.i18nTitle;
+    const val = dict[key] ?? i18n.ua[key];
+    if (val == null) return;
+    if (el.tagName === 'TITLE') {
+      document.title = val;
+    } else {
+      el.setAttribute('title', val);
+    }
+  });
+
   // <html lang="…"> для доступності/SEO (ua→uk як валідний код)
   document.documentElement.setAttribute('lang', lang === 'ua' ? 'uk' : lang);
 }

@@ -6,12 +6,32 @@ import { showToast, escapeHTML, pluralUA } from './utils.js';
 import { BOOK_ICONS as _BOOK_ICONS, iconClose, iconCheck, iconEdit, iconChevronRight, iconPlate } from './icons.js';
 import { showConfirmModal } from './ui-components.js';
 import { lockScroll, unlockScroll } from './scroll-lock.js';
+import { getLang } from './storage.js';
+import { i18n } from './i18n.js';
+import { getRecipeDisplayName } from './recipe-utils.js';
 
 // =====================================
 // ІКОНКИ КНИГ (з icons.js — єдине джерело)
 // =====================================
 
 const BOOK_ICONS = _BOOK_ICONS;
+
+function t(key, vars = {}) {
+  const base = (i18n[getLang()] || i18n.ua)[key] || key;
+  return Object.entries(vars).reduce(
+    (text, [name, value]) => text.replaceAll(`{${name}}`, String(value)),
+    base,
+  );
+}
+
+function getRecipePlural(count) {
+  if (getLang() === 'en') return count === 1 ? t('recipeSingle') : t('recipePlural');
+  return pluralUA(count, [t('recipeSingle'), t('recipeFew'), t('recipeMany')]);
+}
+
+function getRecipeName(recipe) {
+  return getRecipeDisplayName(recipe, getLang());
+}
 
 function getBookIcon(key) {
   return BOOK_ICONS[key] ?? `<span style="font-size:2em;line-height:1">${key}</span>`;
@@ -37,10 +57,10 @@ function renderCoverGridHTML(activeCover) {
   const checkSvg = `<span class="cookbook-cover-option__check">${iconCheck.replace('<svg ', '<svg width="13" height="13" stroke-width="3" ')}</span>`;
   const opt = (filename, label) =>
     `<button type="button" class="cookbook-cover-option ${activeCover === filename ? 'cookbook-cover-option--active' : ''}" data-cover="${filename}"><img src="img/covers/${filename}.avif" alt="${label}" loading="lazy">${checkSvg}</button>`;
-  let html = `<button type="button" class="cookbook-cover-option cookbook-cover-option--none ${!activeCover ? 'cookbook-cover-option--active' : ''}" data-cover="">${iconClose.replace('<svg ', '<svg width="26" height="26" ')}<span>Без фото</span>${checkSvg}</button><div class="cookbook-cover-grid__label">Світла серія</div>`;
-  for (let i = 1; i <= LIGHT_COVERS; i++) html += opt(`Light theme ${i}`, `Світла ${i}`);
-  html += `<div class="cookbook-cover-grid__label">Темна серія</div>`;
-  for (let i = 1; i <= DARK_COVERS; i++) html += opt(`Dark theme ${i}`, `Темна ${i}`);
+  let html = `<button type="button" class="cookbook-cover-option cookbook-cover-option--none ${!activeCover ? 'cookbook-cover-option--active' : ''}" data-cover="">${iconClose.replace('<svg ', '<svg width="26" height="26" ')}<span>${t('noPhoto')}</span>${checkSvg}</button><div class="cookbook-cover-grid__label">${t('lightSeries')}</div>`;
+  for (let i = 1; i <= LIGHT_COVERS; i++) html += opt(`Light theme ${i}`, t('lightCoverLabel', { num: i }));
+  html += `<div class="cookbook-cover-grid__label">${t('darkSeries')}</div>`;
+  for (let i = 1; i <= DARK_COVERS; i++) html += opt(`Dark theme ${i}`, t('darkCoverLabel', { num: i }));
   return html;
 }
 
@@ -227,8 +247,8 @@ async function renderBooks(books, version) {
     const empty = document.createElement('div');
     empty.className = 'cookbook-empty';
     empty.innerHTML = `
-      <p class="cookbook-empty__text">У вас поки немає жодної книги</p>
-      <button class="cookbook-empty__cta js-add-book-btn">Створити першу книгу</button>
+      <p class="cookbook-empty__text">${t('noBooksYet')}</p>
+      <button class="cookbook-empty__cta js-add-book-btn">${t('createFirstBook')}</button>
     `;
     booksGrid.appendChild(empty);
     return;
@@ -267,13 +287,13 @@ async function createBookElement(book) {
       ${coverHTML}
 
       <div class="cookbook-book__cover-controls">
-        <button class="cookbook-book__action-btn cookbook-book__edit-btn" aria-label="Редагувати книгу" title="Редагувати">
+        <button class="cookbook-book__action-btn cookbook-book__edit-btn" aria-label="${t('editBook')}" title="${t('edit')}">
           ${iconEdit}
         </button>
         ${
           !isDefault
             ? `
-        <button class="cookbook-book__action-btn cookbook-book__delete-btn cookbook-book__action-btn--danger" aria-label="Видалити книгу" title="Видалити">
+        <button class="cookbook-book__action-btn cookbook-book__delete-btn cookbook-book__action-btn--danger" aria-label="${t('deleteBook')}" title="${t('delete')}">
           ${iconClose}
         </button>
         `
@@ -286,10 +306,10 @@ async function createBookElement(book) {
     <div class="cookbook-book__body">
       <h3 class="cookbook-book__name">
         <span>${escapeHTML(book.name)}</span>
-        ${isDefault ? '<span class="cookbook-book__default-badge">Головна</span>' : ''}
+        ${isDefault ? `<span class="cookbook-book__default-badge">${t('mainBook')}</span>` : ''}
       </h3>
       <div class="cookbook-book__meta">
-        <span class="cookbook-book__count">${recipeCount} ${pluralUA(recipeCount, ['рецепт', 'рецепти', 'рецептів'])}</span>
+        <span class="cookbook-book__count">${recipeCount} ${getRecipePlural(recipeCount)}</span>
         <div class="cookbook-book__arrow">
           ${iconChevronRight.replace('<svg ', '<svg width="14" height="14" ')}
         </div>
@@ -352,10 +372,10 @@ async function handleCreateBook(e) {
       btn.classList.toggle('cookbook-form__icon--active', i === 0);
     });
 
-    showToast('Книгу створено!');
+    showToast(t('bookCreated'));
   } catch (err) {
     console.error('Error creating book:', err);
-    showToast('Помилка створення книги', 'error');
+    showToast(t('createBookError'), 'error');
   }
 }
 
@@ -368,15 +388,15 @@ async function deleteBook(bookId) {
     .single();
 
   if (book?.is_default) {
-    showToast('Головну книгу не можна видалити', 'error');
+    showToast(t('defaultBookDeleteError'), 'error');
     return;
   }
 
   showConfirmModal({
-    title: 'Видалити книгу?',
-    message: 'Рецепти залишаться в загальному списку.',
-    confirmText: 'Так, видалити',
-    cancelText: 'Скасувати',
+    title: t('deleteBookTitle'),
+    message: t('deleteBookMessage'),
+    confirmText: t('confirmDelete'),
+    cancelText: t('cancel'),
     onConfirm: async () => {
       try {
         const { error } = await supabase.from('cookbooks').delete().eq('id', bookId);
@@ -384,10 +404,10 @@ async function deleteBook(bookId) {
 
         const bookEl = booksGrid.querySelector(`[data-book-id="${bookId}"]`);
         bookEl?.remove();
-        showToast('Книгу видалено');
+        showToast(t('bookDeleted'));
       } catch (err) {
         console.error('Error deleting book:', err);
-        showToast('Помилка видалення книги', 'error');
+        showToast(t('deleteBookError'), 'error');
       }
     },
   });
@@ -405,33 +425,33 @@ function createEditBookModal() {
   modal.className = 'modal-overlay';
   modal.innerHTML = `
     <div class="cookbook-modal cookbook-modal--small">
-      <button class="modal__close" id="closeEditBookModal" aria-label="Закрити">
+      <button class="modal__close" id="closeEditBookModal" aria-label="${t('close')}">
         ${iconClose.replace('<svg ', '<svg width="24" height="24" ')}
       </button>
 
-      <h2 class="cookbook-modal__title">Редагувати книгу</h2>
+      <h2 class="cookbook-modal__title">${t('editBook')}</h2>
 
       <form class="cookbook-form" id="editBookForm">
         <div class="cookbook-form__field">
-          <label for="editBookName">Назва книги</label>
+          <label for="editBookName">${t('bookNameLabel')}</label>
           <input type="text" id="editBookName" required maxlength="50" />
         </div>
 
         <div class="cookbook-form__field">
-          <label>Обкладинка</label>
+          <label>${t('coverLabel')}</label>
           <div class="cookbook-cover-grid" id="editCoverGrid"></div>
         </div>
 
         <div class="cookbook-form__field" id="setDefaultGroup" hidden>
           <label class="cookbook-form__checkbox">
             <input type="checkbox" id="editBookDefault" />
-            <span>Зробити головною книгою</span>
+            <span>${t('setDefaultBook')}</span>
           </label>
         </div>
 
         <div class="cookbook-form__actions">
-          <button type="button" class="cookbook-form__btn-cancel" id="cancelEditBook">Скасувати</button>
-          <button type="submit" class="cookbook-form__submit">Зберегти</button>
+          <button type="button" class="cookbook-form__btn-cancel" id="cancelEditBook">${t('cancel')}</button>
+          <button type="submit" class="cookbook-form__submit">${t('save')}</button>
         </div>
       </form>
     </div>
@@ -492,10 +512,10 @@ function createEditBookModal() {
 
       closeModal(modal);
       await loadBooks(); // Перезавантажуємо список
-      showToast('Книгу оновлено!');
+      showToast(t('bookUpdated'));
     } catch (err) {
       console.error('Error updating book:', err);
-      showToast('Помилка оновлення', 'error');
+      showToast(t('updateBookError'), 'error');
     }
   });
 }
@@ -546,6 +566,8 @@ async function loadBookRecipes() {
         recipes (
           id,
           name_ua,
+          name_en,
+          name_pl,
           image,
           kcal,
           notes
@@ -566,7 +588,7 @@ function renderBookRecipes(recipes) {
   if (!recipes.length) {
     bookRecipes.innerHTML = `
       <div class="cookbook-recipes__empty">
-        <p>Тут поки немає рецептів.<br>Додай їх зі сторінки "Рецепти"!</p>
+        <p>${t('bookEmptyRecipes')}</p>
       </div>
     `;
     return;
@@ -577,16 +599,17 @@ function renderBookRecipes(recipes) {
       const recipe = item.recipes;
       if (!recipe) return '';
 
+      const recipeName = getRecipeName(recipe);
       const kcalBadge = recipe.kcal
-        ? `<span class="cookbook-recipe-card__kcal">${Math.round(recipe.kcal)} ккал</span>`
+        ? `<span class="cookbook-recipe-card__kcal">${Math.round(recipe.kcal)} ${t('kcalShort')}</span>`
         : '';
 
       const imageHtml = recipe.image
-        ? `<img src="${recipe.image}" alt="${escapeHTML(recipe.name_ua)}" loading="lazy">`
+        ? `<img src="${recipe.image}" alt="${escapeHTML(recipeName)}" loading="lazy">`
         : `<div class="cookbook-recipe-card__placeholder">${iconPlate}</div>`;
 
       const stickyNote = recipe.notes?.trim()
-        ? `<div class="recipe-sticky-note" role="note" aria-label="Моя нотатка">
+        ? `<div class="recipe-sticky-note" role="note" aria-label="${t('myNote')}">
             <div class="recipe-sticky-note__pin"></div>
             <div class="recipe-sticky-note__body">
               <p class="recipe-sticky-note__text">${escapeHTML(recipe.notes.trim())}</p>
@@ -600,12 +623,12 @@ function renderBookRecipes(recipes) {
           <div class="cookbook-recipe-card__image">
             ${imageHtml}
             ${kcalBadge}
-            <button class="cookbook-recipe-card__remove" data-recipe-id="${recipe.id}" aria-label="Видалити з книги" title="Видалити з книги">
+            <button class="cookbook-recipe-card__remove" data-recipe-id="${recipe.id}" aria-label="${t('removeFromBook')}" title="${t('removeFromBook')}">
               ${iconClose.replace('<svg ', '<svg width="16" height="16" ')}
             </button>
           </div>
           <div class="cookbook-recipe-card__body">
-            <h3 class="cookbook-recipe-card__title">${escapeHTML(recipe.name_ua)}</h3>
+            <h3 class="cookbook-recipe-card__title">${escapeHTML(recipeName)}</h3>
           </div>
         </article>
       `;
@@ -653,11 +676,11 @@ async function removeRecipeFromBook(recipeId) {
 
     if (error) throw error;
 
-    showToast('Рецепт видалено з книги', 'success');
+    showToast(t('removedFromBook'), 'success');
     await loadBookRecipes();
   } catch (err) {
     console.error('Error removing recipe:', err);
-    showToast('Помилка видалення', 'error');
+    showToast(t('deleteError'), 'error');
   }
 }
 
@@ -681,7 +704,7 @@ async function loadRecentRecipes() {
 
     const { data, error } = await supabase
       .from('cookbook_recipes')
-      .select('recipe_id, recipes ( id, name_ua, image, kcal )')
+      .select('recipe_id, recipes ( id, name_ua, name_en, name_pl, image, kcal )')
       .in('cookbook_id', bookIds)
       .limit(20);
 
@@ -704,15 +727,16 @@ async function loadRecentRecipes() {
     container.innerHTML = unique
       .map((item) => {
         const r = item.recipes;
+        const recipeName = getRecipeName(r);
         const imgHtml = r.image
-          ? `<img src="${escapeHTML(r.image)}" alt="${escapeHTML(r.name_ua)}" loading="lazy">`
+          ? `<img src="${escapeHTML(r.image)}" alt="${escapeHTML(recipeName)}" loading="lazy">`
           : `<div class="cookbook-recent-item__placeholder">${iconPlate}</div>`;
         return `
         <a class="cookbook-recent-item" href="recipes.html?recipe=${r.id}&from=cookbook">
           <div class="cookbook-recent-item__img">${imgHtml}</div>
           <div class="cookbook-recent-item__info">
-            <span class="cookbook-recent-item__name">${escapeHTML(r.name_ua)}</span>
-            ${r.kcal ? `<span class="cookbook-recent-item__kcal">${Math.round(r.kcal)} ккал</span>` : ''}
+            <span class="cookbook-recent-item__name">${escapeHTML(recipeName)}</span>
+            ${r.kcal ? `<span class="cookbook-recent-item__kcal">${Math.round(r.kcal)} ${t('kcalShort')}</span>` : ''}
           </div>
         </a>
       `;

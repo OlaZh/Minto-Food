@@ -117,7 +117,7 @@ function renderOwnRecipes() {
 
   ownRow.innerHTML = '';
   if (filtered.length === 0) {
-    ownRow.innerHTML = `<p class="recipe-own-filter__empty">У цій категорії поки порожньо</p>`;
+    ownRow.innerHTML = `<p class="recipe-own-filter__empty">${t('emptyOwnCategory')}</p>`;
   } else {
     filtered.forEach((r) => ownRow.appendChild(buildRecipeCard(r, savedRecipeIdsCache)));
   }
@@ -181,9 +181,9 @@ function showRecipesWelcomeState() {
     communityGrid.innerHTML = `
       <div class="recipe-empty-state" style="grid-column:1/-1">
         <div class="recipe-empty-state__icon">${iconPlate}</div>
-        <p class="recipe-empty-state__title">Знайдіть ідеальну страву</p>
-        <p class="recipe-empty-state__text">Введіть назву або скористайтеся фільтрами</p>
-        <button class="btn btn--secondary" id="welcome-browse-all-btn" style="margin-top:8px">Переглянути всі рецепти</button>
+        <p class="recipe-empty-state__title">${t('discoverDishTitle')}</p>
+        <p class="recipe-empty-state__text">${t('discoverDishText')}</p>
+        <button class="btn btn--secondary" id="welcome-browse-all-btn" style="margin-top:8px">${t('browseAllRecipes')}</button>
       </div>`;
     document.getElementById('welcome-browse-all-btn')?.addEventListener('click', () => {
       loadAndDisplayRecipes(true);
@@ -225,8 +225,8 @@ async function loadAndDisplayRecipes(force = false) {
     if (grid) grid.innerHTML = `
       <div class="recipe-empty-state">
         <div class="recipe-empty-state__icon">${iconAlert}</div>
-        <p class="recipe-empty-state__title">Не вдалося завантажити рецепти</p>
-        <p class="recipe-empty-state__text">Перевірте з'єднання та спробуйте ще раз</p>
+        <p class="recipe-empty-state__title">${t('recipesLoadError')}</p>
+        <p class="recipe-empty-state__text">${t('checkConnectionRetry')}</p>
       </div>`;
     return;
   }
@@ -237,6 +237,13 @@ async function loadAndDisplayRecipes(force = false) {
 function t(key) {
   const lang = getLang();
   return (i18n[lang] || i18n.ua)[key] || key;
+}
+
+function formatText(key, vars = {}) {
+  return Object.entries(vars).reduce(
+    (text, [name, value]) => text.replaceAll(`{${name}}`, String(value)),
+    t(key),
+  );
 }
 
 function getCategoryLabel(value) {
@@ -265,10 +272,10 @@ function formatRecipeMacroValue(value, decimals = 1) {
 function getRecipeNutritionNote(recipe) {
   const totalWeight = parsePositiveNumber(recipe?.total_weight);
   if (totalWeight) {
-    return `Готова страва: приблизно ${formatRecipeMacroValue(recipe?.kcal, 0)} ккал на 100 г`;
+    return formatText('nutritionReady', { kcal: formatRecipeMacroValue(recipe?.kcal, 0) });
   }
 
-  return 'Сума сирих інгредієнтів. Вкажіть вагу готової страви, щоб побачити КБЖУ на 100 г.';
+  return t('nutritionRaw');
 }
 
 // =============================================================
@@ -677,29 +684,29 @@ function buildRecipeCard(recipe, savedRecipeIds) {
       <span>${rating > 0 ? Number(rating).toFixed(1) : '0'}</span>
     </div>
     ${isOwn ? (recipe.is_public
-      ? `<div class="recipe-card__visibility recipe-card__visibility--public" title="Публічний — видно у спільноті">${iconGlobal}<span>Публічний</span></div>`
-      : `<div class="recipe-card__visibility recipe-card__visibility--private" title="Приватний — видно лише тобі">${iconLock}<span>Приватний</span></div>`) : ''}
-    ${isOwn ? `<button class="btn-delete-recipe js-delete-recipe" aria-label="Видалити рецепт">${iconClose}</button>` : ''}
+      ? `<div class="recipe-card__visibility recipe-card__visibility--public" title="${t('publicRecipeTitle')}">${iconGlobal}<span>${t('publicRecipe')}</span></div>`
+      : `<div class="recipe-card__visibility recipe-card__visibility--private" title="${t('privateRecipeTitle')}">${iconLock}<span>${t('privateRecipe')}</span></div>`) : ''}
+    ${isOwn ? `<button class="btn-delete-recipe js-delete-recipe" aria-label="${t('deleteRecipeAria')}">${iconClose}</button>` : ''}
     <button class="recipe-card__favorite ${isSaved ? 'recipe-card__favorite--saved' : ''}"
             data-recipe-id="${recipe.id}"
-            aria-label="Зберегти в книгу">
+            aria-label="${t('saveToBook')}">
       ${iconHeart}
     </button>
   </div>
   <div class="recipe-card__content">
     <h3 class="recipe-card__name">${name}</h3>
-    ${recipe.status === 'pending' ? '<div class="recipe-card__pending-badge">На модерації</div>' : ''}
-    ${isOwn && recipe.has_pending_update ? `<div class="recipe-card__update-badge">${iconCalendar} Оновлення на перевірці</div>` : ''}
+    ${recipe.status === 'pending' ? `<div class="recipe-card__pending-badge">${t('pendingModeration')}</div>` : ''}
+    ${isOwn && recipe.has_pending_update ? `<div class="recipe-card__update-badge">${iconCalendar} ${t('pendingUpdate')}</div>` : ''}
     ${isOwn && recipe.status === 'draft' && recipe.moderation_note
       ? `<div class="recipe-card__mod-note">${recipe.moderation_note}</div>`
       : ''}
     ${metaRow}
     ${isOwn && !recipe.is_public && recipe.status !== 'pending'
-      ? `<button class="recipe-card__make-public js-make-public">${iconGlobal}Зробити публічним</button>`
+      ? `<button class="recipe-card__make-public js-make-public">${iconGlobal}${t('makePublic')}</button>`
       : ''}
     <div class="recipe-card__footer">
-      <span class="recipe-card__kcal">${recipe.kcal || 0} ккал</span>
-      <button class="recipe-card__btn js-view-recipe">Переглянути</button>
+      <span class="recipe-card__kcal">${recipe.kcal || 0} ${t('kcalShort')}</span>
+      <button class="recipe-card__btn js-view-recipe">${t('viewRecipe')}</button>
     </div>
   </div>
 `;
@@ -783,11 +790,11 @@ async function displayRecipes(recipes, isSearch = false) {
         communityGrid.innerHTML = `
           <div class="recipe-empty-state">
             <div class="recipe-empty-state__icon">${iconPlate}</div>
-            <p class="recipe-empty-state__title">Рецептів не знайдено</p>
-            <p class="recipe-empty-state__text">Спробуйте змінити фільтр або додайте свій перший рецепт</p>
+            <p class="recipe-empty-state__title">${t('noRecipesFound')}</p>
+            <p class="recipe-empty-state__text">${t('changeFilterOrAdd')}</p>
             <button class="btn-add-recipe recipe-empty-state__cta" id="empty-state-add-btn">
               ${iconPlus.replace('<svg ', '<svg width="18" height="18" ')}
-              Додати рецепт
+              ${t('addRecipe')}
             </button>
           </div>`;
         document.getElementById('empty-state-add-btn')?.addEventListener('click', () => {
@@ -835,8 +842,8 @@ async function displayRecipes(recipes, isSearch = false) {
   if (searchCommunityShowAllBtn) {
     searchCommunityShowAllBtn.hidden = communityResults.length <= SEARCH_PREVIEW_LIMIT * 2;
     searchCommunityShowAllBtn.textContent = searchCommunityShowAll
-      ? 'Згорнути'
-      : `Показати всі (${communityResults.length})`;
+      ? t('collapse')
+      : formatText('showAllCount', { count: communityResults.length });
     searchCommunityShowAllBtn.onclick = () => {
       searchCommunityShowAll = !searchCommunityShowAll;
       displayRecipes(recipes, true);
@@ -850,8 +857,8 @@ async function displayRecipes(recipes, isSearch = false) {
       searchCommunityGrid.innerHTML = `
         <div class="recipe-empty-state">
           <div class="recipe-empty-state__icon">${iconSearch}</div>
-          <p class="recipe-empty-state__title">Нічого не знайдено</p>
-          <p class="recipe-empty-state__text">Спробуйте інший запит або змініть фільтр</p>
+          <p class="recipe-empty-state__title">${t('nothingFound')}</p>
+          <p class="recipe-empty-state__text">${t('searchTryAnother')}</p>
         </div>`;
     }
   }
@@ -863,7 +870,7 @@ async function displayRecipes(recipes, isSearch = false) {
 
 async function handleFavoriteClick(btn, recipeId) {
   if (!currentUser) {
-    showToast('Увійдіть, щоб зберігати рецепти', 'error');
+    showToast(t('loginToSave'), 'error');
     return;
   }
 
@@ -953,7 +960,9 @@ export async function openRecipeView(recipeId) {
   setT('view-fats', formatRecipeMacroValue(recipe.fat, 0));
   setT(
     'view-total-weight',
-    recipe.total_weight ? `Вага готової страви: ${formatRecipeMacroValue(recipe.total_weight, 0)} г` : 'Вага готової страви не вказана',
+    recipe.total_weight
+      ? formatText('weightReady', { weight: formatRecipeMacroValue(recipe.total_weight, 0) })
+      : t('weightMissing'),
   );
   setT('view-nutrition-note', getRecipeNutritionNote(recipe));
 
@@ -1066,7 +1075,7 @@ function updateRecipeViewActions(recipe, isOwn) {
 
   actionsContainer.innerHTML = `
     <div class="recipe-actions-menu">
-      <button class="recipe-actions-menu__trigger" aria-label="Дії з рецептом">
+      <button class="recipe-actions-menu__trigger" aria-label="${t('recipeActions')}">
         ${iconMoreVertical}
       </button>
       
@@ -1076,7 +1085,7 @@ function updateRecipeViewActions(recipe, isOwn) {
             ? `
           <button class="recipe-actions-menu__item" id="action-edit">
             ${iconEdit}
-            <span>Редагувати</span>
+            <span>${t('edit')}</span>
           </button>
         `
             : ''
@@ -1084,7 +1093,7 @@ function updateRecipeViewActions(recipe, isOwn) {
         
         <button class="recipe-actions-menu__item" id="action-save-to-book">
           ${iconBookmark}
-          <span>Зберегти в книгу</span>
+          <span>${t('saveToBook')}</span>
         </button>
         
         ${
@@ -1093,14 +1102,14 @@ function updateRecipeViewActions(recipe, isOwn) {
           <div class="recipe-actions-menu__divider"></div>
           <button class="recipe-actions-menu__item recipe-actions-menu__item--danger" id="action-delete">
             ${iconTrash}
-            <span>Видалити</span>
+            <span>${t('delete')}</span>
           </button>
         `
             : `
           <div class="recipe-actions-menu__divider"></div>
           <button class="recipe-actions-menu__item recipe-actions-menu__item--warning" id="action-report">
             ${iconFlag}
-            <span>Поскаржитись</span>
+            <span>${t('reportRecipe')}</span>
           </button>
         `
         }
@@ -1130,7 +1139,7 @@ function updateRecipeViewActions(recipe, isOwn) {
   actionsContainer.querySelector('#action-save-to-book')?.addEventListener('click', () => {
     dropdown.classList.remove('is-open');
     if (!currentUser) {
-      showToast('Увійдіть, щоб зберігати рецепти', 'error');
+      showToast(t('loginToSave'), 'error');
       return;
     }
     openBookSelector(recipe.id);
@@ -1153,7 +1162,7 @@ function updateRecipeViewActions(recipe, isOwn) {
 
 function editRecipe(recipe) {
   if (!isOwnRecipe(recipe)) {
-    showToast('Редагувати можна лише власні рецепти', 'error');
+    showToast(t('editOnlyOwn'), 'error');
     return;
   }
 
@@ -1173,16 +1182,16 @@ function editRecipe(recipe) {
 
 function openDeleteConfirm(recipeId) {
   showConfirmModal({
-    title: 'Видалити рецепт?',
-    message: 'Цю дію неможливо буде скасувати.',
-    confirmText: 'Так, видалити',
+    title: t('deleteRecipeTitle'),
+    message: t('deleteRecipeMessage'),
+    confirmText: t('confirmDelete'),
     onConfirm: async () => {
       const { error } = await supabase.from('recipes').delete().eq('id', recipeId);
       if (error) {
         console.error('Помилка видалення:', error);
-        showToast('Помилка видалення', 'error');
+        showToast(t('deleteError'), 'error');
       } else {
-        showToast('Рецепт видалено', 'info');
+        showToast(t('recipeDeleted'), 'info');
         if (viewModal) {
           viewModal.classList.remove('is-active');
           unlockScroll('recipe-view-modal');
@@ -1200,18 +1209,18 @@ function openMakePublicConfirm(recipe) {
   const hasSteps = !!(recipe.steps && recipe.steps.trim());
 
   if (!recipe.name_ua || !recipe.name_ua.trim()) {
-    showToast('Для публікації потрібна назва рецепту', 'error');
+    showToast(t('publishNeedName'), 'error');
     return;
   }
   if (!hasIngredients && !hasSteps) {
-    showToast('Додайте інгредієнти або кроки приготування', 'error');
+    showToast(t('publishNeedContent'), 'error');
     return;
   }
 
   showConfirmModal({
-    title: 'Зробити публічним?',
-    message: 'Рецепт побачить спільнота. Він пройде модерацію перед публікацією.',
-    confirmText: 'Так, опублікувати',
+    title: t('makePublicTitle'),
+    message: t('makePublicMessage'),
+    confirmText: t('publishConfirm'),
     onConfirm: async () => {
       // Shadow banned юзери — теж pending (як при створенні)
       const { error } = await supabase
@@ -1221,9 +1230,9 @@ function openMakePublicConfirm(recipe) {
 
       if (error) {
         console.error('Помилка публікації:', error);
-        showToast('Помилка публікації', 'error');
+        showToast(t('publishError'), 'error');
       } else {
-        showToast('Рецепт відправлено на модерацію', 'info');
+        showToast(t('recipeSentModeration'), 'info');
         loadAndDisplayRecipes(true);
       }
     },
@@ -1338,10 +1347,10 @@ if (clearSearchBtn) {
 function formatTimeAgo(dateStr) {
   const diffMs = Date.now() - new Date(dateStr).getTime();
   const diffMin = Math.floor(diffMs / 60000);
-  if (diffMin < 60) return `${diffMin} хв тому`;
+  if (diffMin < 60) return formatText('timeAgoMinutes', { count: diffMin });
   const diffH = Math.floor(diffMin / 60);
-  if (diffH < 24) return `${diffH} год тому`;
-  return `${Math.floor(diffH / 24)} дн тому`;
+  if (diffH < 24) return formatText('timeAgoHours', { count: diffH });
+  return formatText('timeAgoDays', { count: Math.floor(diffH / 24) });
 }
 
 async function loadNewRecipes() {
@@ -1371,8 +1380,7 @@ async function loadNewRecipes() {
   const { data, error } = await query;
 
   if (error || !data || data.length === 0) {
-    body.innerHTML =
-      '<p class="new-recipes-drawer__empty">Нових рецептів за останні 24 години немає</p>';
+    body.innerHTML = `<p class="new-recipes-drawer__empty">${t('noNewRecipes24h')}</p>`;
     return;
   }
 
@@ -1412,7 +1420,7 @@ async function loadNewRecipes() {
       item.className = `new-recipe-item${isOwn ? ' new-recipe-item--own' : ''}`;
       item.innerHTML = `
         <div class="new-recipe-item__info">
-          <div class="new-recipe-item__name">${name}${isOwn ? ' <span style="font-size:11px;opacity:.7;">(Мій)</span>' : ''}</div>
+          <div class="new-recipe-item__name">${name}${isOwn ? ` <span style="font-size:11px;opacity:.7;">(${t('ownBadge')})</span>` : ''}</div>
           <div class="new-recipe-item__meta">
             <span>${recipe.category ? getCategoryLabel(recipe.category) : ''}</span>
             <span>·</span>
@@ -1433,8 +1441,8 @@ async function loadNewRecipes() {
     body.appendChild(group);
   }
 
-  renderGroup('Щойно (до 2 год)', fresh);
-  renderGroup('Сьогодні', today);
+  renderGroup(t('freshGroup'), fresh);
+  renderGroup(t('today'), today);
 }
 
 function openNewRecipesDrawer() {
@@ -1509,7 +1517,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           if (!error) {
             updateStarsUI(newRating);
             loadAndDisplayRecipes(true);
-            showToast('Оцінку збережено!');
+            showToast(t('ratingSaved'));
           }
         }
       }
@@ -1537,7 +1545,7 @@ if (saveNotesBtn) {
         .update({ notes: notesValue })
         .eq('id', currentViewingId);
 
-      if (!error) showToast('Нотатку збережено!');
+      if (!error) showToast(t('noteSaved'));
     }
   });
 }

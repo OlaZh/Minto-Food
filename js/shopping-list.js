@@ -8,6 +8,7 @@
 import { supabase } from './supabaseClient.js';
 import { initAuth } from './auth.js';
 import { showToast, escapeHTML } from './utils.js';
+import { t } from './i18n-apply.js';
 import { lockScroll, unlockScroll } from './scroll-lock.js';
 import { getWeekShoppingList, clearWeekShoppingList } from './storage.js';
 import { normalizeKey } from './parse-food.js';
@@ -152,7 +153,7 @@ function renderWishlistPanel() {
 
   if (wishlists.length === 0) {
     wishlistsUlEl.innerHTML =
-      '<li class="shop-list-item__sub-empty" style="padding:4px 2px">Вішлістів ще немає</li>';
+      `<li class="shop-list-item__sub-empty" style="padding:4px 2px">${t('shopWishlistEmpty')}</li>`;
     return;
   }
 
@@ -181,20 +182,20 @@ function buildListItem(list) {
     : '';
 
   const meta = isPermanent
-    ? 'відмітьте → перейдіть до активного'
+    ? t('shopPermanentMeta')
     : formatListMeta(list);
 
   const dotsMenu = !isPermanent ? `
-    <button class="shop-list-item__dots-btn" aria-label="Меню списку">
+    <button class="shop-list-item__dots-btn" aria-label="${t('shopListMenu')}">
       ${iconMoreVertical.replace('<svg ', '<svg width="14" height="14" ')}
     </button>
     <div class="shop-list-item__dropdown" hidden>
       ${list.is_pinned
-        ? `<button data-action="unpin">${iconPin} Відкріпити</button>`
-        : `<button data-action="pin">${iconPin} Закріпити</button>`}
-      <button data-action="share">${iconLink} Поділитися</button>
-      <button data-action="clear">${iconBroom} Очистити список</button>
-      <button data-action="delete">${iconTrash} Видалити список</button>
+        ? `<button data-action="unpin">${iconPin} ${t('shopUnpin')}</button>`
+        : `<button data-action="pin">${iconPin} ${t('shopPin')}</button>`}
+      <button data-action="share">${iconLink} ${t('shopShare')}</button>
+      <button data-action="clear">${iconBroom} ${t('shopClearList')}</button>
+      <button data-action="delete">${iconTrash} ${t('shopDeleteList')}</button>
     </div>` : '';
 
   li.innerHTML = `
@@ -250,7 +251,7 @@ function formatListMeta(list) {
   if (list.event_date) {
     parts.push(new Date(list.event_date).toLocaleDateString('uk', { day: 'numeric', month: 'short' }));
   }
-  if (list.is_shared) parts.push('Спільний');
+  if (list.is_shared) parts.push(t('shopShared'));
   return parts.join(' · ');
 }
 
@@ -285,7 +286,7 @@ async function togglePanelList(listId, li) {
 
 async function loadPanelListItems(listId, container) {
   container.innerHTML =
-    '<li class="shop-list-item__sub-empty">Завантаження...</li>';
+    `<li class="shop-list-item__sub-empty">${t('loading')}</li>`;
 
   const { data, error } = await supabase
     .from('shopping_items')
@@ -301,7 +302,7 @@ async function loadPanelListItems(listId, container) {
   } else {
     const empty = document.createElement('li');
     empty.className = 'shop-list-item__sub-empty';
-    empty.textContent = 'Список порожній';
+    empty.textContent = t('shopEmptyTitle');
     container.appendChild(empty);
   }
 
@@ -325,11 +326,11 @@ function buildPanelSubItem(item, listId, container) {
       ${item.note ? `<span class="shop-list-item__sub-note">${escapeHTML(item.note)}</span>` : ''}
     </div>
     ${amountText ? `<span class="shop-list-item__sub-amount">${escapeHTML(amountText)}</span>` : ''}
-    <button class="shop-list-item__sub-add" title="Додати до активного списку">→</button>
-    <button class="shop-list-item__sub-btn shop-list-item__sub-btn--edit" aria-label="Редагувати">
+    <button class="shop-list-item__sub-add" title="${t('shopAddToActive')}">→</button>
+    <button class="shop-list-item__sub-btn shop-list-item__sub-btn--edit" aria-label="${t('shopEditItem')}">
       ${iconEdit.replace('<svg ', '<svg width="12" height="12" ')}
     </button>
-    <button class="shop-list-item__sub-btn shop-list-item__sub-btn--delete" aria-label="Видалити">
+    <button class="shop-list-item__sub-btn shop-list-item__sub-btn--delete" aria-label="${t('delete')}">
       ${iconTrash.replace('<svg ', '<svg width="12" height="12" ')}
     </button>
   `;
@@ -358,10 +359,10 @@ function buildPanelAddForm(listId, container, isWishlist = false) {
 
   if (isWishlist) {
     li.innerHTML = `
-      <input type="text" class="shop-panel-item-add__input" placeholder="Назва..." />
+      <input type="text" class="shop-panel-item-add__input" placeholder="${t('shopNamePlaceholder')}" />
       <div class="shop-panel-item-add__row">
-        <input type="text" class="shop-panel-item-add__note" placeholder="Примітка..." />
-        <button class="shop-panel-item-add__btn" aria-label="Додати">+</button>
+        <input type="text" class="shop-panel-item-add__note" placeholder="${t('shopNoteInputPlaceholder')}" />
+        <button class="shop-panel-item-add__btn" aria-label="${t('add')}">+</button>
       </div>
     `;
     const nameEl = li.querySelector('.shop-panel-item-add__input');
@@ -377,11 +378,11 @@ function buildPanelAddForm(listId, container, isWishlist = false) {
     nameEl.addEventListener('keydown', e => { if (e.key === 'Enter') doAdd(); });
   } else {
     li.innerHTML = `
-      <input type="text" class="shop-panel-item-add__input" placeholder="Назва продукту..." />
+      <input type="text" class="shop-panel-item-add__input" placeholder="${t('shopNamePlaceholder')}" />
       <div class="shop-panel-item-add__row">
-        <input type="number" class="shop-panel-item-add__qty"  placeholder="К-сть" min="0" step="any" />
-        <input type="text"   class="shop-panel-item-add__unit" placeholder="од." maxlength="8" />
-        <button class="shop-panel-item-add__btn" aria-label="Додати">+</button>
+        <input type="number" class="shop-panel-item-add__qty"  placeholder="${t('shopQtyPlaceholder')}" min="0" step="any" />
+        <input type="text"   class="shop-panel-item-add__unit" placeholder="${t('shopUnitShortPlaceholder')}" maxlength="8" />
+        <button class="shop-panel-item-add__btn" aria-label="${t('add')}">+</button>
       </div>
     `;
     const nameEl = li.querySelector('.shop-panel-item-add__input');
@@ -415,7 +416,7 @@ async function addPanelItem(name, qty, unit, listId, container, formLi, note = n
     }])
     .select().single();
 
-  if (error) { showToast('Помилка', 'error'); return; }
+  if (error) { showToast(t('shopErr'), 'error'); return; }
 
   // Видаляємо плашку "порожньо" якщо є
   container.querySelector('.shop-list-item__sub-empty')?.remove();
@@ -428,7 +429,7 @@ async function deletePanelItem(id, liEl, container) {
     .from('shopping_items').delete()
     .eq('id', id).eq('user_id', currentUser.id);
 
-  if (error) { showToast('Помилка', 'error'); return; }
+  if (error) { showToast(t('shopErr'), 'error'); return; }
   liEl.remove();
 
   // Якщо більше немає позицій — показати "порожньо"
@@ -436,7 +437,7 @@ async function deletePanelItem(id, liEl, container) {
   if (!hasItems) {
     const empty = document.createElement('li');
     empty.className = 'shop-list-item__sub-empty';
-    empty.textContent = 'Список порожній';
+    empty.textContent = t('shopEmptyTitle');
     container.prepend(empty);
   }
 }
@@ -459,7 +460,7 @@ async function copyToActiveList(item) {
   if (existing) {
     const newAmt = (parseFloat(existing.amount) || 0) + (parseFloat(item.amount) || 0);
     await updateItemAmount(existing.id, newAmt || null);
-    showToast(`"${finalName}" оновлено`);
+    showToast(`"${finalName}" ${t('shopUpdatedSuffix')}`);
     return;
   }
 
@@ -473,12 +474,12 @@ async function copyToActiveList(item) {
     }])
     .select().single();
 
-  if (error) { showToast('Помилка', 'error'); return; }
+  if (error) { showToast(t('shopErr'), 'error'); return; }
 
   activeItems.push(data);
   renderActiveList();
   renderProgress();
-  showToast(`"${finalName}" додано до списку`);
+  showToast(`"${finalName}" ${t('shopAddedSuffix')}`);
 }
 
 /* ============================================================
@@ -534,7 +535,7 @@ function buildActiveItem(item) {
   // і ламає поведінку на iOS Safari.
   li.innerHTML = `
     <label class="shop-item__check-label" for="${cbId}">
-      <input type="checkbox" class="shop-item__checkbox" id="${cbId}" ${item.is_checked ? 'checked' : ''} aria-label="Куплено">
+      <input type="checkbox" class="shop-item__checkbox" id="${cbId}" ${item.is_checked ? 'checked' : ''} aria-label="${t('shopBoughtAria')}">
       <span class="shop-item__custom-check"></span>
     </label>
     <div class="shop-item__info">
@@ -543,10 +544,10 @@ function buildActiveItem(item) {
     </div>
     ${amountText ? `<span class="shop-item__amount">${escapeHTML(amountText)}</span>` : ''}
     <div class="shop-item__actions">
-      <button class="shop-item__btn shop-item__btn--edit" aria-label="Редагувати">
+      <button class="shop-item__btn shop-item__btn--edit" aria-label="${t('shopEditItem')}">
         ${iconEdit.replace('<svg ', '<svg width="14" height="14" ')}
       </button>
-      <button class="shop-item__btn shop-item__btn--delete" aria-label="Видалити">
+      <button class="shop-item__btn shop-item__btn--delete" aria-label="${t('delete')}">
         ${iconTrash.replace('<svg ', '<svg width="14" height="14" ')}
       </button>
     </div>
@@ -590,7 +591,7 @@ function renderProgress() {
   const checked = activeItems.filter(i => i.is_checked).length;
   const pct     = total > 0 ? Math.round((checked / total) * 100) : 0;
 
-  if (countLabelEl)   countLabelEl.textContent = total > 0 ? `${checked} з ${total} куплено` : '';
+  if (countLabelEl)   countLabelEl.textContent = total > 0 ? `${checked} ${t('shopOfCount')} ${total} ${t('shopBoughtSuffix')}` : '';
   if (progressFillEl) progressFillEl.style.width = `${pct}%`;
   if (ringValueEl)    ringValueEl.textContent = `${checked}/${total}`;
   if (ringPathEl)     ringPathEl.setAttribute('stroke-dasharray', `${pct}, 100`);
@@ -601,8 +602,8 @@ function renderProgress() {
    ============================================================ */
 
 async function addItem(name, amount, unit) {
-  if (!currentUser) { showToast('Увійдіть в акаунт', 'error'); return; }
-  if (!mainListId)  { showToast('Помилка ініціалізації', 'error'); return; }
+  if (!currentUser) { showToast(t('signInRequired'), 'error'); return; }
+  if (!mainListId)  { showToast(t('shopErrInit'), 'error'); return; }
 
   // Резолв до канонічного продукту БД: "яблоко"/"apple"/"яблуко" → "Яблуко".
   // Зберігаємо під канонічною назвою, тому однакові продукти зливаються в один
@@ -635,7 +636,7 @@ async function addItem(name, amount, unit) {
     }])
     .select().single();
 
-  if (error) { showToast('Помилка додавання', 'error'); return; }
+  if (error) { showToast(t('shopErrAdd'), 'error'); return; }
   activeItems.push(data);
   renderActiveList();
   renderProgress();
@@ -645,7 +646,7 @@ async function updateItemAmount(id, newAmount) {
   const { error } = await supabase
     .from('shopping_items').update({ amount: newAmount })
     .eq('id', id).eq('user_id', currentUser.id);
-  if (error) { showToast('Помилка', 'error'); return; }
+  if (error) { showToast(t('shopErr'), 'error'); return; }
   const item = activeItems.find(i => i.id === id);
   if (item) item.amount = newAmount;
   renderActiveList();
@@ -656,7 +657,7 @@ async function toggleItem(id, isChecked) {
   const { error } = await supabase
     .from('shopping_items').update({ is_checked: isChecked })
     .eq('id', id).eq('user_id', currentUser.id);
-  if (error) { showToast('Помилка', 'error'); return; }
+  if (error) { showToast(t('shopErr'), 'error'); return; }
   const item = activeItems.find(i => i.id === id);
   if (item) item.is_checked = isChecked;
   const li = activeListEl.querySelector(`[data-id="${id}"]`);
@@ -668,7 +669,7 @@ async function deleteItem(id) {
   const { error } = await supabase
     .from('shopping_items').delete()
     .eq('id', id).eq('user_id', currentUser.id);
-  if (error) { showToast('Помилка', 'error'); return; }
+  if (error) { showToast(t('shopErr'), 'error'); return; }
   activeItems = activeItems.filter(i => i.id !== id);
   renderActiveList();
   renderProgress();
@@ -676,14 +677,14 @@ async function deleteItem(id) {
 
 async function clearCheckedItems() {
   const ids = activeItems.filter(i => i.is_checked).map(i => i.id);
-  if (!ids.length) { showToast('Немає куплених позицій', 'info'); return; }
+  if (!ids.length) { showToast(t('shopNoChecked'), 'info'); return; }
   const { error } = await supabase
     .from('shopping_items').delete().in('id', ids).eq('user_id', currentUser.id);
-  if (error) { showToast('Помилка', 'error'); return; }
+  if (error) { showToast(t('shopErr'), 'error'); return; }
   activeItems = activeItems.filter(i => !i.is_checked);
   renderActiveList();
   renderProgress();
-  showToast(`Видалено ${ids.length} куплених позицій`);
+  showToast(`${t('shopRemovedPrefix')} ${ids.length} ${t('shopRemovedSuffix')}`);
 }
 
 /* ============================================================
@@ -691,65 +692,65 @@ async function clearCheckedItems() {
    ============================================================ */
 
 async function createList(name, type) {
-  if (!currentUser || !name.trim()) { showToast('Введіть назву', 'error'); return; }
+  if (!currentUser || !name.trim()) { showToast(t('shopEnterName'), 'error'); return; }
   const { data, error } = await supabase
     .from('shopping_lists')
     .insert([{ user_id: currentUser.id, name: name.trim(), type }])
     .select().single();
-  if (error) { showToast('Помилка створення', 'error'); return; }
+  if (error) { showToast(t('shopErrCreate'), 'error'); return; }
   allLists.push(data);
   if (type === 'wishlist') renderWishlistPanel();
   else renderLists();
-  showToast(`"${data.name}" створено`);
+  showToast(`"${data.name}" ${t('shopCreatedSuffix')}`);
 }
 
 async function pinListById(id, isPinned) {
   const { error } = await supabase
     .from('shopping_lists').update({ is_pinned: isPinned })
     .eq('id', id).eq('user_id', currentUser.id);
-  if (error) { showToast('Помилка', 'error'); return; }
+  if (error) { showToast(t('shopErr'), 'error'); return; }
   const l = allLists.find(l => l.id === id);
   if (l) l.is_pinned = isPinned;
   renderLists();
   renderWishlistPanel();
-  showToast(isPinned ? 'Закріплено' : 'Відкріплено');
+  showToast(isPinned ? t('shopPinned') : t('shopUnpinned'));
 }
 
 async function clearListById(id) {
   showConfirmModal({
-    title: 'Очистити список?',
-    message: 'Всі позиції зі списку буде видалено.',
-    confirmText: 'Так, очистити',
+    title: t('shopClearTitle'),
+    message: t('shopClearMsg'),
+    confirmText: t('shopClearYes'),
     onConfirm: async () => {
       const { error } = await supabase
         .from('shopping_items').delete()
         .eq('list_id', id).eq('user_id', currentUser.id);
-      if (error) { showToast('Помилка', 'error'); return; }
+      if (error) { showToast(t('shopErr'), 'error'); return; }
       if (panelOpenId === id) {
         const li = document.querySelector(`.shop-list-item[data-id="${id}"]`);
         const sub = li?.querySelector('.shop-list-item__sub-items');
         if (sub) await loadPanelListItems(id, sub);
       }
-      showToast('Список очищено');
+      showToast(t('shopListCleared'));
     },
   });
 }
 
 async function deleteListById(id) {
   showConfirmModal({
-    title: 'Видалити список?',
-    message: 'Цю дію неможливо скасувати.',
-    confirmText: 'Так, видалити',
+    title: t('shopDeleteTitle'),
+    message: t('shopDeleteMsg'),
+    confirmText: t('shopDeleteYes'),
     onConfirm: async () => {
       const { error } = await supabase
         .from('shopping_lists').delete()
         .eq('id', id).eq('user_id', currentUser.id);
-      if (error) { showToast('Помилка', 'error'); return; }
+      if (error) { showToast(t('shopErr'), 'error'); return; }
       allLists = allLists.filter(l => l.id !== id);
       if (panelOpenId === id) panelOpenId = null;
       renderLists();
       renderWishlistPanel();
-      showToast('Список видалено');
+      showToast(t('shopListDeleted'));
     },
   });
 }
@@ -757,13 +758,13 @@ async function deleteListById(id) {
 async function shareListById(id) {
   const list = allLists.find(l => l.id === id);
   const token = list?.share_token;
-  if (!token) { showToast('Помилка посилання', 'error'); return; }
+  if (!token) { showToast(t('shopErrLink'), 'error'); return; }
   const url = buildShareUrl(token);
   if (navigator.share) {
     try { await navigator.share({ title: list.name, url }); } catch { }
   } else {
     await navigator.clipboard.writeText(url);
-    showToast('Посилання скопійовано');
+    showToast(t('shopLinkCopied'));
   }
 }
 
@@ -808,14 +809,14 @@ async function saveEdit() {
   const name   = editName.value.trim();
   const amount = parseFloat(editQty.value) || null;
   const unit   = editUnit.value.trim() || null;
-  if (!name) { showToast('Введіть назву', 'error'); return; }
+  if (!name) { showToast(t('shopEnterName'), 'error'); return; }
 
   const note = editNote.value.trim() || null;
 
   const { error } = await supabase
     .from('shopping_items').update({ name, amount, unit, note })
     .eq('id', editingItemId).eq('user_id', currentUser.id);
-  if (error) { showToast('Помилка', 'error'); return; }
+  if (error) { showToast(t('shopErr'), 'error'); return; }
 
   if (editingPanelCtx) {
     const { listId, container } = editingPanelCtx;
@@ -850,10 +851,10 @@ async function importFromWeekMenu() {
   }));
 
   const { error } = await supabase.from('shopping_items').insert(rows);
-  if (error) { showToast('Помилка імпорту', 'error'); return; }
+  if (error) { showToast(t('shopErrImport'), 'error'); return; }
   clearWeekShoppingList();
   importBannerEl.hidden = true;
-  showToast(`Імпортовано ${rows.length} продуктів`);
+  showToast(`${t('shopImportedPrefix')} ${rows.length} ${t('shopImportedSuffix')}`);
   await loadActiveItems();
 }
 
@@ -1003,8 +1004,8 @@ function printList() {
     if (!groups[cat]) groups[cat] = [];
     groups[cat].push(i);
   });
-  let html = '<html><head><title>Список покупок</title></head><body>';
-  html += '<h1>Список покупок</h1>';
+  let html = `<html><head><title>${t('navShoppingList')}</title></head><body>`;
+  html += `<h1>${t('navShoppingList')}</h1>`;
   Object.entries(groups)
     .sort(([a], [b]) => categoryOrderIndex(a) - categoryOrderIndex(b))
     .forEach(([cat, items]) => {
@@ -1024,13 +1025,13 @@ function printList() {
 async function shareList() {
   const list = allLists.find(l => l.id === mainListId);
   const token = list?.share_token;
-  if (!token) { showToast('Помилка посилання', 'error'); return; }
+  if (!token) { showToast(t('shopErrLink'), 'error'); return; }
   const url = buildShareUrl(token);
   if (navigator.share) {
-    try { await navigator.share({ title: list.name || 'Список покупок', url }); } catch { }
+    try { await navigator.share({ title: list.name || t('navShoppingList'), url }); } catch { }
   } else {
     await navigator.clipboard.writeText(url);
-    showToast('Посилання скопійовано');
+    showToast(t('shopLinkCopied'));
   }
 }
 
@@ -1090,7 +1091,7 @@ function bindEvents() {
   document.getElementById('newlist-create-btn').addEventListener('click', async () => {
     const name = document.getElementById('newlist-name-input').value.trim();
     const type = document.querySelector('input[name="list-type"]:checked')?.value || 'shopping';
-    if (!name) { showToast('Введіть назву', 'error'); return; }
+    if (!name) { showToast(t('shopEnterName'), 'error'); return; }
     await createList(name, type);
     document.getElementById('newlist-name-input').value = '';
     const body = document.getElementById('panel-new-list-body');

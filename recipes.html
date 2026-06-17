@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Рецепти</title>
+    <title data-i18n-title="navRecipes">Рецепти</title>
 
     <script>
       (function () {
@@ -101,7 +101,7 @@
         <div class="header__right">
           <a href="#" id="headerAuthBtn" class="header__profile-name" data-i18n="login"> Увійти </a>
         </div>
-        <button class="header__burger" aria-label="Меню" aria-expanded="false">
+        <button class="header__burger" data-i18n-aria="menuLabel" aria-label="Меню" aria-expanded="false">
           <span></span>
           <span></span>
           <span></span>
@@ -127,7 +127,7 @@
                     <path
                       d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"></path>
                   </svg>
-                  <span>Нові рецепти</span>
+                  <span data-i18n="newRecipes">Нові рецепти</span>
                 </button>
               </div>
 
@@ -158,7 +158,7 @@
                   placeholder="Пошук за назвою або інгредієнтом..."
                   data-i18n-placeholder="searchPlaceholder"
                   id="recipe-search-input" />
-                <button id="clear-search-btn" type="button" aria-label="Очистити пошук">
+                <button id="clear-search-btn" type="button" data-i18n-aria="clearSearch" aria-label="Очистити пошук">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                 </button>
                 <button class="search-icon-btn" id="search-mode-btn" type="button"></button>
@@ -170,14 +170,14 @@
             <!-- BROWSING: власні рецепти -->
             <section class="recipe-section" id="section-own" hidden>
               <div class="recipe-section__header">
-                <h2 class="recipe-section__title">Твої рецепти</h2>
+                <h2 class="recipe-section__title" data-i18n="ownRecipesTitle">Твої рецепти</h2>
                 <span class="recipe-section__badge" id="own-count">0</span>
               </div>
               <div class="recipe-own-filter" id="own-filter" role="tablist">
-                <button class="recipe-own-filter__chip is-active" data-filter="all" role="tab">Усі</button>
-                <button class="recipe-own-filter__chip" data-filter="private" role="tab">Приватні</button>
-                <button class="recipe-own-filter__chip" data-filter="public" role="tab">Публічні</button>
-                <button class="recipe-own-filter__chip" data-filter="pending" role="tab">На модерації</button>
+                <button class="recipe-own-filter__chip is-active" data-filter="all" role="tab" data-i18n="filterAll">Усі</button>
+                <button class="recipe-own-filter__chip" data-filter="private" role="tab" data-i18n="filterPrivate">Приватні</button>
+                <button class="recipe-own-filter__chip" data-filter="public" role="tab" data-i18n="filterPublic">Публічні</button>
+                <button class="recipe-own-filter__chip" data-filter="pending" role="tab" data-i18n="filterPending">На модерації</button>
               </div>
               <div class="recipe-grid" id="own-row"></div>
             </section>
@@ -185,7 +185,7 @@
             <!-- BROWSING: загальна база -->
             <section class="recipe-section" id="section-community">
               <div class="recipe-section__header">
-                <h2 class="recipe-section__title">Загальна база</h2>
+                <h2 class="recipe-section__title" data-i18n="communityBase">Загальна база</h2>
                 <span class="recipe-section__badge" id="community-count">0</span>
               </div>
               <div class="recipe-grid" id="community-grid"></div>
@@ -194,11 +194,9 @@
             <!-- SEARCH: власні результати -->
             <section class="recipe-section" id="section-search-own" hidden>
               <div class="recipe-section__header">
-                <h2 class="recipe-section__title">Мої</h2>
+                <h2 class="recipe-section__title" data-i18n="mineShort">Мої</h2>
                 <span class="recipe-section__badge" id="search-own-count">0</span>
-                <button class="recipe-section__show-all" id="search-own-show-all" hidden>
-                  Показати всі
-                </button>
+                <button class="recipe-section__show-all" id="search-own-show-all" hidden data-i18n="showAll">Показати всі</button>
               </div>
               <div class="recipe-grid" id="search-own-grid"></div>
             </section>
@@ -206,11 +204,9 @@
             <!-- SEARCH: загальні результати -->
             <section class="recipe-section" id="section-search-community" hidden>
               <div class="recipe-section__header">
-                <h2 class="recipe-section__title">Загальні</h2>
+                <h2 class="recipe-section__title" data-i18n="commonShort">Загальні</h2>
                 <span class="recipe-section__badge" id="search-community-count">0</span>
-                <button class="recipe-section__show-all" id="search-community-show-all" hidden>
-                  Показати всі
-                </button>
+                <button class="recipe-section__show-all" id="search-community-show-all" hidden data-i18n="showAll">Показати всі</button>
               </div>
               <div class="recipe-grid" id="search-community-grid"></div>
             </section>
@@ -238,9 +234,9 @@
                   <path
                     d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"></path>
                 </svg>
-                Нові рецепти
+                <span data-i18n="newRecipes">Нові рецепти</span>
               </h2>
-              <button class="new-recipes-drawer__close" id="new-recipes-close" aria-label="Закрити">
+              <button class="new-recipes-drawer__close" id="new-recipes-close" data-i18n-aria="close" aria-label="Закрити">
                 <svg
                   width="20"
                   height="20"
@@ -254,14 +250,14 @@
               </button>
             </div>
             <div class="new-recipes-drawer__body" id="new-recipes-body">
-              <p class="new-recipes-drawer__loading">Завантаження...</p>
+              <p class="new-recipes-drawer__loading" data-i18n="loading">Завантаження...</p>
             </div>
           </div>
         </div>
 
     <div id="view-recipe-modal" class="modal-overlay">
       <div class="modal-card recipe-detail">
-        <button class="modal-card__close" id="close-view-modal" aria-label="Закрити">
+        <button class="modal-card__close" id="close-view-modal" data-i18n-aria="close" aria-label="Закрити">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
 
@@ -307,8 +303,8 @@
         </div>
 
         <div class="nutrition-summary-meta">
-          <p class="nutrition-summary-weight" id="view-total-weight">Вага готової страви не вказана</p>
-          <p class="nutrition-summary-note" id="view-nutrition-note">
+          <p class="nutrition-summary-weight" id="view-total-weight" data-i18n="weightMissing">Вага готової страви не вказана</p>
+          <p class="nutrition-summary-note" id="view-nutrition-note" data-i18n="nutritionRaw">
             Сума сирих інгредієнтів. Вкажіть вагу готової страви, щоб побачити КБЖУ на 100 г.
           </p>
         </div>
@@ -422,7 +418,7 @@
 
       <div class="site-footer__bottom">
         <p class="site-footer__copyright">© 2026 MintoFood</p>
-        <nav class="site-footer__lang" aria-label="Мова">
+        <nav class="site-footer__lang" data-i18n-aria="languageLabel" aria-label="Мова">
           <button class="site-footer__lang-btn is-active" data-lang="uk">UA</button>
           <span aria-hidden="true">·</span>
           <button class="site-footer__lang-btn" data-lang="en">EN</button>

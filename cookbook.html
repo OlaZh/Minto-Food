@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Книга рецептів</title>
+    <title data-i18n-title="navCookbook">Книга рецептів</title>
 
     <script>
       (function () {
@@ -101,7 +101,7 @@
         <div class="header__right">
           <a href="#" id="headerAuthBtn" class="header__profile-name" data-i18n="login"> Увійти </a>
         </div>
-        <button class="header__burger" aria-label="Меню" aria-expanded="false">
+        <button class="header__burger" data-i18n-aria="menuLabel" aria-label="Меню" aria-expanded="false">
           <span></span>
           <span></span>
           <span></span>
@@ -114,7 +114,7 @@
       <div class="container">
         <div class="cookbook-page">
           <div class="page-header">
-            <h1 class="page-header__title">Книга рецептів</h1>
+            <h1 class="page-header__title" data-i18n="navCookbook">Книга рецептів</h1>
             <div class="page-header__actions page-header__actions--right">
               <button class="cookbook-page__add-btn cookbook-page__add-btn--mobile js-add-book-btn">
                 <svg
@@ -130,7 +130,7 @@
                   <line x1="12" y1="5" x2="12" y2="19" />
                   <line x1="5" y1="12" x2="19" y2="12" />
                 </svg>
-                <span>Нова книга</span>
+                <span data-i18n="newBook">Нова книга</span>
               </button>
             </div>
           </div>
@@ -157,9 +157,9 @@
                   <line x1="12" y1="5" x2="12" y2="19" />
                   <line x1="5" y1="12" x2="19" y2="12" />
                 </svg>
-                Нова книга
+                <span data-i18n="newBook">Нова книга</span>
               </button>
-              <h2 class="cookbook-sidebar__title">Нещодавно переглянуті</h2>
+              <h2 class="cookbook-sidebar__title" data-i18n="recentViewed">Нещодавно переглянуті</h2>
               <div class="cookbook-recent" id="recentRecipes"></div>
             </aside>
           </div>
@@ -170,7 +170,7 @@
     <!-- Модалка: Відкрита книга -->
     <div class="modal-overlay" id="bookModal">
       <div class="cookbook-modal">
-        <button class="modal__close" id="closeBookModal" aria-label="Закрити">
+        <button class="modal__close" id="closeBookModal" data-i18n-aria="close" aria-label="Закрити">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="24"
@@ -203,7 +203,7 @@
     <!-- Модалка: Створити нову книгу -->
     <div class="modal-overlay" id="newBookModal">
       <div class="cookbook-modal cookbook-modal--small">
-        <button class="modal__close" id="closeNewBookModal" aria-label="Закрити">
+        <button class="modal__close" id="closeNewBookModal" data-i18n-aria="close" aria-label="Закрити">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="24"
@@ -219,27 +219,28 @@
           </svg>
         </button>
 
-        <h2 class="cookbook-modal__title">Нова книга</h2>
+        <h2 class="cookbook-modal__title" data-i18n="newBook">Нова книга</h2>
 
         <form class="cookbook-form" id="newBookForm">
           <div class="cookbook-form__field">
-            <label for="newBookName">Назва книги</label>
+            <label for="newBookName" data-i18n="bookNameLabel">Назва книги</label>
             <input
               type="text"
               id="newBookName"
+              data-i18n-placeholder="bookNamePlaceholder"
               placeholder="Наприклад: Обіди на роботу"
               required
               maxlength="50" />
           </div>
 
           <div class="cookbook-form__field">
-            <label for="newBookIcon">Іконка</label>
+            <label for="newBookIcon" data-i18n="bookIconLabel">Іконка</label>
             <div class="cookbook-form__icons" id="iconPicker">
               <!-- populated by JS -->
             </div>
           </div>
 
-          <button type="submit" class="cookbook-form__submit">Створити книгу</button>
+          <button type="submit" class="cookbook-form__submit" data-i18n="createBookBtn">Створити книгу</button>
         </form>
       </div>
     </div>
@@ -324,7 +325,7 @@
 
       <div class="site-footer__bottom">
         <p class="site-footer__copyright">© 2026 MintoFood</p>
-        <nav class="site-footer__lang" aria-label="Мова">
+        <nav class="site-footer__lang" data-i18n-aria="languageLabel" aria-label="Мова">
           <button class="site-footer__lang-btn is-active" data-lang="uk">UA</button>
           <span aria-hidden="true">·</span>
           <button class="site-footer__lang-btn" data-lang="en">EN</button>

@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Minto Food</title>
+    <title data-i18n-title="navWeekMenu">Minto Food</title>
 
     <script>
       document.documentElement.classList.add('no-transition');
@@ -101,7 +101,7 @@
         <div class="header__right">
           <a href="#" id="headerAuthBtn" class="header__profile-name" data-i18n="login"> Увійти </a>
         </div>
-        <button class="header__burger" aria-label="Меню" aria-expanded="false">
+        <button class="header__burger" data-i18n-aria="menuLabel" aria-label="Меню" aria-expanded="false">
           <span></span>
           <span></span>
           <span></span>
@@ -120,7 +120,7 @@
           <section class="week-menu">
             <!-- ЗАГОЛОВОК: стрілки по краях, дії по центру -->
             <div class="week-menu__header">
-              <button class="week-nav-btn" id="prevWeek" aria-label="Попередній тиждень">
+              <button class="week-nav-btn" id="prevWeek" data-i18n-aria="prevWeekAria" aria-label="Попередній тиждень">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
               </button>
 
@@ -133,7 +133,7 @@
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg>
                   Вставити тиждень
                 </button>
-                <button class="week-action-btn" id="clearWeekBtn">
+                <button class="week-action-btn" id="clearWeekBtn" data-i18n="clearWeek">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
                   Очистити тиждень
                 </button>
@@ -143,7 +143,7 @@
                 </button>
               </div>
 
-              <button class="week-nav-btn" id="nextWeek" aria-label="Наступний тиждень">
+              <button class="week-nav-btn" id="nextWeek" data-i18n-aria="nextWeekAria" aria-label="Наступний тиждень">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
               </button>
             </div>
@@ -377,7 +377,7 @@
     <div id="weekAddModal" class="modal" hidden>
       <div class="modal__overlay"></div>
       <div class="modal__window">
-        <button class="modal__close" aria-label="Закрити">
+        <button class="modal__close" data-i18n-aria="close" aria-label="Закрити">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
         <h2 class="modal__title" data-i18n="addMealTitle">Додати страву</h2>
@@ -481,7 +481,7 @@
 
       <div class="site-footer__bottom">
         <p class="site-footer__copyright">© 2026 MintoFood</p>
-        <nav class="site-footer__lang" aria-label="Мова">
+        <nav class="site-footer__lang" data-i18n-aria="languageLabel" aria-label="Мова">
           <button class="site-footer__lang-btn is-active" data-lang="uk">UA</button>
           <span aria-hidden="true">·</span>
           <button class="site-footer__lang-btn" data-lang="en">EN</button>

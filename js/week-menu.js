@@ -27,6 +27,33 @@ document.addEventListener('DOMContentLoaded', async () => {
     return i18n[lang]?.[key] || key;
   }
 
+  function formatText(key, vars = {}) {
+    return Object.entries(vars).reduce(
+      (text, [name, value]) => text.replaceAll(`{${name}}`, String(value)),
+      t(key),
+    );
+  }
+
+  function getMacroLetter(type) {
+    if (type === 'protein') return t('proteinLetter');
+    if (type === 'fat') return t('fatLetter');
+    return t('carbsLetter');
+  }
+
+  function getMealWord(count) {
+    if (lang === 'en') return count === 1 ? t('mealSingle') : t('mealMany');
+    if (lang === 'pl') return pluralUA(count, [t('mealSingle'), t('mealFew'), t('mealMany')]);
+    return pluralUA(count, [t('mealSingle'), t('mealFew'), t('mealMany')]);
+  }
+
+  function getProductWord(count) {
+    if (lang === 'en') return count === 1 ? t('productSingle') : t('productMany');
+    if (lang === 'pl') {
+      return pluralUA(count, [t('productSingle'), t('productFew'), t('productMany')]);
+    }
+    return pluralUA(count, [t('productSingle'), t('productFew'), t('productMany')]);
+  }
+
   function cleanName(name) {
     if (!name) return '';
     return name
@@ -138,7 +165,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const { data, error } = await query;
 
     if (error) {
-      console.error('Помилка завантаження week_meals:', error);
+      console.error(t('weekLoadError'), error);
       return;
     }
 
@@ -204,11 +231,11 @@ document.addEventListener('DOMContentLoaded', async () => {
       li.dataset.meal = mealType;
 
       // Прибираємо слово "Рецепт" з початку назви
-      const cleanItemName = item.name.replace(/^Рецепт\s+/i, '');
+      const cleanItemName = cleanName(item.name);
 
       li.innerHTML = `
       <span class="meal-cell__item-name" title="${cleanItemName}">${cleanItemName}</span>
-        <button class="meal-cell__item-delete" title="Видалити">${iconClose}</button>
+        <button class="meal-cell__item-delete" title="${t('delete')}">${iconClose}</button>
     `;
 
       // Клік на назву — відкрити картку рецепта
@@ -266,15 +293,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (totalMacroKcal === 0) {
       summaryCell.innerHTML = `
         <div class="summary-balance summary-balance--empty">
-          <div class="balance-bar"><div class="balance-bar__label">Б</div>
+          <div class="balance-bar"><div class="balance-bar__label">${t('proteinLetter')}</div>
             <div class="balance-bar__track" style="--target: 30%"><div class="balance-bar__fill" style="width: 0%"></div></div>
             <div class="balance-bar__pct">—</div>
           </div>
-          <div class="balance-bar"><div class="balance-bar__label">Ж</div>
+          <div class="balance-bar"><div class="balance-bar__label">${t('fatLetter')}</div>
             <div class="balance-bar__track" style="--target: 30%"><div class="balance-bar__fill" style="width: 0%"></div></div>
             <div class="balance-bar__pct">—</div>
           </div>
-          <div class="balance-bar"><div class="balance-bar__label">В</div>
+          <div class="balance-bar"><div class="balance-bar__label">${t('carbsLetter')}</div>
             <div class="balance-bar__track" style="--target: 40%"><div class="balance-bar__fill" style="width: 0%"></div></div>
             <div class="balance-bar__pct">—</div>
           </div>
@@ -309,9 +336,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     summaryCell.innerHTML = `
       <div class="summary-balance">
-        ${renderBar('Б', proteinPct, 30, proteinStatus, 'protein')}
-        ${renderBar('Ж', fatPct, 30, fatStatus, 'fat')}
-        ${renderBar('В', carbsPct, 40, carbsStatus, 'carbs')}
+        ${renderBar(getMacroLetter('protein'), proteinPct, 30, proteinStatus, 'protein')}
+        ${renderBar(getMacroLetter('fat'), fatPct, 30, fatStatus, 'fat')}
+        ${renderBar(getMacroLetter('carbs'), carbsPct, 40, carbsStatus, 'carbs')}
       </div>
     `;
   }
@@ -386,7 +413,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const { data, error } = await supabase.from('week_meals').insert([payload]).select().single();
 
     if (error) {
-      console.error('Помилка додавання страви:', error);
+      console.error(t('mealAddError'), error);
       return;
     }
 
@@ -409,8 +436,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   function openDeleteConfirm(id, day, mealType) {
     showConfirmModal({
-      title: 'Видалити страву?',
-      confirmText: 'Так, видалити',
+      title: t('deleteMealTitle'),
+      confirmText: t('confirmDelete'),
       onConfirm: async () => {
         const { error } = await supabase.from('week_meals').delete().eq('id', id);
         if (!error) {
@@ -523,7 +550,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     ]);
 
     if (sharedResponse.error || savedLinksResponse.error) {
-      showEmpty(resultsEl, iconAlert, 'Помилка завантаження');
+      showEmpty(resultsEl, iconAlert, t('weekLoadError'));
       return;
     }
 
@@ -540,7 +567,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       const { data: savedData, error: savedError } = await savedQuery;
       if (savedError) {
-        showEmpty(resultsEl, iconAlert, 'Помилка завантаження');
+        showEmpty(resultsEl, iconAlert, t('weekLoadError'));
         return;
       }
 
@@ -561,7 +588,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (savedRecipes.length > 0) {
       const section = document.createElement('div');
       section.className = 'week-modal__section';
-      section.innerHTML = `<p class="week-modal__section-title">${iconBookOpen} Мої книги</p>`;
+      section.innerHTML = `<p class="week-modal__section-title">${iconBookOpen} ${t('myBooks')}</p>`;
       savedRecipes.forEach((recipe) => {
         section.appendChild(createRecipeResultItem(recipe));
       });
@@ -571,7 +598,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (sharedRecipes.length > 0) {
       const section = document.createElement('div');
       section.className = 'week-modal__section';
-      section.innerHTML = `<p class="week-modal__section-title">${iconGlobe} Спільна база</p>`;
+      section.innerHTML = `<p class="week-modal__section-title">${iconGlobe} ${t('communityBase')}</p>`;
       sharedRecipes.forEach((recipe) => {
         section.appendChild(createRecipeResultItem(recipe));
       });
@@ -586,7 +613,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     item.innerHTML = `
       <div class="week-modal__result-info">
         <span class="week-modal__result-name">${name}</span>
-        <span class="week-modal__result-kcal">${recipe.kcal || 0} ккал · Б${recipe.protein || 0} Ж${recipe.fat || 0} В${recipe.carbs || 0}</span>
+        <span class="week-modal__result-kcal">${recipe.kcal || 0} ${t('kcalShort')} · ${t('proteinLetter')}${recipe.protein || 0} ${t('fatLetter')}${recipe.fat || 0} ${t('carbsLetter')}${recipe.carbs || 0}</span>
       </div>
       <button class="week-modal__result-add">+</button>
     `;
@@ -612,7 +639,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (query) {
       const msg = document.createElement('p');
       msg.className = 'week-modal__empty';
-      msg.textContent = `За запитом "${query}" нічого не знайдено`;
+      msg.textContent = formatText('searchNoResults', { query });
       container.appendChild(msg);
     }
   }
@@ -660,7 +687,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     if (recipeIds.length === 0) {
-      showToast('Немає рецептів для формування списку покупок', 'info');
+      showToast(t('noRecipesForShopping'), 'info');
       return;
     }
 
@@ -671,8 +698,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       .in('recipe_id', recipeIds);
 
     if (error) {
-      console.error('Помилка завантаження інгредієнтів:', error);
-      showToast('Помилка формування списку', 'error');
+      console.error(t('shoppingBuildError'), error);
+      showToast(t('shoppingBuildError'), 'error');
       return;
     }
 
@@ -712,7 +739,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     saveWeekShoppingList(shoppingList);
 
-    showToast(`Список покупок сформовано: ${shoppingList.length} продуктів`);
+    showToast(
+      formatText('shoppingBuilt', {
+        count: shoppingList.length,
+        word: getProductWord(shoppingList.length),
+      }),
+    );
   }
 
   // ================== КОПІЮВАННЯ ТИЖНЯ ==================
@@ -724,7 +756,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     copyWeekBtn.addEventListener('click', () => {
       const snapshot = JSON.parse(JSON.stringify(weekMealsState));
       setItem('copied_week', snapshot);
-      showToast('Тиждень скопійовано!');
+      showToast(t('weekCopied'));
     });
   }
 
@@ -732,7 +764,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     pasteWeekBtn.addEventListener('click', async () => {
       const saved = getItem('copied_week');
       if (!saved) {
-        showToast('Немає скопійованого тижня', 'info');
+        showToast(t('noCopiedWeek'), 'info');
         return;
       }
 
@@ -776,13 +808,13 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (rows.length > 0) {
         const { error } = await supabase.from('week_meals').insert(rows);
         if (error) {
-          console.error('Помилка вставки тижня:', error);
-          showToast('Помилка вставки тижня', 'error');
+          console.error(t('weekPasteError'), error);
+          showToast(t('weekPasteError'), 'error');
           return;
         }
       }
 
-      showToast('Тиждень вставлено!');
+      showToast(t('weekPasted'));
       loadWeekFromSupabase();
     });
   }
@@ -794,9 +826,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (clearWeekBtn) {
     clearWeekBtn.addEventListener('click', () => {
       showConfirmModal({
-        title: 'Очистити весь тиждень?',
-        message: 'Усі страви цього тижня будуть видалені. Цю дію неможливо скасувати.',
-        confirmText: 'Так, очистити',
+        title: t('clearWeekTitle'),
+        message: t('clearWeekMessage'),
+        confirmText: t('clearWeekConfirm'),
         onConfirm: async () => {
           const weekStartStr = getLocalDateString(currentWeekStart);
           const {
@@ -818,7 +850,7 @@ document.addEventListener('DOMContentLoaded', async () => {
               });
             });
             renderAllCells();
-            showToast('Тиждень очищено');
+            showToast(t('weekCleared'));
           }
         },
       });
@@ -890,8 +922,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     toolbarEl.className = 'week-mobile__toolbar';
     toolbarEl.innerHTML = `
       <div class="week-mobile__toggle-group">
-        <button type="button" class="week-mobile__toggle-btn week-mobile__toggle-btn--active" data-view="day">День</button>
-        <button type="button" class="week-mobile__toggle-btn" data-view="week">Весь тиждень</button>
+        <button type="button" class="week-mobile__toggle-btn week-mobile__toggle-btn--active" data-view="day">${t('dayView')}</button>
+        <button type="button" class="week-mobile__toggle-btn" data-view="week">${t('fullWeekView')}</button>
       </div>
     `;
     mobileView.appendChild(toolbarEl);
@@ -905,7 +937,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     weekViewEl.className = 'week-mobile__week-view';
     weekViewEl.hidden = true;
     weekViewEl.innerHTML =
-      '<p class="week-mobile__week-placeholder">Вигляд цілого тижня — скоро</p>';
+      `<p class="week-mobile__week-placeholder">${t('weekViewSoon')}</p>`;
     mobileView.appendChild(weekViewEl);
 
     toolbarEl.querySelectorAll('.week-mobile__toggle-btn').forEach((btn) => {
@@ -936,16 +968,16 @@ document.addEventListener('DOMContentLoaded', async () => {
       mealsCard.className = 'week-mobile__meals-card';
       mealsCard.innerHTML = `
         <div class="week-mobile__meals-header">
-          <span>Прийоми їжі</span>
+          <span>${t('dayMenuTitle')}</span>
           <div class="week-mobile__menu-wrap">
-            <button type="button" class="week-mobile__menu-btn" aria-label="Дії">
+            <button type="button" class="week-mobile__menu-btn" aria-label="${t('menuActions')}">
               ${iconMoreVertical.replace('<svg ', '<svg width="16" height="16" ')}
             </button>
             <div class="week-mobile__dropdown" hidden>
-              <button type="button" class="week-mobile__dropdown-item js-mob-copy">Копіювати тиждень</button>
-              <button type="button" class="week-mobile__dropdown-item js-mob-paste">Вставити тиждень</button>
-              <button type="button" class="week-mobile__dropdown-item week-mobile__dropdown-item--danger js-mob-clear">Очистити тиждень</button>
-              <button type="button" class="week-mobile__dropdown-item js-mob-shopping">До списку покупок</button>
+              <button type="button" class="week-mobile__dropdown-item js-mob-copy">${t('copyWeek')}</button>
+              <button type="button" class="week-mobile__dropdown-item js-mob-paste">${t('pasteWeek')}</button>
+              <button type="button" class="week-mobile__dropdown-item week-mobile__dropdown-item--danger js-mob-clear">${t('clearWeek')}</button>
+              <button type="button" class="week-mobile__dropdown-item js-mob-shopping">${t('toShoppingList')}</button>
             </div>
           </div>
         </div>
@@ -980,7 +1012,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const items = weekMealsState[day][mealType] || [];
         const count = items.length;
         const kcal = items.reduce((s, it) => s + (Number(it.kcal) || 0), 0);
-        const countWord = pluralUA(count, ['страва', 'страви', 'страв']);
+        const countWord = getMealWord(count);
 
         const accordion = document.createElement('div');
         accordion.className = 'week-mobile__accordion';
@@ -997,7 +1029,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         addBtn.innerHTML =
           iconPlus.replace('<svg ', '<svg width="12" height="12" ');
 
-        const infoText = count > 0 ? count + ' ' + countWord + ' · ' + kcal + ' ккал' : '';
+        const infoText =
+          count > 0 ? count + ' ' + countWord + ' · ' + kcal + ' ' + t('kcalShort') : '';
         accHeader.innerHTML = `
           <span class="week-mobile__acc-name">${t(mealType)}</span>
           <span class="week-mobile__acc-info">${infoText}</span>
@@ -1012,12 +1045,12 @@ document.addEventListener('DOMContentLoaded', async () => {
           const ul = document.createElement('ul');
           ul.className = 'week-mobile__acc-items';
           items.forEach((item) => {
-            const cleanName = item.name.replace(/^Рецепт\s+/i, '');
+            const cleanNameValue = cleanName(item.name);
             const li = document.createElement('li');
             li.className = 'week-mobile__acc-item';
             li.innerHTML = `
-              <span class="week-mobile__acc-item-name">${cleanName}</span>
-              <span class="week-mobile__acc-item-kcal">${item.kcal || 0} ккал</span>
+              <span class="week-mobile__acc-item-name">${cleanNameValue}</span>
+              <span class="week-mobile__acc-item-kcal">${item.kcal || 0} ${t('kcalShort')}</span>
               <button type="button" class="week-mobile__acc-item-del">×</button>
             `;
             li.querySelector('.week-mobile__acc-item-del').addEventListener('click', (e) => {
@@ -1069,16 +1102,16 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (totalMacroKcal === 0) {
         summaryEl.innerHTML = `
           <div class="summary-balance summary-balance--empty">
-            <span class="week-mobile__summary-label">Баланс БЖВ</span>
-            <div class="balance-bar"><div class="balance-bar__label">Б</div>
+            <span class="week-mobile__summary-label">${t('balanceTitle')}</span>
+            <div class="balance-bar"><div class="balance-bar__label">${t('proteinLetter')}</div>
               <div class="balance-bar__track" style="--target: 30%"><div class="balance-bar__fill" style="width: 0%"></div></div>
               <div class="balance-bar__pct">—</div>
             </div>
-            <div class="balance-bar"><div class="balance-bar__label">Ж</div>
+            <div class="balance-bar"><div class="balance-bar__label">${t('fatLetter')}</div>
               <div class="balance-bar__track" style="--target: 30%"><div class="balance-bar__fill" style="width: 0%"></div></div>
               <div class="balance-bar__pct">—</div>
             </div>
-            <div class="balance-bar"><div class="balance-bar__label">В</div>
+            <div class="balance-bar"><div class="balance-bar__label">${t('carbsLetter')}</div>
               <div class="balance-bar__track" style="--target: 40%"><div class="balance-bar__fill" style="width: 0%"></div></div>
               <div class="balance-bar__pct">—</div>
             </div>
@@ -1096,24 +1129,24 @@ document.addEventListener('DOMContentLoaded', async () => {
         };
 
         summaryEl.innerHTML = `
-          <span class="week-mobile__summary-label">Баланс БЖВ</span>
+          <span class="week-mobile__summary-label">${t('balanceTitle')}</span>
           <div class="summary-balance">
             <div class="balance-bar" data-status="${getStatus(proteinPct, 30)}">
-              <div class="balance-bar__label">Б</div>
+              <div class="balance-bar__label">${t('proteinLetter')}</div>
               <div class="balance-bar__track" style="--target: 30%">
                 <div class="balance-bar__fill balance-bar__fill--protein" style="width: ${proteinPct}%"></div>
               </div>
               <div class="balance-bar__pct">${proteinPct}%</div>
             </div>
             <div class="balance-bar" data-status="${getStatus(fatPct, 30)}">
-              <div class="balance-bar__label">Ж</div>
+              <div class="balance-bar__label">${t('fatLetter')}</div>
               <div class="balance-bar__track" style="--target: 30%">
                 <div class="balance-bar__fill balance-bar__fill--fat" style="width: ${fatPct}%"></div>
               </div>
               <div class="balance-bar__pct">${fatPct}%</div>
             </div>
             <div class="balance-bar" data-status="${getStatus(carbsPct, 40)}">
-              <div class="balance-bar__label">В</div>
+              <div class="balance-bar__label">${t('carbsLetter')}</div>
               <div class="balance-bar__track" style="--target: 40%">
                 <div class="balance-bar__fill balance-bar__fill--carbs" style="width: ${carbsPct}%"></div>
               </div>
@@ -1190,7 +1223,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       // Рядок "Всього"
       const totalLabel = document.createElement('div');
       totalLabel.className = 'mob-week-grid__total-label';
-      totalLabel.textContent = 'Всього';
+      totalLabel.textContent = t('totalLabel');
       grid.appendChild(totalLabel);
 
       dayInfo.forEach(({ day }) => {
@@ -1200,7 +1233,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         cell.className = 'mob-week-grid__total-cell';
         cell.innerHTML =
           total > 0
-            ? `<b>${total}</b><span>ккал</span>`
+            ? `<b>${total}</b><span>${t('kcalShort')}</span>`
             : '<span class="mob-week-grid__empty">—</span>';
         grid.appendChild(cell);
       });

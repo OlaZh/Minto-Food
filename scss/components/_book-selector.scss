@@ -24,20 +24,7 @@
   padding: 24px;
 
   &__close {
-    position: absolute;
-    top: 16px;
-    right: 16px;
-
-    background: none;
-    border: none;
-
-    font-size: 28px;
-    color: var(--color-text-secondary);
-    cursor: pointer;
-
-    &:hover {
-      color: var(--color-accent);
-    }
+    @extend %modal-close;
   }
 
   &__header {
@@ -494,20 +481,7 @@
   padding: 24px;
 
   &__close {
-    position: absolute;
-    top: 16px;
-    right: 16px;
-
-    background: none;
-    border: none;
-
-    font-size: 28px;
-    color: var(--color-text-secondary);
-    cursor: pointer;
-
-    &:hover {
-      color: var(--color-accent);
-    }
+    @extend %modal-close;
   }
 
   &__header {
