@@ -8,7 +8,8 @@
 
 import { supabase } from './supabaseClient.js';
 import { iconGym, iconSprout, iconTrophy, iconStar } from './icons.js';
-import { pluralUA } from './utils.js';
+import { plural } from './utils.js';
+import { t } from './i18n-apply.js';
 
 // ============================================================
 //  DOM ELEMENTS
@@ -21,8 +22,6 @@ const streakSubEl = streakCardEl?.querySelector('.streak-card__sub');
 const streakCountMobileEl = document.getElementById('streakCountMobile');
 const streakSubMobileEl   = document.getElementById('streakSubMobile');
 
-// den-форма: pluralUA(n, ['день','дні','днів'])
-
 // ============================================================
 //  МОТИВАЦІЙНІ ПОВІДОМЛЕННЯ
 // ============================================================
@@ -32,15 +31,21 @@ const streakSubMobileEl   = document.getElementById('streakSubMobile');
  */
 function getMotivationalText(streak, isActive) {
   if (!isActive || streak === 0) {
-    return `Почни нову серію! ${iconGym}`;
+    return `${t('streakNew')} ${iconGym}`;
   }
-  if (streak === 1) return `Класний початок! ${iconSprout}`;
-  if (streak < 3) return 'Так тримати!';
-  if (streak < 7) return 'Видатні досягнення!';
-  if (streak < 14) return `Тиждень дисципліни! ${iconTrophy}`;
-  if (streak < 30) return 'Неймовірна стійкість!';
-  if (streak < 100) return 'Місяць поспіль — рекорд!';
-  return `Ти легенда! ${iconStar}`;
+  if (streak === 1) return `${t('streakStart')} ${iconSprout}`;
+  if (streak < 3) return t('streakKeep');
+  if (streak < 7) return t('streakGreat');
+  if (streak < 14) return `${t('streakWeek')} ${iconTrophy}`;
+  if (streak < 30) return t('streakResilient');
+  if (streak < 100) return t('streakMonth');
+  return `${t('streakLegend')} ${iconStar}`;
+}
+
+/** Локалізований текст «N днів поспіль» (без числа на початку для desktop-варіанту). */
+function streakDaysLabel(n) {
+  const word = plural(n, [t('dayOne'), t('dayFew'), t('dayMany')]);
+  return `${word} ${t('streakSuffix')}`;
 }
 
 // ============================================================
@@ -58,7 +63,7 @@ function updateStreakUI({ current_streak, longest_streak, is_active }) {
   // Оновлюємо текст "день поспіль" з правильною плюралізацією
   const countWrapper = streakCardEl.querySelector('.streak-card__count');
   if (countWrapper) {
-    countWrapper.innerHTML = `<span id="streakCount">${current_streak}</span> ${pluralUA(current_streak, ['день', 'дні', 'днів'])} поспіль`;
+    countWrapper.innerHTML = `<span id="streakCount">${current_streak}</span> ${streakDaysLabel(current_streak)}`;
   }
 
   // Мотиваційне повідомлення
@@ -68,7 +73,7 @@ function updateStreakUI({ current_streak, longest_streak, is_active }) {
 
   // Mobile streak strip
   if (streakCountMobileEl) {
-    streakCountMobileEl.textContent = `${current_streak} ${pluralUA(current_streak, ['день', 'дні', 'днів'])} поспіль`;
+    streakCountMobileEl.textContent = `${current_streak} ${streakDaysLabel(current_streak)}`;
   }
   if (streakSubMobileEl) {
     streakSubMobileEl.innerHTML = getMotivationalText(current_streak, is_active);

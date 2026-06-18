@@ -1,3 +1,5 @@
+import { getLang } from './storage.js';
+
 document.addEventListener('DOMContentLoaded', () => {
   const buttons = document.querySelectorAll('.sidebar__day-btn');
   const dateEl = document.getElementById('dayDate');
@@ -5,11 +7,12 @@ document.addEventListener('DOMContentLoaded', () => {
   const prevWeekBtn = document.getElementById('prevWeekBtn');
   const nextWeekBtn = document.getElementById('nextWeekBtn');
 
-  const daysUA = ['Неділя', 'Понеділок', 'Вівторок', 'Середа', 'Четвер', 'Пʼятниця', 'Субота'];
-  const monthsUA = [
-    'січня', 'лютого', 'березня', 'квітня', 'травня', 'червня',
-    'липня', 'серпня', 'вересня', 'жовтня', 'листопада', 'грудня',
-  ];
+  // Локаль для Intl за поточною мовою (той самий патерн, що у week-menu.js).
+  const lang = getLang();
+  const locale = lang === 'ua' ? 'uk-UA' : lang === 'pl' ? 'pl-PL' : 'en-US';
+  const weekdayFmt = new Intl.DateTimeFormat(locale, { weekday: 'long' });
+  const weekdayShortFmt = new Intl.DateTimeFormat(locale, { weekday: 'short' });
+  const monthFmt = new Intl.DateTimeFormat(locale, { month: 'long' });
 
   let weekOffset = 0;
 
@@ -28,8 +31,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const startDay = monday.getDate();
     const endDay = sunday.getDate();
-    const startMonth = monthsUA[monday.getMonth()];
-    const endMonth = monthsUA[sunday.getMonth()];
+    const startMonth = monthFmt.format(monday);
+    const endMonth = monthFmt.format(sunday);
 
     if (monday.getMonth() === sunday.getMonth()) {
       return `${startDay}–${endDay} ${endMonth}`;
@@ -46,11 +49,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function updatePillDates() {
     buttons.forEach((btn) => {
-      const numSpan = btn.querySelector('[data-day-num]');
-      if (!numSpan) return;
       const dayIndex = dayMapping[btn.dataset.day];
       const info = getWeekDayDate(dayIndex);
-      numSpan.textContent = info.dayNumber;
+      const numSpan = btn.querySelector('[data-day-num]');
+      if (numSpan) numSpan.textContent = info.dayNumber;
+      // Коротка назва дня поточною мовою (Пн / Mon / pon.)
+      const abbrSpan = btn.querySelector('.day-week-nav__pill-abbr');
+      if (abbrSpan) {
+        const abbr = weekdayShortFmt.format(info.fullDate).replace(/\.$/, '');
+        abbrSpan.textContent = abbr.charAt(0).toUpperCase() + abbr.slice(1);
+      }
     });
   }
 
@@ -59,10 +67,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const targetDate = new Date(monday);
     targetDate.setDate(monday.getDate() + dayIndex);
 
+    const weekday = weekdayFmt.format(targetDate);
     return {
-      label: daysUA[targetDate.getDay()],
+      // Назва дня з великої літери (Intl у деяких локалях дає малу).
+      label: weekday.charAt(0).toUpperCase() + weekday.slice(1),
       dayNumber: targetDate.getDate(),
-      month: monthsUA[targetDate.getMonth()],
+      month: monthFmt.format(targetDate),
       fullDate: targetDate,
     };
   }

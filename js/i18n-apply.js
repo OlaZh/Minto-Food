@@ -29,6 +29,18 @@ export function t(key, lang = getLang()) {
 }
 
 /**
+ * t() + підстановка плейсхолдерів {name} зі значень vars.
+ * Напр. formatText('ofKcal', { n: 1200 }) → 'з 1200 ккал'.
+ * (Спільна версія локальних formatText із add-recipe/week-menu.)
+ */
+export function formatText(key, vars = {}, lang = getLang()) {
+  return Object.entries(vars).reduce(
+    (text, [name, value]) => text.replaceAll(`{${name}}`, String(value)),
+    t(key, lang),
+  );
+}
+
+/**
  * Проходить по DOM-піддереву (root) і застосовує переклади.
  * Викликається на DOMContentLoaded + може викликатись повторно після
  * того, як JS догенерував контент із data-i18n.

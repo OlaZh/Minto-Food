@@ -5,6 +5,7 @@ import {
   getFatNorm,
   getCarbsNorm,
 } from './storage.js';
+import { formatText } from './i18n-apply.js';
 
 const kcalCurrentEl = document.getElementById('kcalCurrent');
 const kcalCircleEl = document.getElementById('kcalCircle');
@@ -130,8 +131,8 @@ export function updateStats(consumed) {
   const carbs = consumed.carbs ?? 0;
 
   if (kcalCurrentEl) animateCounter(kcalCurrentEl, parseInt(kcalCurrentEl.textContent) || 0, Math.round(kcal));
-  if (kcalNormLabelEl) kcalNormLabelEl.textContent = `з ${dailyCaloriesNorm} ккал`;
-  if (goalValueEl) goalValueEl.textContent = `${dailyCaloriesNorm} ккал`;
+  if (kcalNormLabelEl) kcalNormLabelEl.textContent = formatText('ofKcal', { n: dailyCaloriesNorm });
+  if (goalValueEl) goalValueEl.textContent = formatText('kcalValue', { n: dailyCaloriesNorm });
 
   setCirclePercent(kcalCircleEl, kcal, dailyCaloriesNorm);
 
@@ -149,7 +150,7 @@ export function updateStats(consumed) {
   setCirclePercent(cCircleEl, carbs, carbsNorm);
 
   if (kcalCurrentMobileEl) animateCounter(kcalCurrentMobileEl, parseInt(kcalCurrentMobileEl.textContent) || 0, Math.round(kcal));
-  if (kcalNormMobileEl) kcalNormMobileEl.textContent = `з ${dailyCaloriesNorm} ккал`;
+  if (kcalNormMobileEl) kcalNormMobileEl.textContent = formatText('ofKcal', { n: dailyCaloriesNorm });
   if (pCurrentMobileEl) pCurrentMobileEl.textContent = Math.round(protein);
   if (fCurrentMobileEl) fCurrentMobileEl.textContent = Math.round(fat);
   if (cCurrentMobileEl) cCurrentMobileEl.textContent = Math.round(carbs);
@@ -182,11 +183,11 @@ export function updateWaterUI(currentLiters) {
     waterValueEl.style.opacity = liters > 0 ? '1' : '0.5';
   }
   if (waterNormEl) {
-    waterNormEl.textContent = `з ${waterNorm.toFixed(1)} л`;
+    waterNormEl.textContent = formatText('ofLiters', { n: waterNorm.toFixed(1) });
   }
 
   if (currentWaterMobileEl) currentWaterMobileEl.textContent = liters.toFixed(2);
-  if (waterNormMobileEl) waterNormMobileEl.textContent = `${waterNorm.toFixed(1)} л`;
+  if (waterNormMobileEl) waterNormMobileEl.textContent = formatText('litersValue', { n: waterNorm.toFixed(1) });
 }
 
 document.addEventListener('DOMContentLoaded', () => {

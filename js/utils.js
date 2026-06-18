@@ -328,6 +328,20 @@ export function pluralUA(n, [one, few, many]) {
   return many;
 }
 
+/**
+ * Локалізована плюралізація: обирає форму за числом і мовою.
+ * UA/PL — слов'янське правило (3 форми one/few/many).
+ * EN — англійське (one/other → беремо one/many).
+ * @param {number} n - Число
+ * @param {[string, string, string]} forms - [one, few, many]
+ * @param {string} [lang] - 'ua' | 'pl' | 'en' (default: getLang())
+ * @returns {string} - Правильна форма (без самого числа)
+ */
+export function plural(n, [one, few, many], lang = getLang()) {
+  if (lang === 'en') return n === 1 ? one : many;
+  return pluralUA(n, [one, few, many]);
+}
+
 // Примітка: локалізація назви рецепта живе в getRecipeDisplayName
 // (recipe-utils.js — споживачі: add-recipe, week-menu). Дубль-копія
 // getLocalizedName тут була мертвим експортом (0 імпортів) і видалена в
