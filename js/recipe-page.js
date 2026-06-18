@@ -6,6 +6,7 @@
 import { supabase }                        from './supabaseClient.js';
 import { initAuth, isLoggedIn, openAuthModal } from './auth.js';
 import { iconShare, iconPlate, iconLeaf, iconBookOpen, iconStar } from './icons.js';
+import { safeImageUrl } from './utils.js';
 
 const CATEGORY_LABELS = {
   breakfast: 'Сніданок', lunch: 'Обід',    dinner: 'Вечеря',
@@ -31,7 +32,7 @@ const UI_LABELS = {
     author: 'Автор', share: 'Поділитися',
     shareTitle: 'Поділитися рецептом',
     prep: 'Підготовка', cook: 'Готування', time: 'Час', servings: 'Порцій',
-    min: 'хв', kcal: 'ккал', proteins: 'Білки', fats: 'Жири', carbs: 'Вуглев.',
+    min: 'хв', kcal: 'ккал', proteins: 'Білки', fats: 'Жири', carbs: 'Вуглев.', gram: 'г',
     ingredients: 'Інгредієнти', steps: 'Приготування',
     allRecipes: 'Переглянути всі рецепти →', linkCopied: 'Посилання скопійовано',
     ctaTitleIn: 'Сподобався рецепт?',
@@ -48,7 +49,7 @@ const UI_LABELS = {
     author: 'Author', share: 'Share',
     shareTitle: 'Share recipe',
     prep: 'Prep', cook: 'Cook', time: 'Time', servings: 'Servings',
-    min: 'min', kcal: 'kcal', proteins: 'Protein', fats: 'Fats', carbs: 'Carbs',
+    min: 'min', kcal: 'kcal', proteins: 'Protein', fats: 'Fats', carbs: 'Carbs', gram: 'g',
     ingredients: 'Ingredients', steps: 'Instructions',
     allRecipes: 'View all recipes →', linkCopied: 'Link copied',
     ctaTitleIn: 'Liked the recipe?',
@@ -65,7 +66,7 @@ const UI_LABELS = {
     author: 'Autor', share: 'Udostępnij',
     shareTitle: 'Udostępnij przepis',
     prep: 'Przygotowanie', cook: 'Gotowanie', time: 'Czas', servings: 'Porcje',
-    min: 'min', kcal: 'kcal', proteins: 'Białko', fats: 'Tłuszcze', carbs: 'Węglow.',
+    min: 'min', kcal: 'kcal', proteins: 'Białko', fats: 'Tłuszcze', carbs: 'Węglow.', gram: 'g',
     ingredients: 'Składniki', steps: 'Przygotowanie',
     allRecipes: 'Zobacz wszystkie przepisy →', linkCopied: 'Skopiowano link',
     ctaTitleIn: 'Spodobał się przepis?',
@@ -151,9 +152,10 @@ async function init() {
 function _renderRecipe(recipe, authorName, ingredients) {
   const name     = _getLocalizedName(recipe, _getLang());
   const catLabel = _getCategoryLabel(recipe.category, _getLang());
+  const safeHeroImage = _safeImage(recipe.image);
 
-  const heroHtml = recipe.image
-    ? `<img class="rp-hero" src="${recipe.image}" alt="${_esc(name)}" loading="eager" decoding="async">`
+  const heroHtml = safeHeroImage
+    ? `<img class="rp-hero" src="${safeHeroImage}" alt="${_esc(name)}" loading="eager" decoding="async">`
     : `<div class="rp-hero--empty">${iconPlate}</div>`;
 
   const timeParts = [];
@@ -183,15 +185,15 @@ function _renderRecipe(recipe, authorName, ingredients) {
         <span class="rp-macro__lbl">${_t('kcal')}</span>
       </div>
       <div class="rp-macro">
-        <span class="rp-macro__val">${recipe.protein ?? '—'}г</span>
+        <span class="rp-macro__val">${recipe.protein ?? '—'}${_t('gram')}</span>
         <span class="rp-macro__lbl">${_t('proteins')}</span>
       </div>
       <div class="rp-macro">
-        <span class="rp-macro__val">${recipe.fat ?? '—'}г</span>
+        <span class="rp-macro__val">${recipe.fat ?? '—'}${_t('gram')}</span>
         <span class="rp-macro__lbl">${_t('fats')}</span>
       </div>
       <div class="rp-macro">
-        <span class="rp-macro__val">${recipe.carbs ?? '—'}г</span>
+        <span class="rp-macro__val">${recipe.carbs ?? '—'}${_t('gram')}</span>
         <span class="rp-macro__lbl">${_t('carbs')}</span>
       </div>
     </div>` : '';
@@ -209,7 +211,7 @@ function _renderRecipe(recipe, authorName, ingredients) {
            // Показуємо міру лише коли є кількість. Інакше (напр. "за смаком")
            // нічого не показуємо замість фейкового "1 шт"/"null г".
            const amountLabel = (i.amount != null && i.amount !== '')
-             ? `${i.amount}${i.unit || 'г'}`
+             ? `${i.amount}${i.unit || _t('gram')}`
              : (i.unit || '');
            return `<li class="rp-ing">
              <span class="rp-ing__dot"></span>
@@ -345,7 +347,7 @@ function _updateMeta(recipe, authorName) {
   const name  = _getLocalizedName(recipe, lang);
   const desc  = _buildDescription(recipe, authorName, lang);
   const canonical = _canonicalUrl();
-  const image = recipe.image || '';
+  const image = _safeImage(recipe.image);
 
   document.title = `${name} — Minto`;
   document.documentElement.lang = lang === 'uk' ? 'uk' : lang;
@@ -461,7 +463,7 @@ function _injectSchemaOrg(recipe, authorName, ingredients) {
     '@context': 'https://schema.org',
     '@type':    'Recipe',
     name,
-    image:      recipe.image ? [recipe.image] : [],
+    image:      _safeImage(recipe.image) ? [_safeImage(recipe.image)] : [],
     author:     { '@type': 'Person', name: authorName || 'Minto' },
     datePublished: recipe.created_at?.slice(0, 10) ?? '',
     description: _buildDescription(recipe, authorName, 'uk'),
@@ -520,9 +522,15 @@ function _esc(str) {
     .replace(/"/g, '&quot;');
 }
 
+function _safeImage(url) {
+  return safeImageUrl(url);
+}
+
 function _formatDate(iso) {
   if (!iso) return '';
-  return new Date(iso).toLocaleDateString('uk-UA', { day: 'numeric', month: 'long', year: 'numeric' });
+  const lang = _getLang();
+  const locale = lang === 'en' ? 'en-US' : lang === 'pl' ? 'pl-PL' : 'uk-UA';
+  return new Date(iso).toLocaleDateString(locale, { day: 'numeric', month: 'long', year: 'numeric' });
 }
 
 // ── Start ─────────────────────────────────────────────────────

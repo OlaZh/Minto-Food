@@ -201,7 +201,7 @@ function buildListItem(list) {
   li.innerHTML = `
     <div class="shop-list-item__header">
       <div class="shop-list-item__left">
-        <p class="shop-list-item__name">${lockIcon}${pinBadge}${escapeHTML(list.name)}</p>
+        <p class="shop-list-item__name">${lockIcon}${pinBadge}${escapeHTML(localizeListName(list.name))}</p>
         ${meta ? `<p class="shop-list-item__meta">${meta}</p>` : ''}
       </div>
       <div class="shop-list-item__controls">
@@ -511,7 +511,7 @@ function renderActiveList() {
     const section = document.createElement('div');
     section.className = 'shop-category';
     section.innerHTML = `
-      <h3 class="shop-category__title">${escapeHTML(category)}</h3>
+      <h3 class="shop-category__title">${escapeHTML(localizeCategory(category))}</h3>
       <ul class="shop-category__list"></ul>
     `;
     const ul = section.querySelector('.shop-category__list');
@@ -761,7 +761,7 @@ async function shareListById(id) {
   if (!token) { showToast(t('shopErrLink'), 'error'); return; }
   const url = buildShareUrl(token);
   if (navigator.share) {
-    try { await navigator.share({ title: list.name, url }); } catch { }
+    try { await navigator.share({ title: localizeListName(list.name), url }); } catch { }
   } else {
     await navigator.clipboard.writeText(url);
     showToast(t('shopLinkCopied'));
@@ -1009,7 +1009,7 @@ function printList() {
   Object.entries(groups)
     .sort(([a], [b]) => categoryOrderIndex(a) - categoryOrderIndex(b))
     .forEach(([cat, items]) => {
-    html += `<h2>${cat}</h2><ul>`;
+    html += `<h2>${localizeCategory(cat)}</h2><ul>`;
     items.forEach(i => {
       html += `<li>${i.name}${i.amount ? ' — ' + i.amount + (i.unit ? ' ' + i.unit : '') : ''}</li>`;
     });
@@ -1028,7 +1028,7 @@ async function shareList() {
   if (!token) { showToast(t('shopErrLink'), 'error'); return; }
   const url = buildShareUrl(token);
   if (navigator.share) {
-    try { await navigator.share({ title: list.name || t('navShoppingList'), url }); } catch { }
+    try { await navigator.share({ title: localizeListName(list.name) || t('navShoppingList'), url }); } catch { }
   } else {
     await navigator.clipboard.writeText(url);
     showToast(t('shopLinkCopied'));
@@ -1136,6 +1136,36 @@ const CATEGORY_ORDER = [
 function categoryOrderIndex(name) {
   const i = CATEGORY_ORDER.indexOf(name);
   return i === -1 ? CATEGORY_ORDER.length : i; // невідомі/"Інше" — в кінець
+}
+
+// UA-назва категорії (= categories.name_ua у БД, канонічний ключ) → i18n-ключ.
+// БД зберігає UA-назву; локалізуємо ЛИШЕ при відображенні (БД не чіпаємо).
+const CATEGORY_I18N = {
+  'Овочі': 'catVegetables', 'Гриби': 'catMushrooms', 'Зелень': 'catGreens',
+  'Фрукти': 'catFruits', 'Ягоди': 'catBerries', 'Молочні продукти': 'catDairy',
+  'М\'ясо': 'catMeat', 'Риба': 'catFish', 'Морепродукти': 'catSeafood',
+  'Яйця': 'catEggs', 'Хліб і випічка': 'catBakery', 'Бакалія': 'catGroceries',
+  'Напівфабрикати': 'catSemiFinished', 'Готові страви': 'catReadyMeals',
+  'Олії та жири': 'catOilsFats', 'Соуси та заправки': 'catSaucesDressings',
+  'Солодощі': 'catSweets', 'Напої': 'catDrinks', 'Алкоголь': 'catAlcohol',
+  'Спеції та добавки': 'catSpicesAdditives', 'Гігієна та побутова хімія': 'catHygieneHousehold',
+  'Інше': 'categoryOther',
+};
+// Назва категорії поточною мовою (фолбек — оригінальна назва, якщо ключа нема).
+function localizeCategory(name) {
+  const key = CATEGORY_I18N[name];
+  return key ? t(key) : name;
+}
+
+// Системні назви списків зберігаються в БД UA-мовою; локалізуємо при показі.
+// Користувацькі назви (не в мапі) виводимо як є.
+const SYSTEM_LIST_I18N = {
+  'Постійний список': 'permanentListName',
+  'Список покупок': 'shoppingListName',
+};
+function localizeListName(name) {
+  const key = SYSTEM_LIST_I18N[name];
+  return key ? t(key) : name;
 }
 
 // Бакети fallback мають збігатися з топ-категоріями БД (categories.name_ua),

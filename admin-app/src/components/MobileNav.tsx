@@ -8,6 +8,7 @@ import {
   ExternalLink,
   LayoutDashboard,
   Package,
+  SlidersHorizontal,
   Shield,
   Users,
 } from 'lucide-react'
@@ -19,6 +20,7 @@ const navItems = [
   { href: '/moderation', label: 'Черга', icon: Shield },
   { href: '/users', label: 'Юзери', icon: Users },
   { href: '/products', label: 'Продукти', icon: Package },
+  { href: '/feature-flags', label: 'Функції', icon: SlidersHorizontal },
 ]
 
 export default function MobileNav() {

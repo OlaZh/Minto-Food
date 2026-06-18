@@ -11,6 +11,7 @@ import {
 } from './recipe-ingredients.js';
 import { showToast, toBase64, setInputVal } from './utils.js';
 import { getLang } from './storage.js';
+import { t, formatText } from './i18n-apply.js';
 import { lockScroll, unlockScroll } from './scroll-lock.js';
 import { iconCamera, iconLock, iconGlobe, iconBookOpen } from './icons.js';
 import {
@@ -91,8 +92,8 @@ function updateRecipeNutritionPreview(totals = getTotals()) {
 
   if (noteEl) {
     noteEl.textContent = displayed.mode === 'cooked'
-      ? `Готова страва: приблизно ${formatMacroValue(displayed.kcal, 0)} ккал на 100 г`
-      : 'Сума сирих інгредієнтів. Вкажіть вагу готової страви, щоб побачити КБЖУ на 100 г.';
+      ? formatText('rmCookedNote', { n: formatMacroValue(displayed.kcal, 0) })
+      : t('rmRawNote');
   }
 }
 
@@ -104,8 +105,8 @@ function updateNutritionNoteOnly(kcalForNote) {
 
   const totalWeight = parsePositiveNumber(document.getElementById('rm-total-weight')?.value);
   noteEl.textContent = totalWeight
-    ? `Готова страва: приблизно ${formatMacroValue(kcalForNote, 0)} ккал на 100 г`
-    : 'Сума сирих інгредієнтів. Вкажіть вагу готової страви, щоб побачити КБЖУ на 100 г.';
+    ? formatText('rmCookedNote', { n: formatMacroValue(kcalForNote, 0) })
+    : t('rmRawNote');
 }
 
 function createRecipeModalHTML() {
@@ -153,13 +154,13 @@ function createRecipeModalHTML() {
                 </div>
               </div>
 
-              <p class="recipe-macros-note" id="rm-macros-note">
+              <p class="recipe-macros-note" id="rm-macros-note" data-i18n="rmRawNote">
                 Сума сирих інгредієнтів. Вкажіть вагу готової страви, щоб побачити КБЖУ на 100 г.
               </p>
 
               <div class="form-group">
-                <label for="rm-total-weight">Вага готової страви (г)</label>
-                <input type="number" id="rm-total-weight" min="1" step="1" placeholder="Наприклад, 850" />
+                <label for="rm-total-weight" data-i18n="rmTotalWeightLabel">Вага готової страви (г)</label>
+                <input type="number" id="rm-total-weight" min="1" step="1" placeholder="Наприклад, 850" data-i18n-placeholder="rmTotalWeightPlaceholder" />
               </div>
 
               <div class="form-group">
@@ -207,7 +208,7 @@ function createRecipeModalHTML() {
                   </button>
                   <div class="form-separator"><span data-i18n="orSeparator">— або —</span></div>
                   <div class="form-group">
-                    <input type="text" id="rm-image-url" placeholder="Вставте URL фото..." />
+                    <input type="text" id="rm-image-url" placeholder="Вставте URL фото..." data-i18n-placeholder="rmImageUrlPlaceholder" />
                   </div>
                 </div>
               </div>
@@ -404,7 +405,7 @@ async function restorePendingRecipeDraft() {
   if (draft.visibility) setVisibilityToggle(draft.visibility);
   updateRecipeNutritionPreview();
 
-  showToast('Ваш рецепт збережено. Натисніть «Зберегти рецепт», щоб завершити.', 'info');
+  showToast(t('rmDraftRestored'), 'info');
 }
 
 export async function openRecipeModal(onSaved = null) {
@@ -427,7 +428,7 @@ export async function openRecipeModalForEdit(recipe, onSaved = null) {
   } = await supabase.auth.getUser();
 
   if (!user || !recipe || recipe.user_id !== user.id) {
-    showToast('Редагувати можна лише власні рецепти', 'error');
+    showToast(t('rmOnlyOwnEdit'), 'error');
     return;
   }
 
@@ -524,7 +525,7 @@ async function saveRecipe() {
   }
 
   if (editingRecipeId !== null && editingRecipeOriginal?.user_id !== user.id) {
-    showToast('Редагувати можна лише власні рецепти', 'error');
+    showToast(t('rmOnlyOwnEdit'), 'error');
     return;
   }
 
@@ -559,13 +560,13 @@ async function saveRecipe() {
 
   if (isPublicSubmission) {
     if (!nameVal) {
-      showToast('Для публікації потрібна назва рецепту', 'error');
+      showToast(t('rmPublishNeedsName'), 'error');
       return;
     }
 
     const hasIngredients = !!getIngredientsText().trim();
     if (!hasIngredients && !stepsVal) {
-      showToast('Додайте інгредієнти або кроки приготування', 'error');
+      showToast(t('rmNeedIngredientsOrSteps'), 'error');
       return;
     }
   }
@@ -663,7 +664,7 @@ async function saveRecipe() {
 
   if (error) {
     console.error('Помилка збереження рецепту:', error);
-    showToast('Помилка збереження', 'error');
+    showToast(t('rmSaveError'), 'error');
     return;
   }
 
@@ -725,9 +726,9 @@ async function saveRecipe() {
       payload.image !== editingRecipeOriginal?.image
     );
 
-    showToast(hasModeratedChanges ? 'Зміни надіслані на перевірку' : 'Рецепт оновлено!');
+    showToast(hasModeratedChanges ? t('rmChangesSentForReview') : t('rmRecipeUpdated'));
   } else if (selectedBookIds.length === 0) {
-    showToast(status === 'pending' ? 'Рецепт надіслано на модерацію!' : 'Рецепт збережено!');
+    showToast(status === 'pending' ? t('rmRecipeSentToModeration') : t('rmRecipeSaved'));
   }
 
   closeRecipeModal();

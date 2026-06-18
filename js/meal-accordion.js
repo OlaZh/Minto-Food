@@ -4,7 +4,8 @@
 //  у згорнутому стані (кількість страв · ккал)
 // ============================================================
 
-import { pluralUA } from './utils.js';
+import { plural } from './utils.js';
+import { t } from './i18n-apply.js';
 
 document.addEventListener('DOMContentLoaded', () => {
   const meals = document.querySelectorAll('.meal');
@@ -89,12 +90,12 @@ function updateMealSummary(meal, list) {
   }
 
   const totalKcal = calculateMealKcal(list);
-  const dishWord = pluralUA(itemsCount, ['страва', 'страви', 'страв']);
+  const dishWord = plural(itemsCount, [t('mealSingle'), t('mealFew'), t('mealMany')]);
 
   summaryEl.innerHTML = `
     <span class="meal__summary-count">${itemsCount} ${dishWord}</span>
     <span class="meal__summary-divider">·</span>
-    <span class="meal__summary-kcal">${totalKcal} ккал</span>
+    <span class="meal__summary-kcal">${totalKcal} ${t('kcalShort')}</span>
   `;
 }
 

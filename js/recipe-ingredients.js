@@ -37,6 +37,10 @@ const i18nIngredients = {
     productNotFound: 'Продукт не знайдено в базі',
     tapToChoose: 'Натисніть, щоб вибрати продукт',
     checkHint: 'Перевірте, чи правильно розпізналися продукти. Якщо ні — натисніть на інгредієнт і змініть.',
+    productFallback: 'Продукт',
+    stateRaw: 'сирий',
+    stateDry: 'сухий',
+    rawHint: 'сире',
   },
   en: {
     pasteIngredients: 'Paste ingredient list...',
@@ -57,6 +61,10 @@ const i18nIngredients = {
     productNotFound: 'Product not found in database',
     tapToChoose: 'Tap to choose a product',
     checkHint: 'Check that the products were recognized correctly. If not — tap an ingredient to change it.',
+    productFallback: 'Product',
+    stateRaw: 'raw',
+    stateDry: 'dry',
+    rawHint: 'raw',
   },
   pl: {
     pasteIngredients: 'Wklej listę składników...',
@@ -77,6 +85,10 @@ const i18nIngredients = {
     productNotFound: 'Produktu nie znaleziono w bazie',
     tapToChoose: 'Kliknij, aby wybrać produkt',
     checkHint: 'Sprawdź, czy produkty zostały poprawnie rozpoznane. Jeśli nie — kliknij składnik, aby go zmienić.',
+    productFallback: 'Produkt',
+    stateRaw: 'surowy',
+    stateDry: 'suchy',
+    rawHint: 'surowe',
   },
 };
 
@@ -313,7 +325,7 @@ function addScannedIngredient(product, grams) {
   if (!product || !grams || grams <= 0) return;
 
   const factor = grams / 100;
-  const displayName = getProductName(product) || product.name || product.name_ua || 'Продукт';
+  const displayName = getProductName(product) || product.name || product.name_ua || t('productFallback');
   const brandSuffix = product.brand ? ` ${product.brand}` : '';
 
   ingredientsList.push({
@@ -422,7 +434,7 @@ function renderIngredientsList() {
         return;
       }
 
-      const stateLabels = { raw: 'сирий', dry: 'сухий' };
+      const stateLabels = { raw: t('stateRaw'), dry: t('stateDry') };
 
       dropdown.innerHTML = matches.map((product) => {
         const isBarcode = product._source === 'barcode';
@@ -431,7 +443,7 @@ function renderIngredientsList() {
           : '';
         let label = '';
         if (product.raw_edible === 'sometimes') {
-          label = '<em class="ingredient-picker__raw"> (сире)</em>';
+          label = `<em class="ingredient-picker__raw"> (${t('rawHint')})</em>`;
         } else if (!isBarcode && product.food_state && stateLabels[product.food_state]) {
           label = `<em> (${stateLabels[product.food_state]})</em>`;
         }

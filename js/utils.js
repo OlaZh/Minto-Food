@@ -154,6 +154,23 @@ export function escapeHTML(str) {
   return div.innerHTML;
 }
 
+export function safeImageUrl(url) {
+  const value = String(url ?? '').trim();
+  if (!value) return '';
+
+  if (/^data:image\/[a-z0-9.+-]+;base64,/i.test(value)) return value;
+  if (/^blob:/i.test(value)) return value;
+
+  try {
+    const parsed = new URL(value, window.location.origin);
+    if (parsed.protocol === 'http:' || parsed.protocol === 'https:') {
+      return parsed.href;
+    }
+  } catch (_) {}
+
+  return '';
+}
+
 export function setInputVal(id, val) {
   const el = document.getElementById(id);
   if (el) el.value = val || '';

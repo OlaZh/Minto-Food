@@ -6,7 +6,7 @@
 import { supabase } from './supabaseClient.js';
 import { showToast } from './utils.js';
 import { lockScroll, unlockScroll } from './scroll-lock.js';
-import { getLang } from './storage.js';
+import { t } from './i18n-apply.js';
 import { iconChevronDown, iconUser, iconShield, iconLogOut, iconEye } from './icons.js';
 import { getAdminAppOrigin, getMainSiteUrl } from './runtime-config.js';
 
@@ -117,7 +117,7 @@ export async function initAuth(onAuthChange = null) {
 
     if (event === 'SIGNED_OUT') {
       _isAdminCache = null;
-      showToast('Ви вийшли з акаунту');
+      showToast(t('authSignedOut'));
     }
   });
 
@@ -148,7 +148,7 @@ async function _maybeShowDailyWelcome(userId) {
 
     if (data?.welcome_seen_on === today) return; // вже вітали сьогодні
 
-    showToast('Ласкаво просимо!');
+    showToast(t('authWelcome'));
 
     await supabase
       .from('profiles')
@@ -240,7 +240,7 @@ export async function signInWithGoogle() {
 
   if (error) {
     console.error('Помилка Google логіну:', error);
-    showToast('Помилка входу через Google', 'error');
+    showToast(t('authGoogleError'), 'error');
   }
 }
 // =============================================================
@@ -276,7 +276,7 @@ export async function signUpWithEmail(email, password, name = '') {
     return { error: getErrorMessage(error.message) };
   }
 
-  return { error: null, message: 'Перевірте пошту для підтвердження' };
+  return { error: null, message: t('authCheckEmail') };
 }
 
 // =============================================================
@@ -305,7 +305,7 @@ function updateAuthUI() {
       currentUser.user_metadata?.full_name ||
       currentUser.user_metadata?.name ||
       currentUser.email?.split('@')[0] ||
-      'Профіль';
+      t('authProfileFallback');
     const firstName = fullName.split(' ')[0];
     const initials = fullName
       .split(' ')
@@ -343,9 +343,6 @@ function updateAuthUI() {
 
     ensureUserDropdown(wrap);
   } else {
-    const lang = getLang();
-    const texts = { ua: 'Увійти', pl: 'Zaloguj się', en: 'Sign in' };
-
     // Remove wrapper if exists, restore authBtnEl to parent
     const wrap = document.getElementById('headerUserArea');
     if (wrap) {
@@ -356,7 +353,7 @@ function updateAuthUI() {
     document.getElementById('headerUserDropdown')?.remove();
 
     authBtnEl.className = 'header__profile-name';
-    authBtnEl.innerHTML = texts[lang] || texts.ua;
+    authBtnEl.innerHTML = t('authSignIn');
     authBtnEl.removeAttribute('data-i18n');
     authBtnEl.href = '#';
     authBtnEl.onclick = (e) => {
@@ -380,16 +377,16 @@ function ensureUserDropdown(wrap) {
   dropdown.innerHTML = `
     <a href="profile.html" class="header__user-dropdown-item">
       ${iconUser.replace('<svg ', '<svg width="16" height="16" aria-hidden="true" ')}
-      Мій профіль
+      ${t('authMyProfile')}
     </a>
     <a href="#" class="header__user-dropdown-item header__user-dropdown-item--admin" id="headerAdminLink" hidden>
       ${iconShield.replace('<svg ', '<svg width="16" height="16" aria-hidden="true" ')}
-      Адмінка
+      ${t('authAdminPanel')}
     </a>
     <div class="header__user-dropdown-divider"></div>
     <button type="button" class="header__user-dropdown-item header__user-dropdown-item--danger" id="headerSignOutDropdownBtn">
       ${iconLogOut.replace('<svg ', '<svg width="16" height="16" aria-hidden="true" ')}
-      Вийти
+      ${t('authSignOut')}
     </button>
   `;
 
@@ -461,10 +458,10 @@ function createAuthModalHTML() {
         <!-- ВКЛАДКИ -->
         <div class="auth-modal__tabs">
           <button class="auth-modal__tab auth-modal__tab--active" data-auth-tab="login">
-            Увійти
+            ${t('authTabLogin')}
           </button>
           <button class="auth-modal__tab" data-auth-tab="register">
-            Реєстрація
+            ${t('authTabRegister')}
           </button>
         </div>
 
@@ -477,33 +474,33 @@ function createAuthModalHTML() {
               <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
               <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
             </svg>
-            Увійти через Google
+            ${t('authLoginWithGoogle')}
           </button>
 
           <div class="auth-modal__divider">
-            <span>або</span>
+            <span>${t('authOr')}</span>
           </div>
 <form class="auth-modal__form" id="loginForm" onsubmit="event.preventDefault(); return false;">
             <div class="form-group">
-              <label>Email</label>
+              <label>${t('authEmailLabel')}</label>
               <input type="email" id="loginEmail" placeholder="your@email.com" required />
             </div>
             <div class="form-group">
-              <label>Пароль</label>
+              <label>${t('authPasswordLabel')}</label>
               <div class="form-group__password-wrap">
                 <input type="password" id="loginPassword" placeholder="••••••••" required />
-                <button type="button" class="form-group__eye" data-target="loginPassword" aria-label="Показати пароль">
+                <button type="button" class="form-group__eye" data-target="loginPassword" aria-label="${t('authShowPassword')}">
                   ${iconEye.replace('<svg ', '<svg width="18" height="18" ')}
                 </button>
               </div>
             </div>
             <p class="auth-modal__error" id="loginError" hidden></p>
-            <button type="submit" class="auth-modal__submit">Увійти</button>
+            <button type="submit" class="auth-modal__submit">${t('authLoginSubmit')}</button>
           </form>
 
           <p class="auth-modal__switch">
-            Немає акаунту?
-            <button class="auth-modal__switch-btn" data-auth-tab="register">Зареєструватись</button>
+            ${t('authNoAccount')}
+            <button class="auth-modal__switch-btn" data-auth-tab="register">${t('authRegisterCta')}</button>
           </p>
         </div>
 
@@ -516,28 +513,28 @@ function createAuthModalHTML() {
               <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
               <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
             </svg>
-            Зареєструватись через Google
+            ${t('authRegisterWithGoogle')}
           </button>
-          <p class="auth-modal__oauth-consent">Натискаючи цю кнопку, ви підтверджуєте, що вам є 16+ років, та погоджуєтесь з <a href="terms.html" target="_blank" rel="noopener">Умовами використання</a> і <a href="privacy.html" target="_blank" rel="noopener">Політикою конфіденційності</a>.</p>
+          <p class="auth-modal__oauth-consent">${t('authOauthConsentBefore')} <a href="terms.html" target="_blank" rel="noopener">${t('authTermsLink')}</a> ${t('authConsentAnd')} <a href="privacy.html" target="_blank" rel="noopener">${t('authPrivacyLink')}</a>.</p>
 
           <div class="auth-modal__divider">
-            <span>або</span>
+            <span>${t('authOr')}</span>
           </div>
 
           <form class="auth-modal__form" id="registerForm" onsubmit="event.preventDefault(); return false;">
             <div class="form-group">
-              <label>Ім'я</label>
-              <input type="text" id="registerName" placeholder="Ваше ім'я" />
+              <label>${t('authNameLabel')}</label>
+              <input type="text" id="registerName" placeholder="${t('authNamePlaceholder')}" />
             </div>
             <div class="form-group">
-              <label>Email</label>
+              <label>${t('authEmailLabel')}</label>
               <input type="email" id="registerEmail" placeholder="your@email.com" required />
             </div>
             <div class="form-group">
-              <label>Пароль</label>
+              <label>${t('authPasswordLabel')}</label>
               <div class="form-group__password-wrap">
-                <input type="password" id="registerPassword" placeholder="Мінімум 6 символів" required />
-                <button type="button" class="form-group__eye" data-target="registerPassword" aria-label="Показати пароль">
+                <input type="password" id="registerPassword" placeholder="${t('authPasswordMinPlaceholder')}" required />
+                <button type="button" class="form-group__eye" data-target="registerPassword" aria-label="${t('authShowPassword')}">
                   ${iconEye.replace('<svg ', '<svg width="18" height="18" ')}
                 </button>
               </div>
@@ -545,17 +542,17 @@ function createAuthModalHTML() {
             <div class="form-group form-group--consent">
               <label class="form-group__consent-label">
                 <input type="checkbox" id="registerAgeConsent" />
-                <span>Мені є 16 або більше років. Я погоджуюсь з <a href="terms.html" target="_blank" rel="noopener">Умовами використання</a> та <a href="privacy.html" target="_blank" rel="noopener">Політикою конфіденційності</a>.</span>
+                <span>${t('authAgeConsentBefore')} <a href="terms.html" target="_blank" rel="noopener">${t('authTermsLink')}</a> ${t('authConsentAnd')} <a href="privacy.html" target="_blank" rel="noopener">${t('authPrivacyLink')}</a>.</span>
               </label>
             </div>
             <p class="auth-modal__error" id="registerError" hidden></p>
             <p class="auth-modal__success" id="registerSuccess" hidden></p>
-            <button type="submit" class="auth-modal__submit" id="registerSubmitBtn" disabled>Створити акаунт</button>
+            <button type="submit" class="auth-modal__submit" id="registerSubmitBtn" disabled>${t('authCreateAccount')}</button>
           </form>
 
           <p class="auth-modal__switch">
-            Вже є акаунт?
-            <button class="auth-modal__switch-btn" data-auth-tab="login">Увійти</button>
+            ${t('authHaveAccount')}
+            <button class="auth-modal__switch-btn" data-auth-tab="login">${t('authTabLogin')}</button>
           </p>
         </div>
 
@@ -633,7 +630,7 @@ function initAuthModal() {
 
     // Age gate (GDPR ЄС — мінімальний вік 16 років)
     if (!document.getElementById('registerAgeConsent')?.checked) {
-      errorEl.textContent = 'Для реєстрації вам має бути 16 або більше років';
+      errorEl.textContent = t('authAgeRequired');
       errorEl.hidden = false;
       successEl.hidden = true;
       return;
@@ -689,12 +686,12 @@ export function closeAuthModal() {
 
 function getErrorMessage(message) {
   const errors = {
-    'Invalid login credentials': 'Невірний email або пароль',
-    'Email not confirmed': 'Підтвердіть email перед входом',
-    'User already registered': 'Цей email вже зареєстрований',
-    'Password should be at least 6 characters': 'Пароль має бути не менше 6 символів',
+    'Invalid login credentials': t('authErrInvalid'),
+    'Email not confirmed': t('authErrNotConfirmed'),
+    'User already registered': t('authErrAlreadyRegistered'),
+    'Password should be at least 6 characters': t('authErrPasswordShort'),
   };
-  return errors[message] || 'Сталася помилка. Спробуйте ще раз.';
+  return errors[message] || t('authErrGeneric');
 }
 
 // =============================================================
@@ -706,7 +703,7 @@ export async function openAdminPanel() {
     data: { session },
   } = await supabase.auth.getSession();
   if (!session) {
-    showToast('Спочатку увійдіть в акаунт', 'error');
+    showToast(t('authLoginFirst'), 'error');
     return;
   }
 
@@ -715,7 +712,7 @@ export async function openAdminPanel() {
   const popup = window.open(transferUrl.toString(), '_blank');
 
   if (!popup) {
-    showToast('Не вдалося відкрити адмінку. Дозвольте pop-up для цього сайту.', 'error');
+    showToast(t('authPopupBlocked'), 'error');
     return;
   }
 
@@ -746,7 +743,7 @@ export async function openAdminPanel() {
 
     if (attempts >= maxAttempts) {
       finishTransfer();
-      showToast('Адмінка не відповіла на запит входу. Спробуйте ще раз.', 'error');
+      showToast(t('authAdminNoResponse'), 'error');
     }
   }, 400);
 
@@ -762,7 +759,7 @@ export async function openAdminPanel() {
     }
     if (event.data?.type === 'MINTO_ADMIN_SESSION_TRANSFER_ERROR') {
       finishTransfer();
-      showToast(event.data?.message || 'Не вдалося передати сесію в адмінку', 'error');
+      showToast(event.data?.message || t('authTransferFailed'), 'error');
     }
   }
 

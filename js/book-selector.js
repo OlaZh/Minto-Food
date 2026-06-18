@@ -4,6 +4,7 @@
 
 import { supabase } from './supabaseClient.js';
 import { showToast, escapeHTML } from './utils.js';
+import { t, formatText } from './i18n-apply.js';
 import { lockScroll, unlockScroll } from './scroll-lock.js';
 import { BOOK_ICONS, iconFlag } from './icons.js';
 import { initCustomSelect, initSelectsGlobalListener } from './ui-components.js';
@@ -68,7 +69,7 @@ export async function refreshBooks() {
 
 export async function quickSaveToDefault(recipeId) {
   if (!currentUserId) {
-    showToast('Увійдіть, щоб зберігати рецепти', 'error');
+    showToast(t('loginToSaveRecipes'), 'error');
     return false;
   }
 
@@ -81,7 +82,7 @@ export async function quickSaveToDefault(recipeId) {
       .insert([
         {
           user_id: currentUserId,
-          name: 'Мої рецепти',
+          name: t('myRecipesBook'),
           icon: 'book',
           is_default: true,
         },
@@ -90,7 +91,7 @@ export async function quickSaveToDefault(recipeId) {
       .maybeSingle();
 
     if (error) {
-      showToast('Помилка створення книги', 'error');
+      showToast(t('createBookError'), 'error');
       return false;
     }
 
@@ -115,7 +116,7 @@ export async function saveRecipeToBook(recipeId, bookId, bookName = null) {
     .maybeSingle();
 
   if (existing) {
-    showToast(`Вже є в "${bookName || 'книзі'}"`, 'info');
+    showToast(formatText('alreadyInBook', { book: bookName || t('bookFallbackLocative') }), 'info');
     return true;
   }
 
@@ -128,11 +129,11 @@ export async function saveRecipeToBook(recipeId, bookId, bookName = null) {
 
   if (error) {
     console.error('Error saving to book:', error);
-    showToast('Помилка збереження', 'error');
+    showToast(t('saveError'), 'error');
     return false;
   }
 
-  showToast(`Збережено в "${bookName || 'книгу'}"`);
+  showToast(formatText('savedToBook', { book: bookName || t('bookFallbackAccusative') }));
   return true;
 }
 
@@ -166,11 +167,11 @@ export async function removeRecipeFromBook(recipeId, bookId) {
 
   if (error) {
     console.error('Error removing from book:', error);
-    showToast('Помилка видалення', 'error');
+    showToast(t('deleteError'), 'error');
     return false;
   }
 
-  showToast('Видалено з книги');
+  showToast(t('removedFromBook'));
   return true;
 }
 
@@ -216,20 +217,20 @@ function createSelectorModal() {
       <button class="book-selector__close" id="book-selector-close">&times;</button>
       
       <div class="book-selector__header">
-        <h3>Зберегти в книгу</h3>
-        <p>Оберіть одну або кілька книг</p>
+        <h3>${t('saveToBookTitle')}</h3>
+        <p>${t('chooseBooksHint')}</p>
       </div>
-      
+
       <div class="book-selector__list" id="book-selector-list">
         <!-- Книги будуть тут -->
       </div>
-      
+
       <div class="book-selector__actions">
         <button type="button" class="btn-secondary" id="book-selector-all">
-          Усі книги...
+          ${t('allBooksAction')}
         </button>
         <button type="button" class="btn-save" id="book-selector-save">
-          Зберегти
+          ${t('save')}
         </button>
       </div>
     </div>
@@ -265,7 +266,7 @@ function renderBooksList(showAll = false, preCheckedIds = null) {
       <input type="checkbox" value="${book.id}" ${checkedIds.includes(book.id) ? 'checked' : ''}>
       <span class="book-selector__icon">${BOOK_ICONS[book.icon] || book.icon || BOOK_ICONS['book']}</span>
       <span class="book-selector__name">${escapeHTML(book.name)}</span>
-      ${book.is_default ? '<span class="book-selector__badge">Головна</span>' : ''}
+      ${book.is_default ? `<span class="book-selector__badge">${t('mainBook')}</span>` : ''}
     </label>
   `,
     )
@@ -293,10 +294,10 @@ export async function openBookSelector(recipeId, onSelect = null) {
   const isEditing = previouslySavedBookIds.length > 0;
   const header = selectorModal.querySelector('.book-selector__header');
   if (header) {
-    header.querySelector('h3').textContent = isEditing ? 'Керувати книгами' : 'Зберегти в книгу';
+    header.querySelector('h3').textContent = isEditing ? t('manageBooksTitle') : t('saveToBookTitle');
     header.querySelector('p').textContent = isEditing
-      ? 'Зніміть галочку, щоб видалити з книги'
-      : 'Оберіть одну або кілька книг';
+      ? t('uncheckToRemoveHint')
+      : t('chooseBooksHint');
   }
 
   renderBooksList(false);
@@ -332,7 +333,7 @@ async function handleSaveSelection() {
   ]);
 
   if (newBookIds.length === 0 && previouslySavedBookIds.length > 0) {
-    showToast('Видалено зі збережених');
+    showToast(t('removedFromSaved'));
   }
 
   closeBookSelector();
@@ -377,7 +378,7 @@ export function createInlineBookSelector(containerId, preselectedBookIds = []) {
         hasMore
           ? `
         <button type="button" class="inline-book-selector__more" id="${containerId}-more">
-          Вибрати ще...
+          ${t('selectMore')}
         </button>
       `
           : ''
@@ -416,7 +417,7 @@ function showFullBookSelector(containerId, currentSelection) {
           .join('')}
       </div>
       <button type="button" class="inline-book-selector__collapse" id="${containerId}-collapse">
-        Згорнути
+        ${t('collapse')}
       </button>
     </div>
   `;
@@ -441,7 +442,7 @@ export function getSelectedBooksFromContainer(containerId) {
 
 export async function reportRecipe(recipeId, reason) {
   if (!currentUserId) {
-    showToast('Увійдіть, щоб залишити скаргу', 'error');
+    showToast(t('loginToReport'), 'error');
     return false;
   }
 
@@ -455,15 +456,15 @@ export async function reportRecipe(recipeId, reason) {
 
   if (error) {
     if (error.code === '23505') {
-      showToast('Ви вже скаржились на цей рецепт', 'info');
+      showToast(t('alreadyReported'), 'info');
     } else {
       console.error('Error reporting recipe:', error);
-      showToast('Помилка надсилання скарги', 'error');
+      showToast(t('reportSendError'), 'error');
     }
     return false;
   }
 
-  showToast('Скаргу надіслано. Дякуємо!');
+  showToast(t('reportSent'));
   return true;
 }
 
@@ -472,7 +473,7 @@ function resetReportReasonSelect(modal) {
   const input = modal.querySelector('#report-reason-input');
   if (input) input.value = '';
   const triggerText = modal.querySelector('#report-reason-select .custom-select__trigger span');
-  if (triggerText) triggerText.textContent = 'Оберіть причину...';
+  if (triggerText) triggerText.textContent = t('reportReasonPlaceholder');
   modal
     .querySelectorAll('#report-reason-select .custom-select__option')
     .forEach((o) => o.classList.remove('selected'));
@@ -491,43 +492,43 @@ export function openReportModal(recipeId, recipeName = '') {
         <button class="report-modal__close" id="report-modal-close">&times;</button>
         
         <div class="report-modal__header">
-          <h3>${iconFlag} Поскаржитись на рецепт</h3>
+          <h3>${iconFlag} ${t('reportRecipeTitle')}</h3>
           <p class="report-modal__recipe-name"></p>
         </div>
-        
+
         <form id="report-form">
           <div class="form-group">
-            <label>Причина скарги</label>
+            <label>${t('reportReasonLabel')}</label>
             <div class="custom-select" id="report-reason-select">
               <div class="custom-select__trigger">
-                <span>Оберіть причину...</span>
+                <span>${t('reportReasonPlaceholder')}</span>
                 <div class="arrow"></div>
               </div>
               <div class="custom-select__options">
-                <span class="custom-select__option" data-value="inappropriate">Неприйнятний вміст</span>
-                <span class="custom-select__option" data-value="nsfw">NSFW</span>
-                <span class="custom-select__option" data-value="copyright">Порушення авторських прав</span>
-                <span class="custom-select__option" data-value="spam">Спам або реклама</span>
-                <span class="custom-select__option" data-value="hate_speech">Мова ненависті</span>
-                <span class="custom-select__option" data-value="scam">Шахрайство</span>
-                <span class="custom-select__option" data-value="misinformation">Небезпечна дезінформація</span>
-                <span class="custom-select__option" data-value="suspicious_links">Підозрілі посилання</span>
-                <span class="custom-select__option" data-value="bot_activity">Активність бота</span>
-                <span class="custom-select__option" data-value="incorrect">Некоректна інформація</span>
-                <span class="custom-select__option" data-value="other">Інше</span>
+                <span class="custom-select__option" data-value="inappropriate">${t('reportReasonInappropriate')}</span>
+                <span class="custom-select__option" data-value="nsfw">${t('reportReasonNsfw')}</span>
+                <span class="custom-select__option" data-value="copyright">${t('reportReasonCopyright')}</span>
+                <span class="custom-select__option" data-value="spam">${t('reportReasonSpam')}</span>
+                <span class="custom-select__option" data-value="hate_speech">${t('reportReasonHateSpeech')}</span>
+                <span class="custom-select__option" data-value="scam">${t('reportReasonScam')}</span>
+                <span class="custom-select__option" data-value="misinformation">${t('reportReasonMisinformation')}</span>
+                <span class="custom-select__option" data-value="suspicious_links">${t('reportReasonSuspiciousLinks')}</span>
+                <span class="custom-select__option" data-value="bot_activity">${t('reportReasonBotActivity')}</span>
+                <span class="custom-select__option" data-value="incorrect">${t('reportReasonIncorrect')}</span>
+                <span class="custom-select__option" data-value="other">${t('reportReasonOther')}</span>
               </div>
             </div>
             <input type="hidden" id="report-reason-input" required />
           </div>
-          
+
           <div class="form-group">
-            <label>Додатковий коментар (необов'язково)</label>
-            <textarea id="report-comment" rows="3" placeholder="Опишіть проблему детальніше..."></textarea>
+            <label>${t('reportCommentLabel')}</label>
+            <textarea id="report-comment" rows="3" placeholder="${t('reportCommentPlaceholder')}"></textarea>
           </div>
-          
+
           <div class="report-modal__actions">
-            <button type="button" class="btn-secondary" id="report-cancel">Скасувати</button>
-            <button type="submit" class="btn-confirm">Надіслати скаргу</button>
+            <button type="button" class="btn-secondary" id="report-cancel">${t('cancel')}</button>
+            <button type="submit" class="btn-confirm">${t('reportSubmit')}</button>
           </div>
         </form>
       </div>
@@ -558,7 +559,7 @@ export function openReportModal(recipeId, recipeName = '') {
 
     const reasonSelect = modal.querySelector('#report-reason-input').value;
     if (!reasonSelect) {
-      showToast('Оберіть причину скарги', 'error');
+      showToast(t('reportChooseReason'), 'error');
       return;
     }
     const comment = modal.querySelector('#report-comment').value.trim();

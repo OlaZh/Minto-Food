@@ -624,20 +624,20 @@ footer
 - [x] Тримати всі міграції у `supabase/migrations/` + у git
 - [x] **Migration policy документ** `docs/migrations.md` — checklist, типи операцій, алгоритм NOT NULL
 - [x] **Rollback стратегія:** для кожної міграції — окремий `_rollback.sql`
-- [ ] **Staging DB sync:** скрипт, що клонує prod schema на staging (без даних або з анонімізованими)
+- [x] **Staging DB sync:** скрипт, що клонує prod schema на staging (без даних або з анонімізованими)
 
 ### 🚩 Feature flags (НОВЕ — критичне!)
 
 - [x] Таблиця `feature_flags` — `supabase/migrations/20260518_1000_feature_flags.sql`
 - [x] Helper `js/feature-flag.js`: `isEnabled(key, userId)` → boolean, кеш 5 хв, детермінований rollout
 - [x] Кешування 5 хвилин (sessionLevel, не запит на кожну дію)
-- [ ] Адмінка: секція `app/(admin)/feature-flags/` для toggle без deploy
+- [x] Адмінка: секція `app/(admin)/feature-flags/` для toggle без deploy
 - [x] Перші флаги: `social_features_enabled`, `ai_scan_enabled`, `paywall_enabled`, `new_onboarding`, `referral_enabled`
 
 ### 📋 Release checklist
 
 - [x] `docs/release-checklist.md` — pre-deploy, deploy, smoke test, rollback
-- [ ] Прикріпити як PR template (`.github/pull_request_template.md`)
+- [x] Прикріпити як PR template (`.github/pull_request_template.md`)
 
 ---
 

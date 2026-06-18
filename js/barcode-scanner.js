@@ -8,6 +8,8 @@
 
 import { supabase } from './supabaseClient.js';
 import { iconCheckCircle } from './icons.js';
+import { t, formatText } from './i18n-apply.js';
+import { escapeHTML } from './utils.js';
 
 // ==================== STATE ====================
 let onProductFound = null;
@@ -34,36 +36,38 @@ const BARCODE_FORMATS = ['ean_13', 'ean_8', 'upc_a', 'upc_e', 'code_128', 'code_
 
 // ==================== РОЗМІТКА МОДАЛКИ (для будь-якої сторінки) ====================
 
-const SCANNER_MODAL_HTML = `
+function scannerModalHTML() {
+  return `
   <div id="scannerModal" class="scanner-modal" hidden>
     <div class="scanner-modal__overlay"></div>
     <div class="scanner-modal__content">
       <header class="scanner-modal__header">
-        <h3 class="scanner-modal__title"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg> Сканер штрих-коду</h3>
-        <button id="closeScannerBtn" class="scanner-modal__close" type="button" aria-label="Закрити">
+        <h3 class="scanner-modal__title"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg> ${t('scannerTitle')}</h3>
+        <button id="closeScannerBtn" class="scanner-modal__close" type="button" aria-label="${t('scannerClose')}">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
       </header>
       <div class="scanner-modal__body">
         <div id="barcode-reader" class="scanner-modal__reader"></div>
-        <p id="scannerStatus" class="scanner-modal__status">Наведіть камеру на штрих-код</p>
+        <p id="scannerStatus" class="scanner-modal__status">${t('scannerAimCamera')}</p>
         <div class="scanner-modal__manual">
-          <p class="scanner-modal__manual-label">Або введіть код вручну:</p>
+          <p class="scanner-modal__manual-label">${t('scannerManualLabel')}</p>
           <div class="scanner-modal__manual-row">
-            <input type="text" id="manualBarcodeInput" class="scanner-modal__input" placeholder="Введіть штрих-код" inputmode="numeric" pattern="[0-9]*" />
-            <button id="manualBarcodeBtn" class="scanner-modal__submit" type="button">Знайти</button>
+            <input type="text" id="manualBarcodeInput" class="scanner-modal__input" placeholder="${t('scannerManualPlaceholder')}" inputmode="numeric" pattern="[0-9]*" />
+            <button id="manualBarcodeBtn" class="scanner-modal__submit" type="button">${t('scannerFind')}</button>
           </div>
         </div>
       </div>
     </div>
   </div>
 `;
+}
 
 // Гарантує наявність модалки сканера в DOM + навішує внутрішні слухачі (1 раз).
 // Працює на будь-якій сторінці (recipes.html, week-menu.html тощо).
 function ensureScannerModal() {
   if (!document.getElementById('scannerModal')) {
-    document.body.insertAdjacentHTML('beforeend', SCANNER_MODAL_HTML);
+    document.body.insertAdjacentHTML('beforeend', scannerModalHTML());
   }
 
   if (modalBound) return;
@@ -137,7 +141,7 @@ async function openScanner() {
   updateTorchButton(false, false);
 
   if (statusEl) {
-    statusEl.textContent = 'Ініціалізація камери...';
+    statusEl.textContent = t('scannerInitCamera');
     statusEl.className = 'scanner-modal__status';
   }
 
@@ -265,7 +269,7 @@ async function startNativeScanner() {
     // 5. Запускаємо цикл детекції
     isNativeScanning = true;
     if (statusEl) {
-      statusEl.textContent = 'Наведіть камеру на штрих-код';
+      statusEl.textContent = t('scannerAimCamera');
       statusEl.className = 'scanner-modal__status';
     }
 
@@ -424,13 +428,13 @@ async function startFallbackScanner() {
     }, 500);
 
     if (statusEl) {
-      statusEl.textContent = 'Наведіть камеру на штрих-код';
+      statusEl.textContent = t('scannerAimCamera');
       statusEl.className = 'scanner-modal__status';
     }
   } catch (err) {
     console.error('Fallback scanner failed:', err);
     if (statusEl) {
-      statusEl.textContent = 'Камера недоступна. Введіть код вручну.';
+      statusEl.textContent = t('scannerCameraUnavailable');
       statusEl.className = 'scanner-modal__status scanner-modal__status--error';
     }
   }
@@ -507,27 +511,28 @@ function hasNutritionData(p) {
 
 // Пропозиція ввести/відредагувати дані вручну.
 // prefillName — назва, яку вдалось зчитати (може бути порожня).
-function promptManualEntry(barcode, prefillName = '', message = 'Продукт не знайдено', prefillBrand = '') {
+function promptManualEntry(barcode, prefillName = '', message = t('scannerProductNotFound'), prefillBrand = '') {
   const statusEl = document.getElementById('scannerStatus');
   if (!statusEl) return;
+  const safePrefillName = escapeHTML(prefillName);
 
   // У режимі ваги (рецепт) модалки ручного створення продукту немає —
   // показуємо лише повідомлення, без кнопки.
   if (askWeightMode) {
-    const nm = prefillName ? `<small class="scanner-modal__manual-name">${prefillName}</small><br>` : '';
-    statusEl.innerHTML = `${nm}<span>${message}. Спробуйте інший код або додайте інгредієнт текстом.</span>`;
+    const nm = safePrefillName ? `<small class="scanner-modal__manual-name">${safePrefillName}</small><br>` : '';
+    statusEl.innerHTML = `${nm}<span>${formatText('scannerTryAnotherCode', { message })}</span>`;
     statusEl.className = 'scanner-modal__status scanner-modal__status--error';
     return;
   }
 
-  const nameLine = prefillName
-    ? `<small class="scanner-modal__manual-name">${prefillName}</small><br>`
+  const nameLine = safePrefillName
+    ? `<small class="scanner-modal__manual-name">${safePrefillName}</small><br>`
     : '';
 
   statusEl.innerHTML = `
     ${nameLine}
     <span>${message}</span>
-    <button class="scanner-modal__manual-cta" type="button">Ввести дані вручну</button>
+    <button class="scanner-modal__manual-cta" type="button">${t('scannerEnterManually')}</button>
   `;
   statusEl.className = 'scanner-modal__status scanner-modal__status--error';
   statusEl.querySelector('.scanner-modal__manual-cta').addEventListener('click', () => {
@@ -544,7 +549,7 @@ async function handleBarcodeScan(barcode) {
   const statusEl = document.getElementById('scannerStatus');
 
   if (statusEl) {
-    statusEl.textContent = 'Шукаємо продукт...';
+    statusEl.textContent = t('scannerSearching');
     statusEl.className = 'scanner-modal__status scanner-modal__status--loading';
   }
 
@@ -561,7 +566,7 @@ async function handleBarcodeScan(barcode) {
         console.warn('Локальний запис без КБЖУ — пропонуємо ручне введення:', localProduct);
         const name =
           localProduct.name_ua || localProduct.name_en || localProduct.name_pl || '';
-        promptManualEntry(barcode, name, 'Дані відсутні — заповніть вручну', localProduct.brand || '');
+        promptManualEntry(barcode, name, t('scannerDataMissing'), localProduct.brand || '');
       }
       return;
     }
@@ -579,17 +584,17 @@ async function handleBarcodeScan(barcode) {
         console.warn('OFF повернув продукт без КБЖУ — не кешуємо:', offProduct);
         const name =
           offProduct.name_ua || offProduct.name_en || offProduct.name_pl || '';
-        promptManualEntry(barcode, name, 'Дані відсутні — заповніть вручну', offProduct.brand || '');
+        promptManualEntry(barcode, name, t('scannerDataMissing'), offProduct.brand || '');
       }
       return;
     }
 
     // 3. Не знайдено зовсім
-    promptManualEntry(barcode, '', 'Продукт не знайдено');
+    promptManualEntry(barcode, '', t('scannerProductNotFound'));
   } catch (error) {
     console.error('Помилка пошуку:', error);
     if (statusEl) {
-      statusEl.textContent = 'Помилка пошуку. Спробуйте ще раз.';
+      statusEl.textContent = t('scannerSearchError');
       statusEl.className = 'scanner-modal__status scanner-modal__status--error';
     }
   }
@@ -664,7 +669,8 @@ async function saveToLocalDatabase(product) {
 }
 
 function onProductFoundHandler(product) {
-  const displayName = product.name_ua || product.name_en || product.name_pl || 'Без назви';
+  const displayName = product.name_ua || product.name_en || product.name_pl || t('scannerNoName');
+  const safeDisplayName = escapeHTML(displayName);
 
   // Режим ваги (рецепт): показуємо поле ваги, повертаємо (product, grams)
   if (askWeightMode) {
@@ -673,13 +679,13 @@ function onProductFoundHandler(product) {
   }
 
   const statusEl = document.getElementById('scannerStatus');
-  const brandText = product.brand ? ` (${product.brand})` : '';
+  const brandText = product.brand ? ` (${escapeHTML(product.brand)})` : '';
 
   if (statusEl) {
     statusEl.innerHTML = `
-      <span class="scanner-modal__success">${iconCheckCircle} ${displayName}${brandText}</span>
+      <span class="scanner-modal__success">${iconCheckCircle} ${safeDisplayName}${brandText}</span>
       <br>
-      <small>${product.kcal} ккал · Б${product.protein} · Ж${product.fat} · В${product.carbs}</small>
+      <small>${formatText('scannerMacros', { kcal: product.kcal, protein: product.protein, fat: product.fat, carbs: product.carbs })}</small>
     `;
     statusEl.className = 'scanner-modal__status scanner-modal__status--success';
   }
@@ -707,13 +713,14 @@ function renderWeightPrompt(product) {
   const statusEl = document.getElementById('scannerStatus');
   if (!statusEl) return;
 
-  const brandText = product.brand ? ` · ${product.brand}` : '';
+  const safeName = escapeHTML(product.name);
+  const brandText = product.brand ? ` · ${escapeHTML(product.brand)}` : '';
   statusEl.innerHTML = `
-    <span class="scanner-modal__success">${iconCheckCircle} ${product.name}${brandText}</span>
-    <small>${product.kcal} ккал · Б${product.protein} · Ж${product.fat} · В${product.carbs} (на 100 г)</small>
+    <span class="scanner-modal__success">${iconCheckCircle} ${safeName}${brandText}</span>
+    <small>${formatText('scannerMacrosPer100', { kcal: product.kcal, protein: product.protein, fat: product.fat, carbs: product.carbs })}</small>
     <div class="scanner-modal__weight-row">
-      <input type="number" id="scanWeightInput" class="scanner-modal__input" placeholder="Вага, г" inputmode="numeric" min="1" step="1" />
-      <button id="scanWeightAddBtn" class="scanner-modal__submit" type="button">Додати</button>
+      <input type="number" id="scanWeightInput" class="scanner-modal__input" placeholder="${t('scannerWeightPlaceholder')}" inputmode="numeric" min="1" step="1" />
+      <button id="scanWeightAddBtn" class="scanner-modal__submit" type="button">${t('scannerAdd')}</button>
     </div>
   `;
   statusEl.className = 'scanner-modal__status scanner-modal__status--success';

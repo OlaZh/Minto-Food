@@ -6,6 +6,7 @@ import { supabase } from './supabaseClient.js';
 import { initAuth } from './auth.js';
 import { escapeHTML } from './utils.js';
 import { getLang } from './storage.js';
+import { t, formatText } from './i18n-apply.js';
 import { iconVeg, iconLeaf, iconAlert, iconClose, iconXCircle, iconCheckCircle } from './icons.js';
 
 let products = [];
@@ -72,7 +73,7 @@ function showWelcomeState() {
   productList.innerHTML = `
     <div class="no-results" style="grid-column:1/-1">
       <div class="no-results__icon">${iconVeg}</div>
-      <p class="no-results__text">Введіть назву продукту, щоб дізнатись його властивості та харчову цінність</p>
+      <p class="no-results__text">${t('pgWelcomeText')}</p>
     </div>`;
 }
 
@@ -98,7 +99,7 @@ async function loadProducts() {
   } catch (err) {
     console.error('Помилка Supabase:', err.message);
     if (productList) productList.innerHTML = `
-      <div class="no-results" style="grid-column:1/-1">${iconAlert} Помилка завантаження — перевірте з'єднання</div>`;
+      <div class="no-results" style="grid-column:1/-1">${iconAlert} ${t('pgLoadError')}</div>`;
   }
 }
 
@@ -115,8 +116,8 @@ function renderProducts(items) {
     productList.innerHTML = `
       <div class="no-results">
         <div class="no-results__icon">${iconLeaf}</div>
-        <p class="no-results__title">Продуктів не знайдено</p>
-        <p class="no-results__text">Спробуйте змінити фільтри або пошуковий запит</p>
+        <p class="no-results__title">${t('pgNoProducts')}</p>
+        <p class="no-results__text">${t('pgNoProductsHint')}</p>
       </div>`;
     return;
   }
@@ -139,11 +140,11 @@ function renderProducts(items) {
              onerror="this.src='img/placeholder.jpg'">
       </div>
       <div class="product-card__content">
-        <h3 class="product-card__name">${escapeHTML(nameForLang(product)) || 'Без назви'}</h3>
+        <h3 class="product-card__name">${escapeHTML(nameForLang(product)) || t('pgNoName')}</h3>
         <p class="product-card__desc">${escapeHTML(txt(product, 'short_desc')) || ''}</p>
         <div class="product-card__footer">
-          <span class="product-card__kcal">${product.kcal || 0} ккал</span>
-          <button class="product-card__btn">Детальніше</button>
+          <span class="product-card__kcal">${product.kcal || 0} ${t('kcalShort')}</span>
+          <button class="product-card__btn">${t('pgMoreDetails')}</button>
         </div>
       </div>`;
 
@@ -303,12 +304,12 @@ function getAccordionList(i18nKey, nth = 0) {
 function setLoadingState() {
   if (!modal) return;
   modal.querySelectorAll('.accordion__list').forEach((list) => {
-    list.innerHTML = '<li class="loading-placeholder">Завантаження...</li>';
+    list.innerHTML = `<li class="loading-placeholder">${t('loading')}</li>`;
   });
   const subs = modal.querySelector('.substitutes-container');
-  if (subs) subs.innerHTML = '<span class="loading-placeholder">Завантаження...</span>';
+  if (subs) subs.innerHTML = `<span class="loading-placeholder">${t('loading')}</span>`;
   const sim = modal.querySelector('.similar-products-container');
-  if (sim) sim.innerHTML = '<span class="loading-placeholder">Завантаження...</span>';
+  if (sim) sim.innerHTML = `<span class="loading-placeholder">${t('loading')}</span>`;
 }
 
 // Простий список: name — text
@@ -317,7 +318,7 @@ function renderSimpleList(i18nKey, rows) {
   if (!list) return;
 
   if (!rows || rows.length === 0) {
-    list.innerHTML = '<li class="no-data">Немає інформації</li>';
+    list.innerHTML = `<li class="no-data">${t('pgNoInfo')}</li>`;
     return;
   }
 
@@ -348,7 +349,7 @@ function renderCombinations(rows) {
   if (!list) return;
 
   if (!rows || rows.length === 0) {
-    list.innerHTML = '<li class="no-data">Немає інформації</li>';
+    list.innerHTML = `<li class="no-data">${t('pgNoInfo')}</li>`;
     return;
   }
 
@@ -366,7 +367,7 @@ function renderMyths(rows) {
   if (!list) return;
 
   if (!rows || rows.length === 0) {
-    list.innerHTML = '<li class="no-data">Немає інформації</li>';
+    list.innerHTML = `<li class="no-data">${t('pgNoInfo')}</li>`;
     return;
   }
 
@@ -391,7 +392,7 @@ function renderSubstitutes(rows) {
   container.innerHTML = '';
 
   if (!rows || rows.length === 0) {
-    container.innerHTML = '<span class="no-data">Немає замін</span>';
+    container.innerHTML = `<span class="no-data">${t('pgNoSubstitutes')}</span>`;
     return;
   }
 
@@ -430,7 +431,7 @@ function renderArrayList(i18nKey, arr) {
   const items = normalizeList(arr);
 
   if (items.length === 0) {
-    list.innerHTML = '<li class="no-data">Немає інформації</li>';
+    list.innerHTML = `<li class="no-data">${t('pgNoInfo')}</li>`;
     return;
   }
 
@@ -463,16 +464,16 @@ async function openProductModal(product) {
   if (descEl) descEl.textContent = txt(product, 'short_desc') || '';
 
   const kcalEl = modal.querySelector('[data-i18n="kcal"]');
-  if (kcalEl) kcalEl.textContent = `${product.kcal || 0} ккал`;
+  if (kcalEl) kcalEl.textContent = `${product.kcal || 0} ${t('kcalShort')}`;
 
   const proteinEl = modal.querySelector('[data-i18n="protein"]');
-  if (proteinEl) proteinEl.textContent = `${product.protein || 0}Б`;
+  if (proteinEl) proteinEl.textContent = `${product.protein || 0}${t('proteinLetter')}`;
 
   const fatEl = modal.querySelector('[data-i18n="fat"]');
-  if (fatEl) fatEl.textContent = `${product.fat || 0}Ж`;
+  if (fatEl) fatEl.textContent = `${product.fat || 0}${t('fatLetter')}`;
 
   const carbsEl = modal.querySelector('[data-i18n="carbs"]');
-  if (carbsEl) carbsEl.textContent = `${product.carbs || 0}В`;
+  if (carbsEl) carbsEl.textContent = `${product.carbs || 0}${t('carbsLetter')}`;
 
   const fiberRow = modal.querySelector('#productFiberRow');
   if (fiberRow) fiberRow.hidden = true;

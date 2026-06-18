@@ -2,7 +2,7 @@
 // Логіка сторінки "Книга рецептів"
 import { initAuth, openAuthModal } from './auth.js';
 import { supabase } from './supabaseClient.js';
-import { showToast, escapeHTML, pluralUA } from './utils.js';
+import { showToast, escapeHTML, pluralUA, safeImageUrl } from './utils.js';
 import { BOOK_ICONS as _BOOK_ICONS, iconClose, iconCheck, iconEdit, iconChevronRight, iconPlate } from './icons.js';
 import { showConfirmModal } from './ui-components.js';
 import { lockScroll, unlockScroll } from './scroll-lock.js';
@@ -604,8 +604,9 @@ function renderBookRecipes(recipes) {
         ? `<span class="cookbook-recipe-card__kcal">${Math.round(recipe.kcal)} ${t('kcalShort')}</span>`
         : '';
 
-      const imageHtml = recipe.image
-        ? `<img src="${recipe.image}" alt="${escapeHTML(recipeName)}" loading="lazy">`
+      const imageSrc = safeImageUrl(recipe.image);
+      const imageHtml = imageSrc
+        ? `<img src="${imageSrc}" alt="${escapeHTML(recipeName)}" loading="lazy">`
         : `<div class="cookbook-recipe-card__placeholder">${iconPlate}</div>`;
 
       const stickyNote = recipe.notes?.trim()
@@ -728,8 +729,9 @@ async function loadRecentRecipes() {
       .map((item) => {
         const r = item.recipes;
         const recipeName = getRecipeName(r);
-        const imgHtml = r.image
-          ? `<img src="${escapeHTML(r.image)}" alt="${escapeHTML(recipeName)}" loading="lazy">`
+        const imageSrc = safeImageUrl(r.image);
+        const imgHtml = imageSrc
+          ? `<img src="${imageSrc}" alt="${escapeHTML(recipeName)}" loading="lazy">`
           : `<div class="cookbook-recent-item__placeholder">${iconPlate}</div>`;
         return `
         <a class="cookbook-recent-item" href="recipes.html?recipe=${r.id}&from=cookbook">

@@ -7,6 +7,7 @@
 
 import { supabase } from './supabaseClient.js';
 import { escapeHTML, showToast } from './utils.js';
+import { t, formatText } from './i18n-apply.js';
 
 const token = new URLSearchParams(location.search).get('token');
 
@@ -74,7 +75,7 @@ async function toggleItem(id, checked) {
     // RPC не пройшов → відкочуємо UI, щоб стан не брехав.
     item.is_checked = prev;
     render(new Set());
-    showToast('Не вдалося оновити список. Спробуйте ще раз.', 'error');
+    showToast(t('sharedListUpdateError'), 'error');
   }
 }
 
@@ -83,18 +84,18 @@ function render(newIds) {
   const checked = items.filter(i => i.is_checked).length;
   const pct     = total > 0 ? Math.round(checked / total * 100) : 0;
 
-  countEl.textContent = total > 0 ? `${checked} з ${total} куплено` : '';
+  countEl.textContent = total > 0 ? formatText('sharedBoughtCount', { checked, total }) : '';
   fillEl.style.width  = pct + '%';
   itemsEl.innerHTML   = '';
 
   if (!total) {
-    itemsEl.innerHTML = '<p class="shared-list__empty">Список порожній</p>';
+    itemsEl.innerHTML = `<p class="shared-list__empty">${t('sharedListEmpty')}</p>`;
     return;
   }
 
   const groups = {};
   items.forEach(i => {
-    const cat = i.category || 'Інше';
+    const cat = i.category || t('categoryOther');
     if (!groups[cat]) groups[cat] = [];
     groups[cat].push(i);
   });
@@ -121,7 +122,7 @@ function render(newIds) {
       li.innerHTML = `
         <label class="shop-item__check-label">
           <input type="checkbox" class="shop-item__checkbox"
-            ${item.is_checked ? 'checked' : ''} aria-label="Куплено">
+            ${item.is_checked ? 'checked' : ''} aria-label="${t('boughtLabel')}">
           <span class="shop-item__custom-check"></span>
         </label>
         <span class="shop-item__name">${escapeHTML(item.name)}</span>

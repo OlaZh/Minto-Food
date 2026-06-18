@@ -12,7 +12,7 @@ import {
 } from './icons.js';
 import { initAuth, requireAuth, getCurrentUser, openAuthModal, signOut } from './auth.js';
 import { showToast, pluralUA } from './utils.js';
-import { t } from './i18n-apply.js';
+import { t, formatText } from './i18n-apply.js';
 import {
   setTheme,
   getLang,
@@ -74,6 +74,12 @@ const ACTIVITIES = {
   elliptical: { icon: iconElliptical, label: t('actElliptical'), caloriesPerMinute: 7 },
   other:      { icon: iconPlus,       label: t('actOther'),      caloriesPerMinute: 5 },
 };
+
+// Локаль для дат/часу — залежить від поточної мови інтерфейсу.
+function dateLocale() {
+  const lang = getLang() === 'uk' ? 'ua' : getLang();
+  return lang === 'pl' ? 'pl-PL' : lang === 'en' ? 'en-US' : 'uk-UA';
+}
 
 // =====================================
 // CHART INSTANCES
@@ -148,12 +154,12 @@ function mapActivityRow(row) {
     duration: row.duration,
     calories: row.calories,
     date: row.performed_at,
-    dateFormatted: d.toLocaleDateString('uk-UA', {
+    dateFormatted: d.toLocaleDateString(dateLocale(), {
       day: '2-digit',
       month: '2-digit',
       year: 'numeric',
     }),
-    time: d.toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' }),
+    time: d.toLocaleTimeString(dateLocale(), { hour: '2-digit', minute: '2-digit' }),
   };
 }
 
@@ -248,13 +254,13 @@ function buildWeightChart(canvasId, history, chartRef) {
     },
     yaxis: {
       labels: {
-        formatter: (v) => v + ' кг',
+        formatter: (v) => v + ' ' + t('kgUnit'),
         style: { colors: '#9ca3af', fontSize: '11px' },
       },
     },
     grid: { borderColor: 'rgba(156,163,175,0.12)', strokeDashArray: 3 },
     markers: { size: 4, colors: ['#4ab584'], strokeColors: '#fff', strokeWidth: 2 },
-    tooltip: { theme: isDark ? 'dark' : 'light', y: { formatter: (v) => v + ' кг' } },
+    tooltip: { theme: isDark ? 'dark' : 'light', y: { formatter: (v) => v + ' ' + t('kgUnit') } },
     noData: { text: t('noData'), style: { color: '#9ca3af', fontSize: '14px' } },
   });
   chart.render();
@@ -304,7 +310,7 @@ async function recordNewWeight() {
   }
 
   weightNowInput.value = '';
-  showToast(`Вага ${weight} кг збережена`);
+  showToast(formatText('weightSaved', { weight }));
 
   await initWeightChart();
 }
@@ -323,8 +329,8 @@ function generateWeightProgress(history) {
     <div class="progress-status progress-status--success">
       <span class="progress-status__icon">${iconScale}</span>
       <div>
-        <div style="font-weight:700;font-size:1.1rem;color:var(--color-text-primary)">${latest} кг</div>
-        <div style="font-size:12px;color:var(--color-text-secondary)">Останній запис</div>
+        <div style="font-weight:700;font-size:1.1rem;color:var(--color-text-primary)">${latest} ${t('kgUnit')}</div>
+        <div style="font-size:12px;color:var(--color-text-secondary)">${t('lastRecord')}</div>
       </div>
     </div>`;
 
@@ -337,15 +343,15 @@ function generateWeightProgress(history) {
     html += `
       <div>
         <div class="progress-header">
-          <span>Ціль: <strong>${target} кг</strong></span>
+          <span>${t('progGoal')} <strong>${target} ${t('kgUnit')}</strong></span>
           <span class="progress-percent">${pct}%</span>
         </div>
         <div class="progress-bar-container">
           <div class="progress-bar" style="width:${pct}%"></div>
         </div>
         <div class="progress-footer">
-          <span>Зараз: <strong>${latest} кг</strong></span>
-          <span>Залишилось: <strong>${diff} кг</strong></span>
+          <span>${t('progCurrent')} <strong>${latest} ${t('kgUnit')}</strong></span>
+          <span>${t('progLeft')} <strong>${diff} ${t('kgUnit')}</strong></span>
         </div>
       </div>`;
   }
@@ -467,7 +473,7 @@ async function initStatisticsCharts() {
           const rankClass = i === 0 ? 'stats-tops__rank--gold' : '';
           const rankContent = i === 0 ? '★' : i + 1;
           const pct = Math.round((d.count / maxTopCount) * 100);
-          const weightLabel = d.weight > 0 ? ` · ${Math.round(d.weight)} гр` : '';
+          const weightLabel = d.weight > 0 ? ` · ${Math.round(d.weight)} ${t('gramsLabel')}` : '';
           return `
             <li class="stats-tops__item">
               <span class="stats-tops__rank ${rankClass}">${rankContent}</span>
@@ -505,7 +511,7 @@ async function initStatisticsCharts() {
   const pctEl = document.getElementById('comparePct');
   if (deltaEl) {
     if (hasThisWeekData || hasLastWeekData) {
-      deltaEl.textContent = (deltaKcal >= 0 ? '+' : '') + deltaKcal + ' ккал';
+      deltaEl.textContent = (deltaKcal >= 0 ? '+' : '') + deltaKcal + ' ' + t('kcalShort');
       deltaEl.className = 'profile-compare__delta ' + (deltaKcal >= 0 ? 'pos' : 'neg');
     } else {
       deltaEl.textContent = '—';
@@ -520,7 +526,7 @@ async function initStatisticsCharts() {
   const tipsList = document.getElementById('statsTipsList');
   if (tipsList && mealsError) {
     const iconSvg = `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4m0 4h.01"/></svg>`;
-    tipsList.innerHTML = `<li class="stats-tips__item"><span class="stats-tips__icon">${iconSvg}</span><span class="stats-tips__text">Не вдалося завантажити рекомендації. Спробуй оновити сторінку трохи пізніше.</span></li>`;
+    tipsList.innerHTML = `<li class="stats-tips__item"><span class="stats-tips__icon">${iconSvg}</span><span class="stats-tips__text">${t('tipsLoadError')}</span></li>`;
   } else if (tipsList && hasThisWeekData) {
     const tips = [];
     const { protein: tp2, fat: tf2, carbs: tc2, kcal: tk2 } = thisTotals;
@@ -632,7 +638,7 @@ async function initStatisticsCharts() {
                 fontWeight: '800',
                 color: VALUE_COLOR,
                 fontFamily: 'inherit',
-                formatter: (v) => Math.round(v) + ' г',
+                formatter: (v) => Math.round(v) + ' ' + t('gramsLabel'),
               },
               total: {
                 show: true,
@@ -642,7 +648,7 @@ async function initStatisticsCharts() {
                 fontWeight: '600',
                 fontFamily: 'inherit',
                 formatter: (w) =>
-                  Math.round(w.globals.seriesTotals.reduce((a, b) => a + b, 0)) + ' г',
+                  Math.round(w.globals.seriesTotals.reduce((a, b) => a + b, 0)) + ' ' + t('gramsLabel'),
               },
             },
           },
@@ -670,7 +676,7 @@ async function initStatisticsCharts() {
             `<span class="stats-donut-tip__dot" style="background:${color}"></span>` +
             `<span class="stats-donut-tip__name">${label}</span>` +
             `<span class="stats-donut-tip__sep">·</span>` +
-            `<span class="stats-donut-tip__val">${val} г</span>` +
+            `<span class="stats-donut-tip__val">${val} ${t('gramsLabel')}</span>` +
             `<span class="stats-donut-tip__sep">·</span>` +
             `<span class="stats-donut-tip__pct">${pct} %</span>` +
             '</div>'
@@ -748,7 +754,7 @@ async function initStatisticsCharts() {
       `<text x="${cx}" y="${cy - labelDy}" text-anchor="middle" ` +
       `fill="${LABEL_COLOR}" font-size="${labelFs}" font-weight="600" font-family="inherit">${totalLabel}</text>` +
       `<text x="${cx}" y="${cy + valueDy}" text-anchor="middle" ` +
-      `fill="${VALUE_COLOR}" font-size="${valueFs}" font-weight="800" font-family="inherit">${Math.round(total)} г</text>` +
+      `fill="${VALUE_COLOR}" font-size="${valueFs}" font-weight="800" font-family="inherit">${Math.round(total)} ${t('gramsLabel')}</text>` +
       `</svg>` +
       `<div class="svg-donut-tip" hidden></div>`;
 
@@ -765,7 +771,7 @@ async function initStatisticsCharts() {
         `<span class="stats-donut-tip__dot" style="background:${baseColors[i]}"></span>` +
         `<span class="stats-donut-tip__name">${LABELS[i]}</span>` +
         `<span class="stats-donut-tip__sep">·</span>` +
-        `<span class="stats-donut-tip__val">${val} г</span>` +
+        `<span class="stats-donut-tip__val">${val} ${t('gramsLabel')}</span>` +
         `<span class="stats-donut-tip__sep">·</span>` +
         `<span class="stats-donut-tip__pct">${pct} %</span>` +
         '</div>';
@@ -858,7 +864,7 @@ async function initStatisticsCharts() {
       tooltip: {
         theme: 'dark',
         style: { fontSize: '13px', fontFamily: 'inherit' },
-        y: { formatter: (v) => Math.round(v) + ' ккал' },
+        y: { formatter: (v) => Math.round(v) + ' ' + t('kcalShort') },
       },
       noData: NO_DATA,
     });
@@ -923,7 +929,7 @@ async function initStatisticsCharts() {
       tooltip: {
         theme: 'dark',
         style: { fontSize: '13px', fontFamily: 'inherit' },
-        y: { formatter: (v) => Math.round(v) + ' разів' },
+        y: { formatter: (v) => Math.round(v) + ' ' + t('timesUnit') },
       },
       noData: NO_DATA,
     });
@@ -985,10 +991,10 @@ function updateBMI(weight, height) {
   if (bmiAdviceEl) {
     const idealMin = Math.round(20 * h * h);
     const idealMax = Math.round(24 * h * h);
-    let html = `Для твого зросту ідеальна вага <strong>${idealMin}–${idealMax} кг</strong>`;
+    let html = formatText('bmiIdealWeight', { min: idealMin, max: idealMax, kg: t('kgUnit') });
     if (bmi < 18.5) {
       html += `<div class="weight-goal-warning weight-goal-warning--bmi">
-        ІМТ нижче 18.5 відповідає <strong>недостатній вазі</strong>. Будь ласка, <a href="https://www.who.int/news-room/fact-sheets/detail/malnutrition" target="_blank" rel="noopener">зверніться до лікаря або дієтолога</a> для персонального плану харчування.
+        ${t('bmiUnderWarning')}
       </div>`;
     }
     bmiAdviceEl.innerHTML = html;
@@ -996,7 +1002,7 @@ function updateBMI(weight, height) {
 }
 
 function renderAll(data) {
-  if (resultEl) resultEl.textContent = `${data.calories} ккал`;
+  if (resultEl) resultEl.textContent = `${data.calories} ${t('kcalShort')}`;
   if (normProteinEl) normProteinEl.textContent = data.protein;
   if (normFatEl) normFatEl.textContent = data.fat;
   if (normCarbsEl) normCarbsEl.textContent = data.carbs;
@@ -1387,7 +1393,7 @@ function updateCaloriesPreview() {
     const activity = ACTIVITIES[activityType];
     const caloriesPerMin = activity ? activity.caloriesPerMinute : 5;
     const totalCalories = Math.round(caloriesPerMin * duration);
-    previewEl.textContent = `${totalCalories} ккал`;
+    previewEl.textContent = `${totalCalories} ${t('kcalShort')}`;
     previewEl.classList.add('has-value');
   } else {
     previewEl.textContent = '— ' + t('kcalShort');
@@ -1427,12 +1433,12 @@ function setupActivityForm() {
       duration,
       calories: caloriesBurned,
       date: new Date().toISOString(),
-      dateFormatted: new Date().toLocaleDateString('uk-UA', {
+      dateFormatted: new Date().toLocaleDateString(dateLocale(), {
         day: '2-digit',
         month: '2-digit',
         year: 'numeric',
       }),
-      time: new Date().toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' }),
+      time: new Date().toLocaleTimeString(dateLocale(), { hour: '2-digit', minute: '2-digit' }),
     };
 
     const saved = await saveActivityToSupabase(activity);
@@ -1455,7 +1461,7 @@ function setupActivityForm() {
     renderActivityHistory(currentPeriod);
     initActivityChart();
 
-    showToast(`${activityLabel}: ${caloriesBurned} ккал спалено`);
+    showToast(formatText('activityBurnedToast', { label: activityLabel, calories: caloriesBurned }));
   });
 }
 
@@ -1542,7 +1548,7 @@ function renderActivityHistory(period) {
   }
 
   if (history.length === 0) {
-    container.innerHTML = `<div class="activity-history-empty"><span class="empty-icon">${iconRun}</span><p>Немає записів за цей період.</p></div>`;
+    container.innerHTML = `<div class="activity-history-empty"><span class="empty-icon">${iconRun}</span><p>${t('noActivityRecords')}</p></div>`;
     return;
   }
 
@@ -1558,7 +1564,7 @@ function renderActivityHistory(period) {
     const dayTotal = activities.reduce((sum, a) => sum + a.calories, 0);
     const dayMinutes = activities.reduce((sum, a) => sum + a.duration, 0);
 
-    html += `<div class="activity-day-group"><div class="activity-day-header"><span class="activity-day-date">${date}</span><span class="activity-day-total">${dayTotal} ккал • ${dayMinutes} хв</span></div><div class="activity-day-items">`;
+    html += `<div class="activity-day-group"><div class="activity-day-header"><span class="activity-day-date">${date}</span><span class="activity-day-total">${dayTotal} ${t('kcalShort')} • ${dayMinutes} ${t('minShort')}</span></div><div class="activity-day-items">`;
 
     activities.forEach((activity) => {
       html += `
@@ -1566,13 +1572,13 @@ function renderActivityHistory(period) {
           <div class="activity-item__icon">${activity.icon || ''}</div>
           <div class="activity-item__info">
             <span class="activity-item__name">${activity.label || activity.name || ''}</span>
-            <span class="activity-item__details">${activity.duration} хв • ${activity.time}</span>
+            <span class="activity-item__details">${activity.duration} ${t('minShort')} • ${activity.time}</span>
           </div>
           <div class="activity-item__calories">
             <span class="activity-item__calories-value">-${activity.calories}</span>
-            <span class="activity-item__calories-label">ккал</span>
+            <span class="activity-item__calories-label">${t('kcalShort')}</span>
           </div>
-          <button class="activity-item__delete" onclick="deleteActivity(${activity.id})" title="Видалити">${iconXCircle}</button>
+          <button class="activity-item__delete" onclick="deleteActivity(${activity.id})" title="${t('delete')}">${iconXCircle}</button>
         </div>
       `;
     });
@@ -1596,7 +1602,7 @@ function initActivityChart() {
   for (let i = 29; i >= 0; i--) {
     const date = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
     const dateStr = date.toDateString();
-    const dateLabel = date.toLocaleDateString('uk-UA', { day: '2-digit', month: '2-digit' });
+    const dateLabel = date.toLocaleDateString(dateLocale(), { day: '2-digit', month: '2-digit' });
 
     days.push(dateLabel);
 
@@ -1641,13 +1647,13 @@ function initActivityChart() {
     yaxis: {
       min: 0,
       labels: {
-        formatter: (v) => Math.round(v) + ' ккал',
+        formatter: (v) => Math.round(v) + ' ' + t('kcalShort'),
         style: { colors: '#9ca3af', fontSize: '10px' },
       },
     },
     grid: { borderColor: 'rgba(156,163,175,0.12)', strokeDashArray: 3, padding: { right: 24, left: 8 } },
     legend: { show: false },
-    tooltip: { theme: isDark ? 'dark' : 'light', y: { formatter: (v) => v + ' ккал' } },
+    tooltip: { theme: isDark ? 'dark' : 'light', y: { formatter: (v) => v + ' ' + t('kcalShort') } },
     noData: { text: t('noActivities'), style: { color: '#9ca3af', fontSize: '14px' } },
   });
   activityChart.render();
@@ -1790,7 +1796,7 @@ function _initNicknameEditor(user) {
     input.focus();
     _nbValid = false;
     saveBtn.disabled = true;
-    _setNbHint(hint, `від ${_NB_MIN} до ${_NB_MAX} символів`, '');
+    _setNbHint(hint, formatText('nickRangeHint', { min: _NB_MIN, max: _NB_MAX }), '');
   });
 
   cancelBtn.addEventListener('click', () => {
@@ -1804,8 +1810,8 @@ function _initNicknameEditor(user) {
     saveBtn.disabled = true;
     input.style.borderColor = '#82bf99';
 
-    if (!val) { _setNbHint(hint, `від ${_NB_MIN} до ${_NB_MAX} символів`, ''); return; }
-    if (val.length < _NB_MIN) { _setNbHint(hint, `Мінімум ${_NB_MIN} символи`, '#e74c3c'); input.style.borderColor = '#e74c3c'; return; }
+    if (!val) { _setNbHint(hint, formatText('nickRangeHint', { min: _NB_MIN, max: _NB_MAX }), ''); return; }
+    if (val.length < _NB_MIN) { _setNbHint(hint, formatText('nickMinHint', { min: _NB_MIN }), '#e74c3c'); input.style.borderColor = '#e74c3c'; return; }
     if (!_NB_ALLOWED.test(val)) { _setNbHint(hint, t('nickOnlyChars'), '#e74c3c'); input.style.borderColor = '#e74c3c'; return; }
 
     _setNbHint(hint, t('nickChecking'), '#3f7558');
@@ -1827,16 +1833,16 @@ function _initNicknameEditor(user) {
       .upsert({ id: user.id, display_name: val }, { onConflict: 'id' });
 
     if (error) {
-      _setNbHint(hint, 'Помилка збереження', '#e74c3c');
+      _setNbHint(hint, t('saveErrorShort'), '#e74c3c');
       saveBtn.disabled = false;
-      saveBtn.textContent = 'Зберегти';
+      saveBtn.textContent = t('save');
       return;
     }
 
     if (nameDisplay) nameDisplay.textContent = val;
     editor.hidden = true;
     editBtn.hidden = false;
-    saveBtn.textContent = 'Зберегти';
+    saveBtn.textContent = t('save');
     showToast(t('nicknameSaved'));
   });
 }
@@ -1861,7 +1867,7 @@ async function _checkNbUnique(val, userId) {
     _nbValid = false;
     if (saveBtn) saveBtn.disabled = true;
   } else {
-    _setNbHint(hint, 'Це ім\'я вільне', '#4ab584');
+    _setNbHint(hint, t('nickFree'), '#4ab584');
     input.style.borderColor = '#4ab584';
     _nbValid = true;
     if (saveBtn) saveBtn.disabled = false;
@@ -1989,7 +1995,7 @@ function initCaloriesInlineEdit() {
 
     if (!val || val < 500 || val > 10000) return;
 
-    displayEl.textContent = `${val} ккал`;
+    displayEl.textContent = `${val} ${t('kcalShort')}`;
     localStorage.setItem('dailyCaloriesNorm', val);
 
     const user = getCurrentUser();

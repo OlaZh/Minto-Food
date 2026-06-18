@@ -4,6 +4,7 @@
 
 import { supabase } from './supabaseClient.js';
 import { iconVeg, iconCheck } from './icons.js';
+import { t, formatText } from './i18n-apply.js';
 
 const MIN = 2;
 const MAX = 25;
@@ -186,28 +187,28 @@ function _mount(suggested) {
 
       <!-- Режим пропозиції -->
       <div id="onbSuggestView">
-        <h2 class="onb-title">Ласкаво просимо!</h2>
-        <p class="onb-sub">Ми підібрали тобі нікнейм.<br>Він буде видно під рецептами і в профілі.</p>
+        <h2 class="onb-title">${t('onbWelcomeTitle')}</h2>
+        <p class="onb-sub">${t('onbWelcomeSub')}</p>
         <div class="onb-suggestion">
-          <div class="onb-suggestion__label">Твій нікнейм</div>
+          <div class="onb-suggestion__label">${t('onbYourNickname')}</div>
           <div class="onb-suggestion__name" id="onbSuggestedName">${suggested}</div>
         </div>
         <div class="onb-actions">
-          <button class="onb-btn-primary" id="onbAcceptBtn">Залишити</button>
-          <button class="onb-btn-outline" id="onbEditBtn">Змінити зараз</button>
-          <button class="onb-btn-ghost" id="onbLaterBtn">Пізніше</button>
+          <button class="onb-btn-primary" id="onbAcceptBtn">${t('onbKeep')}</button>
+          <button class="onb-btn-outline" id="onbEditBtn">${t('onbChangeNow')}</button>
+          <button class="onb-btn-ghost" id="onbLaterBtn">${t('onbLater')}</button>
         </div>
       </div>
 
       <!-- Режим редагування -->
       <div class="onb-edit" id="onbEditView">
-        <h2 class="onb-title">Обери свій нікнейм</h2>
-        <p class="onb-sub">Кирилиця, латиниця, цифри, пробіл, . - _</p>
+        <h2 class="onb-title">${t('onbChooseTitle')}</h2>
+        <p class="onb-sub">${t('nickAllowedChars')}</p>
         <input class="onb-input" id="onbInput" type="text"
           maxlength="${MAX}" autocomplete="off" autocorrect="off" spellcheck="false" />
-        <p class="onb-hint" id="onbHint">від ${MIN} до ${MAX} символів</p>
-        <button class="onb-save-btn" id="onbSaveBtn" disabled>Зберегти</button>
-        <button class="onb-back" id="onbBackBtn">← Назад до пропозиції</button>
+        <p class="onb-hint" id="onbHint">${formatText('nickRangeHint', { min: MIN, max: MAX })}</p>
+        <button class="onb-save-btn" id="onbSaveBtn" disabled>${t('save')}</button>
+        <button class="onb-back" id="onbBackBtn">${t('onbBackToSuggestion')}</button>
       </div>
     </div>
   `;
@@ -252,11 +253,11 @@ function _bindEditView() {
     btn.disabled = true;
     input.classList.remove('onb-input--error', 'onb-input--ok');
 
-    if (!val) { _hint(hint, `від ${MIN} до ${MAX} символів`, ''); return; }
-    if (val.length < MIN) { _hint(hint, `Мінімум ${MIN} символи`, 'error'); input.classList.add('onb-input--error'); return; }
-    if (!ALLOWED.test(val)) { _hint(hint, 'Тільки літери, цифри, пробіл, . - _', 'error'); input.classList.add('onb-input--error'); return; }
+    if (!val) { _hint(hint, formatText('nickRangeHint', { min: MIN, max: MAX }), ''); return; }
+    if (val.length < MIN) { _hint(hint, formatText('nickMinHint', { min: MIN }), 'error'); input.classList.add('onb-input--error'); return; }
+    if (!ALLOWED.test(val)) { _hint(hint, t('nickOnlyChars'), 'error'); input.classList.add('onb-input--error'); return; }
 
-    _hint(hint, 'Перевіряємо…', '');
+    _hint(hint, t('nickChecking'), '');
     clearTimeout(_debounceTimer);
     _debounceTimer = setTimeout(() => _checkUnique(val), 450);
   });
@@ -292,14 +293,14 @@ async function _checkUnique(val, silent = false) {
 
   if (count > 0) {
     if (!silent) {
-      _hint(hint, 'Це ім\'я вже зайняте, спробуй інше', 'error');
+      _hint(hint, t('nickTaken'), 'error');
       input.classList.add('onb-input--error');
     }
     _isValid = false;
     if (btn) btn.disabled = true;
   } else {
     if (!silent) {
-      _hint(hint, 'Це ім\'я вільне', 'ok');
+      _hint(hint, t('nickFree'), 'ok');
       input.classList.add('onb-input--ok');
     }
     _isValid = true;

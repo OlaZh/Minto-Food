@@ -3,6 +3,7 @@
 // =====================================
 
 import { iconInbox } from './icons.js';
+import { t } from './i18n-apply.js';
 
 // =====================================
 // CUSTOM SELECT
@@ -109,10 +110,10 @@ export function initSelectsGlobalListener() {
  * @param {Function} options.onCancel - Колбек при скасуванні
  */
 export function showConfirmModal({
-  title = 'Підтвердження',
-  message = 'Ви впевнені?',
-  confirmText = 'Так',
-  cancelText = 'Ні',
+  title = t('confirmTitle'),
+  message = t('confirmAreYouSure'),
+  confirmText = t('yes'),
+  cancelText = t('no'),
   onConfirm = () => {},
   onCancel = () => {},
 }) {
@@ -189,7 +190,7 @@ export function showConfirmModal({
  * @param {string|HTMLElement} container - Контейнер або його селектор
  * @param {string} message - Повідомлення
  */
-export function showLoading(container, message = 'Завантаження...') {
+export function showLoading(container, message = t('loadingText')) {
   const el = typeof container === 'string' ? document.querySelector(container) : container;
   if (!el) return;
 
@@ -207,7 +208,7 @@ export function showLoading(container, message = 'Завантаження...') 
  * @param {string} icon - Емодзі іконка
  * @param {string} message - Повідомлення
  */
-export function showEmpty(container, icon = iconInbox, message = 'Немає даних') {
+export function showEmpty(container, icon = iconInbox, message = t('noDataText')) {
   const el = typeof container === 'string' ? document.querySelector(container) : container;
   if (!el) return;
 

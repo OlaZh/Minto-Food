@@ -1,6 +1,6 @@
 import { supabase } from './supabaseClient.js';
 import { initAuth } from './auth.js';
-import { showToast } from './utils.js';
+import { showToast, escapeHTML, safeImageUrl } from './utils.js';
 import { getLang } from './storage.js';
 import { i18n } from './i18n.js';
 import { getRecipeDisplayName } from './recipe-utils.js';
@@ -654,8 +654,8 @@ async function buildFilterPanel() {
 function buildRecipeCard(recipe, savedRecipeIds) {
   const rating = recipe.rating || 0;
   const name = getRecipeName(recipe);
-  const cardImage =
-    recipe.image || 'https://images.unsplash.com/photo-1495521821757-a1efb6729352?q=80&w=500';
+  const fallbackImage = 'https://images.unsplash.com/photo-1495521821757-a1efb6729352?q=80&w=500';
+  const cardImage = safeImageUrl(recipe.image) || fallbackImage;
   const displayCategory = recipe.category ? getCategoryLabel(recipe.category) : '';
   const isSaved = savedRecipeIds.includes(recipe.id);
   const isOwn = isOwnRecipe(recipe);
@@ -675,10 +675,12 @@ function buildRecipeCard(recipe, savedRecipeIds) {
   const card = document.createElement('div');
   card.className = 'recipe-card content-fade-in';
   card.dataset.id = recipe.id;
+  const safeName = escapeHTML(name);
+  const safeModerationNote = escapeHTML(recipe.moderation_note || '');
 
   card.innerHTML = `
   <div class="recipe-card__image-box">
-    <img src="${cardImage}" alt="${name}" class="recipe-card__img" loading="lazy">
+    <img src="${cardImage}" alt="${safeName}" class="recipe-card__img" loading="lazy">
     <div class="recipe-card__rating-badge">
       <span class="recipe-card__rating-star">${iconStarFilled}</span>
       <span>${rating > 0 ? Number(rating).toFixed(1) : '0'}</span>
@@ -694,11 +696,11 @@ function buildRecipeCard(recipe, savedRecipeIds) {
     </button>
   </div>
   <div class="recipe-card__content">
-    <h3 class="recipe-card__name">${name}</h3>
+    <h3 class="recipe-card__name">${safeName}</h3>
     ${recipe.status === 'pending' ? `<div class="recipe-card__pending-badge">${t('pendingModeration')}</div>` : ''}
     ${isOwn && recipe.has_pending_update ? `<div class="recipe-card__update-badge">${iconCalendar} ${t('pendingUpdate')}</div>` : ''}
     ${isOwn && recipe.status === 'draft' && recipe.moderation_note
-      ? `<div class="recipe-card__mod-note">${recipe.moderation_note}</div>`
+      ? `<div class="recipe-card__mod-note">${safeModerationNote}</div>`
       : ''}
     ${metaRow}
     ${isOwn && !recipe.is_public && recipe.status !== 'pending'
@@ -999,8 +1001,8 @@ export async function openRecipeView(recipeId) {
         const li = document.createElement('li');
         li.className = 'ingredient-item-row';
         li.innerHTML = measure
-          ? `<span>• ${name}</span> <span class="ing-count">${measure}</span>`
-          : `<span>• ${name}</span>`;
+          ? `<span>• ${escapeHTML(name)}</span> <span class="ing-count">${escapeHTML(measure)}</span>`
+          : `<span>• ${escapeHTML(name)}</span>`;
         list.appendChild(li);
       });
     } else {
@@ -1026,7 +1028,7 @@ export async function openRecipeView(recipeId) {
                 : pr.products?.name_ua;
           const li = document.createElement('li');
           li.className = 'ingredient-item-row';
-          li.innerHTML = `<span>• ${productName || ''}</span> <span class="ing-count">${pr.amount || ''} ${pr.unit || ''}</span>`;
+          li.innerHTML = `<span>• ${escapeHTML(productName || '')}</span> <span class="ing-count">${escapeHTML(pr.amount || '')} ${escapeHTML(pr.unit || '')}</span>`;
           list.appendChild(li);
         });
       }
@@ -1049,7 +1051,7 @@ export async function openRecipeView(recipeId) {
       stepDiv.className = 'step-item';
       stepDiv.innerHTML = `
         <span class="step-num">${i + 1}</span>
-        <p>${cleanText}</p>
+        <p>${escapeHTML(cleanText)}</p>
       `;
       stepsContainer.appendChild(stepDiv);
     });
@@ -1415,12 +1417,13 @@ async function loadNewRecipes() {
       const isOwn = user && recipe.user_id === user.id;
       const name = getRecipeName(recipe);
       const rating = recipe.rating || 0;
+      const safeName = escapeHTML(name);
 
       const item = document.createElement('div');
       item.className = `new-recipe-item${isOwn ? ' new-recipe-item--own' : ''}`;
       item.innerHTML = `
         <div class="new-recipe-item__info">
-          <div class="new-recipe-item__name">${name}${isOwn ? ` <span style="font-size:11px;opacity:.7;">(${t('ownBadge')})</span>` : ''}</div>
+          <div class="new-recipe-item__name">${safeName}${isOwn ? ` <span style="font-size:11px;opacity:.7;">(${t('ownBadge')})</span>` : ''}</div>
           <div class="new-recipe-item__meta">
             <span>${recipe.category ? getCategoryLabel(recipe.category) : ''}</span>
             <span>·</span>

@@ -20,7 +20,7 @@
   </head>
 
   <body class="page page--shared-list">
-                                                                                <header class="header">
+                                                                                    <header class="header">
       <div class="header__container">
         <a href="index.html" class="header__logo"
           ><img src="img/logo.svg" alt="Logo" class="logo--default"
@@ -115,9 +115,9 @@
     <main class="main shared-list-page">
       <div class="container">
 
-        <div id="shared-loading" class="shared-list__loading">Завантаження...</div>
+        <div id="shared-loading" class="shared-list__loading" data-i18n="loading">Завантаження...</div>
 
-        <div id="shared-error" class="shared-list__error" hidden>
+        <div id="shared-error" class="shared-list__error" hidden data-i18n="sharedListNotFound">
           Список не знайдено або посилання недійсне.
         </div>
 
@@ -129,15 +129,15 @@
           <div class="shared-list__progress-bar">
             <div id="shared-fill" class="shared-list__progress-fill"></div>
           </div>
-          <span class="shared-list__sync-badge">Список оновлюється в реальному часі</span>
+          <span class="shared-list__sync-badge" data-i18n="sharedListSyncBadge">Список оновлюється в реальному часі</span>
           <div id="shared-items"></div>
-          <p class="shared-list__footer">Minto Food · Спільний список</p>
+          <p class="shared-list__footer"><span data-i18n="sharedListFooter">Minto Food · Спільний список</span></p>
         </div>
 
       </div>
     </main>
 
-                                                                                <footer class="site-footer">
+                                                                                    <footer class="site-footer">
       <div class="site-footer__inner">
 
         <div class="site-footer__brand">

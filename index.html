@@ -20,7 +20,7 @@
   </head>
 
   <body class="page page--day-menu">
-                                                                                            <header class="header">
+                                                                                                <header class="header">
       <div class="header__container">
         <a href="index.html" class="header__logo"
           ><img src="img/logo.svg" alt="Logo" class="logo--default"
@@ -131,7 +131,7 @@
 
           <!-- ===== ГОРИЗОНТАЛЬНІ ДНІ ТИЖНЯ ===== -->
           <nav class="day-week-nav">
-            <button class="day-week-nav__arrow" id="prevWeekBtn" aria-label="Попередній тиждень">
+            <button class="day-week-nav__arrow" id="prevWeekBtn" aria-label="Попередній тиждень" data-i18n-aria="prevWeekAria">
               <svg
                 width="16"
                 height="16"
@@ -146,35 +146,35 @@
             </button>
             <div class="day-week-nav__pills">
               <button class="sidebar__day-btn day-week-nav__pill" data-day="monday">
-                <span class="day-week-nav__pill-abbr">Пн</span>
+                <span class="day-week-nav__pill-abbr" data-i18n="dayMon">Пн</span>
                 <span class="day-week-nav__pill-num" data-day-num="monday">—</span>
               </button>
               <button class="sidebar__day-btn day-week-nav__pill" data-day="tuesday">
-                <span class="day-week-nav__pill-abbr">Вт</span>
+                <span class="day-week-nav__pill-abbr" data-i18n="dayTue">Вт</span>
                 <span class="day-week-nav__pill-num" data-day-num="tuesday">—</span>
               </button>
               <button class="sidebar__day-btn day-week-nav__pill" data-day="wednesday">
-                <span class="day-week-nav__pill-abbr">Ср</span>
+                <span class="day-week-nav__pill-abbr" data-i18n="dayWed">Ср</span>
                 <span class="day-week-nav__pill-num" data-day-num="wednesday">—</span>
               </button>
               <button class="sidebar__day-btn day-week-nav__pill" data-day="thursday">
-                <span class="day-week-nav__pill-abbr">Чт</span>
+                <span class="day-week-nav__pill-abbr" data-i18n="dayThu">Чт</span>
                 <span class="day-week-nav__pill-num" data-day-num="thursday">—</span>
               </button>
               <button class="sidebar__day-btn day-week-nav__pill" data-day="friday">
-                <span class="day-week-nav__pill-abbr">Пт</span>
+                <span class="day-week-nav__pill-abbr" data-i18n="dayFri">Пт</span>
                 <span class="day-week-nav__pill-num" data-day-num="friday">—</span>
               </button>
               <button class="sidebar__day-btn day-week-nav__pill" data-day="saturday">
-                <span class="day-week-nav__pill-abbr">Сб</span>
+                <span class="day-week-nav__pill-abbr" data-i18n="daySat">Сб</span>
                 <span class="day-week-nav__pill-num" data-day-num="saturday">—</span>
               </button>
               <button class="sidebar__day-btn day-week-nav__pill" data-day="sunday">
-                <span class="day-week-nav__pill-abbr">Нд</span>
+                <span class="day-week-nav__pill-abbr" data-i18n="daySun">Нд</span>
                 <span class="day-week-nav__pill-num" data-day-num="sunday">—</span>
               </button>
             </div>
-            <button class="day-week-nav__arrow" id="nextWeekBtn" aria-label="Наступний тиждень">
+            <button class="day-week-nav__arrow" id="nextWeekBtn" aria-label="Наступний тиждень" data-i18n-aria="nextWeekAria">
               <svg
                 width="16"
                 height="16"
@@ -249,7 +249,7 @@
                   <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path>
                 </svg>
                 <div class="water-compact-strip__info">
-                  <span class="water-compact-strip__title">Вода</span>
+                  <span class="water-compact-strip__title" data-i18n="water">Вода</span>
                   <span class="water-compact-strip__value">
                     <span id="currentWaterMobile">0.00</span> /
                     <span id="waterNormMobile">2.5 л</span>
@@ -280,7 +280,7 @@
 
               <!-- MOBILE COMPACT STRIP (hidden on desktop) -->
               <div class="day-compact-strip">
-                <span class="day-compact-strip__label">Калорії сьогодні</span>
+                <span class="day-compact-strip__label" data-i18n="todayCalories">Калорії сьогодні</span>
                 <div class="day-compact-strip__body">
                   <div class="day-compact-strip__ring">
                     <svg viewBox="0 0 36 36" class="circular-chart">
@@ -300,21 +300,21 @@
                   </div>
                   <div class="macro-bars">
                     <div class="macro-bar-row">
-                      <span class="macro-bar-label">Б</span>
+                      <span class="macro-bar-label" data-i18n="proteinLetter">Б</span>
                       <div class="macro-bar-track">
                         <div class="macro-bar-fill macro-bar-fill--protein" id="barProtein"></div>
                       </div>
                       <span class="macro-bar-value"><span id="todayProtein">0</span> / <span id="normProteinBar">0</span>г</span>
                     </div>
                     <div class="macro-bar-row">
-                      <span class="macro-bar-label">Ж</span>
+                      <span class="macro-bar-label" data-i18n="fatLetter">Ж</span>
                       <div class="macro-bar-track">
                         <div class="macro-bar-fill macro-bar-fill--fat" id="barFat"></div>
                       </div>
                       <span class="macro-bar-value"><span id="todayFat">0</span> / <span id="normFatBar">0</span>г</span>
                     </div>
                     <div class="macro-bar-row">
-                      <span class="macro-bar-label">В</span>
+                      <span class="macro-bar-label" data-i18n="carbsLetter">В</span>
                       <div class="macro-bar-track">
                         <div class="macro-bar-fill macro-bar-fill--carbs" id="barCarbs"></div>
                       </div>
@@ -332,6 +332,7 @@
                       class="day-menu-actions__btn"
                       id="menuActionsBtn"
                       aria-label="Дії з днем"
+                      data-i18n-aria="dayActions"
                       type="button">
                       <svg
                         viewBox="0 0 24 24"
@@ -406,7 +407,7 @@
                     <div class="meal__header">
                       <h2 class="meal__title" data-i18n="breakfast">Сніданок</h2>
                       <div class="meal__summary"></div>
-                      <button class="meal__add" aria-label="Додати продукт">
+                      <button class="meal__add" aria-label="Додати продукт" data-i18n-aria="addMeal">
                         <span></span>
                       </button>
                     </div>
@@ -634,7 +635,7 @@
       <div class="modal__content">
         <header class="modal__header">
           <h3 class="modal__title" data-i18n="addProduct">Додати продукт</h3>
-          <button class="modal__close" type="button" aria-label="Закрити">
+          <button class="modal__close" type="button" aria-label="Закрити" data-i18n-aria="close">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
           </button>
         </header>
@@ -664,40 +665,40 @@
           <div id="scannedProductCard" class="scanned-card" hidden>
             <div class="scanned-card__header">
               <div class="scanned-card__name"></div>
-              <button type="button" class="scanned-card__clear" title="Очистити"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6L6 18M6 6l12 12"></path></svg></button>
+              <button type="button" class="scanned-card__clear" title="Очистити" data-i18n-title="clearAction"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6L6 18M6 6l12 12"></path></svg></button>
             </div>
             <div class="scanned-card__brand"></div>
             <div class="scanned-card__macros">
               <div class="scanned-card__field">
                 <input type="number" id="scKcal" min="0" step="1" />
-                <span>ккал</span>
+                <span data-i18n="kcalShort">ккал</span>
               </div>
               <div class="scanned-card__field">
                 <input type="number" id="scProtein" min="0" step="0.1" />
-                <span>Б</span>
+                <span data-i18n="proteinLetter">Б</span>
               </div>
               <div class="scanned-card__field">
                 <input type="number" id="scFat" min="0" step="0.1" />
-                <span>Ж</span>
+                <span data-i18n="fatLetter">Ж</span>
               </div>
               <div class="scanned-card__field">
                 <input type="number" id="scCarbs" min="0" step="0.1" />
-                <span>В</span>
+                <span data-i18n="carbsLetter">В</span>
               </div>
               <div class="scanned-card__field">
                 <input type="number" id="scFiber" min="0" step="0.1" />
-                <span>Кл</span>
+                <span data-i18n="fiberLetter">Кл</span>
               </div>
               <div class="scanned-card__field">
                 <input type="number" id="scSugar" min="0" step="0.1" />
-                <span>Цук</span>
+                <span data-i18n="sugarLetter">Цук</span>
               </div>
               <div class="scanned-card__field">
                 <input type="number" id="scSalt" min="0" step="0.01" />
-                <span>Сіль</span>
+                <span data-i18n="saltLetter">Сіль</span>
               </div>
             </div>
-            <div class="scanned-card__hint">На 100 г · можна редагувати</div>
+            <div class="scanned-card__hint" data-i18n="per100Hint">На 100 г · можна редагувати</div>
           </div>
 
           <!-- ⚖️ ВАГА -->
@@ -728,7 +729,7 @@
       <div class="modal__content">
         <header class="modal__header">
           <h3 class="modal__title" data-i18n="createProduct">Створити продукт</h3>
-          <button class="modal__close" type="button" aria-label="Закрити">
+          <button class="modal__close" type="button" aria-label="Закрити" data-i18n-aria="close">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
           </button>
         </header>
@@ -750,12 +751,13 @@
 
             <!-- Виробник / бренд (тільки для продуктів зі штрихкодом) -->
             <div class="modal__field" id="cpBrandField" hidden>
-              <label class="modal__label" for="cpBrand">Виробник / бренд</label>
+              <label class="modal__label" for="cpBrand" data-i18n="brandLabel">Виробник / бренд</label>
               <input
                 type="text"
                 id="cpBrand"
                 class="modal__input"
-                placeholder="Напр.: Kraina wędlin" />
+                placeholder="Напр.: Kraina wędlin"
+                data-i18n-placeholder="brandPlaceholder" />
             </div>
 
             <!-- КБЖУ в ряд -->
@@ -815,9 +817,10 @@
                   id="cpFiber"
                   class="modal__input modal__input--small"
                   placeholder="Клітк."
+                  data-i18n-placeholder="fiberShort"
                   min="0"
                   step="0.1" />
-                <span class="modal__unit">Кл</span>
+                <span class="modal__unit" data-i18n="fiberLetter">Кл</span>
               </div>
 
               <div class="modal__field">
@@ -826,9 +829,10 @@
                   id="cpSugar"
                   class="modal__input modal__input--small"
                   placeholder="Цукор"
+                  data-i18n-placeholder="sugarShort"
                   min="0"
                   step="0.1" />
-                <span class="modal__unit">Цук</span>
+                <span class="modal__unit" data-i18n="sugarLetter">Цук</span>
               </div>
 
               <div class="modal__field">
@@ -837,15 +841,16 @@
                   id="cpSalt"
                   class="modal__input modal__input--small"
                   placeholder="Сіль"
+                  data-i18n-placeholder="saltShort"
                   min="0"
                   step="0.01" />
-                <span class="modal__unit">Сіль</span>
+                <span class="modal__unit" data-i18n="saltLetter">Сіль</span>
               </div>
             </div>
 
             <!-- Стандарт маркування -->
             <div class="modal__label-type">
-              <span class="modal__label-type-title">Стандарт маркування</span>
+              <span class="modal__label-type-title" data-i18n="labelStandard">Стандарт маркування</span>
               <div class="modal__label-type-btns">
                 <button type="button" class="modal__label-btn active" id="cpLabelEU" data-label="EU">EU</button>
                 <button type="button" class="modal__label-btn" id="cpLabelUS" data-label="US">US</button>
@@ -866,8 +871,8 @@
       <div class="scanner-modal__overlay"></div>
       <div class="scanner-modal__content">
         <header class="scanner-modal__header">
-          <h3 class="scanner-modal__title"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg> Сканер штрих-коду</h3>
-          <button id="closeScannerBtn" class="scanner-modal__close" type="button" aria-label="Закрити">
+          <h3 class="scanner-modal__title"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg> <span data-i18n="scannerTitle">Сканер штрих-коду</span></h3>
+          <button id="closeScannerBtn" class="scanner-modal__close" type="button" aria-label="Закрити" data-i18n-aria="scannerClose">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
           </button>
         </header>
@@ -877,20 +882,21 @@
           <div id="barcode-reader" class="scanner-modal__reader"></div>
 
           <!-- Статус -->
-          <p id="scannerStatus" class="scanner-modal__status">Наведіть камеру на штрих-код</p>
+          <p id="scannerStatus" class="scanner-modal__status" data-i18n="scannerAimCamera">Наведіть камеру на штрих-код</p>
 
           <!-- Ручне введення -->
           <div class="scanner-modal__manual">
-            <p class="scanner-modal__manual-label">Або введіть код вручну:</p>
+            <p class="scanner-modal__manual-label" data-i18n="scannerManualLabel">Або введіть код вручну:</p>
             <div class="scanner-modal__manual-row">
               <input
                 type="text"
                 id="manualBarcodeInput"
                 class="scanner-modal__input"
                 placeholder="Введіть штрих-код"
+                data-i18n-placeholder="scannerManualPlaceholder"
                 inputmode="numeric"
                 pattern="[0-9]*" />
-              <button id="manualBarcodeBtn" class="scanner-modal__submit" type="button">
+              <button id="manualBarcodeBtn" class="scanner-modal__submit" type="button" data-i18n="scannerFind">
                 Знайти
               </button>
             </div>
@@ -899,7 +905,7 @@
       </div>
     </div>
 
-                                                                                                <footer class="site-footer">
+                                                                                                    <footer class="site-footer">
       <div class="site-footer__inner">
 
         <div class="site-footer__brand">
