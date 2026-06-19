@@ -109,8 +109,11 @@ let _recipe = null;
 async function init() {
   _renderSkeleton();
 
-  // initAuth керує headerAuthBtn + відкриває модалку при потребі
-  await initAuth((_event, user) => _updateSaveCTA(!!user));
+  // Авторизація потрібна лише для CTA «Зберегти» — вона оновлюється через
+  // колбек. НЕ чекаємо на неї: getSession()/onboarding інколи зависають, а це
+  // блокувало б показ самого рецепта (вічний скелетон). Тому запускаємо паралельно.
+  initAuth((_event, user) => _updateSaveCTA(!!user))
+    .catch((err) => console.error('[recipe-page] initAuth failed:', err));
 
   if (!_slug) { _show404(); return; }
 
@@ -535,4 +538,9 @@ function _formatDate(iso) {
 
 // ── Start ─────────────────────────────────────────────────────
 
-init();
+init().catch((err) => {
+  // Будь-яка неперехоплена помилка (auth, мережа, RLS) інакше залишила б
+  // користувача на вічному скелетоні. Показуємо 404 і логуємо причину.
+  console.error('[recipe-page] init failed:', err);
+  _show404();
+});
