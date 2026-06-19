@@ -73,7 +73,7 @@ export async function initAuth(onAuthChange = null) {
   }
 
   // Слухаємо зміни стану авторизації
-  supabase.auth.onAuthStateChange(async (event, session) => {
+  supabase.auth.onAuthStateChange((event, session) => {
     currentUser = session?.user || null;
 
     updateAuthUI();
@@ -87,32 +87,42 @@ export async function initAuth(onAuthChange = null) {
       closeAuthModal();
 
       const userId = session?.user?.id;
+      const signedInUser = session?.user;
 
-      // Перевіряємо чи обраний нікнейм — якщо ні, показуємо onboarding
-      if (session?.user) {
-        const { checkOnboarding } = await import('./onboarding.js');
-        await checkOnboarding(session.user);
-      }
+      // ВАЖЛИВО: колбек onAuthStateChange має лишатися синхронним. Навіть якщо
+      // всередині немає прямого await, async-колбек все одно повертає Promise і
+      // може тримати внутрішній auth-лок Supabase. Це знову ламає getSession()
+      // та пов'язані запити на сторінці рецепта. Тому post-login роботу
+      // остаточно відв'язуємо через setTimeout.
+      window.setTimeout(() => {
+        void (async () => {
+          // Перевіряємо чи обраний нікнейм — якщо ні, показуємо onboarding
+          if (signedInUser) {
+            const { checkOnboarding } = await import('./onboarding.js');
+            await checkOnboarding(signedInUser);
+          }
 
-      // Тост "Ласкаво просимо!" — раз на день при першому вході.
-      // Дата останнього показу зберігається в БД (profiles.welcome_seen_on),
-      // тому не залежить від пристрою чи чистки кешу.
-      if (userId) await _maybeShowDailyWelcome(userId);
+          // Тост "Ласкаво просимо!" — раз на день при першому вході.
+          // Дата останнього показу зберігається в БД (profiles.welcome_seen_on),
+          // тому не залежить від пристрою чи чистки кешу.
+          if (userId) await _maybeShowDailyWelcome(userId);
 
-      // Виконуємо відкладену дію (працює для email/password І Google OAuth).
-      // Для email/password submit-обробник більше дію не запускає — лише тут.
-      runPendingAction();
+          // Виконуємо відкладену дію (працює для email/password І Google OAuth).
+          // Для email/password submit-обробник більше дію не запускає — лише тут.
+          runPendingAction();
 
-      // Якщо є збережена чернетка рецепта, а логін стався на іншій сторінці
-      // (логін часто редіректить на головну) — повертаємо на recipes.html,
-      // де restorePendingRecipeDraft() відновить форму.
-      try {
-        if (sessionStorage.getItem('mintofood:pending-recipe') &&
-            !location.pathname.endsWith('/recipes.html') &&
-            !location.pathname.endsWith('recipes.html')) {
-          location.href = 'recipes.html';
-        }
-      } catch (_) {}
+          // Якщо є збережена чернетка рецепта, а логін стався на іншій сторінці
+          // (логін часто редіректить на головну) — повертаємо на recipes.html,
+          // де restorePendingRecipeDraft() відновить форму.
+          try {
+            if (sessionStorage.getItem('mintofood:pending-recipe') &&
+                !location.pathname.endsWith('/recipes.html') &&
+                !location.pathname.endsWith('recipes.html')) {
+              location.href = 'recipes.html';
+            }
+          } catch (_) {}
+        })().catch((err) => console.error('[auth] SIGNED_IN handler failed:', err));
+      }, 0);
     }
 
     if (event === 'SIGNED_OUT') {
