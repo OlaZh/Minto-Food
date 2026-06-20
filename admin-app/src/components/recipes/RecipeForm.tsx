@@ -176,7 +176,7 @@ export default function RecipeForm({ recipe, initialIngredients = [] }: RecipeFo
 
     const yieldRatio = toNum(watchedYieldRatio)
     if (!yieldRatio || yieldRatio <= 0) {
-      toast.error('Yield ratio must be greater than 0 before nutrition calculation')
+      toast.error('Щоб розрахувати КБЖУ, спочатку вкажіть коефіцієнт виходу більше 0')
       return
     }
 
@@ -213,7 +213,7 @@ export default function RecipeForm({ recipe, initialIngredients = [] }: RecipeFo
     }
 
     if (data.yield_ratio.trim() !== '' && !(toNum(data.yield_ratio)! > 0)) {
-      toast.error('Yield ratio must be greater than 0')
+      toast.error('Коефіцієнт виходу має бути більшим за 0')
       return
     }
 
@@ -394,6 +394,32 @@ export default function RecipeForm({ recipe, initialIngredients = [] }: RecipeFo
 
           <Separator />
 
+          {/* === INGREDIENTS === */}
+          <section className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-sm font-semibold text-gray-900 uppercase tracking-wide">Інгредієнти</h2>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={autoCalculate}
+                className="h-7 text-xs"
+              >
+                <Calculator className="h-3 w-3 mr-1" />
+                Розрахувати КБЖУ
+              </Button>
+            </div>
+            <div className="text-xs text-gray-400 flex gap-4 font-medium px-8">
+              <span className="flex-1">Продукт</span>
+              <span className="w-20 text-center">Кількість</span>
+              <span className="w-20 text-center">Одиниця</span>
+              <span className="w-8" />
+            </div>
+            <IngredientBuilder value={ingredients} onChange={setIngredients} />
+          </section>
+
+          <Separator />
+
           {/* === STEPS === */}
           <section className="space-y-4">
             <h2 className="text-sm font-semibold text-gray-900 uppercase tracking-wide">Кроки приготування</h2>
@@ -435,32 +461,6 @@ export default function RecipeForm({ recipe, initialIngredients = [] }: RecipeFo
 
           <Separator />
 
-          {/* === INGREDIENTS === */}
-          <section className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h2 className="text-sm font-semibold text-gray-900 uppercase tracking-wide">Інгредієнти</h2>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={autoCalculate}
-                className="h-7 text-xs"
-              >
-                <Calculator className="h-3 w-3 mr-1" />
-                Розрахувати КБЖУ
-              </Button>
-            </div>
-            <div className="text-xs text-gray-400 flex gap-4 font-medium px-8">
-              <span className="flex-1">Продукт</span>
-              <span className="w-20 text-center">Кількість</span>
-              <span className="w-20 text-center">Одиниця</span>
-              <span className="w-8" />
-            </div>
-            <IngredientBuilder value={ingredients} onChange={setIngredients} />
-          </section>
-
-          <Separator />
-
           {/* === NUTRITION === */}
           <section className="space-y-4">
             <h2 className="text-sm font-semibold text-gray-900 uppercase tracking-wide">Нутрієнти (на 100 г)</h2>
@@ -478,8 +478,11 @@ export default function RecipeForm({ recipe, initialIngredients = [] }: RecipeFo
                 <Input id="total_weight" type="number" min={0} {...register('total_weight')} className="h-9 text-sm" />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="yield_ratio" className="text-xs">Yield ratio</Label>
+                <Label htmlFor="yield_ratio" className="text-xs">Коефіцієнт виходу</Label>
                 <Input id="yield_ratio" type="number" step={0.01} min={0} max={2} {...register('yield_ratio')} className="h-9 text-sm" />
+                <p className="text-xs leading-4 text-gray-400">
+                  Потрібен для розрахунку КБЖУ після приготування: `1` — вага майже не змінилась, менше `1` — страва втратила вагу, більше `1` — набрала.
+                </p>
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="recipe_yield" className="text-xs">Порцій</Label>

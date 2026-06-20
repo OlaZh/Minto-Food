@@ -15,10 +15,10 @@ const STEP_SEPARATOR = '\n'
 
 function parseSteps(value: string): string[] {
   if (!value) return ['']
-  return value
+  const steps = value
     .split(/\\n|\n/)
     .map(s => s.replace(/^\d+\.\s*/, '').trim())
-    .filter(Boolean)
+  return steps.length ? steps : ['']
 }
 
 export default function StepsEditor({ label, value, onChange }: StepsEditorProps) {
