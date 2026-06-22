@@ -193,6 +193,7 @@ function buildListItem(list) {
       ${list.is_pinned
         ? `<button data-action="unpin">${iconPin} ${t('shopUnpin')}</button>`
         : `<button data-action="pin">${iconPin} ${t('shopPin')}</button>`}
+      <button data-action="rename">${iconEdit} ${t('shopRenameList')}</button>
       <button data-action="share">${iconLink} ${t('shopShare')}</button>
       <button data-action="clear">${iconBroom} ${t('shopClearList')}</button>
       <button data-action="delete">${iconTrash} ${t('shopDeleteList')}</button>
@@ -237,6 +238,7 @@ function buildListItem(list) {
       const action = btn.dataset.action;
       if (action === 'pin')    pinListById(list.id, true);
       if (action === 'unpin')  pinListById(list.id, false);
+      if (action === 'rename') renameListById(list.id);
       if (action === 'share')  shareListById(list.id);
       if (action === 'clear')  clearListById(list.id);
       if (action === 'delete') deleteListById(list.id);
@@ -445,12 +447,9 @@ async function deletePanelItem(id, liEl, container) {
 async function copyToActiveList(item) {
   if (!mainListId) return;
 
-  // Канонізуємо назву (як в addItem), щоб копія з шаблону зливалася з
-  // наявним продуктом навіть за іншого написання.
-  const { canonicalName, category } = await resolveProduct(item.name);
-  const finalName = canonicalName || item.name;
-
-  if (!canonicalName) logUnmatched(item.name);
+  // Назву шаблонної позиції зберігаємо як є; БД-резолв — лише для категорії.
+  const finalName = item.name;
+  const category = item.category || await lookupCategory(item.name);
 
   const existing = activeItems.find(i =>
     i.name.toLowerCase() === finalName.toLowerCase() &&
@@ -469,7 +468,7 @@ async function copyToActiveList(item) {
     .insert([{
       list_id: mainListId, user_id: currentUser.id,
       name: finalName, amount: item.amount || null,
-      unit: item.unit || null, category: item.category || category,
+      unit: item.unit || null, category,
       is_checked: false,
     }])
     .select().single();
@@ -605,16 +604,15 @@ async function addItem(name, amount, unit) {
   if (!currentUser) { showToast(t('signInRequired'), 'error'); return; }
   if (!mainListId)  { showToast(t('shopErrInit'), 'error'); return; }
 
-  // Резолв до канонічного продукту БД: "яблоко"/"apple"/"яблуко" → "Яблуко".
-  // Зберігаємо під канонічною назвою, тому однакові продукти зливаються в один
-  // рядок навіть за різного написання. Невідомі продукти лишаються як введено.
+  // Назву НЕ змінюємо — зберігаємо рівно те, що ввів користувач.
+  // БД-резолв використовуємо ЛИШЕ щоб визначити категорію (секцію списку).
+  const finalName = name;
   const { canonicalName, category } = await resolveProduct(name);
-  const finalName = canonicalName || name;
 
-  // Продукт невідомий БД → у чергу нерозпізнаних (популярні додам у БД).
+  // Продукт невідомий БД → тихо у чергу нерозпізнаних (адмін додасть у БД).
   if (!canonicalName) logUnmatched(name);
 
-  // Сумуємо якщо та сама (канонічна) назва + одиниця
+  // Сумуємо якщо та сама назва + одиниця
   const existing = activeItems.find(i =>
     i.name.toLowerCase() === finalName.toLowerCase() &&
     (i.unit || '').toLowerCase() === (unit || '').toLowerCase() &&
@@ -714,6 +712,25 @@ async function pinListById(id, isPinned) {
   renderLists();
   renderWishlistPanel();
   showToast(isPinned ? t('shopPinned') : t('shopUnpinned'));
+}
+
+async function renameListById(id) {
+  const list = allLists.find(l => l.id === id);
+  if (!list) return;
+  const current = localizeListName(list.name);
+  const next = window.prompt(t('shopRenamePrompt'), current);
+  if (next == null) return;            // скасовано
+  const name = next.trim();
+  if (!name || name === list.name) return;
+
+  const { error } = await supabase
+    .from('shopping_lists').update({ name })
+    .eq('id', id).eq('user_id', currentUser.id);
+  if (error) { showToast(t('shopErr'), 'error'); return; }
+
+  list.name = name;
+  renderLists();
+  renderWishlistPanel();
 }
 
 async function clearListById(id) {
