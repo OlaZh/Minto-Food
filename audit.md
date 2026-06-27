@@ -317,7 +317,11 @@ toast.querySelector('.toast-text').textContent = message;
 - `utils.js` невживані: `getCurrentLang, formatDateShort/Full, truncateText, throttle, isNotEmpty, generateId, initAutoResizeTextareas` — частина «бібліотека на майбутнє». Видаляти лише якщо точно вирішили, що не потрібні; інакше лишити.
   - **Оновлено в межах F (2026-06-16):** `getLocalizedName` і `formatAmount` ВИДАЛЕНО (були мертві дублі, див. блок F). `convertToBaseUnit` тепер **ЖИВИЙ** — week-menu імпортує його як єдине джерело конвертації одиниць (F).
 
-### E1. Розмазана/дубльована ініціалізація на сторінці рецептів (cleanup)
+### E1. Розмазана/дубльована ініціалізація на сторінці рецептів (cleanup) ✅ ЗРОБЛЕНО (2026-06-27)
+> **Зроблено (разом із коренем, як радив ризик-блок нижче):**
+> - **Спочатку усунено корінь** — `currentUserId` у [book-selector.js](js/book-selector.js) кешувався раз при init і ніколи не оновлювався на логін/логаут. Винесено читання юзера в `syncCurrentUser()` і викликано її і в `initBookSelector`, і в `refreshBooks` (а `refreshBooks` вже кличеться з `showRecipeForm` перед кожним показом форми). Тепер логін гостем ПІСЛЯ init більше не лишає застарілий `null` → книги/quick-save працюють без опори на «другий» init.
+> - **Потім прибрано дубль** — окремий `await initBookSelector()` з `add-recipe.js` видалено (+ невживаний імпорт); єдиний виклик лишився всередині `initRecipeModal()` ([recipe-modal.js:300](js/recipe-modal.js#L300)), тож порядок ініціалізації в одному місці. `createSelectorModal` і так був ідемпотентний.
+> - `node --check` усіх трьох файлів — OK. 0 інших споживачів `initBookSelector`.
 **Файли:** [add-recipe.js:1464-1481](js/add-recipe.js#L1464), [recipe-modal.js:281](js/recipe-modal.js#L281)
 **Що насправді (перевірено в коді — формулювання звіту трохи інше):**
 - У `add-recipe.js` **один** `DOMContentLoaded` (1464), не два. У ньому послідовно `initAuth` (1465) → `initBookSelector` (1477) → `initRecipeModal` (1478).

@@ -21,7 +21,6 @@ import {
 } from './icons.js';
 import { parseFoodInput, formatAmount } from './parse-food.js';
 import {
-  initBookSelector,
   quickSaveToDefault,
   openBookSelector,
   isRecipeSaved,
@@ -1480,7 +1479,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       loadAndDisplayRecipes();
     }
   });
-  await initBookSelector();
+  // initRecipeModal() сам викликає initBookSelector() всередині — окремий
+  // виклик тут був дублем (book-selector ініціалізувався двічі).
   await initRecipeModal();
   buildFilterPanel();
   initOwnFilter();

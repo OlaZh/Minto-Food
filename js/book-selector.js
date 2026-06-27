@@ -23,12 +23,20 @@ let previouslySavedBookIds = [];
 // ІНІЦІАЛІЗАЦІЯ
 // =============================================================
 
-export async function initBookSelector() {
+// Перечитує поточного юзера в `currentUserId`. Викликається і при init, і
+// перед кожним показом форми (refreshBooks), щоб логін/логаут після init
+// не лишав застарілий null/чужий id (інакше quickSave/книги «замерзають»).
+async function syncCurrentUser() {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (user) {
-    currentUserId = user.id;
+  currentUserId = user?.id ?? null;
+  return currentUserId;
+}
+
+export async function initBookSelector() {
+  await syncCurrentUser();
+  if (currentUserId) {
     await loadBooks();
   }
 
@@ -59,6 +67,7 @@ export function getDefaultBook() {
 }
 
 export async function refreshBooks() {
+  await syncCurrentUser();
   await loadBooks();
   return cachedBooks;
 }
