@@ -20,6 +20,7 @@ import {
   getWaterNorm,
 } from './storage.js';
 import { initCustomSelect, setSelectValue, initSelectsGlobalListener, showConfirmModal } from './ui-components.js';
+import { calcDailyNorm } from './health-core.js';
 
 // =====================================
 // DOM ELEMENTS
@@ -2334,17 +2335,16 @@ if (form) {
     const height = +form.height.value;
     const weight = +form.weight.value;
 
-    const base =
-      genderInput.value === 'male'
-        ? 10 * weight + 6.25 * height - 5 * age + 5
-        : 10 * weight + 6.25 * height - 5 * age - 161;
-
-    let calories = base * parseFloat(activityInput.value);
-
-    if (goalInput.value === 'lose') calories *= 0.80;
-    if (goalInput.value === 'gain') calories *= 1.15;
-
-    calories = Math.round(calories);
+    // Розрахунок добової норми — через спільний health-core (єдине джерело
+    // формули для Food + Fit, див. docs/minto-food-fit-shared-health-plan.md).
+    const norm = calcDailyNorm({
+      gender: genderInput.value,
+      age,
+      height,
+      weight,
+      activity: activityInput.value,
+      goal: goalInput.value,
+    });
 
     const data = {
       gender: genderInput.value,
@@ -2353,11 +2353,11 @@ if (form) {
       age,
       height,
       weight,
-      calories,
-      protein: Math.round((calories * 0.3) / 4),
-      fat: Math.round((calories * 0.3) / 9),
-      carbs: Math.round((calories * 0.4) / 4),
-      water: 2.5,
+      calories: norm.calories,
+      protein: norm.protein,
+      fat: norm.fat,
+      carbs: norm.carbs,
+      water: norm.water,
       target_weight: targetWeightInput ? +targetWeightInput.value || null : null,
     };
 

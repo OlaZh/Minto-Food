@@ -27,27 +27,36 @@ export async function checkOnboarding(user) {
     .eq('id', user.id)
     .maybeSingle();
 
-  // Вже бачив онбординг або вже має нікнейм — не турбуємо
-  if (profile?.welcome_intro_seen || profile?.display_name) return;
+  // Крок 1 — нікнейм. Пропускаємо, якщо вже бачив онбординг або має нікнейм.
+  if (!(profile?.welcome_intro_seen || profile?.display_name)) {
+    _suggested = await _generateNickname(user);
 
-  _suggested = await _generateNickname(user);
+    // Фіксуємо показ ОДРАЗУ, ще до вибору користувача. Так онбординг
+    // з'явиться рівно один раз за весь час — навіть якщо вкладку закриють
+    // чи перезавантажать без натискання кнопки (інакше welcome_intro_seen
+    // лишиться false і вікно вилазитиме при кожному SIGNED_IN).
+    // Нікнейм уже згенеровано, тож акаунт не лишається безіменним.
+    await supabase
+      .from('profiles')
+      .upsert(
+        { id: user.id, welcome_intro_seen: true },
+        { onConflict: 'id' },
+      );
 
-  // Фіксуємо показ ОДРАЗУ, ще до вибору користувача. Так онбординг
-  // з'явиться рівно один раз за весь час — навіть якщо вкладку закриють
-  // чи перезавантажать без натискання кнопки (інакше welcome_intro_seen
-  // лишиться false і вікно вилазитиме при кожному SIGNED_IN).
-  // Нікнейм уже згенеровано, тож акаунт не лишається безіменним.
-  await supabase
-    .from('profiles')
-    .upsert(
-      { id: user.id, welcome_intro_seen: true },
-      { onConflict: 'id' },
-    );
+    await new Promise(resolve => {
+      _resolveFn = resolve;
+      _mount(_suggested);
+    });
+  }
 
-  return new Promise(resolve => {
-    _resolveFn = resolve;
-    _mount(_suggested);
-  });
+  // Крок 2 — goal-setup wizard. Показуємо, якщо профіль (параметри тіла) ще
+  // не заповнений. Прапор «показано» — самі дані профілю в user_profiles, тож
+  // окремий welcome-флаг не потрібен. Wizard будує норму через спільний
+  // health-core (без дубля формули).
+  const { needsGoalSetup, startGoalWizard } = await import('./onboarding-wizard.js');
+  if (await needsGoalSetup(user.id)) {
+    await startGoalWizard();
+  }
 }
 
 // ── Генерація нікнейму ────────────────────────────────────────
