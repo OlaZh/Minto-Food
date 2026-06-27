@@ -75,6 +75,76 @@ const ACTIVITIES = {
   other:      { icon: iconPlus,       label: t('actOther'),      caloriesPerMinute: 5 },
 };
 
+const GDPR_I18N = {
+  ua: {
+    cardTitle: 'GDPR і приватність',
+    cardNote: 'Тут можна завантажити копію своїх даних у JSON і перевірити статус запиту на видалення акаунту.',
+    deletionTitle: 'Статус видалення акаунту',
+    deletionIdle: 'Запит ще не створено.',
+    deletionScheduled: 'Заплановано на {date}. Після цієї дати дані будуть безповоротно видалені.',
+    exportBtn: 'Завантажити мої дані',
+    exportBusy: 'Готуємо експорт...',
+    exportReady: 'Експорт даних розпочато.',
+    exportError: 'Не вдалося завантажити експорт даних.',
+    deleteBtn: 'Запросити видалення акаунту',
+    deleteScheduledBtn: 'Видалення заплановано',
+    deleteConfirmTitle: 'Запросити видалення акаунту?',
+    deleteConfirmMessage: 'Ми створимо GDPR-запит і заплануємо hard delete через 30 днів. Цю дію не варто запускати випадково.',
+    deleteConfirmYes: 'Так, запросити',
+    deleteRequested: 'Запит на видалення акаунту створено.',
+    deleteError: 'Не вдалося створити GDPR-запит на видалення.',
+    dangerText: 'Видалення акаунту створює GDPR-запит і запускає 30-денний grace period перед безповоротним hard delete. Після підтвердження кнопка стане недоступною.',
+  },
+  pl: {
+    cardTitle: 'RODO i prywatnosc',
+    cardNote: 'Tutaj mozesz pobrac kopie swoich danych w JSON i sprawdzic status wniosku o usuniecie konta.',
+    deletionTitle: 'Status usuniecia konta',
+    deletionIdle: 'Wniosek nie zostal jeszcze utworzony.',
+    deletionScheduled: 'Zaplanowano na {date}. Po tej dacie dane zostana bezpowrotnie usuniete.',
+    exportBtn: 'Pobierz moje dane',
+    exportBusy: 'Przygotowujemy eksport...',
+    exportReady: 'Eksport danych zostal rozpoczety.',
+    exportError: 'Nie udalo sie pobrac eksportu danych.',
+    deleteBtn: 'Popros o usuniecie konta',
+    deleteScheduledBtn: 'Usuniecie zaplanowane',
+    deleteConfirmTitle: 'Poprosic o usuniecie konta?',
+    deleteConfirmMessage: 'Utworzymy wniosek RODO i zaplanujemy hard delete za 30 dni. Tej akcji nie warto uruchamiac przypadkiem.',
+    deleteConfirmYes: 'Tak, utworz wniosek',
+    deleteRequested: 'Wniosek o usuniecie konta zostal utworzony.',
+    deleteError: 'Nie udalo sie utworzyc wniosku RODO o usuniecie.',
+    dangerText: 'Usuniecie konta tworzy wniosek RODO i uruchamia 30-dniowy grace period przed nieodwracalnym hard delete. Po potwierdzeniu przycisk stanie sie niedostepny.',
+  },
+  en: {
+    cardTitle: 'GDPR and privacy',
+    cardNote: 'Here you can download a JSON copy of your data and check the status of your account deletion request.',
+    deletionTitle: 'Account deletion status',
+    deletionIdle: 'No request has been created yet.',
+    deletionScheduled: 'Scheduled for {date}. After that date your data will be permanently deleted.',
+    exportBtn: 'Download my data',
+    exportBusy: 'Preparing export...',
+    exportReady: 'Data export has started.',
+    exportError: 'Could not download your data export.',
+    deleteBtn: 'Request account deletion',
+    deleteScheduledBtn: 'Deletion scheduled',
+    deleteConfirmTitle: 'Request account deletion?',
+    deleteConfirmMessage: 'We will create a GDPR request and schedule hard delete in 30 days. This action should not be started by accident.',
+    deleteConfirmYes: 'Yes, request deletion',
+    deleteRequested: 'The account deletion request has been created.',
+    deleteError: 'Could not create the GDPR deletion request.',
+    dangerText: 'Account deletion creates a GDPR request and starts a 30-day grace period before irreversible hard delete. After confirmation the button becomes unavailable.',
+  },
+};
+
+function gdprText(key, vars = {}) {
+  const lang = getLang() === 'uk' ? 'ua' : getLang();
+  const dict = GDPR_I18N[lang] || GDPR_I18N.ua;
+
+  return Object.entries(vars).reduce(
+    (text, [name, value]) => text.replaceAll(`{${name}}`, String(value)),
+    dict[key] || GDPR_I18N.ua[key] || key,
+  );
+}
+
 // Локаль для дат/часу — залежить від поточної мови інтерфейсу.
 function dateLocale() {
   const lang = getLang() === 'uk' ? 'ua' : getLang();
@@ -1880,21 +1950,153 @@ function _setNbHint(el, text, color) {
   el.style.color = color || '#3f7558';
 }
 
+async function fetchSettingsProfile(userId) {
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('display_name, full_name, deletion_scheduled_for')
+    .eq('id', userId)
+    .single();
+
+  if (error) {
+    console.warn('profiles settings fetch:', error.message);
+    return null;
+  }
+
+  return data;
+}
+
+function formatDeletionDate(dateIso) {
+  const date = new Date(dateIso);
+  if (Number.isNaN(date.getTime())) return dateIso;
+
+  return date.toLocaleDateString(dateLocale(), {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
+}
+
+function applyGdprStaticText() {
+  const map = [
+    ['gdprCardTitle', 'cardTitle'],
+    ['gdprCardNote', 'cardNote'],
+    ['gdprDeletionTitle', 'deletionTitle'],
+    ['gdprExportBtn', 'exportBtn'],
+  ];
+
+  map.forEach(([id, key]) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = gdprText(key);
+  });
+
+  const dangerTextEl = document.querySelector('.settings-danger__text');
+  if (dangerTextEl) dangerTextEl.textContent = gdprText('dangerText');
+}
+
+function updateGdprDeletionUi(scheduledFor = null) {
+  const statusEl = document.getElementById('gdprDeletionStatus');
+  const deleteBtn = document.getElementById('deleteAccountBtn');
+  if (!statusEl || !deleteBtn) return;
+
+  if (scheduledFor) {
+    statusEl.textContent = gdprText('deletionScheduled', {
+      date: formatDeletionDate(scheduledFor),
+    });
+    deleteBtn.textContent = gdprText('deleteScheduledBtn');
+    deleteBtn.disabled = true;
+    deleteBtn.setAttribute('aria-disabled', 'true');
+    return;
+  }
+
+  statusEl.textContent = gdprText('deletionIdle');
+  deleteBtn.textContent = gdprText('deleteBtn');
+  deleteBtn.disabled = false;
+  deleteBtn.removeAttribute('aria-disabled');
+}
+
+async function handleGdprExport() {
+  const exportBtn = document.getElementById('gdprExportBtn');
+  if (!exportBtn) return;
+
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+
+  if (!session?.access_token) {
+    showToast(t('authLoginFirst'), 'error');
+    return;
+  }
+
+  const originalText = exportBtn.textContent;
+  exportBtn.disabled = true;
+  exportBtn.textContent = gdprText('exportBusy');
+
+  try {
+    const response = await fetch('/api/gdpr-export', {
+      headers: {
+        Authorization: `Bearer ${session.access_token}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`GDPR export failed: ${response.status}`);
+    }
+
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    const disposition = response.headers.get('content-disposition') || '';
+    const match = disposition.match(/filename="([^"]+)"/i);
+
+    link.href = url;
+    link.download = match?.[1] || 'mintofood-export.json';
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.URL.revokeObjectURL(url);
+
+    showToast(gdprText('exportReady'));
+  } catch (error) {
+    console.error('GDPR export error:', error);
+    showToast(gdprText('exportError'), 'error');
+  } finally {
+    exportBtn.disabled = false;
+    exportBtn.textContent = originalText || gdprText('exportBtn');
+  }
+}
+
+async function requestAccountDeletion(user) {
+  try {
+    const { error } = await supabase.rpc('soft_delete_user', { p_user_id: user.id });
+    if (error) throw error;
+
+    const profileData = await fetchSettingsProfile(user.id);
+    updateGdprDeletionUi(profileData?.deletion_scheduled_for || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString());
+    showToast(gdprText('deleteRequested'));
+  } catch (error) {
+    console.error('GDPR delete request error:', error);
+    showToast(gdprText('deleteError'), 'error');
+  }
+}
+
 // =====================================
 // SETTINGS TAB
 // =====================================
 
 function initSettings(user) {
+  applyGdprStaticText();
+  updateGdprDeletionUi(null);
+
   // Email / name display
   const emailEl = document.getElementById('settingsEmailDisplay');
   const nameEl = document.getElementById('settingsNameDisplay');
   if (emailEl && user?.email) emailEl.textContent = user.email;
-  if (nameEl) {
-    supabase.from('profiles').select('display_name, full_name').eq('id', user.id).single()
-      .then(({ data }) => {
-        nameEl.textContent = data?.display_name || data?.full_name || user.user_metadata?.full_name || '';
-      });
-  }
+  fetchSettingsProfile(user.id).then((data) => {
+    if (nameEl) {
+      nameEl.textContent = data?.display_name || data?.full_name || user.user_metadata?.full_name || '';
+    }
+    updateGdprDeletionUi(data?.deletion_scheduled_for || null);
+  });
 
   // Theme buttons
   function syncThemeBtns() {
@@ -1954,8 +2156,24 @@ function initSettings(user) {
     window.location.href = 'index.html';
   });
 
+  document.getElementById('gdprExportBtn')?.addEventListener('click', () => {
+    void handleGdprExport();
+  });
+
+  document.getElementById('deleteAccountBtn')?.addEventListener('click', () => {
+    showConfirmModal({
+      title: gdprText('deleteConfirmTitle'),
+      message: gdprText('deleteConfirmMessage'),
+      confirmText: gdprText('deleteConfirmYes'),
+      cancelText: t('cancel'),
+      onConfirm: () => {
+        void requestAccountDeletion(user);
+      },
+    });
+  });
+
   // Pending controls stay disabled so the settings UI reflects the current product state.
-  ['toggleMealReminders', 'toggleWaterReminders', 'deleteAccountBtn'].forEach((id) => {
+  ['toggleMealReminders', 'toggleWaterReminders'].forEach((id) => {
     const el = document.getElementById(id);
     if (!el) return;
     el.disabled = true;

@@ -958,6 +958,22 @@
               </div>
 
               <!-- НЕБЕЗПЕЧНА ЗОНА -->
+              <div class="profile-card">
+                <h2 class="profile-card__title profile-card__title--icon"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><path d="M9.5 12.5l1.8 1.8 3.2-3.8"></path></svg></span><span id="gdprCardTitle">GDPR і приватність</span></h2>
+                <p class="settings-note" id="gdprCardNote">Тут можна завантажити копію своїх даних у JSON і перевірити статус запиту на видалення акаунту.</p>
+
+                <div class="settings-row settings-row--last">
+                  <div class="settings-row__label">
+                    <span class="settings-row__title" id="gdprDeletionTitle">Статус видалення акаунту</span>
+                    <span class="settings-row__sub" id="gdprDeletionStatus">Запит ще не створено.</span>
+                  </div>
+                </div>
+
+                <div class="settings-actions">
+                  <button class="settings-action-btn" id="gdprExportBtn">Завантажити мої дані</button>
+                </div>
+              </div>
+
               <div class="profile-card settings-card--danger">
                 <h2 class="profile-card__title profile-card__title--icon"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg></span><span data-i18n="settingsDanger">Небезпечна зона</span></h2>
                 <p class="settings-danger__text" data-i18n="settingsDangerText">
