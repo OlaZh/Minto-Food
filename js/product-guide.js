@@ -478,7 +478,7 @@ async function openProductModal(product) {
   const fiberRow = modal.querySelector('#productFiberRow');
   if (fiberRow) fiberRow.hidden = true;
 
-  modal.hidden = false;
+  modal.classList.add('is-open');
   setLoadingState();
 
   // Завантажуємо всі деталі паралельно
@@ -526,7 +526,7 @@ document.addEventListener('click', (e) => {
   }
 
   if (e.target.closest('[data-modal-close]')) {
-    if (modal) modal.hidden = true;
+    if (modal) modal.classList.remove('is-open');
   }
 
   if (!e.target.closest('.product-filters') && !e.target.closest('.subfilter-group')) {

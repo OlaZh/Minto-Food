@@ -495,12 +495,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Ховаємо картку сканованого продукту при відкритті
     hideScannedProductCard();
 
-    modal.hidden = false;
+    modal.classList.add('is-open');
     nameInput.focus();
   }
 
   function closeModal() {
-    modal.hidden = true;
+    modal.classList.remove('is-open');
     activeMealKey = null;
     selectedFood = null;
     editingIndex = null;
@@ -904,13 +904,13 @@ document.addEventListener('DOMContentLoaded', async () => {
       b.classList.toggle('active', b.dataset.label === 'EU');
     });
 
-    createProductModal.hidden = false;
+    createProductModal.classList.add('is-open');
     cpNameInput.focus();
   }
 
   function closeCreateProductModal() {
     if (!createProductModal) return;
-    createProductModal.hidden = true;
+    createProductModal.classList.remove('is-open');
     _pendingBarcode = null;
   }
 

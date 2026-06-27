@@ -2712,16 +2712,13 @@ svg[viewBox="0 0 24 24"] {
   position: fixed;
   inset: 0;
   z-index: var(--z-modal);
-  display: flex;
+  display: none;
   align-items: center;
   justify-content: center;
   transition: opacity 0.3s ease, visibility 0.3s ease;
 }
-
-.modal[hidden] {
-  display: none;
-  opacity: 0;
-  pointer-events: none;
+.modal.is-open {
+  display: flex;
 }
 
 /* ---------- Overlay ---------- */
@@ -3140,13 +3137,13 @@ svg[viewBox="0 0 24 24"] {
   position: fixed;
   inset: 0;
   z-index: var(--z-scanner);
-  display: flex;
+  display: none;
   align-items: center;
   justify-content: center;
   padding: 1rem;
 }
-.scanner-modal[hidden] {
-  display: none;
+.scanner-modal.is-open {
+  display: flex;
 }
 .scanner-modal__overlay {
   position: absolute;
@@ -4323,12 +4320,12 @@ svg[viewBox="0 0 24 24"] {
   position: fixed;
   inset: 0;
   z-index: var(--z-auth);
-  display: flex;
+  display: none;
   align-items: center;
   justify-content: center;
 }
-.auth-modal[hidden] {
-  display: none;
+.auth-modal.is-open {
+  display: flex;
 }
 
 .auth-modal__overlay {

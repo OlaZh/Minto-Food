@@ -460,7 +460,7 @@ function closeUserDropdown() {
 function createAuthModalHTML() {
   const div = document.createElement('div');
   div.innerHTML = `
-    <div id="auth-modal" class="auth-modal" hidden>
+    <div id="auth-modal" class="auth-modal">
       <div class="auth-modal__overlay"></div>
       <div class="auth-modal__window">
         <button class="auth-modal__close" id="authModalClose">&times;</button>
@@ -676,7 +676,7 @@ function switchAuthTab(tabName) {
 export function openAuthModal(tab = 'login') {
   const modal = document.getElementById('auth-modal');
   if (modal) {
-    modal.hidden = false;
+    modal.classList.add('is-open');
     switchAuthTab(tab);
     lockScroll('auth-modal');
   }
@@ -685,7 +685,7 @@ export function openAuthModal(tab = 'login') {
 export function closeAuthModal() {
   const modal = document.getElementById('auth-modal');
   if (modal) {
-    modal.hidden = true;
+    modal.classList.remove('is-open');
     unlockScroll('auth-modal');
   }
 }

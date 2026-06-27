@@ -130,7 +130,7 @@ async function openScanner() {
 
   if (!scannerModal) return;
 
-  scannerModal.hidden = false;
+  scannerModal.classList.add('is-open');
 
   if (manualBarcodeInput) {
     manualBarcodeInput.value = '';
@@ -201,7 +201,7 @@ export async function closeScanner() {
   askWeightMode = false;
 
   if (scannerModal) {
-    scannerModal.hidden = true;
+    scannerModal.classList.remove('is-open');
   }
 }
 

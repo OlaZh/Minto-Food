@@ -466,7 +466,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     activeMealType = mealType;
 
     if (addModal) {
-      addModal.hidden = false;
+      addModal.classList.add('is-open');
       resetModalState();
       searchAllRecipes('');
 
@@ -492,7 +492,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   function closeAddModal() {
-    if (addModal) addModal.hidden = true;
+    if (addModal) addModal.classList.remove('is-open');
     activeDay = null;
     activeMealType = null;
     resetModalState();
