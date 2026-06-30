@@ -22,7 +22,7 @@
   border-radius: var(--radius-md);
   border: 1px solid var(--color-border);
   background: var(--color-bg-secondary);
-  transition: all var(--duration-base) var(--ease-out);
+  transition: all var(--duration-hover) var(--ease-out);
 
   &:focus-within {
     border-color: var(--color-accent);
@@ -111,9 +111,9 @@
     white-space: nowrap;
     cursor: pointer;
     transition:
-      background-color var(--duration-base) var(--ease-out),
-      border-color var(--duration-base) var(--ease-out),
-      color var(--duration-base) var(--ease-out);
+      background-color var(--duration-hover) var(--ease-out),
+      border-color var(--duration-hover) var(--ease-out),
+      color var(--duration-hover) var(--ease-out);
 
     &:hover {
       border-color: var(--color-accent);
@@ -166,7 +166,7 @@
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
-  transition: all var(--duration-fast) var(--ease-out);
+  transition: all var(--duration-hover) var(--ease-out);
 
   &:hover {
     background: var(--color-accent);
@@ -193,9 +193,9 @@
   overflow: hidden;
 
   transition:
-    transform var(--duration-base) var(--ease-out),
-    box-shadow var(--duration-base) var(--ease-out),
-    border-color var(--duration-base) var(--ease-out);
+    transform var(--duration-hover) var(--ease-out),
+    box-shadow var(--duration-hover) var(--ease-out),
+    border-color var(--duration-hover) var(--ease-out);
 
   &:hover {
     transform: translateY(-4px);
@@ -221,7 +221,7 @@
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transition: transform var(--duration-slow) var(--ease-out);
+    transition: transform var(--duration-hover) var(--ease-out);
   }
 
   &__attribution {
@@ -233,7 +233,7 @@
     font-size: 8px;
     padding: 2px 6px;
     opacity: 0;
-    transition: opacity var(--duration-base) var(--ease-out);
+    transition: opacity var(--duration-hover) var(--ease-out);
 
     a {
       color: #fff;
@@ -475,7 +475,7 @@
   white-space: nowrap;
   font-size: 13px;
   cursor: pointer;
-  transition: all var(--duration-fast) var(--ease-out);
+  transition: all var(--duration-hover) var(--ease-out);
 
   &:hover {
     border-color: var(--color-accent);
@@ -501,12 +501,12 @@
     font-weight: 600;
     color: var(--color-text-primary);
     cursor: pointer;
-    transition: background var(--duration-fast) var(--ease-out);
+    transition: background var(--duration-hover) var(--ease-out);
 
     &::after {
       content: '▾';
       float: right;
-      transition: transform 0.25s ease;
+      transition: transform var(--duration-hover) ease;
       color: var(--color-text-secondary);
     }
 
@@ -565,7 +565,7 @@
   font-size: 13px;
   color: var(--color-text-primary);
   cursor: pointer;
-  transition: all var(--duration-fast) var(--ease-out);
+  transition: all var(--duration-hover) var(--ease-out);
 
   &:hover {
     border-color: var(--color-accent);

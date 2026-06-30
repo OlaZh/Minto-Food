@@ -27,8 +27,8 @@
 
   box-shadow: var(--shadow-1);
   transition:
-    box-shadow var(--duration-base) var(--ease-out),
-    transform var(--duration-base) var(--ease-out);
+    box-shadow var(--duration-hover) var(--ease-out),
+    transform var(--duration-hover) var(--ease-out);
 
   &:hover {
     box-shadow: var(--shadow-2);
@@ -56,9 +56,9 @@
   overflow: hidden;
 
   transition:
-    transform var(--duration-base) var(--ease-out),
-    box-shadow var(--duration-base) var(--ease-out),
-    border-color var(--duration-base) var(--ease-out);
+    transform var(--duration-hover) var(--ease-out),
+    box-shadow var(--duration-hover) var(--ease-out),
+    border-color var(--duration-hover) var(--ease-out);
 
   &:hover {
     transform: translateY(-4px);
@@ -197,8 +197,8 @@
     font-weight: 600;
     cursor: pointer;
     transition:
-      background var(--duration-base) var(--ease-out),
-      color var(--duration-base) var(--ease-out);
+      background var(--duration-hover) var(--ease-out),
+      color var(--duration-hover) var(--ease-out);
 
     svg {
       width: 14px;

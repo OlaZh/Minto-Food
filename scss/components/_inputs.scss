@@ -19,7 +19,7 @@
   font-family: inherit;
   outline: none;
   box-shadow: inset 0 2px 4px rgba(46, 204, 113, 0.1);
-  transition: all 0.3s ease;
+  transition: all var(--duration-hover) ease;
 
   &:focus {
     border-color: var(--color-accent);
@@ -51,10 +51,10 @@
   resize: none;     /* забороняємо ручний ресайз, якщо є скрипт */
   transition: 
     height 0.2s cubic-bezier(0.4, 0, 0.2, 1),
-    background-color 0.3s ease,
-    border-color 0.3s ease,
-    box-shadow 0.3s ease,
-    transform 0.3s ease;
+    background-color var(--duration-hover) ease,
+    border-color var(--duration-hover) ease,
+    box-shadow var(--duration-hover) ease,
+    transform var(--duration-hover) ease;
 
   &:focus {
     background: var(--color-surface);

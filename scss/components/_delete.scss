@@ -18,7 +18,7 @@
   filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.6));
   opacity: 0;
   pointer-events: none;
-  transition: opacity var(--duration-fast) var(--ease-out), transform var(--duration-fast) var(--ease-out);
+  transition: opacity var(--duration-hover) var(--ease-out), transform var(--duration-hover) var(--ease-out);
   z-index: 10;
 
   &:hover {

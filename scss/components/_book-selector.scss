@@ -63,7 +63,7 @@
     border: 2px solid transparent;
     border-radius: 12px;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all var(--duration-hover) ease;
 
     &:hover {
       background: var(--color-surface);
@@ -147,7 +147,7 @@
     border: 2px solid transparent;
     border-radius: 10px;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all var(--duration-hover) ease;
 
     &:hover {
       background: var(--color-surface);
@@ -192,7 +192,7 @@
     color: var(--color-text-secondary);
     cursor: pointer;
     font-size: 0.85rem;
-    transition: all 0.2s ease;
+    transition: all var(--duration-hover) ease;
 
     &:hover {
       border-color: var(--color-accent);
@@ -224,7 +224,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: transform 0.2s ease;
+  transition: transform var(--duration-hover) ease;
   z-index: 3;
 
   svg {
@@ -234,7 +234,7 @@
     stroke-width: 2;
     fill: transparent;
     filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.5));
-    transition: all 0.2s ease;
+    transition: all var(--duration-hover) ease;
   }
 
   &:hover {
@@ -289,7 +289,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all var(--duration-fast) var(--ease-out);
+    transition: all var(--duration-hover) var(--ease-out);
 
     &:hover {
       background: var(--color-surface);
@@ -312,7 +312,7 @@
     opacity: 0;
     visibility: hidden;
     transform: translateY(-10px);
-    transition: all var(--duration-fast) var(--ease-out);
+    transition: all var(--duration-hover) var(--ease-out);
     z-index: 100;
 
     &.is-open {
@@ -334,7 +334,7 @@
     font-size: 14px;
     color: var(--color-text-primary);
     text-align: left;
-    transition: background var(--duration-fast) var(--ease-out);
+    transition: background var(--duration-hover) var(--ease-out);
 
     &:hover {
       background: var(--color-bg-secondary);
@@ -395,7 +395,7 @@
     border: 2px solid transparent;
     border-radius: 10px;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all var(--duration-hover) ease;
 
     &:hover {
       background: var(--color-surface);
@@ -526,7 +526,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s ease;
+  transition: all var(--duration-hover) ease;
 
   &:hover {
     background: var(--color-accent);

@@ -131,7 +131,7 @@
   color: var(--color-text-primary);
 
   cursor: pointer;
-  transition: background 0.2s ease;
+  transition: background var(--duration-hover) ease;
 
   &:hover {
     background: var(--color-accent-soft);
@@ -264,8 +264,8 @@
   color: var(--color-text-secondary);
   cursor: pointer;
   transition:
-    background 0.15s ease,
-    color 0.15s ease;
+    background var(--duration-hover) ease,
+    color var(--duration-hover) ease;
 
   &:hover:not(.active) {
     color: var(--color-text-primary);
@@ -317,7 +317,7 @@
   border-bottom: 1px solid var(--color-border);
 
   cursor: pointer;
-  transition: background 0.2s ease;
+  transition: background var(--duration-hover) ease;
 
   &:last-child {
     border-bottom: none;
@@ -422,8 +422,8 @@
     inset 0 -2px 0 rgba(0, 0, 0, 0.25);
 
   transition:
-    transform 0.15s ease,
-    box-shadow 0.15s ease;
+    transform var(--duration-hover) ease,
+    box-shadow var(--duration-hover) ease;
 
   &:hover:not(:disabled) {
     transform: translateY(-1px);
@@ -524,7 +524,7 @@
     resize: vertical;
     box-sizing: border-box;
 
-    transition: border-color 0.3s;
+    transition: border-color var(--duration-hover);
 
     &:focus {
       transform: translateY(-3px);
@@ -592,6 +592,7 @@
     font-size: 22px;
     color: var(--color-text-secondary);
     cursor: pointer;
+    transition: color var(--duration-hover) var(--ease-out);
 
     &:hover {
       color: var(--color-text-primary);
@@ -681,7 +682,7 @@
     font-weight: 600;
     font-family: inherit;
     cursor: pointer;
-    transition: background 0.15s ease;
+    transition: background var(--duration-hover) ease;
 
     &:hover {
       background: #dc2626;
@@ -737,7 +738,7 @@
     cursor: pointer;
     white-space: nowrap;
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
-    transition: transform 0.15s ease;
+    transition: transform var(--duration-hover) ease;
 
     &:hover {
       transform: translateY(-1px);
@@ -798,7 +799,7 @@
     color: var(--color-text-secondary);
     font-size: 14px;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all var(--duration-hover);
 
     &:hover {
       background: rgba(239, 68, 68, 0.15);

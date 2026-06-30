@@ -50,7 +50,7 @@
 .site-footer__logo {
   display: inline-flex;
   align-items: center;
-  transition: opacity 0.15s ease;
+  transition: opacity var(--duration-hover) ease;
 
   &:hover {
     opacity: 0.85;
@@ -101,7 +101,7 @@
     font-weight: 400;
     color: rgba(255, 255, 255, 0.75);
     text-decoration: none;
-    transition: color 0.15s ease;
+    transition: color var(--duration-hover) ease;
 
     &:hover {
       color: #ffffff;
@@ -155,7 +155,7 @@
       background-size: contain;
       background-repeat: no-repeat;
       flex-shrink: 0;
-      transition: transform 0.2s ease;
+      transition: transform var(--duration-hover) ease;
     }
   }
 
@@ -233,7 +233,7 @@
   cursor: pointer;
   padding: 2px 4px;
   border-radius: 3px;
-  transition: opacity 0.15s ease, color 0.15s ease;
+  transition: opacity var(--duration-hover) ease, color var(--duration-hover) ease;
 
   &:hover {
     color: rgba(255, 255, 255, 0.9);

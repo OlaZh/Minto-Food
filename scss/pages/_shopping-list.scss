@@ -147,7 +147,7 @@
     color: var(--color-text-primary);
     font-family: var(--font-body);
     font-size: 14px;
-    transition: border-color var(--duration-fast) var(--ease-out);
+    transition: border-color var(--duration-hover) var(--ease-out);
 
     &::placeholder {
       color: var(--color-text-secondary);
@@ -317,8 +317,8 @@
   border-radius: 8px;
   cursor: pointer;
   transition:
-    background var(--duration-fast) var(--ease-out),
-    opacity var(--duration-fast) var(--ease-out);
+    background var(--duration-hover) var(--ease-out),
+    opacity var(--duration-hover) var(--ease-out);
 
   &--checked {
     background: rgba(255, 255, 255, 0.35);
@@ -358,7 +358,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all var(--duration-fast) var(--ease-out);
+    transition: all var(--duration-hover) var(--ease-out);
     flex-shrink: 0;
 
     .shop-item__checkbox:checked + & {
@@ -391,7 +391,7 @@
     font-size: 15px;
     font-weight: 500;
     color: var(--color-text-primary);
-    transition: color var(--duration-fast) var(--ease-out);
+    transition: color var(--duration-hover) var(--ease-out);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -418,7 +418,7 @@
     display: flex;
     gap: 4px;
     opacity: 0;
-    transition: opacity var(--duration-fast) var(--ease-out);
+    transition: opacity var(--duration-hover) var(--ease-out);
   }
 
   &:hover &__actions {
@@ -444,7 +444,7 @@
     align-items: center;
     justify-content: center;
     color: var(--color-text-secondary);
-    transition: all var(--duration-fast) var(--ease-out);
+    transition: all var(--duration-hover) var(--ease-out);
 
     &--edit:hover {
       background: var(--color-bg-secondary);
@@ -532,12 +532,12 @@
     font-weight: 700;
     color: var(--color-text-primary);
     text-align: left;
-    transition: color var(--duration-fast) var(--ease-out);
+    transition: color var(--duration-hover) var(--ease-out);
 
     svg {
       flex-shrink: 0;
       color: var(--color-text-secondary);
-      transition: transform 0.25s var(--ease-out);
+      transition: transform var(--duration-hover) var(--ease-out);
     }
 
     &.is-open svg {
@@ -579,7 +579,7 @@
   border: 1px solid var(--color-border);
   background: var(--color-bg-secondary);
   overflow: hidden;
-  transition: border-color var(--duration-fast) var(--ease-out);
+  transition: border-color var(--duration-hover) var(--ease-out);
 
   &:hover {
     border-color: var(--color-accent);
@@ -619,7 +619,7 @@
     justify-content: center;
     color: var(--color-text-secondary);
     flex-shrink: 0;
-    transition: all var(--duration-fast) var(--ease-out);
+    transition: all var(--duration-hover) var(--ease-out);
 
     &:hover {
       background: var(--color-bg-secondary);
@@ -653,7 +653,7 @@
       display: flex;
       align-items: center;
       gap: 8px;
-      transition: background var(--duration-fast) var(--ease-out);
+      transition: background var(--duration-hover) var(--ease-out);
 
       &:hover {
         background: var(--color-bg-secondary);
@@ -697,7 +697,7 @@
   &__chevron {
     color: var(--color-text-secondary);
     flex-shrink: 0;
-    transition: transform 0.25s var(--ease-out);
+    transition: transform var(--duration-hover) var(--ease-out);
   }
 
   &--open &__chevron {
@@ -727,7 +727,7 @@
     padding: 4px 6px;
     border-radius: 6px;
     font-size: 12px;
-    transition: background var(--duration-fast) var(--ease-out);
+    transition: background var(--duration-hover) var(--ease-out);
 
     &:hover {
       background: var(--color-surface);
@@ -780,7 +780,7 @@
     cursor: pointer;
     white-space: nowrap;
     flex-shrink: 0;
-    transition: all var(--duration-fast) var(--ease-out);
+    transition: all var(--duration-hover) var(--ease-out);
 
     &:hover {
       background: var(--color-accent);
@@ -801,7 +801,7 @@
     color: var(--color-text-secondary);
     flex-shrink: 0;
     opacity: 0;
-    transition: all var(--duration-fast) var(--ease-out);
+    transition: all var(--duration-hover) var(--ease-out);
 
     &--edit:hover {
       background: var(--color-bg-secondary);
@@ -935,7 +935,7 @@
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    transition: background var(--duration-fast) var(--ease-out);
+    transition: background var(--duration-hover) var(--ease-out);
 
     &:hover {
       background: var(--color-accent-hover);
@@ -958,7 +958,7 @@
   color: var(--color-text-primary);
   font-family: var(--font-body);
   font-size: 13px;
-  transition: border-color var(--duration-fast) var(--ease-out);
+  transition: border-color var(--duration-hover) var(--ease-out);
 
   &::placeholder {
     color: var(--color-text-secondary);
@@ -985,7 +985,7 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  transition: background var(--duration-fast) var(--ease-out);
+  transition: background var(--duration-hover) var(--ease-out);
 
   &:hover {
     background: var(--color-accent-hover);
@@ -1048,7 +1048,7 @@
     cursor: pointer;
     white-space: nowrap;
     flex-shrink: 0;
-    transition: all var(--duration-fast) var(--ease-out);
+    transition: all var(--duration-hover) var(--ease-out);
 
     &:hover {
       background: var(--color-accent);
@@ -1064,7 +1064,7 @@
     padding: 2px;
     display: flex;
     flex-shrink: 0;
-    transition: color var(--duration-fast) var(--ease-out);
+    transition: color var(--duration-hover) var(--ease-out);
 
     &:hover {
       color: var(--color-danger);
@@ -1088,7 +1088,7 @@
   color: var(--color-text-primary);
   font-family: var(--font-body);
   font-size: 13px;
-  transition: border-color var(--duration-fast) var(--ease-out);
+  transition: border-color var(--duration-hover) var(--ease-out);
 
   &::placeholder {
     color: var(--color-text-secondary);
@@ -1123,7 +1123,7 @@
     font-family: var(--font-body);
     font-size: 14px;
     margin-bottom: var(--space-md);
-    transition: border-color var(--duration-fast) var(--ease-out);
+    transition: border-color var(--duration-hover) var(--ease-out);
 
     &::placeholder {
       color: var(--color-text-secondary);
@@ -1159,7 +1159,7 @@
     border-radius: 8px;
     border: 1px solid var(--color-border);
     cursor: pointer;
-    transition: all var(--duration-fast) var(--ease-out);
+    transition: all var(--duration-hover) var(--ease-out);
 
     input[type='radio'] {
       display: none;
@@ -1189,7 +1189,7 @@
     border-radius: 50%;
     border: 2px solid var(--color-border);
     flex-shrink: 0;
-    transition: all var(--duration-fast) var(--ease-out);
+    transition: all var(--duration-hover) var(--ease-out);
 
     .shop-newlist__type:has(input:checked) & {
       border-color: var(--color-accent);
@@ -1274,7 +1274,7 @@
   background: var(--color-bg-secondary);
   color: var(--color-text-primary);
   font-size: 14px;
-  transition: border-color var(--duration-fast) var(--ease-out);
+  transition: border-color var(--duration-hover) var(--ease-out);
 
   &::placeholder {
     color: var(--color-text-secondary);
@@ -1463,7 +1463,7 @@
     font-weight: 600;
     border: none;
     cursor: pointer;
-    transition: all var(--duration-fast) var(--ease-out);
+    transition: all var(--duration-hover) var(--ease-out);
 
     &--confirm {
       background: var(--color-accent);

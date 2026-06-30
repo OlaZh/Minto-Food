@@ -59,7 +59,7 @@
     font-family: inherit;
     cursor: pointer;
     border: 1px solid transparent;
-    transition: all 0.2s ease;
+    transition: all var(--duration-hover) ease;
 
     @media (max-width: 480px) {
       flex: 1;

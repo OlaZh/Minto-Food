@@ -17,7 +17,7 @@
     font-size: 24px;
     cursor: pointer;
     color: var(--color-text-secondary);
-    transition: transform var(--duration-base) cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    transition: transform var(--duration-hover) cubic-bezier(0.175, 0.885, 0.32, 1.275);
 
     &.filled {
       color: #f1c40f;

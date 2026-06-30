@@ -340,8 +340,8 @@
   font-size: 12px;
   cursor: pointer;
   transition:
-    color var(--duration-fast) var(--ease-out),
-    border-color var(--duration-fast) var(--ease-out);
+    color var(--duration-hover) var(--ease-out),
+    border-color var(--duration-hover) var(--ease-out);
   margin-left: auto;
 
   &:hover {

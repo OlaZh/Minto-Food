@@ -76,7 +76,7 @@
   text-decoration: none;
   position: relative;
   padding-bottom: 4px;
-  transition: color var(--duration-base) var(--ease-out);
+  transition: color var(--duration-hover) var(--ease-out);
 }
 
 /* Ховер */
@@ -131,8 +131,8 @@
   letter-spacing: 0.04em;
   cursor: pointer;
   transition:
-    border-color var(--duration-base) var(--ease-out),
-    color var(--duration-base) var(--ease-out);
+    border-color var(--duration-hover) var(--ease-out),
+    color var(--duration-hover) var(--ease-out);
   white-space: nowrap;
 
   &:hover {
@@ -186,8 +186,8 @@
   color: var(--color-text-secondary);
   cursor: pointer;
   transition:
-    background var(--duration-fast) var(--ease-out),
-    color var(--duration-fast) var(--ease-out);
+    background var(--duration-hover) var(--ease-out),
+    color var(--duration-hover) var(--ease-out);
 
   &:hover {
     background: var(--color-bg-secondary);
@@ -215,8 +215,8 @@
   border-radius: var(--radius-sm);
   border: 1px solid var(--color-border);
   transition:
-    border-color var(--duration-base) var(--ease-out),
-    color var(--duration-base) var(--ease-out);
+    border-color var(--duration-hover) var(--ease-out),
+    color var(--duration-hover) var(--ease-out);
   white-space: nowrap;
 
   &:hover {
@@ -245,8 +245,8 @@
   text-decoration: none;
   cursor: pointer;
   transition:
-    border-color var(--duration-base) var(--ease-out),
-    background var(--duration-base) var(--ease-out);
+    border-color var(--duration-hover) var(--ease-out),
+    background var(--duration-hover) var(--ease-out);
 
   &:hover,
   &.is-open {
@@ -336,14 +336,14 @@
   text-decoration: none;
   cursor: pointer;
   transition:
-    background var(--duration-fast) var(--ease-out),
-    color var(--duration-fast) var(--ease-out);
+    background var(--duration-hover) var(--ease-out),
+    color var(--duration-hover) var(--ease-out);
   text-align: left;
 
   svg {
     flex-shrink: 0;
     color: var(--color-text-secondary);
-    transition: color var(--duration-fast) var(--ease-out);
+    transition: color var(--duration-hover) var(--ease-out);
   }
 
   &:hover {
@@ -414,10 +414,10 @@
 
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
   transition:
-    background-color var(--duration-base) var(--ease-out),
-    border-color var(--duration-base) var(--ease-out),
-    color var(--duration-base) var(--ease-out),
-    transform var(--duration-fast) var(--ease-out);
+    background-color var(--duration-hover) var(--ease-out),
+    border-color var(--duration-hover) var(--ease-out),
+    color var(--duration-hover) var(--ease-out),
+    transform var(--duration-hover) var(--ease-out);
 
   .moon-icon {
     display: none;
@@ -428,7 +428,7 @@
   }
 
   svg {
-    transition: transform var(--duration-slow) var(--ease-out);
+    transition: transform var(--duration-hover) var(--ease-out);
   }
 
   &:hover {
@@ -480,7 +480,7 @@
   cursor: pointer;
   border-radius: 10px;
   color: var(--color-text-primary);
-  transition: background var(--duration-base) var(--ease-out);
+  transition: background var(--duration-hover) var(--ease-out);
 
   span {
     display: block;
@@ -489,8 +489,8 @@
     background: currentColor;
     border-radius: 2px;
     transition:
-      transform var(--duration-slow) var(--ease-smooth),
-      opacity var(--duration-slow) var(--ease-smooth);
+      transform var(--duration-hover) var(--ease-smooth),
+      opacity var(--duration-hover) var(--ease-smooth);
     transform-origin: center;
   }
 

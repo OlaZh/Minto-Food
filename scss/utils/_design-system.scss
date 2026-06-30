@@ -61,6 +61,8 @@
   --duration-fast: 150ms;
   --duration-base: 250ms;
   --duration-slow: 350ms;
+  // Єдиний дюрейшн для ВСІХ інтерактивних станів (hover/active/focus)
+  --duration-hover: 600ms;
   --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
   --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
 
@@ -111,10 +113,10 @@
   text-decoration: none;
 
   transition:
-    background-color var(--duration-base) var(--ease-out),
-    border-color var(--duration-base) var(--ease-out),
-    transform var(--duration-fast) var(--ease-out),
-    box-shadow var(--duration-base) var(--ease-out);
+    background-color var(--duration-hover) var(--ease-out),
+    border-color var(--duration-hover) var(--ease-out),
+    transform var(--duration-hover) var(--ease-out),
+    box-shadow var(--duration-hover) var(--ease-out);
 
   &:focus-visible {
     outline: none;
@@ -231,9 +233,9 @@
   user-select: none;
 
   transition:
-    background-color var(--duration-base) var(--ease-out),
-    border-color var(--duration-base) var(--ease-out),
-    color var(--duration-base) var(--ease-out);
+    background-color var(--duration-hover) var(--ease-out),
+    border-color var(--duration-hover) var(--ease-out),
+    color var(--duration-hover) var(--ease-out);
 }
 
 // Чіп-фільтр — неактивний і активний стани
@@ -274,9 +276,9 @@
   white-space: nowrap;
 
   transition:
-    background 0.18s ease,
-    border-color 0.18s ease,
-    color 0.18s ease;
+    background var(--duration-hover) ease,
+    border-color var(--duration-hover) ease,
+    color var(--duration-hover) ease;
 
   &:hover {
     border-color: var(--color-accent);
@@ -412,9 +414,9 @@
   box-shadow: var(--shadow-1);
 
   transition:
-    box-shadow var(--duration-base) var(--ease-out),
-    transform var(--duration-base) var(--ease-out),
-    border-color var(--duration-base) var(--ease-out);
+    box-shadow var(--duration-hover) var(--ease-out),
+    transform var(--duration-hover) var(--ease-out),
+    border-color var(--duration-hover) var(--ease-out);
 
   &:hover {
     box-shadow: var(--shadow-2);
@@ -453,7 +455,7 @@
     stroke-linecap: round;
     transition:
       stroke-dashoffset var(--duration-slow) var(--ease-smooth),
-      stroke var(--duration-base) var(--ease-out);
+      stroke var(--duration-hover) var(--ease-out);
   }
 
   &__center {
@@ -588,6 +590,8 @@
   font-size: 28px;
   color: var(--color-text-secondary);
   cursor: pointer;
+
+  transition: color var(--duration-hover) var(--ease-out);
 
   &:hover {
     color: var(--color-accent);

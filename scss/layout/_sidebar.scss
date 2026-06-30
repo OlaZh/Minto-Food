@@ -36,7 +36,7 @@
   border: 1px solid var(--color-border);
   cursor: pointer;
 
-  transition: all 0.3s ease;
+  transition: all var(--duration-hover) ease;
 }
 
 .sidebar__day-btn:hover {
@@ -98,8 +98,8 @@
 
   transition:
     stroke-dasharray 0.8s var(--ease-smooth),
-    stroke 0.25s ease,
-    opacity 0.25s ease;
+    stroke var(--duration-hover) ease,
+    opacity var(--duration-hover) ease;
 }
 
 /* Кільце калорій — градієнтна заливка через SVG linearGradient */
@@ -316,8 +316,8 @@
 
   cursor: pointer;
   transition:
-    opacity var(--duration-base) var(--ease-out),
-    color var(--duration-base) var(--ease-out);
+    opacity var(--duration-hover) var(--ease-out),
+    color var(--duration-hover) var(--ease-out);
 
   &:hover {
     opacity: 1;

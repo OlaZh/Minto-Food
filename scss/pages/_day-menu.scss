@@ -148,9 +148,9 @@
     user-select: none;
 
     transition:
-      background-color var(--duration-base) var(--ease-out),
-      border-color var(--duration-base) var(--ease-out),
-      box-shadow var(--duration-base) var(--ease-out);
+      background-color var(--duration-hover) var(--ease-out),
+      border-color var(--duration-hover) var(--ease-out),
+      box-shadow var(--duration-hover) var(--ease-out);
 
     &::after {
       display: none;
@@ -771,9 +771,9 @@
     color: var(--color-text-secondary);
     cursor: pointer;
     transition:
-      background-color 0.15s ease,
-      border-color 0.15s ease,
-      color 0.15s ease;
+      background-color var(--duration-hover) ease,
+      border-color var(--duration-hover) ease,
+      color var(--duration-hover) ease;
 
     &:hover,
     &.is-open {
@@ -800,8 +800,8 @@
     pointer-events: none;
     transform: translateY(-6px);
     transition:
-      opacity 0.15s ease,
-      transform 0.15s ease;
+      opacity var(--duration-hover) ease,
+      transform var(--duration-hover) ease;
 
     &.is-open {
       opacity: 1;
@@ -823,7 +823,7 @@
     font-weight: 500;
     color: var(--color-text-primary);
     cursor: pointer;
-    transition: background-color 0.15s ease;
+    transition: background-color var(--duration-hover) ease;
     white-space: nowrap;
 
     &:first-child {
@@ -879,7 +879,7 @@
   padding: 0;
   overflow: hidden;
   border-bottom: 1px solid var(--color-border);
-  transition: background-color 0.2s ease;
+  transition: background-color var(--duration-hover) ease;
 
   &:hover {
     background: var(--color-bg-hover);
@@ -895,7 +895,7 @@
     cursor: pointer;
     user-select: none;
 
-    transition: background-color var(--duration-base) var(--ease-out);
+    transition: background-color var(--duration-hover) var(--ease-out);
 
     &:hover {
       background: var(--color-bg-hover);
@@ -1000,7 +1000,7 @@
   background-color: transparent;
   border-radius: 0;
   cursor: pointer;
-  transition: background-color 0.2s ease;
+  transition: background-color var(--duration-hover) ease;
 
   &:hover,
   &:active {
@@ -1096,9 +1096,9 @@
   cursor: pointer;
 
   transition:
-    background-color 0.2s ease,
-    box-shadow 0.2s ease,
-    transform 0.2s ease;
+    background-color var(--duration-hover) ease,
+    box-shadow var(--duration-hover) ease,
+    transform var(--duration-hover) ease;
 
   span {
     position: relative;

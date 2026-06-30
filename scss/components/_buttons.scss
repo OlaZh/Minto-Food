@@ -115,7 +115,7 @@
   svg {
     stroke: currentColor;
     flex-shrink: 0;
-    transition: transform var(--duration-base) var(--ease-out);
+    transition: transform var(--duration-hover) var(--ease-out);
   }
 
   &:hover:not(:disabled) svg {

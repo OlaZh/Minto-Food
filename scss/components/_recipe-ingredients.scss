@@ -37,7 +37,7 @@
   font-weight: 600;
   white-space: nowrap;
   cursor: pointer;
-  transition: background 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
+  transition: background var(--duration-hover) ease, border-color var(--duration-hover) ease, transform var(--duration-hover) ease;
 
   &:hover {
     border-color: var(--color-accent);
@@ -111,7 +111,7 @@
   border-radius: 14px;
   background: var(--color-bg-primary);
   border: 1px solid var(--color-border);
-  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+  transition: border-color var(--duration-hover) ease, box-shadow var(--duration-hover) ease, background var(--duration-hover) ease;
   position: relative;
   flex-wrap: wrap;
 
@@ -215,7 +215,7 @@
     font-size: 13px;
     cursor: pointer;
     color: var(--color-text-primary);
-    transition: background var(--duration-fast) ease;
+    transition: background var(--duration-hover) ease;
 
     em {
       font-style: italic;
@@ -268,7 +268,7 @@
   justify-content: center;
   flex-shrink: 0;
   opacity: 0.55;
-  transition: all 0.2s ease;
+  transition: all var(--duration-hover) ease;
 
   &:hover {
     background: rgba(224, 123, 123, 0.15);

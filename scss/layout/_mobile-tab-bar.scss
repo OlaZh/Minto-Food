@@ -47,7 +47,7 @@
   text-decoration: none;
 
   color: var(--color-text-secondary);
-  transition: color var(--duration-fast) var(--ease-out);
+  transition: color var(--duration-hover) var(--ease-out);
 
   &:hover {
     color: var(--color-text-primary);
@@ -73,7 +73,7 @@
   stroke-linecap: round;
   stroke-linejoin: round;
   flex-shrink: 0;
-  transition: transform var(--duration-fast) var(--ease-out);
+  transition: transform var(--duration-hover) var(--ease-out);
 }
 
 /* ---------- LABEL ---------- */
@@ -163,7 +163,7 @@
   font-weight: 500;
 
   border-bottom: 1px solid var(--color-border);
-  transition: color var(--duration-fast) var(--ease-out);
+  transition: color var(--duration-hover) var(--ease-out);
 
   &:last-child {
     border-bottom: none;
