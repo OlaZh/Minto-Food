@@ -1421,6 +1421,12 @@
   width: 96px;
 }
 
+/* .profile-form__field має display:flex, який перебиває нативний [hidden].
+   Повертаємо ховання для полів метрик, коли вони неактивні. */
+.activity-form__field--metric[hidden] {
+  display: none;
+}
+
 .activity-form__action {
   display: flex;
   align-items: center;
