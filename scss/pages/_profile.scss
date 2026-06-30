@@ -1421,10 +1421,14 @@
   width: 96px;
 }
 
-/* .profile-form__field має display:flex, який перебиває нативний [hidden].
-   Повертаємо ховання для полів метрик, коли вони неактивні. */
-.activity-form__field--metric[hidden] {
+/* .profile-form__field задає display:flex, який перебивав би нативний [hidden].
+   Тому flex вмикаємо лише коли поле НЕ приховане — тоді [hidden] працює сам. */
+.activity-form__field--metric {
   display: none;
+
+  &:not([hidden]) {
+    display: flex;
+  }
 }
 
 .activity-form__action {

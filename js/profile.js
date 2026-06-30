@@ -18,6 +18,8 @@ import {
   getLang,
   setLang,
   getWaterNorm,
+  getMeasurementSystem,
+  setMeasurementSystem,
 } from './storage.js';
 import { initCustomSelect, setSelectValue, initSelectsGlobalListener, showConfirmModal } from './ui-components.js';
 import { calcDailyNorm } from './health-core.js';
@@ -98,11 +100,11 @@ const ACTIVITY_METRICS = {
 
 // Вага користувача (кг) для розрахунку калорій; 70 кг — розумний дефолт.
 function getUserWeightKg() {
-  return (
-    parseFloat(
-      localStorage.getItem('userWeight') || document.getElementById('weight')?.value || 0,
-    ) || 70
-  );
+  const storedWeight = parseInputNumber(localStorage.getItem('userWeight'));
+  if (Number.isFinite(storedWeight)) return storedWeight;
+
+  const formWeight = displayWeightToKg(document.getElementById('weight')?.value, currentMeasurementSystem);
+  return Number.isFinite(formWeight) ? formWeight : 70;
 }
 
 const GDPR_I18N = {
@@ -198,6 +200,242 @@ let statisticsCharts = {
   lastWeekChart: null,
   thisWeekChart: null,
 };
+
+const MEASUREMENT_SYSTEMS = {
+  METRIC: 'metric',
+  IMPERIAL: 'imperial',
+};
+
+const KG_TO_LBS = 2.2046226218;
+const CM_TO_FT = 0.03280839895;
+
+let currentMeasurementSystem = MEASUREMENT_SYSTEMS.METRIC;
+
+const MEASUREMENT_I18N = {
+  ua: {
+    settingsUnitsSub: 'Застосовується до форми профілю та контролю ваги',
+    weightSaved: 'Вага {weight} {unit} збережена',
+  },
+  pl: {
+    settingsUnitsSub: 'Dotyczy formularza profilu i kontroli wagi',
+    weightSaved: 'Waga {weight} {unit} zapisana',
+  },
+  en: {
+    settingsUnitsSub: 'Applied to the profile form and weight control',
+    weightSaved: 'Weight {weight} {unit} saved',
+  },
+};
+
+function currentUiLang() {
+  const lang = getLang();
+  return lang === 'uk' ? 'ua' : lang;
+}
+
+function measurementText(key, vars = {}) {
+  const dict = MEASUREMENT_I18N[currentUiLang()] || MEASUREMENT_I18N.ua;
+  return Object.entries(vars).reduce(
+    (text, [name, value]) => text.replaceAll(`{${name}}`, String(value)),
+    dict[key] || MEASUREMENT_I18N.ua[key] || key,
+  );
+}
+
+function parseInputNumber(value) {
+  const parsed = parseFloat(String(value ?? '').replace(',', '.'));
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function normalizeMeasurementSystem(system) {
+  return system === MEASUREMENT_SYSTEMS.IMPERIAL
+    ? MEASUREMENT_SYSTEMS.IMPERIAL
+    : MEASUREMENT_SYSTEMS.METRIC;
+}
+
+function formatMeasurementValue(value, decimals = 1) {
+  if (!Number.isFinite(value)) return '';
+  return String(Number(value.toFixed(decimals)));
+}
+
+function getWeightUnitLabel(system = currentMeasurementSystem) {
+  return system === MEASUREMENT_SYSTEMS.IMPERIAL ? 'lbs' : t('kgUnit');
+}
+
+function getHeightUnitLabel(system = currentMeasurementSystem) {
+  return system === MEASUREMENT_SYSTEMS.IMPERIAL ? 'ft' : t('cmUnit');
+}
+
+function kgToDisplayWeight(weightKg, system = currentMeasurementSystem) {
+  return system === MEASUREMENT_SYSTEMS.IMPERIAL ? weightKg * KG_TO_LBS : weightKg;
+}
+
+function displayWeightToKg(weightValue, system = currentMeasurementSystem) {
+  const parsed = parseInputNumber(weightValue);
+  if (!Number.isFinite(parsed)) return null;
+  return system === MEASUREMENT_SYSTEMS.IMPERIAL ? parsed / KG_TO_LBS : parsed;
+}
+
+function cmToDisplayHeight(heightCm, system = currentMeasurementSystem) {
+  return system === MEASUREMENT_SYSTEMS.IMPERIAL ? heightCm * CM_TO_FT : heightCm;
+}
+
+function displayHeightToCm(heightValue, system = currentMeasurementSystem) {
+  const parsed = parseInputNumber(heightValue);
+  if (!Number.isFinite(parsed)) return null;
+  return system === MEASUREMENT_SYSTEMS.IMPERIAL ? parsed / CM_TO_FT : parsed;
+}
+
+function formatDisplayWeight(weightKg, system = currentMeasurementSystem, decimals = 1) {
+  if (!Number.isFinite(weightKg)) return '';
+  return formatMeasurementValue(kgToDisplayWeight(weightKg, system), decimals);
+}
+
+function formatDisplayHeight(heightCm, system = currentMeasurementSystem) {
+  if (!Number.isFinite(heightCm)) return '';
+  return formatMeasurementValue(
+    cmToDisplayHeight(heightCm, system),
+    system === MEASUREMENT_SYSTEMS.IMPERIAL ? 2 : 0,
+  );
+}
+
+function stripUnitSuffix(text) {
+  return String(text || '').replace(/\s*\([^)]*\)\s*$/, '');
+}
+
+function setMeasurementInputValue(input, metricValue, type, system = currentMeasurementSystem) {
+  if (!input || !Number.isFinite(metricValue)) return;
+
+  if (type === 'height') {
+    input.value = formatDisplayHeight(metricValue, system);
+    return;
+  }
+
+  input.value = formatDisplayWeight(metricValue, system);
+}
+
+function convertMeasurementInput(input, type, fromSystem, toSystem) {
+  if (!input || input.value === '') return;
+
+  const metricValue =
+    type === 'height'
+      ? displayHeightToCm(input.value, fromSystem)
+      : displayWeightToKg(input.value, fromSystem);
+
+  if (!Number.isFinite(metricValue)) return;
+
+  setMeasurementInputValue(input, metricValue, type, toSystem);
+}
+
+function getMetricHeightFromCurrentContext() {
+  const stored = parseInputNumber(localStorage.getItem('userHeight'));
+  if (Number.isFinite(stored)) return stored;
+  return displayHeightToCm(form?.height?.value, currentMeasurementSystem);
+}
+
+function getMetricWeightFromCurrentContext() {
+  const stored = parseInputNumber(localStorage.getItem('userWeight'));
+  if (Number.isFinite(stored)) return stored;
+  return displayWeightToKg(form?.weight?.value, currentMeasurementSystem);
+}
+
+function updateMeasurementLabels() {
+  const settingsUnitsSub = document.querySelector('[data-i18n="settingsUnitsSub"]');
+  if (settingsUnitsSub) settingsUnitsSub.textContent = measurementText('settingsUnitsSub');
+
+  const heightLabel = document.querySelector('label[for="height"]');
+  if (heightLabel) heightLabel.textContent = `${t('height')} (${getHeightUnitLabel()})`;
+
+  const weightLabel = document.querySelector('label[for="weight"]');
+  if (weightLabel) weightLabel.textContent = `${t('weight')} (${getWeightUnitLabel()})`;
+
+  document.querySelectorAll('label[data-i18n="targetWeight"]').forEach((label) => {
+    label.textContent = `${stripUnitSuffix(t('targetWeight'))} (${getWeightUnitLabel()})`;
+  });
+
+  document.querySelectorAll('label[data-i18n="todayWeight"]').forEach((label) => {
+    label.textContent = `${stripUnitSuffix(t('todayWeight'))} (${getWeightUnitLabel()})`;
+  });
+}
+
+function updateMeasurementInputAttributes() {
+  if (form?.height) {
+    if (currentMeasurementSystem === MEASUREMENT_SYSTEMS.IMPERIAL) {
+      form.height.min = '3.28';
+      form.height.max = '8.20';
+      form.height.step = '0.01';
+      form.height.placeholder = '5.58';
+    } else {
+      form.height.min = '100';
+      form.height.max = '250';
+      form.height.step = '1';
+      form.height.placeholder = '';
+    }
+  }
+
+  [form?.weight,
+    document.getElementById('targetWeight'),
+    document.getElementById('targetWeight2'),
+    document.getElementById('currentWeightInput'),
+    document.getElementById('currentWeightInput2')]
+    .filter(Boolean)
+    .forEach((input) => {
+      input.step = '0.1';
+
+      if (input === form?.weight) {
+        if (currentMeasurementSystem === MEASUREMENT_SYSTEMS.IMPERIAL) {
+          input.min = '66';
+          input.max = '661';
+        } else {
+          input.min = '30';
+          input.max = '300';
+        }
+      }
+
+      if (input.id === 'currentWeightInput' || input.id === 'currentWeightInput2') {
+        input.placeholder = currentMeasurementSystem === MEASUREMENT_SYSTEMS.IMPERIAL ? '163.1' : '74.0';
+      }
+    });
+}
+
+function syncUnitBtns() {
+  document.querySelectorAll('.settings-unit-btn').forEach((btn) => {
+    const isActive = btn.dataset.unit === currentMeasurementSystem;
+    btn.classList.toggle('active', isActive);
+    btn.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+  });
+}
+
+function applyMeasurementSystem(nextSystem, options = {}) {
+  const { convertExistingInputs = true, rerender = true } = options;
+  const normalizedNext = normalizeMeasurementSystem(nextSystem);
+  const previousSystem = currentMeasurementSystem;
+
+  if (convertExistingInputs) {
+    [
+      [form?.height, 'height'],
+      [form?.weight, 'weight'],
+      [document.getElementById('targetWeight'), 'weight'],
+      [document.getElementById('targetWeight2'), 'weight'],
+      [document.getElementById('currentWeightInput'), 'weight'],
+      [document.getElementById('currentWeightInput2'), 'weight'],
+    ].forEach(([input, type]) => convertMeasurementInput(input, type, previousSystem, normalizedNext));
+  }
+
+  currentMeasurementSystem = normalizedNext;
+  updateMeasurementLabels();
+  updateMeasurementInputAttributes();
+  syncUnitBtns();
+
+  if (!rerender) return;
+
+  const metricWeight = getMetricWeightFromCurrentContext();
+  const metricHeight = getMetricHeightFromCurrentContext();
+  if (Number.isFinite(metricWeight) && Number.isFinite(metricHeight)) {
+    updateBMI(metricWeight, metricHeight);
+  }
+
+  generateWeightAdvice();
+  void initWeightChart();
+  void initWeightChart2();
+}
 
 function renderStatsEmptyState(container, message, compact = false) {
   if (!container) return;
@@ -329,7 +567,7 @@ function buildWeightChart(canvasId, history, chartRef) {
     const [, m, d] = r.date.split('-');
     return `${d}.${m}`;
   });
-  const weights = history.map((r) => Number(r.weight));
+  const weights = history.map((r) => kgToDisplayWeight(Number(r.weight)));
   const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
 
   const chart = new ApexCharts(container, {
@@ -358,13 +596,16 @@ function buildWeightChart(canvasId, history, chartRef) {
     },
     yaxis: {
       labels: {
-        formatter: (v) => v + ' ' + t('kgUnit'),
+        formatter: (v) => `${formatMeasurementValue(v, 1)} ${getWeightUnitLabel()}`,
         style: { colors: '#9ca3af', fontSize: '11px' },
       },
     },
     grid: { borderColor: 'rgba(156,163,175,0.12)', strokeDashArray: 3 },
     markers: { size: 4, colors: ['#4ab584'], strokeColors: '#fff', strokeWidth: 2 },
-    tooltip: { theme: isDark ? 'dark' : 'light', y: { formatter: (v) => v + ' ' + t('kgUnit') } },
+    tooltip: {
+      theme: isDark ? 'dark' : 'light',
+      y: { formatter: (v) => `${formatMeasurementValue(v, 1)} ${getWeightUnitLabel()}` },
+    },
     noData: { text: t('noData'), style: { color: '#9ca3af', fontSize: '14px' } },
   });
   chart.render();
@@ -395,8 +636,9 @@ async function initWeightChart2() {
 async function recordNewWeight() {
   if (!weightNowInput || !weightNowInput.value) return;
 
-  const weight = parseFloat(weightNowInput.value.replace(',', '.'));
-  if (isNaN(weight) || weight < 20 || weight > 400) {
+  const displayWeight = parseInputNumber(weightNowInput.value);
+  const weight = displayWeightToKg(displayWeight);
+  if (!Number.isFinite(weight) || weight < 20 || weight > 400) {
     showToast(t('weightInvalid'), 'error');
     return;
   }
@@ -414,7 +656,12 @@ async function recordNewWeight() {
   }
 
   weightNowInput.value = '';
-  showToast(formatText('weightSaved', { weight }));
+  showToast(
+    measurementText('weightSaved', {
+      weight: formatMeasurementValue(kgToDisplayWeight(weight), 1),
+      unit: getWeightUnitLabel(),
+    }),
+  );
 
   await initWeightChart();
 }
@@ -425,15 +672,17 @@ function generateWeightProgress(history) {
 
   const latest = history[history.length - 1]?.weight;
   const targetEl = document.getElementById('targetWeight2');
-  const target = targetEl ? parseFloat(targetEl.value) : null;
+  const target = targetEl ? displayWeightToKg(targetEl.value) : null;
 
   if (!latest) return;
+
+  const latestDisplay = formatDisplayWeight(latest);
 
   let html = `
     <div class="progress-status progress-status--success">
       <span class="progress-status__icon">${iconScale}</span>
       <div>
-        <div style="font-weight:700;font-size:1.1rem;color:var(--color-text-primary)">${latest} ${t('kgUnit')}</div>
+        <div style="font-weight:700;font-size:1.1rem;color:var(--color-text-primary)">${latestDisplay} ${getWeightUnitLabel()}</div>
         <div style="font-size:12px;color:var(--color-text-secondary)">${t('lastRecord')}</div>
       </div>
     </div>`;
@@ -444,18 +693,20 @@ function generateWeightProgress(history) {
       100,
       Math.round((1 - Math.abs(latest - target) / Math.max(Math.abs(latest), 1)) * 100),
     );
+    const targetDisplay = formatDisplayWeight(target);
+    const diffDisplay = formatDisplayWeight(Number(diff));
     html += `
       <div>
         <div class="progress-header">
-          <span>${t('progGoal')} <strong>${target} ${t('kgUnit')}</strong></span>
+          <span>${t('progGoal')} <strong>${targetDisplay} ${getWeightUnitLabel()}</strong></span>
           <span class="progress-percent">${pct}%</span>
         </div>
         <div class="progress-bar-container">
           <div class="progress-bar" style="width:${pct}%"></div>
         </div>
         <div class="progress-footer">
-          <span>${t('progCurrent')} <strong>${latest} ${t('kgUnit')}</strong></span>
-          <span>${t('progLeft')} <strong>${diff} ${t('kgUnit')}</strong></span>
+          <span>${t('progCurrent')} <strong>${latestDisplay} ${getWeightUnitLabel()}</strong></span>
+          <span>${t('progLeft')} <strong>${diffDisplay} ${getWeightUnitLabel()}</strong></span>
         </div>
       </div>`;
   }
@@ -1095,7 +1346,11 @@ function updateBMI(weight, height) {
   if (bmiAdviceEl) {
     const idealMin = Math.round(20 * h * h);
     const idealMax = Math.round(24 * h * h);
-    let html = formatText('bmiIdealWeight', { min: idealMin, max: idealMax, kg: t('kgUnit') });
+    let html = formatText('bmiIdealWeight', {
+      min: formatDisplayWeight(idealMin, currentMeasurementSystem, 0),
+      max: formatDisplayWeight(idealMax, currentMeasurementSystem, 0),
+      kg: getWeightUnitLabel(),
+    });
     if (bmi < 18.5) {
       html += `<div class="weight-goal-warning weight-goal-warning--bmi">
         ${t('bmiUnderWarning')}
@@ -1164,16 +1419,17 @@ function fillForm(data) {
   if (!form) return;
 
   if (form.age) form.age.value = data.age || '';
-  if (form.height) form.height.value = data.height || '';
-  if (form.weight) form.weight.value = data.weight || '';
+  if (form.height) setMeasurementInputValue(form.height, Number(data.height), 'height');
+  if (form.weight) setMeasurementInputValue(form.weight, Number(data.weight), 'weight');
 
   if (data.gender) setSelectValue('genderSelect', 'genderInput', data.gender);
   if (data.activity) setSelectValue('activitySelect', 'activityInput', String(data.activity));
   if (data.goal) setSelectValue('goalSelect', 'goalInput', data.goal);
 
   if (targetWeightInput && data.target_weight) {
-    targetWeightInput.value = data.target_weight;
-    checkTargetWeightWarning(data.target_weight);
+    setMeasurementInputValue(targetWeightInput, Number(data.target_weight), 'weight');
+    setMeasurementInputValue(document.getElementById('targetWeight2'), Number(data.target_weight), 'weight');
+    checkTargetWeightWarning(targetWeightInput.value);
   }
 }
 
@@ -1282,18 +1538,24 @@ function generateWeightAdvice() {
   if (!adviceContainer) return;
 
   const weight = parseFloat(
-    localStorage.getItem('userWeight') || document.getElementById('weight')?.value || 0,
+    localStorage.getItem('userWeight') ||
+      displayWeightToKg(document.getElementById('weight')?.value, currentMeasurementSystem) ||
+      0,
   );
   const height = parseFloat(
-    localStorage.getItem('userHeight') || document.getElementById('height')?.value || 0,
+    localStorage.getItem('userHeight') ||
+      displayHeightToCm(document.getElementById('height')?.value, currentMeasurementSystem) ||
+      0,
   );
   const goal =
     localStorage.getItem('userGoal') || document.getElementById('goalInput')?.value || 'maintain';
-  const targetWeight = parseFloat(
-    document.getElementById('targetWeight')?.value ||
-      document.getElementById('targetWeight2')?.value ||
-      0,
-  );
+  const targetWeight =
+    displayWeightToKg(
+      document.getElementById('targetWeight')?.value ||
+        document.getElementById('targetWeight2')?.value ||
+        0,
+      currentMeasurementSystem,
+    ) || 0;
 
   const h = height / 100;
   const bmi = h > 0 ? (weight / (h * h)).toFixed(1) : 0;
@@ -1306,7 +1568,11 @@ function generateWeightAdvice() {
 
   // ІМТ статус
   const bmiLabel = t('bmiYour').replace('{bmi}', bmi);
-  const idealRange = (key) => t(key).replace('{min}', idealWeightMin).replace('{max}', idealWeightMax);
+  const idealRange = (key) =>
+    t(key)
+      .replace('{min}', formatDisplayWeight(idealWeightMin, currentMeasurementSystem, 0))
+      .replace('{max}', formatDisplayWeight(idealWeightMax, currentMeasurementSystem, 0))
+      .replace(/\bkg\b|кг/gi, getWeightUnitLabel());
   if (bmi < 18.5) {
     adviceHTML += `<div class="advice-item advice-item--info"><span class="advice-icon">${iconBarChart}</span><div class="advice-text"><strong>${bmiLabel}</strong> ${idealRange('adviceUnder')}</div></div>`;
   } else if (bmi >= 18.5 && bmi < 25) {
@@ -1338,12 +1604,12 @@ function generateWeightAdvice() {
       totalToLose > 0 ? Math.min(100, Math.round((alreadyLost / totalToLose) * 100)) : 0;
 
     const weeksStr = `${Math.ceil(diff / 0.5)} ${t('progWeeks')}`;
-    const kg = t('kgUnit');
+    const unit = getWeightUnitLabel();
     progressHTML = `
       <div class="progress-status">
-        <div class="progress-header"><span>${t('progCurrent')} <strong>${weight} ${kg}</strong></span><span>${t('progGoal')} <strong>${targetWeight} ${kg}</strong></span></div>
+        <div class="progress-header"><span>${t('progCurrent')} <strong>${formatDisplayWeight(weight)} ${unit}</strong></span><span>${t('progGoal')} <strong>${formatDisplayWeight(targetWeight)} ${unit}</strong></span></div>
         <div class="progress-bar-container"><div class="progress-bar" style="width: ${progressPercent}%"></div></div>
-        <div class="progress-footer"><span>${t('progRemaining').replace('{dir}', direction)} <strong>${diff} ${kg}</strong></span><span class="progress-percent">${progressPercent}%</span></div>
+        <div class="progress-footer"><span>${t('progRemaining').replace('{dir}', direction)} <strong>${formatDisplayWeight(Number(diff))} ${unit}</strong></span><span class="progress-percent">${progressPercent}%</span></div>
       </div>
       <div class="progress-estimate"><span class="progress-icon">${iconCalendar}</span><div class="progress-text">${t('progEstimate').replace('{weeks}', weeksStr)}</div></div>
     `;
@@ -1360,7 +1626,8 @@ function generateWeightAdvice() {
 // =====================================
 
 function checkTargetWeightWarning(value) {
-  const dangerous = value > 0 && value < 17;
+  const weightKg = displayWeightToKg(value, currentMeasurementSystem);
+  const dangerous = weightKg > 0 && weightKg < 17;
   ['targetWeightWarning', 'targetWeightWarning2'].forEach((id) => {
     const el = document.getElementById(id);
     if (el) el.hidden = !dangerous;
@@ -1376,12 +1643,12 @@ function syncWeightInputs() {
   if (targetWeight1 && targetWeight2) {
     targetWeight1.addEventListener('input', () => {
       targetWeight2.value = targetWeight1.value;
-      checkTargetWeightWarning(parseFloat(targetWeight1.value));
+      checkTargetWeightWarning(targetWeight1.value);
       generateWeightAdvice();
     });
     targetWeight2.addEventListener('input', () => {
       targetWeight1.value = targetWeight2.value;
-      checkTargetWeightWarning(parseFloat(targetWeight2.value));
+      checkTargetWeightWarning(targetWeight2.value);
       generateWeightAdvice();
     });
   }
@@ -2244,10 +2511,18 @@ function initSettings(user) {
     });
   });
 
-  // Unit buttons are intentionally disabled until conversions are wired to the UI.
+  const savedMeasurementSystem = normalizeMeasurementSystem(getMeasurementSystem());
+  applyMeasurementSystem(savedMeasurementSystem, { convertExistingInputs: true, rerender: true });
+
   document.querySelectorAll('.settings-unit-btn').forEach((btn) => {
-    btn.disabled = true;
-    btn.setAttribute('aria-disabled', 'true');
+    btn.disabled = false;
+    btn.removeAttribute('aria-disabled');
+    btn.addEventListener('click', () => {
+      const nextSystem = normalizeMeasurementSystem(btn.dataset.unit);
+      if (nextSystem === currentMeasurementSystem) return;
+      setMeasurementSystem(nextSystem);
+      applyMeasurementSystem(nextSystem, { convertExistingInputs: true, rerender: true });
+    });
   });
 
   // Nickname editor
@@ -2434,8 +2709,8 @@ if (form) {
     e.preventDefault();
 
     const age = +form.age.value;
-    const height = +form.height.value;
-    const weight = +form.weight.value;
+    const height = displayHeightToCm(form.height.value, currentMeasurementSystem);
+    const weight = displayWeightToKg(form.weight.value, currentMeasurementSystem);
 
     // Розрахунок добової норми — через спільний health-core (єдине джерело
     // формули для Food + Fit, див. docs/minto-food-fit-shared-health-plan.md).
@@ -2460,7 +2735,9 @@ if (form) {
       fat: norm.fat,
       carbs: norm.carbs,
       water: norm.water,
-      target_weight: targetWeightInput ? +targetWeightInput.value || null : null,
+      target_weight: targetWeightInput
+        ? displayWeightToKg(targetWeightInput.value, currentMeasurementSystem)
+        : null,
     };
 
     renderAll(data);

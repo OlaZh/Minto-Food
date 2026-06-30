@@ -39,6 +39,7 @@ export const STORAGE_KEYS = {
   // Налаштування
   LANG: 'lang',
   THEME: 'theme',
+  MEASUREMENT_SYSTEM: 'measurementSystem',
 
   // Поради
   SHOWN_ADVICE: 'shown_advice',
@@ -270,6 +271,22 @@ export function getTheme() {
  */
 export function setTheme(theme) {
   setItem(STORAGE_KEYS.THEME, theme);
+}
+
+/**
+ * Отримати систему одиниць виміру
+ * @returns {string} - 'metric' або 'imperial'
+ */
+export function getMeasurementSystem() {
+  return getItem(STORAGE_KEYS.MEASUREMENT_SYSTEM, 'metric');
+}
+
+/**
+ * Зберегти систему одиниць виміру
+ * @param {string} system - 'metric' або 'imperial'
+ */
+export function setMeasurementSystem(system) {
+  setItem(STORAGE_KEYS.MEASUREMENT_SYSTEM, system);
 }
 
 // =============================================================
