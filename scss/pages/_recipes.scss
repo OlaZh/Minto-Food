@@ -97,7 +97,9 @@
     justify-content: center;
     padding: 0;
     color: var(--color-text-secondary);
-    transition: all var(--duration-hover) var(--ease-out);
+    transition: transform var(--duration-hover) var(--ease-out),
+      color var(--duration-hover) var(--ease-out),
+      filter var(--duration-hover) var(--ease-out);
 
     svg {
       width: 20px;

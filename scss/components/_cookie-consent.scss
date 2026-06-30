@@ -59,7 +59,9 @@
     font-family: inherit;
     cursor: pointer;
     border: 1px solid transparent;
-    transition: all var(--duration-hover) ease;
+    transition: border-color var(--duration-hover) ease,
+      color var(--duration-hover) ease,
+      opacity var(--duration-hover) ease;
 
     @media (max-width: 480px) {
       flex: 1;

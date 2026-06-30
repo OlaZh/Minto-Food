@@ -19,7 +19,10 @@
   font-family: inherit;
   outline: none;
   box-shadow: inset 0 2px 4px rgba(46, 204, 113, 0.1);
-  transition: all var(--duration-hover) ease;
+  transition: border-color var(--duration-hover) ease,
+    background var(--duration-hover) ease,
+    box-shadow var(--duration-hover) ease,
+    transform var(--duration-hover) ease;
 
   &:focus {
     border-color: var(--color-accent);

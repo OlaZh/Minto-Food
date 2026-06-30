@@ -21,7 +21,10 @@
     border-radius: 16px;
     border: 1px solid rgba(111, 207, 186, 0.35);
     box-shadow: 0 4px 12px rgba(46, 204, 113, 0.12);
-    transition: all var(--duration-hover) ease;
+    transition: transform var(--duration-hover) ease,
+      background var(--duration-hover) ease,
+      border-color var(--duration-hover) ease,
+      box-shadow var(--duration-hover) ease;
 
     &:hover {
       transform: translateY(-3px);
@@ -169,7 +172,9 @@
   background: var(--color-accent-soft);
   border-radius: 16px;
   border: 1px solid rgba(111, 207, 186, 0.45);
-  transition: all var(--duration-hover) ease;
+  transition: transform var(--duration-hover) ease,
+    box-shadow var(--duration-hover) ease,
+    border-color var(--duration-hover) ease;
   box-shadow: 0 4px 12px rgba(46, 204, 113, 0.15);
 
   &:hover {
@@ -224,7 +229,9 @@
     resize: vertical;
     margin-top: 10px;
     outline: none;
-    transition: all var(--duration-hover);
+    transition: background var(--duration-hover),
+      border-color var(--duration-hover),
+      box-shadow var(--duration-hover);
 
     &:focus {
       background: var(--color-bg-secondary);

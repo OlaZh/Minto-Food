@@ -810,7 +810,7 @@ svg[viewBox="0 0 24 24"] {
   display: flex;
   flex-direction: column;
   gap: 32px;
-  animation: fadeInPage 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: fadeInPage 0.6s var(--ease-smooth);
 }
 
 .profile-layout {
@@ -1695,7 +1695,7 @@ svg[viewBox="0 0 24 24"] {
   border-radius: 16px;
   border: 1px solid var(--color-border);
   cursor: pointer;
-  transition: all var(--duration-hover) ease;
+  transition: color var(--duration-hover) ease, border-color var(--duration-hover) ease, transform var(--duration-hover) ease, box-shadow var(--duration-hover) ease;
 }
 
 .sidebar__day-btn:hover {
@@ -3357,7 +3357,7 @@ svg[viewBox="0 0 24 24"] {
   color: var(--color-text-secondary);
   font-size: 14px;
   cursor: pointer;
-  transition: all var(--duration-hover);
+  transition: background var(--duration-hover), color var(--duration-hover);
 }
 .scanned-card__clear:hover {
   background: rgba(239, 68, 68, 0.15);
@@ -3494,7 +3494,7 @@ svg[viewBox="0 0 24 24"] {
 .toast-notification.fade-out {
   opacity: 0;
   transform: scale(0.9) translateX(20px);
-  transition: all 0.4s ease;
+  transition: opacity 0.4s ease, transform 0.4s ease;
 }
 
 /* Успіх (зелений/м'ятний) */
@@ -3724,7 +3724,7 @@ svg[viewBox="0 0 24 24"] {
   font-family: inherit;
   outline: none;
   box-shadow: inset 0 2px 4px rgba(46, 204, 113, 0.1);
-  transition: all var(--duration-hover) ease;
+  transition: border-color var(--duration-hover) ease, background var(--duration-hover) ease, box-shadow var(--duration-hover) ease, transform var(--duration-hover) ease;
 }
 .preview-form .form-group input:focus,
 .preview-form .form-group select:focus,
@@ -3817,7 +3817,7 @@ svg[viewBox="0 0 24 24"] {
   border-radius: 16px;
   border: 1px solid rgba(111, 207, 186, 0.35);
   box-shadow: 0 4px 12px rgba(46, 204, 113, 0.12);
-  transition: all var(--duration-hover) ease;
+  transition: transform var(--duration-hover) ease, background var(--duration-hover) ease, border-color var(--duration-hover) ease, box-shadow var(--duration-hover) ease;
 }
 #view-ingredients-list li:hover {
   transform: translateY(-3px);
@@ -3953,7 +3953,7 @@ svg[viewBox="0 0 24 24"] {
   background: var(--color-accent-soft);
   border-radius: 16px;
   border: 1px solid rgba(111, 207, 186, 0.45);
-  transition: all var(--duration-hover) ease;
+  transition: transform var(--duration-hover) ease, box-shadow var(--duration-hover) ease, border-color var(--duration-hover) ease;
   box-shadow: 0 4px 12px rgba(46, 204, 113, 0.15);
 }
 .step-item:hover {
@@ -4006,7 +4006,7 @@ svg[viewBox="0 0 24 24"] {
   resize: vertical;
   margin-top: 10px;
   outline: none;
-  transition: all var(--duration-hover);
+  transition: background var(--duration-hover), border-color var(--duration-hover), box-shadow var(--duration-hover);
 }
 .recipe-section--notes textarea:focus {
   background: var(--color-bg-secondary);
@@ -4097,7 +4097,7 @@ svg[viewBox="0 0 24 24"] {
   cursor: pointer;
   text-align: left;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-  transition: all var(--duration-hover) ease;
+  transition: background var(--duration-hover) ease, transform var(--duration-hover) ease, border-color var(--duration-hover) ease, box-shadow var(--duration-hover) ease;
 }
 .option-card:hover {
   background: var(--color-surface);
@@ -4137,7 +4137,7 @@ svg[viewBox="0 0 24 24"] {
   font-weight: 700;
   font-size: 15px;
   cursor: pointer;
-  transition: all var(--duration-hover) ease;
+  transition: filter var(--duration-hover) ease, transform var(--duration-hover) ease, background var(--duration-hover) ease;
   font-family: inherit;
 }
 .modal-card__actions .btn-save {
@@ -4166,7 +4166,6 @@ svg[viewBox="0 0 24 24"] {
   border-radius: 18px;
   border: 1px solid var(--color-border);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-  transition: all var(--duration-hover) ease;
   margin-top: 16px;
 }
 .recipe-add__smart-import .smart-import__label {
@@ -4209,7 +4208,7 @@ svg[viewBox="0 0 24 24"] {
   font-family: inherit;
   color: var(--color-text-primary);
   cursor: pointer;
-  transition: all var(--duration-hover) ease;
+  transition: background var(--duration-hover) ease, transform var(--duration-hover) ease;
 }
 .recipe-add__smart-import .smart-import__wrapper .smart-import__btn:hover {
   background: rgba(111, 207, 186, 0.18);
@@ -4397,7 +4396,7 @@ svg[viewBox="0 0 24 24"] {
   font-weight: 600;
   font-size: 14px;
   cursor: pointer;
-  transition: all var(--duration-hover) ease;
+  transition: background var(--duration-hover) ease, color var(--duration-hover) ease, box-shadow var(--duration-hover) ease;
   text-align: center;
 }
 .auth-modal__tab--active {
@@ -4436,7 +4435,7 @@ svg[viewBox="0 0 24 24"] {
   font-weight: 600;
   font-size: 14px;
   cursor: pointer;
-  transition: all var(--duration-hover) ease;
+  transition: background var(--duration-hover) ease, border-color var(--duration-hover) ease, transform var(--duration-hover) ease, box-shadow var(--duration-hover) ease;
   box-shadow: 0 1px 2px rgba(15, 31, 27, 0.04), 0 2px 6px rgba(15, 31, 27, 0.06);
 }
 .auth-modal__google-btn:hover {
@@ -4883,7 +4882,7 @@ svg[viewBox="0 0 24 24"] {
   justify-content: center;
   flex-shrink: 0;
   opacity: 0.55;
-  transition: all var(--duration-hover) ease;
+  transition: background var(--duration-hover) ease, color var(--duration-hover) ease, opacity var(--duration-hover) ease;
 }
 .ingredient-item__remove:hover {
   background: rgba(224, 123, 123, 0.15);
@@ -4956,7 +4955,7 @@ svg[viewBox="0 0 24 24"] {
   border: 2px solid transparent;
   border-radius: 12px;
   cursor: pointer;
-  transition: all var(--duration-hover) ease;
+  transition: background var(--duration-hover) ease, border-color var(--duration-hover) ease;
 }
 .book-selector__item:hover {
   background: var(--color-surface);
@@ -5023,7 +5022,7 @@ svg[viewBox="0 0 24 24"] {
   border: 2px solid transparent;
   border-radius: 10px;
   cursor: pointer;
-  transition: all var(--duration-hover) ease;
+  transition: background var(--duration-hover) ease, border-color var(--duration-hover) ease;
 }
 .inline-book-selector__item:hover {
   background: var(--color-surface);
@@ -5060,7 +5059,7 @@ svg[viewBox="0 0 24 24"] {
   color: var(--color-text-secondary);
   cursor: pointer;
   font-size: 0.85rem;
-  transition: all var(--duration-hover) ease;
+  transition: border-color var(--duration-hover) ease, color var(--duration-hover) ease;
 }
 .inline-book-selector__more:hover, .inline-book-selector__collapse:hover {
   border-color: var(--color-accent);
@@ -5093,7 +5092,7 @@ svg[viewBox="0 0 24 24"] {
   stroke-width: 2;
   fill: transparent;
   filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.5));
-  transition: all var(--duration-hover) ease;
+  transition: fill var(--duration-hover) ease, stroke var(--duration-hover) ease;
 }
 .recipe-card__favorite:hover {
   transform: scale(1.15);
@@ -5134,7 +5133,7 @@ svg[viewBox="0 0 24 24"] {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all var(--duration-hover) var(--ease-out);
+  transition: background var(--duration-hover) var(--ease-out);
 }
 .recipe-actions-menu__trigger:hover {
   background: var(--color-surface);
@@ -5152,7 +5151,7 @@ svg[viewBox="0 0 24 24"] {
   opacity: 0;
   visibility: hidden;
   transform: translateY(-10px);
-  transition: all var(--duration-hover) var(--ease-out);
+  transition: opacity var(--duration-hover) var(--ease-out), visibility var(--duration-hover) var(--ease-out), transform var(--duration-hover) var(--ease-out);
   z-index: 100;
 }
 .recipe-actions-menu__dropdown.is-open {
@@ -5220,7 +5219,7 @@ svg[viewBox="0 0 24 24"] {
   border: 2px solid transparent;
   border-radius: 10px;
   cursor: pointer;
-  transition: all var(--duration-hover) ease;
+  transition: background var(--duration-hover) ease, border-color var(--duration-hover) ease;
 }
 .visibility-toggle__option:hover {
   background: var(--color-surface);
@@ -5313,7 +5312,7 @@ svg[viewBox="0 0 24 24"] {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all var(--duration-hover) ease;
+  transition: background var(--duration-hover) ease;
 }
 .cookbook-book__edit-btn:hover {
   background: var(--color-accent);
@@ -5580,7 +5579,7 @@ svg[viewBox="0 0 24 24"] {
   font-family: inherit;
   cursor: pointer;
   border: 1px solid transparent;
-  transition: all var(--duration-hover) ease;
+  transition: border-color var(--duration-hover) ease, color var(--duration-hover) ease, opacity var(--duration-hover) ease;
 }
 @media (max-width: 480px) {
   .cookie-banner__btn {
@@ -6902,7 +6901,7 @@ svg[viewBox="0 0 24 24"] {
   justify-content: center;
   padding: 0;
   color: var(--color-text-secondary);
-  transition: all var(--duration-hover) var(--ease-out);
+  transition: transform var(--duration-hover) var(--ease-out), color var(--duration-hover) var(--ease-out), filter var(--duration-hover) var(--ease-out);
 }
 .recipe-page__search .search-icon-btn svg {
   width: 20px;
@@ -7103,14 +7102,6 @@ svg[viewBox="0 0 24 24"] {
 }
 
 /* ================= ОСНОВНА СТРУКТУРА ================= */
-.profile-page {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 32px;
-  animation: fadeInPage 0.6s var(--ease-smooth);
-}
-
 /* ================= ХЕДЕР ПРОФІЛЮ (в сайдбарі) ================= */
 .profile-header {
   display: flex;
@@ -7406,7 +7397,7 @@ svg[viewBox="0 0 24 24"] {
   cursor: pointer;
   font-size: 14px;
   color: var(--color-text-secondary);
-  transition: all var(--duration-hover);
+  transition: background var(--duration-hover), color var(--duration-hover);
   display: block;
   white-space: normal;
   word-break: break-word;
@@ -7526,7 +7517,7 @@ svg[viewBox="0 0 24 24"] {
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  transition: all var(--duration-hover) cubic-bezier(0.4, 0, 0.2, 1);
+  transition: background var(--duration-hover) var(--ease-smooth), color var(--duration-hover) var(--ease-smooth), border-color var(--duration-hover) var(--ease-smooth), transform var(--duration-hover) var(--ease-smooth);
   white-space: nowrap;
 }
 .profile-main .day-summary #clearDayBtn:hover {
@@ -8186,7 +8177,7 @@ svg[viewBox="0 0 24 24"] {
   background: var(--color-bg-primary);
   border-radius: 14px;
   border-left: 4px solid var(--color-accent);
-  transition: all var(--duration-hover) ease;
+  transition: transform var(--duration-hover) ease;
 }
 .advice-item:hover {
   transform: translateX(4px);
@@ -8555,7 +8546,6 @@ svg[viewBox="0 0 24 24"] {
   color: var(--color-text-secondary);
   border-radius: 16px;
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.05);
-  transition: all var(--duration-hover) ease;
 }
 
 /* Responsive */
@@ -9402,7 +9392,7 @@ input:checked + .settings-toggle__track::after {
   border: 1px solid var(--color-border);
   font-size: 12px;
   cursor: grab;
-  transition: all var(--duration-hover) ease;
+  transition: background var(--duration-hover) ease, border-color var(--duration-hover) ease, opacity var(--duration-hover) ease;
 }
 .meal-cell__item:hover {
   background: var(--color-accent-soft);
@@ -9442,7 +9432,7 @@ input:checked + .settings-toggle__track::after {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all var(--duration-hover) ease;
+  transition: background var(--duration-hover) ease, color var(--duration-hover) ease;
   flex-shrink: 0;
 }
 .meal-cell__item-delete:hover {
@@ -9461,7 +9451,7 @@ input:checked + .settings-toggle__track::after {
   border: 1px dashed var(--color-border);
   background: transparent;
   cursor: pointer;
-  transition: all var(--duration-hover) ease;
+  transition: background var(--duration-hover) ease, border-color var(--duration-hover) ease, box-shadow var(--duration-hover) ease;
 }
 .meal-cell__add span {
   display: block;
@@ -9683,7 +9673,7 @@ input:checked + .settings-toggle__track::after {
   font-weight: 600;
   font-size: 12px;
   cursor: pointer;
-  transition: all var(--duration-hover) ease;
+  transition: background var(--duration-hover) ease, color var(--duration-hover) ease, box-shadow var(--duration-hover) ease;
   text-align: center;
 }
 .week-modal__tab--active {
@@ -9742,7 +9732,7 @@ input:checked + .settings-toggle__track::after {
   font-size: 13px;
   cursor: pointer;
   white-space: nowrap;
-  transition: all var(--duration-hover) ease;
+  transition: background var(--duration-hover) ease, border-color var(--duration-hover) ease, transform var(--duration-hover) ease;
 }
 .week-modal__api-btn:hover {
   background: rgba(111, 207, 186, 0.32);
@@ -9813,7 +9803,7 @@ input:checked + .settings-toggle__track::after {
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  transition: all var(--duration-hover) ease;
+  transition: background var(--duration-hover) ease, border-color var(--duration-hover) ease, transform var(--duration-hover) ease;
 }
 .week-modal__result-add:hover {
   background: rgba(111, 207, 186, 0.32);
@@ -9974,7 +9964,7 @@ input:checked + .settings-toggle__track::after {
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  transition: all var(--duration-hover) ease;
+  transition: background var(--duration-hover) ease, border-color var(--duration-hover) ease, transform var(--duration-hover) ease;
 }
 .builder__add-btn:hover {
   background: rgba(111, 207, 186, 0.32);
@@ -10029,7 +10019,7 @@ input:checked + .settings-toggle__track::after {
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  transition: all var(--duration-hover) ease;
+  transition: background var(--duration-hover) ease, color var(--duration-hover) ease;
 }
 .builder__ing-remove:hover {
   background: var(--color-danger-soft);
@@ -10761,7 +10751,7 @@ input:checked + .settings-toggle__track::after {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all var(--duration-hover) var(--ease-out);
+  transition: border-color var(--duration-hover) var(--ease-out), color var(--duration-hover) var(--ease-out), background var(--duration-hover) var(--ease-out);
   flex-shrink: 0;
 }
 .week-mobile__add-btn:hover {
@@ -10817,7 +10807,7 @@ input:checked + .settings-toggle__track::after {
   cursor: pointer;
   flex-shrink: 0;
   position: relative;
-  transition: all var(--duration-hover) var(--ease-out);
+  transition: background var(--duration-hover) var(--ease-out), border-color var(--duration-hover) var(--ease-out);
 }
 .week-mobile__checkbox:checked {
   background: var(--color-accent);
@@ -10881,7 +10871,7 @@ input:checked + .settings-toggle__track::after {
   border-radius: var(--radius-md);
   border: 1px solid var(--color-border);
   background: var(--color-bg-secondary);
-  transition: all var(--duration-hover) var(--ease-out);
+  transition: border-color var(--duration-hover) var(--ease-out), box-shadow var(--duration-hover) var(--ease-out);
 }
 .product-search:focus-within {
   border-color: var(--color-accent);
@@ -11009,7 +10999,7 @@ input:checked + .settings-toggle__track::after {
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
-  transition: all var(--duration-hover) var(--ease-out);
+  transition: background var(--duration-hover) var(--ease-out), color var(--duration-hover) var(--ease-out), border-color var(--duration-hover) var(--ease-out);
 }
 .subfilter-item:hover {
   background: var(--color-accent);
@@ -11283,7 +11273,7 @@ input:checked + .settings-toggle__track::after {
   white-space: nowrap;
   font-size: 13px;
   cursor: pointer;
-  transition: all var(--duration-hover) var(--ease-out);
+  transition: border-color var(--duration-hover) var(--ease-out), color var(--duration-hover) var(--ease-out);
 }
 .product-modal__recipe:hover,
 .product-modal__similar:hover {
@@ -11360,7 +11350,7 @@ input:checked + .settings-toggle__track::after {
   font-size: 13px;
   color: var(--color-text-primary);
   cursor: pointer;
-  transition: all var(--duration-hover) var(--ease-out);
+  transition: border-color var(--duration-hover) var(--ease-out), color var(--duration-hover) var(--ease-out), background var(--duration-hover) var(--ease-out);
 }
 .product-chip:hover {
   border-color: var(--color-accent);
@@ -11747,7 +11737,7 @@ input:checked + .settings-toggle__track::after {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all var(--duration-hover) ease;
+  transition: color var(--duration-hover) ease, transform var(--duration-hover) ease;
   color: rgba(255, 255, 255, 0.9);
 }
 .cookbook-book__action-btn svg {
@@ -12019,7 +12009,7 @@ input:checked + .settings-toggle__track::after {
   cursor: pointer;
   opacity: 0;
   transform: scale(0.8);
-  transition: all var(--duration-hover) ease;
+  transition: background var(--duration-hover) ease, transform var(--duration-hover) ease, opacity var(--duration-hover) ease;
   z-index: 2;
 }
 .cookbook-recipe-card__remove:hover {
@@ -12069,7 +12059,7 @@ input:checked + .settings-toggle__track::after {
   color: var(--color-text-primary);
   font-size: 15px;
   font-family: inherit;
-  transition: all var(--duration-hover) ease;
+  transition: border-color var(--duration-hover) ease, box-shadow var(--duration-hover) ease;
 }
 .cookbook-form__field input:focus,
 .cookbook-form__field textarea:focus {
@@ -12100,7 +12090,7 @@ input:checked + .settings-toggle__track::after {
   border: 2px solid var(--color-border);
   border-radius: 10px;
   cursor: pointer;
-  transition: all var(--duration-hover) ease;
+  transition: border-color var(--duration-hover) ease, color var(--duration-hover) ease, transform var(--duration-hover) ease, background var(--duration-hover) ease;
   color: var(--color-text-secondary);
   padding: 0;
 }
@@ -12130,7 +12120,7 @@ input:checked + .settings-toggle__track::after {
   font-size: 16px;
   font-weight: 600;
   cursor: pointer;
-  transition: all var(--duration-hover) ease;
+  transition: background var(--duration-hover) ease, transform var(--duration-hover) ease, box-shadow var(--duration-hover) ease;
 }
 .cookbook-form__submit:hover {
   background: var(--color-accent-hover);
@@ -12156,7 +12146,7 @@ input:checked + .settings-toggle__track::after {
   font-weight: 600;
   font-family: inherit;
   cursor: pointer;
-  transition: all var(--duration-hover) ease;
+  transition: border-color var(--duration-hover) ease, color var(--duration-hover) ease;
 }
 .cookbook-form__btn-cancel:hover {
   border-color: var(--color-accent);
@@ -12786,7 +12776,7 @@ input:checked + .settings-toggle__track::after {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all var(--duration-hover) var(--ease-out);
+  transition: background var(--duration-hover) var(--ease-out), border-color var(--duration-hover) var(--ease-out);
   flex-shrink: 0;
 }
 .shop-item__checkbox:checked + .shop-item__custom-check {
@@ -12863,7 +12853,7 @@ input:checked + .settings-toggle__track::after {
   align-items: center;
   justify-content: center;
   color: var(--color-text-secondary);
-  transition: all var(--duration-hover) var(--ease-out);
+  transition: background var(--duration-hover) var(--ease-out), color var(--duration-hover) var(--ease-out);
 }
 .shop-item__btn--edit:hover {
   background: var(--color-bg-secondary);
@@ -13020,7 +13010,7 @@ input:checked + .settings-toggle__track::after {
   justify-content: center;
   color: var(--color-text-secondary);
   flex-shrink: 0;
-  transition: all var(--duration-hover) var(--ease-out);
+  transition: background var(--duration-hover) var(--ease-out), color var(--duration-hover) var(--ease-out);
 }
 .shop-list-item__dots-btn:hover {
   background: var(--color-bg-secondary);
@@ -13160,7 +13150,7 @@ input:checked + .settings-toggle__track::after {
   cursor: pointer;
   white-space: nowrap;
   flex-shrink: 0;
-  transition: all var(--duration-hover) var(--ease-out);
+  transition: background var(--duration-hover) var(--ease-out), color var(--duration-hover) var(--ease-out);
 }
 .shop-list-item__sub-add:hover {
   background: var(--color-accent);
@@ -13179,7 +13169,7 @@ input:checked + .settings-toggle__track::after {
   color: var(--color-text-secondary);
   flex-shrink: 0;
   opacity: 0;
-  transition: all var(--duration-hover) var(--ease-out);
+  transition: background var(--duration-hover) var(--ease-out), color var(--duration-hover) var(--ease-out), opacity var(--duration-hover) var(--ease-out);
 }
 .shop-list-item__sub-btn--edit:hover {
   background: var(--color-bg-secondary);
@@ -13403,7 +13393,7 @@ input:checked + .settings-toggle__track::after {
   cursor: pointer;
   white-space: nowrap;
   flex-shrink: 0;
-  transition: all var(--duration-hover) var(--ease-out);
+  transition: background var(--duration-hover) var(--ease-out), color var(--duration-hover) var(--ease-out);
 }
 .shop-wishlist-item__move-btn:hover {
   background: var(--color-accent);
@@ -13500,7 +13490,7 @@ input:checked + .settings-toggle__track::after {
   border-radius: 8px;
   border: 1px solid var(--color-border);
   cursor: pointer;
-  transition: all var(--duration-hover) var(--ease-out);
+  transition: border-color var(--duration-hover) var(--ease-out), background var(--duration-hover) var(--ease-out);
 }
 .shop-newlist__type input[type=radio] {
   display: none;
@@ -13525,7 +13515,7 @@ input:checked + .settings-toggle__track::after {
   border-radius: 50%;
   border: 2px solid var(--color-border);
   flex-shrink: 0;
-  transition: all var(--duration-hover) var(--ease-out);
+  transition: border-color var(--duration-hover) var(--ease-out), background var(--duration-hover) var(--ease-out);
 }
 .shop-newlist__type:has(input:checked) .shop-newlist__type-dot {
   border-color: var(--color-accent);
@@ -13761,7 +13751,7 @@ input:checked + .settings-toggle__track::after {
   font-weight: 600;
   border: none;
   cursor: pointer;
-  transition: all var(--duration-hover) var(--ease-out);
+  transition: background var(--duration-hover) var(--ease-out), color var(--duration-hover) var(--ease-out);
 }
 .shop-import-banner__btn--confirm {
   background: var(--color-accent);

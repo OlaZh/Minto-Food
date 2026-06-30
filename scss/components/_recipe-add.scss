@@ -96,7 +96,10 @@
   cursor: pointer;
   text-align: left;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-  transition: all var(--duration-hover) ease;
+  transition: background var(--duration-hover) ease,
+    transform var(--duration-hover) ease,
+    border-color var(--duration-hover) ease,
+    box-shadow var(--duration-hover) ease;
 
   &:hover {
     background: var(--color-surface);
@@ -142,7 +145,9 @@
     font-weight: 700;
     font-size: 15px;
     cursor: pointer;
-    transition: all var(--duration-hover) ease;
+    transition: filter var(--duration-hover) ease,
+      transform var(--duration-hover) ease,
+      background var(--duration-hover) ease;
     font-family: inherit;
   }
 
@@ -177,7 +182,6 @@
   border-radius: 18px;
   border: 1px solid var(--color-border);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-  transition: all var(--duration-hover) ease;
   margin-top: 16px;
 
   .smart-import__label {
@@ -223,7 +227,8 @@
       font-family: inherit;
       color: var(--color-text-primary);
       cursor: pointer;
-      transition: all var(--duration-hover) ease;
+      transition: background var(--duration-hover) ease,
+        transform var(--duration-hover) ease;
 
       &:hover {
         background: rgba(111, 207, 186, 0.18);

@@ -9,15 +9,8 @@
 
 /* ================= ОСНОВНА СТРУКТУРА ================= */
 
-.profile-page {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 32px;
-  // fadeInPage визначено глобально в _layout.scss; --ease-smooth = той самий
-  // cubic-bezier(0.4, 0, 0.2, 1)
-  animation: fadeInPage 0.6s var(--ease-smooth);
-}
+// .profile-page (контейнер + fadeInPage) визначено канонічно в
+// _layout.scss разом із .profile-layout — тут не дублюємо.
 
 /* ================= ХЕДЕР ПРОФІЛЮ (в сайдбарі) ================= */
 
@@ -344,7 +337,8 @@
     cursor: pointer;
     font-size: 14px;
     color: var(--color-text-secondary);
-    transition: all var(--duration-hover);
+    transition: background var(--duration-hover),
+      color var(--duration-hover);
     display: block;
     white-space: normal;
     word-break: break-word;
@@ -482,7 +476,10 @@
       font-size: 14px;
       font-weight: 600;
       cursor: pointer;
-      transition: all var(--duration-hover) cubic-bezier(0.4, 0, 0.2, 1);
+      transition: background var(--duration-hover) var(--ease-smooth),
+        color var(--duration-hover) var(--ease-smooth),
+        border-color var(--duration-hover) var(--ease-smooth),
+        transform var(--duration-hover) var(--ease-smooth);
       white-space: nowrap;
 
       &:hover {
@@ -1212,7 +1209,7 @@
   background: var(--color-bg-primary);
   border-radius: 14px;
   border-left: 4px solid var(--color-accent);
-  transition: all var(--duration-hover) ease;
+  transition: transform var(--duration-hover) ease;
 
   &:hover {
     transform: translateX(4px);
@@ -1599,7 +1596,6 @@
   color: var(--color-text-secondary);
   border-radius: 16px;
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.05);
-  transition: all var(--duration-hover) ease;
 }
 /* Responsive */
 @media (max-width: 500px) {

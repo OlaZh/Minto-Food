@@ -268,7 +268,9 @@
   justify-content: center;
   flex-shrink: 0;
   opacity: 0.55;
-  transition: all var(--duration-hover) ease;
+  transition: background var(--duration-hover) ease,
+    color var(--duration-hover) ease,
+    opacity var(--duration-hover) ease;
 
   &:hover {
     background: rgba(224, 123, 123, 0.15);

@@ -358,7 +358,8 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all var(--duration-hover) var(--ease-out);
+    transition: background var(--duration-hover) var(--ease-out),
+      border-color var(--duration-hover) var(--ease-out);
     flex-shrink: 0;
 
     .shop-item__checkbox:checked + & {
@@ -444,7 +445,8 @@
     align-items: center;
     justify-content: center;
     color: var(--color-text-secondary);
-    transition: all var(--duration-hover) var(--ease-out);
+    transition: background var(--duration-hover) var(--ease-out),
+      color var(--duration-hover) var(--ease-out);
 
     &--edit:hover {
       background: var(--color-bg-secondary);
@@ -619,7 +621,8 @@
     justify-content: center;
     color: var(--color-text-secondary);
     flex-shrink: 0;
-    transition: all var(--duration-hover) var(--ease-out);
+    transition: background var(--duration-hover) var(--ease-out),
+      color var(--duration-hover) var(--ease-out);
 
     &:hover {
       background: var(--color-bg-secondary);
@@ -780,7 +783,8 @@
     cursor: pointer;
     white-space: nowrap;
     flex-shrink: 0;
-    transition: all var(--duration-hover) var(--ease-out);
+    transition: background var(--duration-hover) var(--ease-out),
+      color var(--duration-hover) var(--ease-out);
 
     &:hover {
       background: var(--color-accent);
@@ -801,7 +805,9 @@
     color: var(--color-text-secondary);
     flex-shrink: 0;
     opacity: 0;
-    transition: all var(--duration-hover) var(--ease-out);
+    transition: background var(--duration-hover) var(--ease-out),
+      color var(--duration-hover) var(--ease-out),
+      opacity var(--duration-hover) var(--ease-out);
 
     &--edit:hover {
       background: var(--color-bg-secondary);
@@ -1048,7 +1054,8 @@
     cursor: pointer;
     white-space: nowrap;
     flex-shrink: 0;
-    transition: all var(--duration-hover) var(--ease-out);
+    transition: background var(--duration-hover) var(--ease-out),
+      color var(--duration-hover) var(--ease-out);
 
     &:hover {
       background: var(--color-accent);
@@ -1159,7 +1166,8 @@
     border-radius: 8px;
     border: 1px solid var(--color-border);
     cursor: pointer;
-    transition: all var(--duration-hover) var(--ease-out);
+    transition: border-color var(--duration-hover) var(--ease-out),
+      background var(--duration-hover) var(--ease-out);
 
     input[type='radio'] {
       display: none;
@@ -1189,7 +1197,8 @@
     border-radius: 50%;
     border: 2px solid var(--color-border);
     flex-shrink: 0;
-    transition: all var(--duration-hover) var(--ease-out);
+    transition: border-color var(--duration-hover) var(--ease-out),
+      background var(--duration-hover) var(--ease-out);
 
     .shop-newlist__type:has(input:checked) & {
       border-color: var(--color-accent);
@@ -1463,7 +1472,8 @@
     font-weight: 600;
     border: none;
     cursor: pointer;
-    transition: all var(--duration-hover) var(--ease-out);
+    transition: background var(--duration-hover) var(--ease-out),
+      color var(--duration-hover) var(--ease-out);
 
     &--confirm {
       background: var(--color-accent);

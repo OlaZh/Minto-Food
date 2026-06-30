@@ -256,7 +256,9 @@
   border: 1px solid var(--color-border);
   font-size: 12px;
   cursor: grab;
-  transition: all var(--duration-hover) ease;
+  transition: background var(--duration-hover) ease,
+    border-color var(--duration-hover) ease,
+    opacity var(--duration-hover) ease;
 
   &:hover {
     background: var(--color-accent-soft);
@@ -298,7 +300,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all var(--duration-hover) ease;
+  transition: background var(--duration-hover) ease,
+    color var(--duration-hover) ease;
   flex-shrink: 0;
 
   &:hover {
@@ -318,7 +321,9 @@
   border: 1px dashed var(--color-border);
   background: transparent;
   cursor: pointer;
-  transition: all var(--duration-hover) ease;
+  transition: background var(--duration-hover) ease,
+    border-color var(--duration-hover) ease,
+    box-shadow var(--duration-hover) ease;
 
   span {
     display: block;
@@ -568,7 +573,9 @@
   font-weight: 600;
   font-size: 12px;
   cursor: pointer;
-  transition: all var(--duration-hover) ease;
+  transition: background var(--duration-hover) ease,
+    color var(--duration-hover) ease,
+    box-shadow var(--duration-hover) ease;
   text-align: center;
 
   &--active {
@@ -632,7 +639,9 @@
   font-size: 13px;
   cursor: pointer;
   white-space: nowrap;
-  transition: all var(--duration-hover) ease;
+  transition: background var(--duration-hover) ease,
+    border-color var(--duration-hover) ease,
+    transform var(--duration-hover) ease;
 
   &:hover {
     background: rgba(111, 207, 186, 0.32);
@@ -705,7 +714,9 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  transition: all var(--duration-hover) ease;
+  transition: background var(--duration-hover) ease,
+    border-color var(--duration-hover) ease,
+    transform var(--duration-hover) ease;
 
   &:hover {
     background: rgba(111, 207, 186, 0.32);
@@ -882,7 +893,9 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  transition: all var(--duration-hover) ease;
+  transition: background var(--duration-hover) ease,
+    border-color var(--duration-hover) ease,
+    transform var(--duration-hover) ease;
 
   &:hover {
     background: rgba(111, 207, 186, 0.32);
@@ -938,7 +951,8 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  transition: all var(--duration-hover) ease;
+  transition: background var(--duration-hover) ease,
+    color var(--duration-hover) ease;
 
   &:hover {
     background: var(--color-danger-soft);
@@ -1728,7 +1742,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all var(--duration-hover) var(--ease-out);
+  transition: border-color var(--duration-hover) var(--ease-out),
+    color var(--duration-hover) var(--ease-out),
+    background var(--duration-hover) var(--ease-out);
   flex-shrink: 0;
 
   &:hover {
@@ -1789,7 +1805,8 @@
   cursor: pointer;
   flex-shrink: 0;
   position: relative;
-  transition: all var(--duration-hover) var(--ease-out);
+  transition: background var(--duration-hover) var(--ease-out),
+    border-color var(--duration-hover) var(--ease-out);
 
   &:checked {
     background: var(--color-accent);

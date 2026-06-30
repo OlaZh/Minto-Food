@@ -22,7 +22,8 @@
   border-radius: var(--radius-md);
   border: 1px solid var(--color-border);
   background: var(--color-bg-secondary);
-  transition: all var(--duration-hover) var(--ease-out);
+  transition: border-color var(--duration-hover) var(--ease-out),
+    box-shadow var(--duration-hover) var(--ease-out);
 
   &:focus-within {
     border-color: var(--color-accent);
@@ -166,7 +167,9 @@
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
-  transition: all var(--duration-hover) var(--ease-out);
+  transition: background var(--duration-hover) var(--ease-out),
+    color var(--duration-hover) var(--ease-out),
+    border-color var(--duration-hover) var(--ease-out);
 
   &:hover {
     background: var(--color-accent);
@@ -475,7 +478,8 @@
   white-space: nowrap;
   font-size: 13px;
   cursor: pointer;
-  transition: all var(--duration-hover) var(--ease-out);
+  transition: border-color var(--duration-hover) var(--ease-out),
+    color var(--duration-hover) var(--ease-out);
 
   &:hover {
     border-color: var(--color-accent);
@@ -565,7 +569,9 @@
   font-size: 13px;
   color: var(--color-text-primary);
   cursor: pointer;
-  transition: all var(--duration-hover) var(--ease-out);
+  transition: border-color var(--duration-hover) var(--ease-out),
+    color var(--duration-hover) var(--ease-out),
+    background var(--duration-hover) var(--ease-out);
 
   &:hover {
     border-color: var(--color-accent);

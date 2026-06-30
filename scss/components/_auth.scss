@@ -87,7 +87,9 @@
   font-weight: 600;
   font-size: 14px;
   cursor: pointer;
-  transition: all var(--duration-hover) ease;
+  transition: background var(--duration-hover) ease,
+    color var(--duration-hover) ease,
+    box-shadow var(--duration-hover) ease;
   text-align: center;
 
   &--active {
@@ -129,7 +131,10 @@
   font-weight: 600;
   font-size: 14px;
   cursor: pointer;
-  transition: all var(--duration-hover) ease;
+  transition: background var(--duration-hover) ease,
+    border-color var(--duration-hover) ease,
+    transform var(--duration-hover) ease,
+    box-shadow var(--duration-hover) ease;
   box-shadow: 0 1px 2px rgba(15,31,27,0.04), 0 2px 6px rgba(15,31,27,0.06);
 
   &:hover {
