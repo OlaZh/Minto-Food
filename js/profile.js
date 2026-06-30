@@ -76,6 +76,35 @@ const ACTIVITIES = {
   other:      { icon: iconPlus,       label: t('actOther'),      caloriesPerMinute: 5 },
 };
 
+// Активності з альтернативним полем вводу замість часу.
+// metric — який input/поле показувати; calc — ккал за вписаною метрикою з урахуванням ваги.
+// Якщо метрика порожня — падаємо назад на розрахунок за хвилинами (caloriesPerMinute).
+const ACTIVITY_METRICS = {
+  // ~0.00057 ккал на крок·кг → 10000 кроків при 70 кг ≈ 400 ккал
+  walking: {
+    metric: 'steps',
+    fieldId: 'activityStepsField',
+    inputId: 'activitySteps',
+    calc: (value, weight) => Math.round(value * weight * 0.00057),
+  },
+  // ~0.5 ккал на км·кг → 20 км при 70 кг ≈ 700 ккал
+  cycling: {
+    metric: 'distance',
+    fieldId: 'activityDistanceField',
+    inputId: 'activityDistance',
+    calc: (value, weight) => Math.round(value * weight * 0.5),
+  },
+};
+
+// Вага користувача (кг) для розрахунку калорій; 70 кг — розумний дефолт.
+function getUserWeightKg() {
+  return (
+    parseFloat(
+      localStorage.getItem('userWeight') || document.getElementById('weight')?.value || 0,
+    ) || 70
+  );
+}
+
 const GDPR_I18N = {
   ua: {
     cardTitle: 'GDPR і приватність',
@@ -223,6 +252,8 @@ function mapActivityRow(row) {
     label: row.label,
     icon: row.icon,
     duration: row.duration,
+    steps: row.steps,
+    distance: row.distance_km,
     calories: row.calories,
     date: row.performed_at,
     dateFormatted: d.toLocaleDateString(dateLocale(), {
@@ -237,7 +268,7 @@ function mapActivityRow(row) {
 async function loadActivitiesFromSupabase(userId) {
   const { data, error } = await supabase
     .from('user_activities')
-    .select('id, type, label, icon, duration, calories, performed_at')
+    .select('id, type, label, icon, duration, steps, distance_km, calories, performed_at')
     .eq('user_id', userId)
     .order('performed_at', { ascending: false });
   if (error) {
@@ -259,10 +290,12 @@ async function saveActivityToSupabase(activity) {
       label: activity.label,
       icon: activity.icon,
       duration: activity.duration,
+      steps: activity.steps ?? null,
+      distance_km: activity.distance ?? null,
       calories: activity.calories,
       performed_at: activity.date,
     })
-    .select('id, type, label, icon, duration, calories, performed_at')
+    .select('id, type, label, icon, duration, steps, distance_km, calories, performed_at')
     .single();
   if (error) {
     console.warn('user_activities insert:', error.message);
@@ -1444,27 +1477,75 @@ function setupActivitySelect() {
   initCustomSelect('activityTypeSelect', 'activityTypeInput', (value) => {
     const otherInput = document.getElementById('otherActivityInput');
     if (otherInput) otherInput.hidden = value !== 'other';
+    updateActivityFields(value);
     updateCaloriesPreview();
   });
 
   if (durationInput) {
     durationInput.addEventListener('input', updateCaloriesPreview);
   }
+
+  // Listeners на альтернативні метрики (кроки/км)
+  ['activitySteps', 'activityDistance'].forEach((id) => {
+    document.getElementById(id)?.addEventListener('input', updateCaloriesPreview);
+  });
+}
+
+// Показує/ховає поле метрики (кроки/км) залежно від типу активності.
+// Для активностей без метрики лишається лише поле «Хвилин».
+function updateActivityFields(activityType) {
+  const config = ACTIVITY_METRICS[activityType];
+  const stepsField = document.getElementById('activityStepsField');
+  const distanceField = document.getElementById('activityDistanceField');
+
+  if (stepsField) stepsField.hidden = config?.metric !== 'steps';
+  if (distanceField) distanceField.hidden = config?.metric !== 'distance';
+}
+
+// Єдиний розрахунок калорій для preview і збереження.
+// Повертає { calories, duration, steps, distance } або null, якщо даних бракує.
+// Метрика (кроки/км) у пріоритеті; якщо вона порожня — рахуємо за хвилинами.
+function computeActivityCalories(activityType) {
+  if (!activityType) return null;
+
+  const duration = parseInt(document.getElementById('activityDuration')?.value || 0, 10) || 0;
+  const config = ACTIVITY_METRICS[activityType];
+  let metricValue = 0;
+
+  if (config) {
+    metricValue = parseFloat(document.getElementById(config.inputId)?.value || 0) || 0;
+  }
+
+  // Розрахунок за метрикою (кроки/км) — у пріоритеті
+  if (config && metricValue > 0) {
+    const calories = config.calc(metricValue, getUserWeightKg());
+    return {
+      calories,
+      duration,
+      steps: config.metric === 'steps' ? Math.round(metricValue) : null,
+      distance: config.metric === 'distance' ? metricValue : null,
+    };
+  }
+
+  // Інакше — за часом
+  if (duration > 0) {
+    const caloriesPerMin = ACTIVITIES[activityType]?.caloriesPerMinute ?? 5;
+    return { calories: Math.round(caloriesPerMin * duration), duration, steps: null, distance: null };
+  }
+
+  return null;
 }
 
 function updateCaloriesPreview() {
   const activityType = document.getElementById('activityTypeInput')?.value;
-  const duration = parseInt(document.getElementById('activityDuration')?.value || 0);
   const previewEl = document.getElementById('previewCalories');
 
   if (!previewEl) return;
 
-  if (activityType && duration > 0) {
-    // Виправлено: використовуємо ACTIVITIES
-    const activity = ACTIVITIES[activityType];
-    const caloriesPerMin = activity ? activity.caloriesPerMinute : 5;
-    const totalCalories = Math.round(caloriesPerMin * duration);
-    previewEl.textContent = `${totalCalories} ${t('kcalShort')}`;
+  const result = computeActivityCalories(activityType);
+
+  if (result) {
+    previewEl.textContent = `${result.calories} ${t('kcalShort')}`;
     previewEl.classList.add('has-value');
   } else {
     previewEl.textContent = '— ' + t('kcalShort');
@@ -1484,17 +1565,22 @@ function setupActivityForm() {
   newBtn.addEventListener('click', async () => {
     const activityType = document.getElementById('activityTypeInput')?.value;
     const durationEl = document.getElementById('activityDuration');
-    const duration = parseInt(durationEl?.value || 0);
 
     if (!activityType) return showToast(t('selectActivityType'), 'error');
-    if (!duration || duration < 1) return showToast(t('enterDuration'), 'error');
 
-    // Виправлено: використовуємо ACTIVITIES
+    const result = computeActivityCalories(activityType);
+    // Для ходьби/велосипеда достатньо метрики (кроки/км) АБО хвилин;
+    // для решти — потрібні хвилини. computeActivityCalories повертає null, якщо бракує даних.
+    if (!result) {
+      const config = ACTIVITY_METRICS[activityType];
+      return showToast(config ? t('enterDurationOrMetric') : t('enterDuration'), 'error');
+    }
+
     const activityData = ACTIVITIES[activityType];
-    const caloriesPerMin = activityData ? activityData.caloriesPerMinute : 5;
     const activityLabel = activityData ? activityData.label : t('activityLabel');
     const activityIcon  = activityData ? activityData.icon  : '';
-    const caloriesBurned = Math.round(caloriesPerMin * duration);
+    const caloriesBurned = result.calories;
+    const duration = result.duration;
 
     const activity = {
       id: Date.now(),
@@ -1502,6 +1588,8 @@ function setupActivityForm() {
       label: activityLabel,
       icon:  activityIcon,
       duration,
+      steps: result.steps,
+      distance: result.distance,
       calories: caloriesBurned,
       date: new Date().toISOString(),
       dateFormatted: new Date().toLocaleDateString(dateLocale(), {
@@ -1520,12 +1608,17 @@ function setupActivityForm() {
 
     // Clear form
     if (durationEl) durationEl.value = '';
+    const stepsEl = document.getElementById('activitySteps');
+    const distanceEl = document.getElementById('activityDistance');
+    if (stepsEl) stepsEl.value = '';
+    if (distanceEl) distanceEl.value = '';
     document.getElementById('activityTypeInput').value = '';
     const triggerSpan = document.querySelector('#activityTypeSelect .custom-select__trigger span');
     if (triggerSpan) triggerSpan.textContent = t('selectActivityPlaceholder');
     document
       .querySelectorAll('#activityTypeSelect .custom-select__option')
       .forEach((o) => o.classList.remove('selected'));
+    updateActivityFields('');
     updateCaloriesPreview();
 
     updateTodayStats();
@@ -1638,12 +1731,21 @@ function renderActivityHistory(period) {
     html += `<div class="activity-day-group"><div class="activity-day-header"><span class="activity-day-date">${date}</span><span class="activity-day-total">${dayTotal} ${t('kcalShort')} • ${dayMinutes} ${t('minShort')}</span></div><div class="activity-day-items">`;
 
     activities.forEach((activity) => {
+      // Якщо є метрика (кроки/км) — показуємо її замість хвилин
+      let metricText;
+      if (activity.steps) {
+        metricText = `${activity.steps} ${t('stepsShort')}`;
+      } else if (activity.distance) {
+        metricText = `${activity.distance} ${t('kmShort')}`;
+      } else {
+        metricText = `${activity.duration} ${t('minShort')}`;
+      }
       html += `
         <div class="activity-item" data-id="${activity.id}">
           <div class="activity-item__icon">${activity.icon || ''}</div>
           <div class="activity-item__info">
             <span class="activity-item__name">${activity.label || activity.name || ''}</span>
-            <span class="activity-item__details">${activity.duration} ${t('minShort')} • ${activity.time}</span>
+            <span class="activity-item__details">${metricText} • ${activity.time}</span>
           </div>
           <div class="activity-item__calories">
             <span class="activity-item__calories-value">-${activity.calories}</span>

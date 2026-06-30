@@ -624,7 +624,9 @@
                     </div>
 
                     <!-- Тривалість -->
-                    <div class="profile-form__field activity-form__field--duration">
+                    <div
+                      class="profile-form__field activity-form__field--duration"
+                      id="activityDurationField">
                       <label class="profile-form__label" data-i18n="minutes">Хвилин</label>
                       <input
                         type="number"
@@ -633,6 +635,37 @@
                         placeholder="30"
                         min="1"
                         max="480" />
+                    </div>
+
+                    <!-- Кроки (лише для ходьби) -->
+                    <div
+                      class="profile-form__field activity-form__field--metric"
+                      id="activityStepsField"
+                      hidden>
+                      <label class="profile-form__label" data-i18n="steps">Кроки</label>
+                      <input
+                        type="number"
+                        id="activitySteps"
+                        class="profile-form__input"
+                        placeholder="10000"
+                        min="1"
+                        max="100000" />
+                    </div>
+
+                    <!-- Дистанція (лише для велосипеда) -->
+                    <div
+                      class="profile-form__field activity-form__field--metric"
+                      id="activityDistanceField"
+                      hidden>
+                      <label class="profile-form__label" data-i18n="km">Км</label>
+                      <input
+                        type="number"
+                        id="activityDistance"
+                        class="profile-form__input"
+                        placeholder="15"
+                        min="0.1"
+                        max="500"
+                        step="0.1" />
                     </div>
 
                     <!-- Preview + кнопка -->

@@ -1396,13 +1396,29 @@
   margin-bottom: 0;
 }
 
-.activity-form__field--duration {
+.activity-form__field--duration,
+.activity-form__field--metric {
   width: 80px;
   margin-bottom: 0;
 
   .profile-form__input {
     text-align: center;
+
+    /* Прибираємо нативні стрілочки-спінери браузера */
+    appearance: none;
+    -moz-appearance: textfield;
+
+    &::-webkit-outer-spin-button,
+    &::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
   }
+}
+
+/* Поле кроків ширше — числа на кшталт 10000 не вміщуються у 80px */
+.activity-form__field--metric#activityStepsField {
+  width: 96px;
 }
 
 .activity-form__action {
@@ -1842,7 +1858,12 @@
   }
 
   .activity-form__field--select,
-  .activity-form__field--duration {
+  .activity-form__field--duration,
+  .activity-form__field--metric {
+    width: 100%;
+  }
+
+  .activity-form__field--metric#activityStepsField {
     width: 100%;
   }
 
