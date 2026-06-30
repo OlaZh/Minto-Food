@@ -45,3 +45,6 @@
 @import './pages/recipe';
 @import './pages/admin';
 @import './pages/legal';
+
+// Accessibility — має бути ОСТАННІМ, щоб перекрити всі motion-правила
+@import './utils/a11y-motion';

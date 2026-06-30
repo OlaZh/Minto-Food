@@ -396,7 +396,6 @@ svg[viewBox="0 0 24 24"] {
   --shadow-3: 0 12px 30px rgba(15, 31, 27, 0.14), 0 30px 60px rgba(15, 31, 27, 0.18);
   --shadow-inset: inset 0 2px 4px rgba(15, 31, 27, 0.06);
   --focus-ring: 0 0 0 3px rgba(74, 181, 132, 0.25);
-  --duration-fast: 150ms;
   --duration-base: 250ms;
   --duration-slow: 350ms;
   --duration-hover: 600ms;
@@ -2256,7 +2255,7 @@ svg[viewBox="0 0 24 24"] {
     background-position: 600px 0;
   }
 }
-.skeleton-list-item__sub, .skeleton-list-item__name, .skeleton-list-item__icon, .skeleton-book__sub, .skeleton-book__title, .skeleton-book__cover, .skeleton-card__btn, .skeleton-card__badge, .skeleton-card__subtitle, .skeleton-card__title, .skeleton-card__image {
+.admin-skeleton-card, .skeleton-list-item__sub, .skeleton-list-item__name, .skeleton-list-item__icon, .skeleton-book__sub, .skeleton-book__title, .skeleton-book__cover, .skeleton-card__btn, .skeleton-card__badge, .skeleton-card__subtitle, .skeleton-card__title, .skeleton-card__image {
   background: linear-gradient(90deg, var(--color-bg-secondary) 25%, var(--color-surface) 50%, var(--color-bg-secondary) 75%);
   background-size: 1200px 100%;
   animation: skeleton-shimmer 1.6s infinite linear;
@@ -7100,8 +7099,6 @@ svg[viewBox="0 0 24 24"] {
    PROFILE PAGE — SCSS (CLEANED & UPDATED)
    ============================================================= */
 :root {
-  --transition-speed: 0.3s;
-  --transition-bezier: cubic-bezier(0.4, 0, 0.2, 1);
   --z-select: 100;
 }
 
@@ -7111,19 +7108,9 @@ svg[viewBox="0 0 24 24"] {
   display: flex;
   flex-direction: column;
   gap: 32px;
-  animation: fadeInPage 0.6s var(--transition-bezier);
+  animation: fadeInPage 0.6s var(--ease-smooth);
 }
 
-@keyframes fadeInPage {
-  from {
-    opacity: 0;
-    transform: translateY(15px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
 /* ================= ХЕДЕР ПРОФІЛЮ (в сайдбарі) ================= */
 .profile-header {
   display: flex;
@@ -9612,11 +9599,6 @@ input:checked + .settings-toggle__track::after {
   }
   50% {
     opacity: 0.45;
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .balance-bar__fill {
-    animation: none !important;
   }
 }
 /* ================= МОДАЛЬНЕ ВІКНО ТИЖНЕВОГО МЕНЮ ================= */
@@ -14968,8 +14950,6 @@ input[type=date].admin-select {
 .admin-skeleton-card {
   height: 88px;
   border-radius: var(--radius-lg);
-  background: var(--color-bg-secondary);
-  animation: skeleton-pulse 1.4s ease-in-out infinite;
 }
 
 .admin-drawer {
@@ -15281,3 +15261,16 @@ input[type=date].admin-select {
   font-family: inherit;
   cursor: pointer;
 }
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/*# sourceMappingURL=main.css.map */

@@ -835,10 +835,11 @@ input[type="date"].admin-select {
 }
 
 .admin-skeleton-card {
+  // Раніше посилалося на неіснуючий keyframe `skeleton-pulse` (скелетон був
+  // статичний). Уніфіковано на спільний shimmer із _skeleton.scss.
+  @extend %skeleton-base;
   height: 88px;
   border-radius: var(--radius-lg);
-  background: var(--color-bg-secondary);
-  animation: skeleton-pulse 1.4s ease-in-out infinite;
 }
 
 // ---- Drawer ----

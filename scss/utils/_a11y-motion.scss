@@ -1,0 +1,28 @@
+// ============================================================
+//  ACCESSIBILITY — REDUCED MOTION
+// ============================================================
+//
+//  Глобальне поважання системного налаштування "зменшити рух"
+//  (vestibular disorders, motion sickness).
+//
+//  Не вимикаємо анімації повністю (animation: none), а зводимо
+//  тривалості до майже-нуля. Так:
+//   - користувач не бачить руху;
+//   - але події transitionend / animationend все одно спрацьовують,
+//     тож JS, який чекає на завершення переходу (toast, модалки,
+//     drawer), не ламається.
+//
+//  Цей файл імпортується ОСТАННІМ у main.scss, щоб !important
+//  гарантовано перекрив будь-які локальні transition/animation.
+// ============================================================
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

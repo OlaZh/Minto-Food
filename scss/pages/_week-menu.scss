@@ -476,11 +476,7 @@
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .balance-bar__fill {
-    animation: none !important;
-  }
-}
+// prefers-reduced-motion обробляється глобально в utils/_a11y-motion.scss
 
 /* ================= МОДАЛЬНЕ ВІКНО ТИЖНЕВОГО МЕНЮ ================= */
 .modal__window {

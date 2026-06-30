@@ -58,10 +58,11 @@
   --focus-ring: 0 0 0 3px rgba(74, 181, 132, 0.25);
 
   // ---------- MOTION ----------
-  --duration-fast: 150ms;
+  // --duration-base / --duration-slow лишилися лише для СТРУКТУРНИХ анімацій
+  // (розкриття height/width, прогрес-бари, слайди). Для всіх інтерактивних
+  // станів (hover/active/focus) — єдиний --duration-hover.
   --duration-base: 250ms;
   --duration-slow: 350ms;
-  // Єдиний дюрейшн для ВСІХ інтерактивних станів (hover/active/focus)
   --duration-hover: 600ms;
   --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
   --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
