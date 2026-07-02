@@ -211,34 +211,6 @@ const CM_TO_FT = 0.03280839895;
 
 let currentMeasurementSystem = MEASUREMENT_SYSTEMS.METRIC;
 
-const MEASUREMENT_I18N = {
-  ua: {
-    settingsUnitsSub: 'Застосовується до форми профілю та контролю ваги',
-    weightSaved: 'Вага {weight} {unit} збережена',
-  },
-  pl: {
-    settingsUnitsSub: 'Dotyczy formularza profilu i kontroli wagi',
-    weightSaved: 'Waga {weight} {unit} zapisana',
-  },
-  en: {
-    settingsUnitsSub: 'Applied to the profile form and weight control',
-    weightSaved: 'Weight {weight} {unit} saved',
-  },
-};
-
-function currentUiLang() {
-  const lang = getLang();
-  return lang === 'uk' ? 'ua' : lang;
-}
-
-function measurementText(key, vars = {}) {
-  const dict = MEASUREMENT_I18N[currentUiLang()] || MEASUREMENT_I18N.ua;
-  return Object.entries(vars).reduce(
-    (text, [name, value]) => text.replaceAll(`{${name}}`, String(value)),
-    dict[key] || MEASUREMENT_I18N.ua[key] || key,
-  );
-}
-
 function parseInputNumber(value) {
   const parsed = parseFloat(String(value ?? '').replace(',', '.'));
   return Number.isFinite(parsed) ? parsed : null;
@@ -324,21 +296,9 @@ function convertMeasurementInput(input, type, fromSystem, toSystem) {
   setMeasurementInputValue(input, metricValue, type, toSystem);
 }
 
-function getMetricHeightFromCurrentContext() {
-  const stored = parseInputNumber(localStorage.getItem('userHeight'));
-  if (Number.isFinite(stored)) return stored;
-  return displayHeightToCm(form?.height?.value, currentMeasurementSystem);
-}
-
-function getMetricWeightFromCurrentContext() {
-  const stored = parseInputNumber(localStorage.getItem('userWeight'));
-  if (Number.isFinite(stored)) return stored;
-  return displayWeightToKg(form?.weight?.value, currentMeasurementSystem);
-}
-
 function updateMeasurementLabels() {
   const settingsUnitsSub = document.querySelector('[data-i18n="settingsUnitsSub"]');
-  if (settingsUnitsSub) settingsUnitsSub.textContent = measurementText('settingsUnitsSub');
+  if (settingsUnitsSub) settingsUnitsSub.textContent = t('settingsUnitsSub');
 
   const heightLabel = document.querySelector('label[for="height"]');
   if (heightLabel) heightLabel.textContent = `${t('height')} (${getHeightUnitLabel()})`;
@@ -403,31 +363,30 @@ function syncUnitBtns() {
   });
 }
 
-function applyMeasurementSystem(nextSystem, options = {}) {
-  const { convertExistingInputs = true, rerender = true } = options;
+function applyMeasurementSystem(nextSystem) {
   const normalizedNext = normalizeMeasurementSystem(nextSystem);
   const previousSystem = currentMeasurementSystem;
 
-  if (convertExistingInputs) {
-    [
-      [form?.height, 'height'],
-      [form?.weight, 'weight'],
-      [document.getElementById('targetWeight'), 'weight'],
-      [document.getElementById('targetWeight2'), 'weight'],
-      [document.getElementById('currentWeightInput'), 'weight'],
-      [document.getElementById('currentWeightInput2'), 'weight'],
-    ].forEach(([input, type]) => convertMeasurementInput(input, type, previousSystem, normalizedNext));
-  }
+  [
+    [form?.height, 'height'],
+    [form?.weight, 'weight'],
+    [document.getElementById('targetWeight'), 'weight'],
+    [document.getElementById('targetWeight2'), 'weight'],
+    [document.getElementById('currentWeightInput'), 'weight'],
+    [document.getElementById('currentWeightInput2'), 'weight'],
+  ].forEach(([input, type]) => convertMeasurementInput(input, type, previousSystem, normalizedNext));
 
   currentMeasurementSystem = normalizedNext;
   updateMeasurementLabels();
   updateMeasurementInputAttributes();
   syncUnitBtns();
 
-  if (!rerender) return;
-
-  const metricWeight = getMetricWeightFromCurrentContext();
-  const metricHeight = getMetricHeightFromCurrentContext();
+  const metricWeight =
+    parseInputNumber(localStorage.getItem('userWeight')) ||
+    displayWeightToKg(form?.weight?.value, currentMeasurementSystem);
+  const metricHeight =
+    parseInputNumber(localStorage.getItem('userHeight')) ||
+    displayHeightToCm(form?.height?.value, currentMeasurementSystem);
   if (Number.isFinite(metricWeight) && Number.isFinite(metricHeight)) {
     updateBMI(metricWeight, metricHeight);
   }
@@ -657,7 +616,7 @@ async function recordNewWeight() {
 
   weightNowInput.value = '';
   showToast(
-    measurementText('weightSaved', {
+    formatText('weightSaved', {
       weight: formatMeasurementValue(kgToDisplayWeight(weight), 1),
       unit: getWeightUnitLabel(),
     }),
@@ -2512,7 +2471,7 @@ function initSettings(user) {
   });
 
   const savedMeasurementSystem = normalizeMeasurementSystem(getMeasurementSystem());
-  applyMeasurementSystem(savedMeasurementSystem, { convertExistingInputs: true, rerender: true });
+  applyMeasurementSystem(savedMeasurementSystem);
 
   document.querySelectorAll('.settings-unit-btn').forEach((btn) => {
     btn.disabled = false;
@@ -2521,7 +2480,7 @@ function initSettings(user) {
       const nextSystem = normalizeMeasurementSystem(btn.dataset.unit);
       if (nextSystem === currentMeasurementSystem) return;
       setMeasurementSystem(nextSystem);
-      applyMeasurementSystem(nextSystem, { convertExistingInputs: true, rerender: true });
+      applyMeasurementSystem(nextSystem);
     });
   });
 
