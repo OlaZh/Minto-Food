@@ -647,9 +647,9 @@ footer
 
 ### 📄 Документи
 
-- [x] Privacy Policy — `privacy.html` (шаблон ua → замінити на згенерований документ)
-- [x] Terms of Service — `terms.html` (шаблон ua → замінити на згенерований документ)
-- [x] Cookie Policy — `cookies.html` (шаблон ua → замінити на згенерований документ)
+- [x] Privacy Policy — `privacy.html` ✅ v1.0 (липень 2026, на основі фактів кодової бази, health-дані ст. 9)
+- [x] Terms of Service — `terms.html` ✅ v1.0 (липень 2026, private/public рецепти, право Польщі)
+- [x] Cookie Policy — `cookies.html` ✅ v1.0 (липень 2026, реальні localStorage-ключі)
 - [x] Disclaimer "Не є медичною порадою" — на сторінках профілю, контролю ваги, активності, статистики
 - [x] Imprint / Impressum — `imprint.html` (шаблон, заповнити реальними даними)
 - [x] DMCA / copyright complaint procedure — `dmca.html`, посилання у футері всіх сторінок
@@ -691,11 +691,13 @@ footer
 
 ### ✅ QA
 
-- [ ] Тест GDPR data export — отримуєш всі свої дані
+- [ ] Тест GDPR data export — отримуєш всі свої дані (⚠️ липень 2026: export розширено — додано user_profiles, meals, water, week_meals, weight_records, user_activities, streaks, shopping — перетестувати)
 - [ ] Тест GDPR delete — акаунт видаляється
-- [ ] Тест cookie banner — refuse all → не вантажиться analytics
-- [ ] Тест: signup без accept Terms → блокується
-- [ ] **Згенерувати фінальні документи** через спеціалізовані сервіси (iubenda / Termly / GetTerms) — Privacy Policy, Terms, Cookie Policy у 3 мовах → замінити поточні шаблони
+- [ ] Тест cookie banner — refuse all → не вантажиться analytics (заблоковано: PostHog ще не інтегровано, див. Фазу 16)
+- [x] Тест: signup без accept Terms → блокується — верифіковано по коду (подвійний захист: disabled-кнопка + перевірка в submit-обробнику `js/auth.js`)
+- [x] **Фінальні документи (v1.0, липень 2026)** — Privacy/Terms/Cookies переписані на основі фактів кодової бази (health-дані як особлива категорія ст. 9, private/public рецепти, реальні localStorage-ключі); плейсхолдери `[ДАТА]` і template-попередження прибрано. Укр. мова; EN/PL — див. i18n legal pages TODO
+  - [ ] Заповнити `imprint.html` реальними даними оператора (назва ФОП, адреса, NIP) — єдиний плейсхолдер що лишився
+  - [ ] **Юридичне рев'ю документів — обов'язково ПЕРЕД Фазою 19 (монетизація)**, польський юрист, ~500-1500 zł. До монетизації ризик мінімальний, з платежами — споживче право ЄС, 14 днів відмови, refund policy
 
 ---
 

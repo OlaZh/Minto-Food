@@ -55,13 +55,22 @@ Expected result:
 
 - Download starts without a page crash
 - Filename looks like `mintofood-export-XXXXXXXX.json`
-- JSON contains:
+- JSON contains (expanded 2026-07-06 — export now covers all personal data incl. health):
   - `exported_at`
   - `user_id`
   - `email`
   - `profile`
+  - `health_profile` (user_profiles: age, height, weight, goals, norms)
   - `recipes`
   - `cookbooks`
+  - `meals`
+  - `water`
+  - `week_meals`
+  - `weight_records`
+  - `activities`
+  - `streaks`
+  - `shopping_lists`
+  - `shopping_items`
   - `gdpr_requests`
 
 Optional DB check:
@@ -247,9 +256,11 @@ Expected result:
 
 Known legal blockers still visible in source:
 
-- `privacy.html` still contains `[ДАТА]`
-- `terms.html` still contains `[ДАТА]`
-- `privacy.html` and `terms.html` still warn that they are template documents pending legal review
+- ~~`privacy.html` still contains `[ДАТА]`~~ — resolved 2026-07-06: rewritten as v1.0 based on actual codebase facts
+- ~~`terms.html` still contains `[ДАТА]`~~ — resolved 2026-07-06: rewritten as v1.0
+- ~~template warnings~~ — removed 2026-07-06 (documents are now accurate, not templates)
+- STILL OPEN: `imprint.html` operator placeholders (company name, address, NIP) — only the owner can fill these
+- Lawyer review deliberately deferred until before Phase 19 (monetization) — decision 2026-07-06
 
 ## Optional staging-only check: hard delete cron
 

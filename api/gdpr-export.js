@@ -58,12 +58,25 @@ export default async function handler(req, res) {
   const uid = user.id;
   const uidFilter = `user_id=eq.${uid}`;
 
-  let profile, recipes, cookbooks, gdprRequests;
+  // GDPR Art. 15/20 — export має містити ВСІ персональні дані юзера,
+  // включно з health-даними (user_profiles, meals, water, weight_records, user_activities)
+  let profile, healthProfile, recipes, cookbooks, meals, water, weekMeals,
+      weightRecords, userActivities, streaks, shoppingLists, shoppingItems, gdprRequests;
   try {
-    [profile, recipes, cookbooks, gdprRequests] = await Promise.all([
+    [profile, healthProfile, recipes, cookbooks, meals, water, weekMeals,
+     weightRecords, userActivities, streaks, shoppingLists, shoppingItems, gdprRequests] = await Promise.all([
       query('profiles', `id=eq.${uid}`, SERVICE_KEY),
+      query('user_profiles', uidFilter, SERVICE_KEY),
       query('recipes',  `${uidFilter}&deleted_at=is.null`, SERVICE_KEY),
       query('cookbooks', uidFilter, SERVICE_KEY),
+      query('meals', uidFilter, SERVICE_KEY),
+      query('water', uidFilter, SERVICE_KEY),
+      query('week_meals', uidFilter, SERVICE_KEY),
+      query('weight_records', uidFilter, SERVICE_KEY),
+      query('user_activities', uidFilter, SERVICE_KEY),
+      query('user_streaks', uidFilter, SERVICE_KEY),
+      query('shopping_lists', uidFilter, SERVICE_KEY),
+      query('shopping_items', uidFilter, SERVICE_KEY),
       query('gdpr_requests', uidFilter, SERVICE_KEY),
     ]);
   } catch (err) {
@@ -81,8 +94,17 @@ export default async function handler(req, res) {
     user_id: uid,
     email: user.email,
     profile: profile[0] || null,
+    health_profile: healthProfile[0] || null,
     recipes,
     cookbooks,
+    meals,
+    water,
+    week_meals: weekMeals,
+    weight_records: weightRecords,
+    activities: userActivities,
+    streaks,
+    shopping_lists: shoppingLists,
+    shopping_items: shoppingItems,
     gdpr_requests: gdprRequests,
   };
 

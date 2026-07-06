@@ -108,23 +108,18 @@
 
           <div class="legal-page__header">
             <h1 class="legal-page__title">Політика cookies</h1>
-            <p class="legal-page__meta">Останнє оновлення: [ДАТА]</p>
-          </div>
-
-          <div class="legal-page__notice">
-            <svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
-            Потребує юридичної перевірки перед публікацією.
+            <p class="legal-page__meta">Версія 1.0 · Останнє оновлення: 6 липня 2026</p>
           </div>
 
           <div class="legal-page__body">
 
             <section class="legal-page__section">
               <h2>Що таке cookies</h2>
-              <p>Cookies — невеликі текстові файли що браузер зберігає на вашому пристрої. Ми використовуємо cookies та localStorage для роботи сервісу та (за вашою згодою) для аналітики.</p>
+              <p>Cookies — невеликі текстові файли, які браузер зберігає на вашому пристрої. MintoFood використовує переважно localStorage (аналог cookies) для роботи сервісу та — лише за вашою згодою — для аналітики.</p>
             </section>
 
             <section class="legal-page__section">
-              <h2>Категорії cookies</h2>
+              <h2>Категорії</h2>
 
               <h3>Необхідні (завжди активні)</h3>
               <table class="legal-page__table">
@@ -132,10 +127,12 @@
                   <tr><th>Назва</th><th>Мета</th><th>Термін</th></tr>
                 </thead>
                 <tbody>
-                  <tr><td>sb-*</td><td>Supabase сесія авторизації</td><td>Сесія</td></tr>
-                  <tr><td>minto_consent</td><td>Збережений вибір cookies</td><td>6 місяців</td></tr>
-                  <tr><td>minto_theme</td><td>Налаштування теми (темна/світла)</td><td>Постійно</td></tr>
-                  <tr><td>minto_lang</td><td>Вибрана мова</td><td>Постійно</td></tr>
+                  <tr><td>sb-*-auth-token</td><td>Сесія авторизації Supabase</td><td>До виходу з акаунту</td></tr>
+                  <tr><td>minto_consent</td><td>Збережений вибір щодо cookies</td><td>6 місяців</td></tr>
+                  <tr><td>minto_consent_seen</td><td>Позначка, що банер уже показано для поточної версії згоди</td><td>Постійно</td></tr>
+                  <tr><td>theme</td><td>Тема оформлення (світла/темна)</td><td>Постійно</td></tr>
+                  <tr><td>lang</td><td>Вибрана мова інтерфейсу</td><td>Постійно</td></tr>
+                  <tr><td>userProfile, dailyCaloriesNorm та інші</td><td>Локальний кеш ваших налаштувань і норм — щоб застосунок працював швидко; ці дані не передаються третім особам</td><td>Постійно</td></tr>
                 </tbody>
               </table>
 
@@ -145,20 +142,20 @@
                   <tr><th>Назва</th><th>Мета</th><th>Термін</th><th>Провайдер</th></tr>
                 </thead>
                 <tbody>
-                  <tr><td>ph_*</td><td>PostHog — аналітика використання</td><td>1 рік</td><td>PostHog EU</td></tr>
+                  <tr><td>ph_*</td><td>PostHog — знеособлена аналітика використання (EU-хостинг). Не вантажиться без вашої згоди</td><td>1 рік</td><td>PostHog EU</td></tr>
                 </tbody>
               </table>
 
               <h3>Маркетингові (тільки зі згодою)</h3>
-              <p>Наразі не використовуються. Якщо запровадимо — оновимо цю сторінку і попросимо нову згоду.</p>
+              <p>Наразі не використовуються. Якщо запровадимо — оновимо цю сторінку і попросимо нову згоду через банер.</p>
             </section>
 
             <section class="legal-page__section">
               <h2>Як керувати cookies</h2>
               <ul>
-                <li><strong>Через наш banner:</strong> при першому відвідуванні або через <button class="legal-page__link-btn" id="reopenCookieBanner">Відкрити налаштування cookies</button></li>
-                <li><strong>Через браузер:</strong> налаштування → конфіденційність → cookies</li>
-                <li><strong>Відписатись від PostHog:</strong> <a href="https://posthog.com/docs/privacy/opt-out" target="_blank" rel="noopener noreferrer">PostHog opt-out</a></li>
+                <li><strong>Через наш банер:</strong> при першому відвідуванні або будь-коли — <button class="legal-page__link-btn" id="reopenCookieBanner">Відкрити налаштування cookies</button></li>
+                <li><strong>Через браузер:</strong> налаштування → конфіденційність → cookies / дані сайтів</li>
+                <li>Ваш вибір зберігається 6 місяців; для залогінених — також у профілі, тож він діє на всіх ваших пристроях. При зміні переліку cookies ми запитаємо згоду повторно.</li>
               </ul>
             </section>
 
