@@ -106,6 +106,8 @@
       <div class="container">
         <div class="legal-page">
 
+          <div data-lang-block="ua">
+
           <div class="legal-page__header">
             <h1 class="legal-page__title">Політика cookies</h1>
             <p class="legal-page__meta">Версія 1.0 · Останнє оновлення: 6 липня 2026</p>
@@ -153,13 +155,133 @@
             <section class="legal-page__section">
               <h2>Як керувати cookies</h2>
               <ul>
-                <li><strong>Через наш банер:</strong> при першому відвідуванні або будь-коли — <button class="legal-page__link-btn" id="reopenCookieBanner">Відкрити налаштування cookies</button></li>
+                <li><strong>Через наш банер:</strong> при першому відвідуванні або будь-коли — <button class="legal-page__link-btn js-reopen-cookies">Відкрити налаштування cookies</button></li>
                 <li><strong>Через браузер:</strong> налаштування → конфіденційність → cookies / дані сайтів</li>
                 <li>Ваш вибір зберігається 6 місяців; для залогінених — також у профілі, тож він діє на всіх ваших пристроях. При зміні переліку cookies ми запитаємо згоду повторно.</li>
               </ul>
             </section>
 
           </div>
+
+          </div><!-- /ua -->
+
+          <div data-lang-block="en" hidden>
+
+          <div class="legal-page__header">
+            <h1 class="legal-page__title">Cookie Policy</h1>
+            <p class="legal-page__meta">Version 1.0 · Last updated: July 6, 2026</p>
+          </div>
+
+          <div class="legal-page__body">
+
+            <section class="legal-page__section">
+              <h2>What cookies are</h2>
+              <p>Cookies are small text files your browser stores on your device. MintoFood mostly uses localStorage (a cookie equivalent) to run the service and — only with your consent — for analytics.</p>
+            </section>
+
+            <section class="legal-page__section">
+              <h2>Categories</h2>
+
+              <h3>Strictly necessary (always active)</h3>
+              <table class="legal-page__table">
+                <thead>
+                  <tr><th>Name</th><th>Purpose</th><th>Duration</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td>sb-*-auth-token</td><td>Supabase login session</td><td>Until you sign out</td></tr>
+                  <tr><td>minto_consent</td><td>Your saved cookie choice</td><td>6 months</td></tr>
+                  <tr><td>minto_consent_seen</td><td>Marks that the banner was shown for the current consent version</td><td>Persistent</td></tr>
+                  <tr><td>theme</td><td>UI theme (light/dark)</td><td>Persistent</td></tr>
+                  <tr><td>lang</td><td>Selected interface language</td><td>Persistent</td></tr>
+                  <tr><td>userProfile, dailyCaloriesNorm and others</td><td>Local cache of your settings and targets — so the app is fast; this data is not shared with third parties</td><td>Persistent</td></tr>
+                </tbody>
+              </table>
+
+              <h3>Analytics (consent only)</h3>
+              <table class="legal-page__table">
+                <thead>
+                  <tr><th>Name</th><th>Purpose</th><th>Duration</th><th>Provider</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td>ph_*</td><td>PostHog — anonymised usage analytics (EU hosting). Does not load without your consent</td><td>1 year</td><td>PostHog EU</td></tr>
+                </tbody>
+              </table>
+
+              <h3>Marketing (consent only)</h3>
+              <p>Not used at the moment. If introduced, we will update this page and ask for new consent via the banner.</p>
+            </section>
+
+            <section class="legal-page__section">
+              <h2>Managing cookies</h2>
+              <ul>
+                <li><strong>Via our banner:</strong> on first visit or any time — <button class="legal-page__link-btn js-reopen-cookies">Open cookie settings</button></li>
+                <li><strong>Via your browser:</strong> settings → privacy → cookies / site data</li>
+                <li>Your choice is stored for 6 months; for signed-in users it is also saved to your profile, so it applies on all your devices. If the cookie list changes, we will ask for consent again.</li>
+              </ul>
+            </section>
+
+          </div>
+
+          </div><!-- /en -->
+
+          <div data-lang-block="pl" hidden>
+
+          <div class="legal-page__header">
+            <h1 class="legal-page__title">Polityka cookies</h1>
+            <p class="legal-page__meta">Wersja 1.0 · Ostatnia aktualizacja: 6 lipca 2026</p>
+          </div>
+
+          <div class="legal-page__body">
+
+            <section class="legal-page__section">
+              <h2>Czym są cookies</h2>
+              <p>Cookies to małe pliki tekstowe zapisywane przez przeglądarkę na Twoim urządzeniu. MintoFood korzysta głównie z localStorage (odpowiednik cookies) do działania serwisu oraz — wyłącznie za Twoją zgodą — do analityki.</p>
+            </section>
+
+            <section class="legal-page__section">
+              <h2>Kategorie</h2>
+
+              <h3>Niezbędne (zawsze aktywne)</h3>
+              <table class="legal-page__table">
+                <thead>
+                  <tr><th>Nazwa</th><th>Cel</th><th>Okres</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td>sb-*-auth-token</td><td>Sesja logowania Supabase</td><td>Do wylogowania</td></tr>
+                  <tr><td>minto_consent</td><td>Zapisany wybór dotyczący cookies</td><td>6 miesięcy</td></tr>
+                  <tr><td>minto_consent_seen</td><td>Oznaczenie, że baner został pokazany dla bieżącej wersji zgody</td><td>Trwale</td></tr>
+                  <tr><td>theme</td><td>Motyw interfejsu (jasny/ciemny)</td><td>Trwale</td></tr>
+                  <tr><td>lang</td><td>Wybrany język interfejsu</td><td>Trwale</td></tr>
+                  <tr><td>userProfile, dailyCaloriesNorm i inne</td><td>Lokalna pamięć podręczna Twoich ustawień i norm — aby aplikacja działała szybko; dane te nie są przekazywane osobom trzecim</td><td>Trwale</td></tr>
+                </tbody>
+              </table>
+
+              <h3>Analityczne (tylko za zgodą)</h3>
+              <table class="legal-page__table">
+                <thead>
+                  <tr><th>Nazwa</th><th>Cel</th><th>Okres</th><th>Dostawca</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td>ph_*</td><td>PostHog — zanonimizowana analityka użytkowania (hosting UE). Nie ładuje się bez Twojej zgody</td><td>1 rok</td><td>PostHog EU</td></tr>
+                </tbody>
+              </table>
+
+              <h3>Marketingowe (tylko za zgodą)</h3>
+              <p>Obecnie nieużywane. Jeśli je wprowadzimy — zaktualizujemy tę stronę i poprosimy o nową zgodę przez baner.</p>
+            </section>
+
+            <section class="legal-page__section">
+              <h2>Zarządzanie cookies</h2>
+              <ul>
+                <li><strong>Przez nasz baner:</strong> przy pierwszej wizycie lub w dowolnym momencie — <button class="legal-page__link-btn js-reopen-cookies">Otwórz ustawienia cookies</button></li>
+                <li><strong>Przez przeglądarkę:</strong> ustawienia → prywatność → cookies / dane witryn</li>
+                <li>Twój wybór jest przechowywany przez 6 miesięcy; dla zalogowanych — także w profilu, więc obowiązuje na wszystkich Twoich urządzeniach. Przy zmianie listy cookies zapytamy o zgodę ponownie.</li>
+              </ul>
+            </section>
+
+          </div>
+
+          </div><!-- /pl -->
         </div>
       </div>
     </main>
@@ -259,8 +381,9 @@
     <script type="module" src="js/auth.js"></script>
     <script type="module">
       import { reopenCookieBanner } from './js/cookie-consent.js';
-      document.getElementById('reopenCookieBanner')?.addEventListener('click', () => {
-        reopenCookieBanner();
+      // Кнопка є в кожному мовному блоці (ua/en/pl) — тому клас, не id
+      document.querySelectorAll('.js-reopen-cookies').forEach((btn) => {
+        btn.addEventListener('click', () => reopenCookieBanner());
       });
     </script>
   <script type="module" src="js/i18n-apply.js"></script>

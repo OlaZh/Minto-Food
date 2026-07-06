@@ -84,6 +84,13 @@ export function applyTranslations(root = document) {
     }
   });
 
+  // Мовні блоки для довгих текстів (правові сторінки): показуємо блок
+  // поточної мови, ховаємо решту. У markup видимий за замовчуванням UA-блок,
+  // EN/PL мають hidden — тож без JS користувач бачить оригінал.
+  root.querySelectorAll('[data-lang-block]').forEach((el) => {
+    el.hidden = normalizeLang(el.dataset.langBlock) !== lang;
+  });
+
   // <html lang="…"> для доступності/SEO (ua→uk як валідний код)
   document.documentElement.setAttribute('lang', lang === 'ua' ? 'uk' : lang);
 }
