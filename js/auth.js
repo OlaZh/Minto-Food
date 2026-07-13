@@ -705,7 +705,7 @@ function getErrorMessage(message) {
 }
 
 // =============================================================
-// ВІДКРИТИ АДМІН-ПАНЕЛЬ — передає сесію через SSO
+// ВІДКРИТИ АДМІН-ПАНЕЛЬ — передає сесію безпечним POST у цій самій вкладці
 // =============================================================
 
 export async function openAdminPanel() {
@@ -717,61 +717,25 @@ export async function openAdminPanel() {
     return;
   }
 
-  const adminOrigin = getAdminAppOrigin();
-  const transferUrl = new URL('/auth/transfer', adminOrigin);
-  const popup = window.open(transferUrl.toString(), '_blank');
+  const transferUrl = new URL('/auth/transfer/session', getAdminAppOrigin());
+  const form = document.createElement('form');
+  form.method = 'POST';
+  form.action = transferUrl.toString();
+  form.hidden = true;
 
-  if (!popup) {
-    showToast(t('authPopupBlocked'), 'error');
-    return;
-  }
-
-  const payload = {
-    type: 'MINTO_ADMIN_SESSION_TRANSFER',
+  const fields = {
     accessToken: session.access_token,
     refreshToken: session.refresh_token,
   };
 
-  let attempts = 0;
-  const maxAttempts = 40;
-  let transferFinished = false;
+  Object.entries(fields).forEach(([name, value]) => {
+    const input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = name;
+    input.value = value;
+    form.appendChild(input);
+  });
 
-  function finishTransfer() {
-    transferFinished = true;
-    window.clearInterval(timer);
-    window.removeEventListener('message', handleTransferMessage);
-  }
-
-  const timer = window.setInterval(() => {
-    if (popup.closed) {
-      finishTransfer();
-      return;
-    }
-
-    popup.postMessage(payload, adminOrigin);
-    attempts += 1;
-
-    if (attempts >= maxAttempts) {
-      finishTransfer();
-      showToast(t('authAdminNoResponse'), 'error');
-    }
-  }, 400);
-
-  function handleTransferMessage(event) {
-    if (transferFinished) return;
-    if (event.origin !== adminOrigin) return;
-    if (event.data?.type === 'MINTO_ADMIN_TRANSFER_READY' || event.data?.type === 'MINTO_ADMIN_SESSION_TRANSFER_ACK') {
-      popup.postMessage(payload, adminOrigin);
-    }
-    if (event.data?.type === 'MINTO_ADMIN_SESSION_TRANSFER_ACK') {
-      finishTransfer();
-      return;
-    }
-    if (event.data?.type === 'MINTO_ADMIN_SESSION_TRANSFER_ERROR') {
-      finishTransfer();
-      showToast(event.data?.message || t('authTransferFailed'), 'error');
-    }
-  }
-
-  window.addEventListener('message', handleTransferMessage);
+  document.body.appendChild(form);
+  form.submit();
 }

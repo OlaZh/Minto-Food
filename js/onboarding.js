@@ -5,6 +5,7 @@
 import { supabase } from './supabaseClient.js';
 import { iconVeg, iconCheck } from './icons.js';
 import { t, formatText } from './i18n-apply.js';
+import { saveProfileFields } from './profile-flags.js';
 
 const MIN = 2;
 const MAX = 25;
@@ -36,12 +37,9 @@ export async function checkOnboarding(user) {
     // чи перезавантажать без натискання кнопки (інакше welcome_intro_seen
     // лишиться false і вікно вилазитиме при кожному SIGNED_IN).
     // Нікнейм уже згенеровано, тож акаунт не лишається безіменним.
-    await supabase
-      .from('profiles')
-      .upsert(
-        { id: user.id, welcome_intro_seen: true },
-        { onConflict: 'id' },
-      );
+    // saveProfileFields, НЕ голий upsert: upsert тут мовчки падав на RLS
+    // і прапор ніколи не зберігався (див. js/profile-flags.js).
+    await saveProfileFields(user.id, { welcome_intro_seen: true });
 
     await new Promise(resolve => {
       _resolveFn = resolve;
@@ -55,7 +53,7 @@ export async function checkOnboarding(user) {
   // health-core (без дубля формули).
   const { needsGoalSetup, startGoalWizard } = await import('./onboarding-wizard.js');
   if (await needsGoalSetup(user.id)) {
-    await startGoalWizard();
+    await startGoalWizard(user.id);
   }
 }
 
@@ -323,12 +321,10 @@ async function _save(displayName) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return;
 
-  await supabase
-    .from('profiles')
-    .upsert(
-      { id: user.id, display_name: displayName, welcome_intro_seen: true },
-      { onConflict: 'id' },
-    );
+  await saveProfileFields(user.id, {
+    display_name: displayName,
+    welcome_intro_seen: true,
+  });
 
   document.getElementById('onboarding-overlay')?.remove();
   _resolveFn?.();

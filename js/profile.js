@@ -2227,11 +2227,10 @@ function _initNicknameEditor(user) {
     saveBtn.disabled = true;
     saveBtn.textContent = t('nickSaving');
 
-    const { error } = await supabase
-      .from('profiles')
-      .upsert({ id: user.id, display_name: val }, { onConflict: 'id' });
+    const { saveProfileFields } = await import('./profile-flags.js');
+    const ok = await saveProfileFields(user.id, { display_name: val });
 
-    if (error) {
+    if (!ok) {
       _setNbHint(hint, t('saveErrorShort'), '#e74c3c');
       saveBtn.disabled = false;
       saveBtn.textContent = t('save');

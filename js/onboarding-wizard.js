@@ -18,6 +18,7 @@
 import { supabase } from './supabaseClient.js';
 import { t, formatText } from './i18n-apply.js';
 import { calcDailyNorm } from './health-core.js';
+import { saveProfileFields } from './profile-flags.js';
 
 // Кроки wizard. Значення дзеркалять профіль, лейбли беруться з i18n.
 const GOALS = [
@@ -36,10 +37,21 @@ const ACTIVITIES = [
 // Накопичений стан wizard.
 const _state = { goal: null, gender: 'female', age: null, height: null, weight: null, activity: null };
 let _resolveFn = null;
+let _userId = null;
 
 // ── Чи треба показувати wizard ────────────────────────────────
 // Профіль вважаємо заповненим, якщо є базові параметри (age+height+weight).
+// Пропуск зберігається в profiles.goal_wizard_skipped (в акаунті, не в
+// localStorage) — як welcome_intro_seen, щоб не залежати від пристрою
+// і чистки кешу. Заповнити параметри можна будь-коли в профілі.
 export async function needsGoalSetup(userId) {
+  const { data: flags } = await supabase
+    .from('profiles')
+    .select('goal_wizard_skipped')
+    .eq('id', userId)
+    .maybeSingle();
+  if (flags?.goal_wizard_skipped) return false;
+
   const { data } = await supabase
     .from('user_profiles')
     .select('age, height, weight')
@@ -49,9 +61,10 @@ export async function needsGoalSetup(userId) {
 }
 
 // ── Публічний вхід ────────────────────────────────────────────
-export function startGoalWizard() {
+export function startGoalWizard(userId) {
   return new Promise((resolve) => {
     _resolveFn = resolve;
+    _userId = userId;
     _mount();
     _renderStep(1);
   });
@@ -122,6 +135,11 @@ function _mount() {
       border:2px solid var(--color-border); border-radius:12px; cursor:pointer; transition:border-color .2s;
     }
     .onbw-btn-back:hover { border-color:var(--color-accent); }
+    .onbw-skip {
+      width:100%; margin-top:12px; padding:8px; font-size:13px; font-family:var(--font-body);
+      background:transparent; border:none; color:var(--color-text-secondary); cursor:pointer; transition:color .2s;
+    }
+    .onbw-skip:hover { color:var(--color-text-primary); }
     /* Підсумок норми */
     .onbw-norm { display:flex; flex-direction:column; gap:10px; margin-bottom:22px; }
     .onbw-norm__cal {
@@ -156,6 +174,16 @@ function _renderStep(step) {
   if (step === 1) _renderGoal(card);
   else if (step === 2) _renderParams(card);
   else if (step === 3) _renderActivity(card);
+
+  card.insertAdjacentHTML('beforeend', `<button class="onbw-skip" id="onbw-skip">${t('onbwSkip')}</button>`);
+  card.querySelector('#onbw-skip').addEventListener('click', _skip);
+}
+
+async function _skip() {
+  // Спершу закриваємо (пропуск має бути миттєвим), потім пишемо прапор.
+  const userId = _userId;
+  _close();
+  if (userId) await saveProfileFields(userId, { goal_wizard_skipped: true });
 }
 
 // Крок 1 — ціль
