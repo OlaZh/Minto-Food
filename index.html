@@ -668,6 +668,28 @@
               <button type="button" class="scanned-card__clear" title="Очистити" data-i18n-title="clearAction"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6L6 18M6 6l12 12"></path></svg></button>
             </div>
             <div class="scanned-card__brand"></div>
+            <button type="button" class="scanned-card__edit-name" data-i18n="proposeNameCorrection">
+              Виправити назву
+            </button>
+            <div class="scanned-card__name-form" hidden>
+              <label class="scanned-card__name-field">
+                <span data-i18n="correctProductName">Правильна назва</span>
+                <input id="scCorrectedName" type="text" maxlength="200" autocomplete="off" />
+              </label>
+              <label class="scanned-card__name-field">
+                <span data-i18n="correctProductBrand">Марка (необов’язково)</span>
+                <input id="scCorrectedBrand" type="text" maxlength="200" autocomplete="off" />
+              </label>
+              <div class="scanned-card__name-actions">
+                <button type="button" id="scSaveNameCorrection" data-i18n="sendForReview">
+                  Надіслати на перевірку
+                </button>
+                <button type="button" id="scCancelNameCorrection" data-i18n="cancel">
+                  Скасувати
+                </button>
+              </div>
+            </div>
+            <div class="scanned-card__name-status" role="status" aria-live="polite" hidden></div>
             <div class="scanned-card__macros">
               <div class="scanned-card__field">
                 <input type="number" id="scKcal" min="0" step="1" />

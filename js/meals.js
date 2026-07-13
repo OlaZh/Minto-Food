@@ -392,6 +392,13 @@ document.addEventListener('DOMContentLoaded', async () => {
   const scFiberInput = document.getElementById('scFiber');
   const scSugarInput = document.getElementById('scSugar');
   const scSaltInput = document.getElementById('scSalt');
+  const scEditNameBtn = scannedCard?.querySelector('.scanned-card__edit-name');
+  const scNameForm = scannedCard?.querySelector('.scanned-card__name-form');
+  const scCorrectedName = document.getElementById('scCorrectedName');
+  const scCorrectedBrand = document.getElementById('scCorrectedBrand');
+  const scSaveNameCorrection = document.getElementById('scSaveNameCorrection');
+  const scCancelNameCorrection = document.getElementById('scCancelNameCorrection');
+  const scNameStatus = scannedCard?.querySelector('.scanned-card__name-status');
 
   function showScannedProductCard(product) {
     if (!scannedCard) return;
@@ -400,10 +407,97 @@ document.addEventListener('DOMContentLoaded', async () => {
     const brandEl = scannedCard.querySelector('.scanned-card__brand');
     const clearBtn = scannedCard.querySelector('.scanned-card__clear');
 
-    const displayName = product.name_ua || product.name_en || product.name || t('noName');
+    const displayName = product._displayName || product.name_ua || product.name_en || product.name_pl || product.name || t('noName');
 
     nameEl.textContent = displayName;
     brandEl.textContent = product.brand || '';
+
+    if (scEditNameBtn) scEditNameBtn.hidden = !product.barcode;
+    if (scNameForm) scNameForm.hidden = true;
+    if (scCorrectedName) scCorrectedName.value = displayName;
+    if (scCorrectedBrand) scCorrectedBrand.value = product.brand || '';
+    if (scNameStatus) {
+      scNameStatus.hidden = !product._hasPersonalNameCorrection;
+      scNameStatus.textContent = product._hasPersonalNameCorrection
+        ? t('personalNameSaved')
+        : '';
+    }
+
+    if (scEditNameBtn) {
+      scEditNameBtn.onclick = () => {
+        if (!scNameForm) return;
+        scNameForm.hidden = false;
+        scEditNameBtn.hidden = true;
+        scCorrectedName?.focus();
+        scCorrectedName?.select();
+      };
+    }
+
+    if (scCancelNameCorrection) {
+      scCancelNameCorrection.onclick = () => {
+        if (scNameForm) scNameForm.hidden = true;
+        if (scEditNameBtn) scEditNameBtn.hidden = false;
+        if (scCorrectedName) scCorrectedName.value = displayName;
+        if (scCorrectedBrand) scCorrectedBrand.value = product.brand || '';
+      };
+    }
+
+    if (scSaveNameCorrection) {
+      scSaveNameCorrection.onclick = async () => {
+        const proposedName = scCorrectedName?.value.trim() || '';
+        const proposedBrand = scCorrectedBrand?.value.trim() || '';
+
+        if (!proposedName) {
+          if (scNameStatus) {
+            scNameStatus.hidden = false;
+            scNameStatus.textContent = t('enterCorrectProductName');
+          }
+          scCorrectedName?.focus();
+          return;
+        }
+
+        scSaveNameCorrection.disabled = true;
+        try {
+          const correctionLanguage = getLang() === 'uk' ? 'ua' : getLang();
+          const { error } = await supabase.rpc('submit_scanned_name_correction', {
+            p_barcode: product.barcode,
+            p_language: correctionLanguage,
+            p_proposed_name: proposedName,
+            p_proposed_brand: proposedBrand || null,
+          });
+          if (error) throw error;
+
+          product._displayName = proposedName;
+          product._hasPersonalNameCorrection = true;
+          product._personalNameCorrectionStatus = 'pending';
+          if (proposedBrand) product.brand = proposedBrand;
+          if (selectedFood) {
+            selectedFood._displayName = proposedName;
+            selectedFood._hasPersonalNameCorrection = true;
+            selectedFood.name = proposedName;
+            if (proposedBrand) selectedFood.brand = proposedBrand;
+          }
+
+          nameEl.textContent = proposedName;
+          brandEl.textContent = product.brand || '';
+          nameInput.value = proposedName;
+          if (scNameForm) scNameForm.hidden = true;
+          if (scEditNameBtn) scEditNameBtn.hidden = false;
+          if (scNameStatus) {
+            scNameStatus.hidden = false;
+            scNameStatus.textContent = t('nameCorrectionQueued');
+          }
+        } catch (error) {
+          console.error('Не вдалося надіслати виправлення назви:', error);
+          if (scNameStatus) {
+            scNameStatus.hidden = false;
+            scNameStatus.textContent = t('nameCorrectionSaveError');
+          }
+        } finally {
+          scSaveNameCorrection.disabled = false;
+        }
+      };
+    }
 
     // Заповнюємо інпути
     scKcalInput.value = product.kcal || 0;
@@ -464,6 +558,11 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (scFiberInput) scFiberInput.value = '';
       if (scSugarInput) scSugarInput.value = '';
       if (scSaltInput) scSaltInput.value = '';
+      if (scNameForm) scNameForm.hidden = true;
+      if (scNameStatus) {
+        scNameStatus.hidden = true;
+        scNameStatus.textContent = '';
+      }
     }
   }
 
@@ -1198,7 +1297,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   initBarcodeScanner((product) => {
     selectedFood = {
       ...product,
-      name: product.name_ua || product.name_en || product.name,
+      name: product._displayName || product.name_ua || product.name_en || product.name_pl || product.name,
       source: 'barcode',
     };
 

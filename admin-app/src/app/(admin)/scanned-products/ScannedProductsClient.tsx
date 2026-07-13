@@ -2,6 +2,14 @@
 
 import Link from 'next/link'
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
+import ActionButton from '@/components/moderation/ActionButton'
+import {
+  deleteScannedProduct,
+  updateScannedProduct,
+  type ScannedProductValues,
+} from '@/app/actions/scanned-products'
 
 export type ScannedProductListItem = {
   barcode: string
@@ -40,6 +48,151 @@ function formatTimestamp(value: string | null | undefined) {
   return value.replace('T', ' ').slice(0, 16)
 }
 
+function ScannedProductEditor({
+  product,
+  onCancel,
+  onSaved,
+}: {
+  product: ScannedProductListItem
+  onCancel: () => void
+  onSaved: () => void
+}) {
+  const [nameUa, setNameUa] = useState(product.name_ua ?? '')
+  const [namePl, setNamePl] = useState(product.name_pl ?? '')
+  const [nameEn, setNameEn] = useState(product.name_en ?? '')
+  const [brand, setBrand] = useState(product.brand ?? '')
+  const [kcal, setKcal] = useState(String(product.kcal ?? 0))
+  const [protein, setProtein] = useState(String(product.protein ?? 0))
+  const [fat, setFat] = useState(String(product.fat ?? 0))
+  const [carbs, setCarbs] = useState(String(product.carbs ?? 0))
+  const [fiber, setFiber] = useState(String(product.fiber ?? 0))
+  const [sugar, setSugar] = useState(String(product.sugar ?? 0))
+  const [salt, setSalt] = useState(String(product.salt ?? 0))
+  const [labelType, setLabelType] = useState(product.label_type ?? 'EU')
+  const [saving, setSaving] = useState(false)
+
+  const textField = (
+    label: string,
+    value: string,
+    setValue: (nextValue: string) => void,
+    placeholder?: string
+  ) => (
+    <label className="block text-xs text-gray-500">
+      <span className="block mb-1">{label}</span>
+      <input
+        type="text"
+        value={value}
+        onChange={event => setValue(event.target.value)}
+        placeholder={placeholder}
+        className="w-full border border-gray-200 rounded-md px-2.5 py-1.5 text-sm text-gray-900 outline-none focus:border-gray-400"
+      />
+    </label>
+  )
+
+  const numberField = (
+    label: string,
+    value: string,
+    setValue: (nextValue: string) => void,
+    step = '0.1'
+  ) => (
+    <label className="block text-xs text-gray-500">
+      <span className="block mb-1">{label}</span>
+      <input
+        type="number"
+        min="0"
+        step={step}
+        value={value}
+        onChange={event => setValue(event.target.value)}
+        className="w-full border border-gray-200 rounded-md px-2 py-1.5 text-sm text-gray-900 outline-none focus:border-gray-400"
+      />
+    </label>
+  )
+
+  async function save() {
+    if (![nameUa, namePl, nameEn].some(value => value.trim())) {
+      toast.error('Потрібна хоча б одна назва продукту')
+      return
+    }
+
+    const values: ScannedProductValues = {
+      name_ua: nameUa.trim() || null,
+      name_pl: namePl.trim() || null,
+      name_en: nameEn.trim() || null,
+      brand: brand.trim() || null,
+      kcal: Number(kcal) || 0,
+      protein: Number(protein) || 0,
+      fat: Number(fat) || 0,
+      carbs: Number(carbs) || 0,
+      fiber: Number(fiber) || 0,
+      sugar: Number(sugar) || 0,
+      salt: Number(salt) || 0,
+      label_type: labelType || null,
+    }
+
+    setSaving(true)
+    try {
+      await updateScannedProduct(product.barcode, values)
+      toast.success('Відсканований продукт оновлено')
+      onSaved()
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Помилка оновлення')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return (
+    <div className="mt-3 rounded-lg border border-gray-200 bg-white p-3 space-y-3">
+      <div className="grid gap-3 md:grid-cols-3">
+        {textField('Назва українською', nameUa, setNameUa, 'Основна назва')}
+        {textField('Nazwa po polsku', namePl, setNamePl)}
+        {textField('English name', nameEn, setNameEn)}
+      </div>
+      <div className="grid gap-3 md:grid-cols-2">
+        {textField('Бренд', brand, setBrand)}
+        <label className="block text-xs text-gray-500">
+          <span className="block mb-1">Стандарт етикетки</span>
+          <select
+            value={labelType}
+            onChange={event => setLabelType(event.target.value)}
+            className="w-full border border-gray-200 rounded-md px-2.5 py-1.5 text-sm text-gray-900 bg-white outline-none focus:border-gray-400"
+          >
+            <option value="EU">EU</option>
+            <option value="US">US</option>
+          </select>
+        </label>
+      </div>
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-7">
+        {numberField('Ккал', kcal, setKcal, '1')}
+        {numberField('Білки', protein, setProtein)}
+        {numberField('Жири', fat, setFat)}
+        {numberField('Вуглеводи', carbs, setCarbs)}
+        {numberField('Клітковина', fiber, setFiber)}
+        {numberField('Цукор', sugar, setSugar)}
+        {numberField('Сіль', salt, setSalt, '0.01')}
+      </div>
+      <div className="flex gap-2">
+        <button
+          type="button"
+          onClick={save}
+          disabled={saving}
+          className="h-8 px-3 rounded-md bg-gray-900 text-white text-xs hover:bg-gray-700 disabled:opacity-50"
+        >
+          {saving ? 'Зберігаю…' : 'Зберегти'}
+        </button>
+        <button
+          type="button"
+          onClick={onCancel}
+          disabled={saving}
+          className="h-8 px-3 rounded-md border border-gray-200 text-xs hover:border-gray-400 disabled:opacity-50"
+        >
+          Скасувати
+        </button>
+      </div>
+    </div>
+  )
+}
+
 export default function ScannedProductsClient({
   products,
   page,
@@ -47,7 +200,9 @@ export default function ScannedProductsClient({
   totalCount,
   error,
 }: ScannedProductsClientProps) {
+  const router = useRouter()
   const [search, setSearch] = useState('')
+  const [editingBarcode, setEditingBarcode] = useState<string | null>(null)
   const normalizedSearch = search.trim().toLowerCase()
 
   const filtered = normalizedSearch
@@ -120,6 +275,7 @@ export default function ScannedProductsClient({
           const name = product.name_ua || product.name_pl || product.name_en || 'Без назви'
           const source = product.source ? (SOURCE_LABELS[product.source] ?? product.source) : '—'
           const timestamp = product.created_at ?? product.updated_at
+          const isEditing = editingBarcode === product.barcode
 
           return (
             <div key={product.barcode} className="px-4 md:px-8 py-4 hover:bg-gray-50">
@@ -143,6 +299,34 @@ export default function ScannedProductsClient({
                   {product.label_type && <span>{product.label_type}</span>}
                 </div>
               </div>
+
+              {isEditing ? (
+                <ScannedProductEditor
+                  product={product}
+                  onCancel={() => setEditingBarcode(null)}
+                  onSaved={() => {
+                    setEditingBarcode(null)
+                    router.refresh()
+                  }}
+                />
+              ) : (
+                <div className="flex flex-wrap gap-2 mt-3">
+                  <button
+                    type="button"
+                    onClick={() => setEditingBarcode(product.barcode)}
+                    className="h-7 px-2.5 rounded-md border border-gray-200 text-xs hover:border-gray-400"
+                  >
+                    Виправити
+                  </button>
+                  <ActionButton
+                    label="Видалити"
+                    confirmText={`Видалити ${product.barcode}?`}
+                    variant="destructive"
+                    action={() => deleteScannedProduct(product.barcode)}
+                    onDone={() => router.refresh()}
+                  />
+                </div>
+              )}
             </div>
           )
         })}

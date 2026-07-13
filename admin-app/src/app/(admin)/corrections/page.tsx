@@ -6,9 +6,17 @@ export default async function CorrectionsPage() {
 
   // min_votes=1 — поки трафік малий, показуємо всі пропозиції;
   // сортування за кількістю голосів робить функція.
-  const { data, error } = await supabase.rpc('get_scanned_correction_stats', {
-    min_votes: 1,
-  })
+  const [macroResult, nameResult] = await Promise.all([
+    supabase.rpc('get_scanned_correction_stats', { min_votes: 1 }),
+    supabase.rpc('get_scanned_name_corrections', { p_status: 'pending' }),
+  ])
 
-  return <CorrectionsClient rows={data ?? []} error={error?.message ?? null} />
+  return (
+    <CorrectionsClient
+      rows={macroResult.data ?? []}
+      error={macroResult.error?.message ?? null}
+      nameRows={nameResult.data ?? []}
+      nameError={nameResult.error?.message ?? null}
+    />
+  )
 }

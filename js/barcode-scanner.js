@@ -10,6 +10,7 @@ import { supabase } from './supabaseClient.js';
 import { iconCheckCircle } from './icons.js';
 import { t, formatText } from './i18n-apply.js';
 import { escapeHTML } from './utils.js';
+import { getLang } from './storage.js';
 
 // ==================== STATE ====================
 let onProductFound = null;
@@ -472,12 +473,22 @@ async function applyUserCorrections(product) {
     } = await supabase.auth.getUser();
     if (!user) return result;
 
-    const { data } = await supabase
-      .from('scanned_product_corrections')
-      .select('kcal, protein, fat, carbs, fiber, sugar, salt')
-      .eq('barcode', product.barcode)
-      .eq('user_id', user.id)
-      .maybeSingle();
+    const language = getLang() === 'uk' ? 'ua' : getLang();
+    const [{ data }, { data: nameCorrection }] = await Promise.all([
+      supabase
+        .from('scanned_product_corrections')
+        .select('kcal, protein, fat, carbs, fiber, sugar, salt')
+        .eq('barcode', product.barcode)
+        .eq('user_id', user.id)
+        .maybeSingle(),
+      supabase
+        .from('scanned_product_name_corrections')
+        .select('proposed_name, proposed_brand, status')
+        .eq('barcode', product.barcode)
+        .eq('user_id', user.id)
+        .eq('language', language)
+        .maybeSingle(),
+    ]);
 
     if (data) {
       Object.assign(result, {
@@ -490,6 +501,13 @@ async function applyUserCorrections(product) {
         salt: data.salt,
         _hasPersonalCorrection: true,
       });
+    }
+
+    if (nameCorrection) {
+      result._displayName = nameCorrection.proposed_name;
+      result._hasPersonalNameCorrection = true;
+      result._personalNameCorrectionStatus = nameCorrection.status;
+      if (nameCorrection.proposed_brand) result.brand = nameCorrection.proposed_brand;
     }
   } catch (err) {
     console.debug('Не вдалося підтягнути особисту правку:', err);
@@ -628,7 +646,7 @@ async function searchOpenFoodFacts(barcode) {
 
     return {
       barcode: barcode,
-      name_ua: p.product_name_uk || p.product_name || null,
+      name_ua: p.product_name_uk || null,
       name_en: p.product_name_en || p.product_name || null,
       name_pl: p.product_name_pl || null,
       brand: p.brands || null,
@@ -669,7 +687,7 @@ async function saveToLocalDatabase(product) {
 }
 
 function onProductFoundHandler(product) {
-  const displayName = product.name_ua || product.name_en || product.name_pl || t('scannerNoName');
+  const displayName = product._displayName || product.name_ua || product.name_en || product.name_pl || t('scannerNoName');
   const safeDisplayName = escapeHTML(displayName);
 
   // Режим ваги (рецепт): показуємо поле ваги, повертаємо (product, grams)
