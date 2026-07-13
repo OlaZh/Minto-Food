@@ -4,7 +4,7 @@ import { i18n } from './i18n.js';
 import { supabase } from './supabaseClient.js';
 import { initAuth, requireAuth } from './auth.js';
 import { initBarcodeScanner, closeScanner } from './barcode-scanner.js';
-import { getLocalDateString, showToast } from './utils.js';
+import { decodeHTMLEntities, escapeHTML, getLocalDateString, showToast } from './utils.js';
 import { getDailyCaloriesNorm, getLang, setLang, getItem, setItem } from './storage.js';
 import { showConfirmModal } from './ui-components.js';
 
@@ -407,15 +407,18 @@ document.addEventListener('DOMContentLoaded', async () => {
     const brandEl = scannedCard.querySelector('.scanned-card__brand');
     const clearBtn = scannedCard.querySelector('.scanned-card__clear');
 
-    const displayName = product._displayName || product.name_ua || product.name_en || product.name_pl || product.name || t('noName');
+    const displayName = decodeHTMLEntities(
+      product._displayName || product.name_ua || product.name_en || product.name_pl || product.name || t('noName')
+    );
+    const displayBrand = decodeHTMLEntities(product.brand);
 
     nameEl.textContent = displayName;
-    brandEl.textContent = product.brand || '';
+    brandEl.textContent = displayBrand;
 
     if (scEditNameBtn) scEditNameBtn.hidden = !product.barcode;
     if (scNameForm) scNameForm.hidden = true;
     if (scCorrectedName) scCorrectedName.value = displayName;
-    if (scCorrectedBrand) scCorrectedBrand.value = product.brand || '';
+    if (scCorrectedBrand) scCorrectedBrand.value = displayBrand;
     if (scNameStatus) {
       scNameStatus.hidden = !product._hasPersonalNameCorrection;
       scNameStatus.textContent = product._hasPersonalNameCorrection
@@ -438,7 +441,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (scNameForm) scNameForm.hidden = true;
         if (scEditNameBtn) scEditNameBtn.hidden = false;
         if (scCorrectedName) scCorrectedName.value = displayName;
-        if (scCorrectedBrand) scCorrectedBrand.value = product.brand || '';
+        if (scCorrectedBrand) scCorrectedBrand.value = displayBrand;
       };
     }
 
@@ -870,7 +873,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     const li = document.createElement('li');
     li.className = 'modal__item';
 
-    const name = food.name_ua || food.name_en || food.name_pl || food.name || '';
+    const name = decodeHTMLEntities(food.name_ua || food.name_en || food.name_pl || food.name || '');
+    const safeName = escapeHTML(name);
     const kcal = food.kcal || 0;
     const isOwn = food.user_id ? true : false;
     const isScanned = food._isScanned ? true : false;
@@ -886,7 +890,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     li.innerHTML = `
       <div>
-        <strong>${name}</strong>${rawHint}${isOwn ? ` <span class="modal__badge">${t('ownBadge')}</span>` : ''}${scannedBadge}
+        <strong>${safeName}</strong>${rawHint}${isOwn ? ` <span class="modal__badge">${t('ownBadge')}</span>` : ''}${scannedBadge}
         <div style="font-size:12px; opacity:0.7;">
           ${kcal} ${t('kcal')} / ${t('per100')}
         </div>

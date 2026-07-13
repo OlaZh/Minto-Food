@@ -9,7 +9,7 @@
 import { supabase } from './supabaseClient.js';
 import { iconCheckCircle } from './icons.js';
 import { t, formatText } from './i18n-apply.js';
-import { escapeHTML } from './utils.js';
+import { decodeHTMLEntities, escapeHTML } from './utils.js';
 import { getLang } from './storage.js';
 
 // ==================== STATE ====================
@@ -457,13 +457,27 @@ function canonicalMacros(p) {
   };
 }
 
+function decodeProductText(product) {
+  if (!product) return product;
+  const decodeNullable = (value) => value == null ? value : decodeHTMLEntities(value);
+  return {
+    ...product,
+    name_ua: decodeNullable(product.name_ua),
+    name_en: decodeNullable(product.name_en),
+    name_pl: decodeNullable(product.name_pl),
+    name: decodeNullable(product.name),
+    brand: decodeNullable(product.brand),
+  };
+}
+
 // Підтягуємо ОСОБИСТУ правку користувача (якщо є) і прикріплюємо канон.
 // Спільна scanned_products не змінюється — лише показ для цього юзера.
 // (Назва відрізняється від parse-food.resolveScannedProduct — там інша
 //  логіка: створення/пошук продукту в БД для парсера.)
 async function applyUserCorrections(product) {
-  const canonical = canonicalMacros(product);
-  const result = { ...product, _canonical: canonical };
+  const decodedProduct = decodeProductText(product);
+  const canonical = canonicalMacros(decodedProduct);
+  const result = { ...decodedProduct, _canonical: canonical };
 
   if (!product.barcode) return result;
 
@@ -504,10 +518,12 @@ async function applyUserCorrections(product) {
     }
 
     if (nameCorrection) {
-      result._displayName = nameCorrection.proposed_name;
+      result._displayName = decodeHTMLEntities(nameCorrection.proposed_name);
       result._hasPersonalNameCorrection = true;
       result._personalNameCorrectionStatus = nameCorrection.status;
-      if (nameCorrection.proposed_brand) result.brand = nameCorrection.proposed_brand;
+      if (nameCorrection.proposed_brand) {
+        result.brand = decodeHTMLEntities(nameCorrection.proposed_brand);
+      }
     }
   } catch (err) {
     console.debug('Не вдалося підтягнути особисту правку:', err);
@@ -573,7 +589,7 @@ async function handleBarcodeScan(barcode) {
 
   try {
     // 1. Шукаємо в локальній базі scanned_products
-    const localProduct = await findInLocalDatabase(barcode);
+    const localProduct = decodeProductText(await findInLocalDatabase(barcode));
 
     if (localProduct) {
       if (hasNutritionData(localProduct)) {
@@ -646,10 +662,10 @@ async function searchOpenFoodFacts(barcode) {
 
     return {
       barcode: barcode,
-      name_ua: p.product_name_uk || null,
-      name_en: p.product_name_en || p.product_name || null,
-      name_pl: p.product_name_pl || null,
-      brand: p.brands || null,
+      name_ua: decodeHTMLEntities(p.product_name_uk) || null,
+      name_en: decodeHTMLEntities(p.product_name_en || p.product_name) || null,
+      name_pl: decodeHTMLEntities(p.product_name_pl) || null,
+      brand: decodeHTMLEntities(p.brands) || null,
       kcal: Math.round(nutriments['energy-kcal_100g'] || nutriments['energy-kcal'] || 0),
       protein: parseFloat((nutriments.proteins_100g || nutriments.proteins || 0).toFixed(1)),
       fat: parseFloat((nutriments.fat_100g || nutriments.fat || 0).toFixed(1)),

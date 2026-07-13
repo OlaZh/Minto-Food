@@ -154,6 +154,58 @@ export function escapeHTML(str) {
   return div.innerHTML;
 }
 
+/**
+ * Перетворює HTML-сутності з зовнішніх API на звичайний текст.
+ * Результат усе одно треба екранувати перед вставкою через innerHTML.
+ * @param {string | null | undefined} value
+ * @returns {string}
+ */
+export function decodeHTMLEntities(value) {
+  const namedEntities = {
+    amp: '&',
+    quot: '"',
+    apos: "'",
+    lt: '<',
+    gt: '>',
+    nbsp: ' ',
+    laquo: '«',
+    raquo: '»',
+    ndash: '–',
+    mdash: '—',
+    hellip: '…',
+    ldquo: '“',
+    rdquo: '”',
+    lsquo: '‘',
+    rsquo: '’',
+  };
+  const entityPattern = /&(#x[0-9a-f]+|#\d+|[a-z]+);/gi;
+  let decoded = String(value ?? '');
+
+  // Два проходи також виправляють подвійно закодовані значення на кшталт &amp;quot;.
+  for (let pass = 0; pass < 2; pass += 1) {
+    const next = decoded.replace(entityPattern, (match, entity) => {
+      const normalized = entity.toLowerCase();
+      if (normalized.startsWith('#')) {
+        const isHex = normalized.startsWith('#x');
+        const codePoint = Number.parseInt(normalized.slice(isHex ? 2 : 1), isHex ? 16 : 10);
+        if (Number.isInteger(codePoint) && codePoint >= 0 && codePoint <= 0x10ffff) {
+          try {
+            return String.fromCodePoint(codePoint);
+          } catch (_) {
+            return match;
+          }
+        }
+        return match;
+      }
+      return namedEntities[normalized] ?? match;
+    });
+    if (next === decoded) break;
+    decoded = next;
+  }
+
+  return decoded;
+}
+
 export function safeImageUrl(url) {
   const value = String(url ?? '').trim();
   if (!value) return '';

@@ -10,6 +10,7 @@ import {
   updateScannedProduct,
   type ScannedProductValues,
 } from '@/app/actions/scanned-products'
+import { decodeHtmlEntities } from '@/lib/htmlEntities'
 
 export type ScannedProductListItem = {
   barcode: string
@@ -57,10 +58,10 @@ function ScannedProductEditor({
   onCancel: () => void
   onSaved: () => void
 }) {
-  const [nameUa, setNameUa] = useState(product.name_ua ?? '')
-  const [namePl, setNamePl] = useState(product.name_pl ?? '')
-  const [nameEn, setNameEn] = useState(product.name_en ?? '')
-  const [brand, setBrand] = useState(product.brand ?? '')
+  const [nameUa, setNameUa] = useState(decodeHtmlEntities(product.name_ua))
+  const [namePl, setNamePl] = useState(decodeHtmlEntities(product.name_pl))
+  const [nameEn, setNameEn] = useState(decodeHtmlEntities(product.name_en))
+  const [brand, setBrand] = useState(decodeHtmlEntities(product.brand))
   const [kcal, setKcal] = useState(String(product.kcal ?? 0))
   const [protein, setProtein] = useState(String(product.protein ?? 0))
   const [fat, setFat] = useState(String(product.fat ?? 0))
@@ -214,7 +215,7 @@ export default function ScannedProductsClient({
           product.name_pl,
           product.brand,
           product.source,
-        ].some(value => value?.toLowerCase().includes(normalizedSearch))
+        ].some(value => decodeHtmlEntities(value).toLowerCase().includes(normalizedSearch))
       )
     : products
 
@@ -272,7 +273,10 @@ export default function ScannedProductsClient({
 
       <div className="divide-y divide-gray-100">
         {filtered.map(product => {
-          const name = product.name_ua || product.name_pl || product.name_en || 'Без назви'
+          const name = decodeHtmlEntities(
+            product.name_ua || product.name_pl || product.name_en || 'Без назви'
+          )
+          const brand = decodeHtmlEntities(product.brand)
           const source = product.source ? (SOURCE_LABELS[product.source] ?? product.source) : '—'
           const timestamp = product.created_at ?? product.updated_at
           const isEditing = editingBarcode === product.barcode
@@ -284,7 +288,7 @@ export default function ScannedProductsClient({
                   <p className="text-sm font-medium break-words">{name}</p>
                   <div className="flex flex-wrap gap-x-3 gap-y-1 mt-1 text-xs text-gray-400">
                     <span className="font-mono text-gray-500">{product.barcode}</span>
-                    {product.brand && <span>{product.brand}</span>}
+                    {brand && <span>{brand}</span>}
                     <span>{source}</span>
                     <span>{formatTimestamp(timestamp)}</span>
                   </div>
