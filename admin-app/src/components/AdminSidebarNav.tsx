@@ -6,6 +6,7 @@ import type { ComponentType, CSSProperties } from 'react'
 import {
   Archive,
   AlertTriangle,
+  Barcode,
   BookOpen,
   Database,
   HelpCircle,
@@ -31,6 +32,7 @@ const moderationNav = [
   { href: '/moderation', label: 'Модерація', icon: Shield },
   { href: '/users', label: 'Юзери', icon: Users },
   { href: '/products', label: 'Продукти', icon: Package },
+  { href: '/scanned-products', label: 'Відскановані', icon: Barcode },
   { href: '/catalog', label: 'Каталог', icon: Database },
   { href: '/feature-flags', label: 'Функції', icon: SlidersHorizontal },
   { href: '/corrections', label: 'Правки ШК', icon: ScanBarcode },
