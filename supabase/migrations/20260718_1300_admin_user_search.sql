@@ -1,6 +1,11 @@
 -- Global admin-only user search by profile name or authentication email.
 -- Email remains in auth.users and is exposed only through this guarded RPC.
 
+-- Remove the obsolete overload. Because all three of its arguments had
+-- defaults, PostgREST could not choose between it and the current two-argument
+-- function for RPC calls containing p_query + p_limit.
+DROP FUNCTION IF EXISTS public.admin_search_users(text, integer, integer);
+
 CREATE OR REPLACE FUNCTION public.admin_search_users(
   p_query text,
   p_limit integer DEFAULT 100
@@ -67,3 +72,4 @@ $$;
 REVOKE ALL ON FUNCTION public.admin_search_users(text, integer) FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION public.admin_search_users(text, integer) TO authenticated;
 
+NOTIFY pgrst, 'reload schema';
