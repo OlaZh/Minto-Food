@@ -1207,9 +1207,9 @@ footer
 - [ ] Progress bar для довгих дій
 - [x] ✅ Toast система (`utils.js`)
 - [ ] Аудит — всі дії дають feedback
-- [ ] Favicon усі розміри + apple-touch-icon
-- [ ] Manifest.json (для TIER 2 — PWA)
-- [ ] OpenGraph default image 1200x630
+- [x] ✅ Favicon усі розміри + apple-touch-icon (18.07.2026) — стиль "скло + пульс-М" за референсом; генератор `scripts/gen-icons.mjs`; head-теги інжектить build.js
+- [ ] Manifest.json (для TIER 2 — PWA; icon-192/512 вже готові)
+- [x] ✅ OpenGraph default image 1200x630 (18.07.2026) — `img/og-default.png`, той самий стиль; og:image інжектиться на сторінки без власного (абсолютний URL оновити після Фази 17)
 - [x] ✅ Smooth scroll + "Back to top" (18.07.2026) — `js/back-to-top.js`, авто-інжект build.js
 - [ ] Safari (iOS + macOS) тестування
 - [ ] Banner для дуже старих браузерів

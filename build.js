@@ -8,8 +8,10 @@ const fs = require('fs');
 // зберігались з BOM, через що кожен build інжектив зайвий BOM у сторінки.
 const stripBom = (s) => s.replace(/﻿/g, '');
 
-const header = stripBom(fs.readFileSync('partials/header.html', 'utf8')).trimEnd();
-const footer = stripBom(fs.readFileSync('partials/footer.html', 'utf8')).trimEnd();
+// trim() з обох боків: провідні пробіли в partial інакше додаються до
+// відступу перед <header>/<footer> на КОЖНОМУ білді (неідемпотентність)
+const header = stripBom(fs.readFileSync('partials/header.html', 'utf8')).trim();
+const footer = stripBom(fs.readFileSync('partials/footer.html', 'utf8')).trim();
 
 const HEADER_START = '<header class="header">';
 const HEADER_END   = '</header>';
@@ -27,6 +29,17 @@ const I18N_SCRIPT = '<script type="module" src="js/i18n-apply.js"></script>';
 // Глобальний offline-індикатор + кнопка "Нагору". Auto-init, як cookie.
 const OFFLINE_SCRIPT = '<script type="module" src="js/offline-indicator.js"></script>';
 const BACKTOTOP_SCRIPT = '<script type="module" src="js/back-to-top.js"></script>';
+
+// Head-теги: іконки (генеруються scratchpad/gen-icons → img/) + дефолтний
+// OG-image для сторінок без власного. Абсолютний URL оновити після
+// переїзду на власний домен (Фаза 17).
+const HEAD_ICON_LINKS =
+  '<link rel="icon" type="image/png" sizes="32x32" href="/img/favicon-32.png" />\n' +
+  '    <link rel="apple-touch-icon" sizes="180x180" href="/img/apple-touch-icon.png" />';
+const OG_IMAGE_META =
+  '<meta property="og:image" content="https://minto-food.vercel.app/img/og-default.png" />\n' +
+  '    <meta property="og:image:width" content="1200" />\n' +
+  '    <meta property="og:image:height" content="630" />';
 
 const pages = [
   'index.html',
@@ -107,6 +120,24 @@ for (const page of pages) {
         html = html.slice(0, bodyClose) + script + '\n  ' + html.slice(bodyClose);
         changed = true;
       }
+    }
+  }
+
+  // Head: PNG-favicon + apple-touch-icon (ідемпотентно).
+  if (!html.includes('apple-touch-icon')) {
+    const headClose = html.indexOf('</head>');
+    if (headClose !== -1) {
+      html = html.slice(0, headClose) + '    ' + HEAD_ICON_LINKS + '\n  ' + html.slice(headClose);
+      changed = true;
+    }
+  }
+
+  // Head: дефолтний og:image — лише якщо сторінка не має власного.
+  if (!html.includes('og:image')) {
+    const headClose = html.indexOf('</head>');
+    if (headClose !== -1) {
+      html = html.slice(0, headClose) + '    ' + OG_IMAGE_META + '\n  ' + html.slice(headClose);
+      changed = true;
     }
   }
 
