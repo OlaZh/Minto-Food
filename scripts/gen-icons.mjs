@@ -72,14 +72,14 @@ const bigIcon = `
         font-weight="400" letter-spacing="20" fill="${OUTLINE}">FOOD</text>
 </svg>`;
 
-// Малі фавікони: жирна темно-зелена "М"-лінія на блідо-м'ятному
-// (стиль як у Minto Fit — максимальний контраст на 16-48px)
-const smallIcon = (stroke) => `
+// Малі фавікони: 1-в-1 SVG фавікона Minto Fit (наданий власницею 18.07.2026);
+// stroke параметризовано лише щоб потовщити лінію на 16px
+const smallIcon = (stroke = 32) => `
 <svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
-  <rect width="512" height="512" rx="120" fill="#c8dfd0"/>
-  <path d="M40 296 L104 296 L136 332 L166 296 L204 130 L256 348 L308 130 L346 296 L472 296"
-        stroke="#1e4231" stroke-width="${stroke}" fill="none"
-        stroke-linecap="round" stroke-linejoin="round"/>
+  <rect width="512" height="512" rx="100" fill="#BFD9CD"/>
+  <polyline points="26,300 90,300 116,334 142,300 190,118 256,370 322,118 368,300 486,300"
+            fill="none" stroke="#1C4532" stroke-width="${stroke}"
+            stroke-linecap="round" stroke-linejoin="round"/>
 </svg>`;
 
 const pulseOg = `
@@ -157,9 +157,9 @@ const render = (svg, w, h) =>
   sharp(Buffer.from(svg), { density: 300 }).resize(w, h ?? w).png().toBuffer();
 
 const frames = [
-  { size: 16, buf: await render(smallIcon(50), 16) },
-  { size: 32, buf: await render(smallIcon(42), 32) },
-  { size: 48, buf: await render(smallIcon(38), 48) },
+  { size: 16, buf: await render(smallIcon(48), 16) },
+  { size: 32, buf: await render(smallIcon(32), 32) },
+  { size: 48, buf: await render(smallIcon(32), 48) },
 ];
 fs.writeFileSync(path.join(OUT, 'favicon.ico'), buildIco(frames));
 fs.writeFileSync(path.join(OUT, 'favicon-32.png'), frames[1].buf);
