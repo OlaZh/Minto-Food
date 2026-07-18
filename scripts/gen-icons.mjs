@@ -77,7 +77,7 @@ const bigIcon = `
 const smallIcon = (stroke) => `
 <svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
   <rect width="512" height="512" rx="120" fill="#c8dfd0"/>
-  <path d="M42 300 L118 300 L148 336 L176 300 L212 122 L256 356 L300 122 L336 300 L470 300"
+  <path d="M40 296 L104 296 L136 332 L166 296 L204 130 L256 348 L308 130 L346 296 L472 296"
         stroke="#1e4231" stroke-width="${stroke}" fill="none"
         stroke-linecap="round" stroke-linejoin="round"/>
 </svg>`;
@@ -157,9 +157,9 @@ const render = (svg, w, h) =>
   sharp(Buffer.from(svg), { density: 300 }).resize(w, h ?? w).png().toBuffer();
 
 const frames = [
-  { size: 16, buf: await render(smallIcon(56), 16) },
-  { size: 32, buf: await render(smallIcon(48), 32) },
-  { size: 48, buf: await render(smallIcon(44), 48) },
+  { size: 16, buf: await render(smallIcon(50), 16) },
+  { size: 32, buf: await render(smallIcon(42), 32) },
+  { size: 48, buf: await render(smallIcon(38), 48) },
 ];
 fs.writeFileSync(path.join(OUT, 'favicon.ico'), buildIco(frames));
 fs.writeFileSync(path.join(OUT, 'favicon-32.png'), frames[1].buf);
