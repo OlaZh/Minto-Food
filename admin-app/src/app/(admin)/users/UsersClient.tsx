@@ -1,13 +1,13 @@
 'use client'
 
 import Link from 'next/link'
-import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import ActionButton from '@/components/moderation/ActionButton'
 import { addStrike, banUser, toggleAdmin, toggleShadowBan, unbanUser } from '@/app/actions/moderation'
 
 type UserListItem = {
   id: string
+  email: string | null
   full_name: string | null
   is_admin: boolean
   is_banned: boolean
@@ -24,62 +24,77 @@ interface UsersClientProps {
   page: number
   totalPages: number
   totalCount: number
+  query: string
+  searchError: string | null
 }
 
-export default function UsersClient({ users, page, totalPages, totalCount }: UsersClientProps) {
+export default function UsersClient({
+  users,
+  page,
+  totalPages,
+  totalCount,
+  query,
+  searchError,
+}: UsersClientProps) {
   const router = useRouter()
-  const [search, setSearch] = useState('')
-  const normalizedSearch = search.trim().toLowerCase()
-
-  const filtered = normalizedSearch
-    ? users.filter(user => (user.full_name ?? '').toLowerCase().includes(normalizedSearch))
-    : users
 
   return (
     <div>
       <div className="sticky top-0 z-10 bg-white border-b border-gray-200 px-4 md:px-8 py-4 flex items-center justify-between">
         <h1 className="text-lg font-semibold">Користувачі</h1>
-        <span className="text-sm text-gray-400">{filtered.length} на сторінці</span>
+        <span className="text-sm text-gray-400">
+          {query ? `${users.length} знайдено` : `${users.length} на сторінці`}
+        </span>
       </div>
 
       <div className="px-4 md:px-8 py-3 border-b border-gray-100 space-y-2">
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+        <form method="get" action="/users" className="flex flex-col gap-2 sm:flex-row sm:items-center">
           <input
-            type="text"
-            placeholder="Пошук за іменем на поточній сторінці…"
-            value={search}
-            onChange={event => setSearch(event.target.value)}
+            key={query}
+            type="search"
+            name="q"
+            placeholder="Пошук за ПІБ або email по всій базі…"
+            defaultValue={query}
+            maxLength={200}
             className="w-full max-w-sm text-sm border border-gray-200 rounded-md px-3 py-1.5 outline-none focus:border-gray-400"
           />
-          {search && (
-            <button
-              type="button"
-              onClick={() => setSearch('')}
-              className="h-8 px-3 text-xs rounded-md border border-gray-200 hover:border-gray-400 transition-colors"
+          <button
+            type="submit"
+            className="h-8 px-3 text-xs rounded-md border border-gray-300 bg-gray-900 text-white hover:bg-gray-700 transition-colors"
+          >
+            Знайти
+          </button>
+          {query && (
+            <Link
+              href="/users"
+              className="h-8 px-3 inline-flex items-center text-xs rounded-md border border-gray-200 hover:border-gray-400 transition-colors"
             >
               Очистити
-            </button>
+            </Link>
           )}
-        </div>
+        </form>
         <p className="text-xs text-gray-400">
-          Швидкий фільтр працює лише в межах відкритої сторінки.
+          Пошук не залежить від сторінки та не враховує регістр.
         </p>
+        {searchError && <p className="text-xs text-red-600">{searchError}</p>}
       </div>
 
       {totalCount > 0 && (
         <div className="px-4 md:px-8 py-2 text-xs text-gray-400 border-b border-gray-100">
-          {totalCount} користувачів · сторінка {page} з {totalPages}
+          {query
+            ? `Знайдено ${totalCount} користувачів по всій базі${totalCount >= 100 ? ' · показано перші 100' : ''}`
+            : `${totalCount} користувачів · сторінка ${page} з ${totalPages}`}
         </div>
       )}
 
-      {filtered.length === 0 && (
+      {users.length === 0 && !searchError && (
         <div className="px-4 md:px-8 py-16 text-center text-gray-400 text-sm">
-          {search ? 'На цій сторінці нікого не знайдено за цим фільтром' : 'Нікого не знайдено'}
+          {query ? 'За цим ПІБ або email нікого не знайдено' : 'Нікого не знайдено'}
         </div>
       )}
 
       <div className="divide-y divide-gray-100">
-        {filtered.map(user => {
+        {users.map(user => {
           const isFrozen = Boolean(user.freeze_until && new Date(user.freeze_until) > new Date())
           const name = user.full_name || user.id.slice(0, 8)
           const strikeCount = user.strikes ?? 0
@@ -120,6 +135,7 @@ export default function UsersClient({ users, page, totalPages, totalCount }: Use
                     )}
                   </div>
                   <div className="flex flex-wrap gap-x-3 gap-y-0.5 mt-0.5 text-xs text-gray-400">
+                    {user.email && <span>{user.email}</span>}
                     <span>Рецептів: {user.recipeCount}</span>
                     <span suppressHydrationWarning>З {user.created_at?.slice(0, 10)}</span>
                     {user.lastActive && (
@@ -179,7 +195,7 @@ export default function UsersClient({ users, page, totalPages, totalCount }: Use
         })}
       </div>
 
-      {totalPages > 1 && (
+      {!query && totalPages > 1 && (
         <div className="px-4 md:px-8 py-4 border-t border-gray-100 flex items-center justify-between gap-2">
           <Link
             href={`/users?page=${page - 1}`}

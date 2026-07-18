@@ -1,5 +1,6 @@
 'use server'
 
+import { assertAdmin } from '@/lib/admin'
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import type { IngredientRow } from '@/lib/types'
@@ -41,6 +42,7 @@ export async function createRecipe(
   selectedTagSlugs: string[]
 ): Promise<{ id: string } | { error: string }> {
   const supabase = await createClient()
+  await assertAdmin(supabase)
 
   const { data: recipe, error } = await supabase
     .from('recipes')
@@ -64,6 +66,7 @@ export async function updateRecipe(
   selectedTagSlugs: string[]
 ): Promise<{ ok: true } | { error: string }> {
   const supabase = await createClient()
+  await assertAdmin(supabase)
 
   const { error } = await supabase
     .from('recipes')
@@ -129,6 +132,7 @@ async function syncTags(
 
 export async function deleteRecipe(id: string): Promise<{ ok: true } | { error: string }> {
   const supabase = await createClient()
+  await assertAdmin(supabase)
   const { error } = await supabase
     .from('recipes')
     .update({ deleted_at: new Date().toISOString() })
@@ -140,6 +144,7 @@ export async function deleteRecipe(id: string): Promise<{ ok: true } | { error: 
 
 export async function publishScheduledRecipes(): Promise<{ count: number } | { error: string }> {
   const supabase = await createClient()
+  await assertAdmin(supabase)
   const { data, error } = await supabase.rpc('publish_scheduled_recipes')
   if (error) return { error: error.message }
   revalidatePath('/recipes')

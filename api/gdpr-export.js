@@ -61,10 +61,12 @@ export default async function handler(req, res) {
   // GDPR Art. 15/20 — export має містити ВСІ персональні дані юзера,
   // включно з health-даними (user_profiles, meals, water, weight_records, user_activities)
   let profile, healthProfile, recipes, cookbooks, meals, water, weekMeals,
-      weightRecords, userActivities, streaks, shoppingLists, shoppingItems, gdprRequests;
+      weightRecords, userActivities, streaks, shoppingLists, shoppingItems, gdprRequests,
+      scannedCorrections, scannedNameCorrections, pendingUpdates, recipeReports;
   try {
     [profile, healthProfile, recipes, cookbooks, meals, water, weekMeals,
-     weightRecords, userActivities, streaks, shoppingLists, shoppingItems, gdprRequests] = await Promise.all([
+     weightRecords, userActivities, streaks, shoppingLists, shoppingItems, gdprRequests,
+     scannedCorrections, scannedNameCorrections, pendingUpdates, recipeReports] = await Promise.all([
       query('profiles', `id=eq.${uid}`, SERVICE_KEY),
       query('user_profiles', uidFilter, SERVICE_KEY),
       query('recipes',  `${uidFilter}&deleted_at=is.null`, SERVICE_KEY),
@@ -78,6 +80,10 @@ export default async function handler(req, res) {
       query('shopping_lists', uidFilter, SERVICE_KEY),
       query('shopping_items', uidFilter, SERVICE_KEY),
       query('gdpr_requests', uidFilter, SERVICE_KEY),
+      query('scanned_product_corrections', uidFilter, SERVICE_KEY),
+      query('scanned_product_name_corrections', uidFilter, SERVICE_KEY),
+      query('recipe_pending_updates', uidFilter, SERVICE_KEY),
+      query('recipe_reports', uidFilter, SERVICE_KEY),
     ]);
   } catch (err) {
     console.error('GDPR export failed:', err);
@@ -106,6 +112,10 @@ export default async function handler(req, res) {
     shopping_lists: shoppingLists,
     shopping_items: shoppingItems,
     gdpr_requests: gdprRequests,
+    scanned_product_corrections: scannedCorrections,
+    scanned_product_name_corrections: scannedNameCorrections,
+    recipe_pending_updates: pendingUpdates,
+    recipe_reports: recipeReports,
   };
 
   res.setHeader('Content-Type', 'application/json; charset=utf-8');

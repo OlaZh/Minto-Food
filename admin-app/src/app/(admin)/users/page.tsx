@@ -5,6 +5,7 @@ const PAGE_SIZE = 100
 
 type UserRow = {
   id: string
+  email: string | null
   full_name: string | null
   is_admin: boolean
   is_banned: boolean
@@ -26,21 +27,45 @@ type MealActivityRow = {
 export default async function UsersPage({
   searchParams,
 }: {
-  searchParams: Promise<{ page?: string }>
+  searchParams: Promise<{ page?: string; q?: string | string[] }>
 }) {
   const params = await searchParams
   const supabase = await createClient()
+  const rawQuery = Array.isArray(params.q) ? params.q[0] : params.q
+  const query = (rawQuery ?? '').trim().slice(0, 200)
   const page = Math.max(1, parseInt(params.page ?? '1', 10))
   const from = (page - 1) * PAGE_SIZE
   const to = from + PAGE_SIZE - 1
 
-  const { data: users, count } = await supabase
-    .from('profiles')
-    .select('id, full_name, is_admin, is_banned, is_shadow_banned, strikes, freeze_until, created_at', { count: 'exact' })
-    .order('created_at', { ascending: false })
-    .range(from, to)
+  let users: UserRow[] = []
+  let count = 0
+  let searchError: string | null = null
 
-  const userIds = (users ?? []).map((u: UserRow) => u.id)
+  if (query) {
+    const { data, error } = await supabase.rpc('admin_search_users', {
+      p_query: query,
+      p_limit: PAGE_SIZE,
+    })
+
+    if (error) {
+      console.error('Failed to search admin users', error)
+      searchError = 'Не вдалося виконати пошук. Перевірте, чи застосована міграція пошуку користувачів.'
+    } else {
+      users = (data ?? []) as UserRow[]
+      count = users.length
+    }
+  } else {
+    const { data, count: profilesCount } = await supabase
+      .from('profiles')
+      .select('id, full_name, is_admin, is_banned, is_shadow_banned, strikes, freeze_until, created_at', { count: 'exact' })
+      .order('created_at', { ascending: false })
+      .range(from, to)
+
+    users = ((data ?? []) as Omit<UserRow, 'email'>[]).map(user => ({ ...user, email: null }))
+    count = profilesCount ?? 0
+  }
+
+  const userIds = users.map(user => user.id)
 
   const recipeCounts: Record<string, number> = {}
   const lastActiveMap: Record<string, string> = {}
@@ -59,14 +84,23 @@ export default async function UsersPage({
     })
   }
 
-  const enriched = (users ?? []).map((u: UserRow) => ({
-    ...u,
-    recipeCount: recipeCounts[u.id] ?? 0,
-    lastActive: lastActiveMap[u.id] ?? null,
+  const enriched = users.map(user => ({
+    ...user,
+    recipeCount: recipeCounts[user.id] ?? 0,
+    lastActive: lastActiveMap[user.id] ?? null,
   }))
 
-  const totalCount = count ?? 0
-  const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE))
+  const totalCount = count
+  const totalPages = query ? 1 : Math.max(1, Math.ceil(totalCount / PAGE_SIZE))
 
-  return <UsersClient users={enriched} page={page} totalPages={totalPages} totalCount={totalCount} />
+  return (
+    <UsersClient
+      users={enriched}
+      page={query ? 1 : page}
+      totalPages={totalPages}
+      totalCount={totalCount}
+      query={query}
+      searchError={searchError}
+    />
+  )
 }

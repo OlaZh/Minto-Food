@@ -196,8 +196,8 @@
 
 **Відкритий хвіст (закрити в TIER 1):**
 
-- [ ] Тест penetration: відкрити без авторизації / з не-admin акаунту → redirect
-- [ ] Тест: anon ключ → 403
+- [x] ✅ Тест penetration по коду (18.07.2026): proxy.ts редіректить без сесії → /login, не-admin → /unauthorized; всі admin-таблиці під RLS `is_admin`, RPC мають внутрішню перевірку; додано `assertAdmin()` у server actions catalog/recipes/authors (defense-in-depth); 22 security-тести проходять. Лишився runtime-тест на deployed URL
+- [ ] Тест: anon ключ → 403 (runtime, на deployed URL)
 - [ ] QA-тести (workflow, каскади, бан, bulk, empty)
 - [ ] Тест світлої + темної теми
 
@@ -691,8 +691,8 @@ footer
 
 ### ✅ QA
 
-- [ ] Тест GDPR data export — отримуєш всі свої дані (⚠️ липень 2026: export розширено — додано user_profiles, meals, water, week_meals, weight_records, user_activities, streaks, shopping — перетестувати)
-- [ ] Тест GDPR delete — акаунт видаляється
+- [ ] Тест GDPR data export — отримуєш всі свої дані (⚠️ 18.07.2026: аудит по коду — export розширено ще 4 таблицями: scanned_product_corrections, scanned_product_name_corrections, recipe_pending_updates, recipe_reports — перетестувати e2e)
+- [ ] Тест GDPR delete — акаунт видаляється (⚠️ 18.07.2026: аудит знайшов 3 баги в hard_delete_user_data — неіснуюча таблиця shopping_list_items, пропущені таблиці, блокуючий FK gdpr_requests→auth.users; виправлено міграцією `20260718_1200_gdpr_hard_delete_v2.sql` — **застосувати в Supabase вручну**, потім e2e-тест)
 - [ ] Тест cookie banner — refuse all → не вантажиться analytics (заблоковано: PostHog ще не інтегровано, див. Фазу 16)
 - [x] Тест: signup без accept Terms → блокується — верифіковано по коду (подвійний захист: disabled-кнопка + перевірка в submit-обробнику `js/auth.js`)
 - [x] **Фінальні документи (v1.0, липень 2026)** — Privacy/Terms/Cookies переписані на основі фактів кодової бази (health-дані як особлива категорія ст. 9, private/public рецепти, реальні localStorage-ключі); плейсхолдери `[ДАТА]` і template-попередження прибрано
@@ -774,7 +774,8 @@ footer
 
 - [x] ✅ Усі поля Recipe (name, image, author, nutrition, ingredients, instructions, ratings)
 - [x] ✅ prepTime, cookTime, totalTime, recipeYield (міграція seo_timing_migration.sql)
-- [ ] Тест через Google Rich Results Test (search.google.com/test/rich-results)
+- [x] ✅ Аудит markup по коду (18.07.2026): прибрано порожні `datePublished`/`image` при відсутніх даних. ⚠️ aggregateRating має хардкод ratingCount:'1' — переглянути, коли з'являться реальні юзерські оцінки
+- [ ] Тест через Google Rich Results Test (search.google.com/test/rich-results) — потребує deployed URL
 
 ### 🌐 Multi-language SEO — ✅
 

@@ -1,10 +1,12 @@
 'use server'
 
+import { assertAdmin } from '@/lib/admin'
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 
 export async function updateProduct(productId: number, data: Record<string, unknown>) {
   const supabase = await createClient()
+  await assertAdmin(supabase)
   const { error } = await supabase
     .from('products')
     .update(data)
