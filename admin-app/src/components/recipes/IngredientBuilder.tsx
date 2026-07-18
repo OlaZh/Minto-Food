@@ -18,6 +18,7 @@ interface IngredientBuilderProps {
 
 interface ParsedBulkIngredient {
   productName: string
+  searchAlternatives: string[]
   quantity: number
   unit: string
 }
@@ -48,6 +49,11 @@ const UNIT_ALIASES: Record<string, string> = {
   pcs: 'pcs',
   piece: 'pcs',
   pieces: 'pcs',
+  szt: 'шт',
+  'szt.': 'шт',
+  sztuka: 'шт',
+  sztuki: 'шт',
+  sztuk: 'шт',
   чл: 'ч.л',
   'ч.л': 'ч.л',
   'ч.л.': 'ч.л',
@@ -94,12 +100,20 @@ function isSectionLine(line: string) {
 }
 
 function parseBulkIngredientLine(rawLine: string): ParsedBulkIngredient | null {
-  const cleaned = rawLine
+  let cleaned = rawLine
     .trim()
     .replace(BULLET_PREFIX_RE, '')
     .replace(/\s+/g, ' ')
 
   if (!cleaned || isSectionLine(cleaned)) return null
+
+  const searchAlternatives: string[] = []
+  const parentheticalMatch = cleaned.match(/\s*\(([^()]+)\)\s*$/u)
+  if (parentheticalMatch) {
+    const alternative = parentheticalMatch[1].trim()
+    if (alternative.length >= 2) searchAlternatives.push(alternative)
+    cleaned = cleaned.slice(0, parentheticalMatch.index).trim()
+  }
 
   const line = cleaned.replace(/(\d)\s*,\s*(\d)/g, '$1.$2')
 
@@ -107,6 +121,7 @@ function parseBulkIngredientLine(rawLine: string): ParsedBulkIngredient | null {
   if (noteMatch) {
     return {
       productName: noteMatch[1].trim(),
+      searchAlternatives,
       quantity: 0,
       unit: DEFAULT_UNIT,
     }
@@ -118,6 +133,7 @@ function parseBulkIngredientLine(rawLine: string): ParsedBulkIngredient | null {
     if (unit) {
       return {
         productName: suffixMeasureMatch[1].trim(),
+        searchAlternatives,
         quantity: parseFloat(suffixMeasureMatch[2]),
         unit,
       }
@@ -130,6 +146,7 @@ function parseBulkIngredientLine(rawLine: string): ParsedBulkIngredient | null {
     if (unit) {
       return {
         productName: prefixMeasureMatch[3].trim(),
+        searchAlternatives,
         quantity: parseFloat(prefixMeasureMatch[1]),
         unit,
       }
@@ -140,6 +157,7 @@ function parseBulkIngredientLine(rawLine: string): ParsedBulkIngredient | null {
   if (suffixCountMatch) {
     return {
       productName: suffixCountMatch[1].trim(),
+      searchAlternatives,
       quantity: parseFloat(suffixCountMatch[2]),
       unit: 'шт',
     }
@@ -149,6 +167,7 @@ function parseBulkIngredientLine(rawLine: string): ParsedBulkIngredient | null {
   if (prefixCountMatch) {
     return {
       productName: prefixCountMatch[2].trim(),
+      searchAlternatives,
       quantity: parseFloat(prefixCountMatch[1]),
       unit: 'шт',
     }
@@ -156,27 +175,44 @@ function parseBulkIngredientLine(rawLine: string): ParsedBulkIngredient | null {
 
   return {
     productName: line,
+    searchAlternatives,
     quantity: 0,
     unit: DEFAULT_UNIT,
   }
 }
 
 function scoreProductMatch(product: Product, query: string) {
-  const label = normalizeSearchValue(getProductLabel(product))
   const normalizedQuery = normalizeSearchValue(query)
   const words = normalizedQuery.split(' ').filter(Boolean)
 
-  let score = 0
-  if (label === normalizedQuery) score += 100
-  if (label.startsWith(normalizedQuery)) score += 60
-  if (words.every(word => label.includes(word))) score += 30
-  if (label.includes(normalizedQuery)) score += 15
-  score -= label.length / 100
+  const labels = [product.name_ua, product.name_en, product.name_pl]
+    .filter((label): label is string => Boolean(label))
+    .map(normalizeSearchValue)
 
-  return score
+  return Math.max(...labels.map(label => {
+    let score = 0
+    if (label === normalizedQuery) score += 100
+    if (label.startsWith(normalizedQuery)) score += 60
+    if (words.every(word => label.includes(word))) score += 30
+    if (label.includes(normalizedQuery)) score += 15
+    score -= label.length / 100
+    return score
+  }), Number.NEGATIVE_INFINITY)
 }
 
-async function findBestProductMatch(searchName: string) {
+function normalizeAliasKey(value: string) {
+  return value
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/\p{M}/gu, '')
+    .replace(/ł/g, 'l')
+    .replace(/[’'`]/g, '')
+    .replace(/[^a-z0-9а-яіїєґ\s]/gi, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+}
+
+async function findBestProductMatchSingle(searchName: string) {
   const normalizedQuery = normalizeSearchValue(searchName)
   if (normalizedQuery.length < 2) return null
 
@@ -184,25 +220,66 @@ async function findBestProductMatch(searchName: string) {
   const tokens = normalizedQuery.split(' ').filter(Boolean)
   const likeQuery = normalizedQuery.replace(/\s+/g, '%')
 
-  const { data } = await supabase
-    .from('products')
-    .select('id, name_ua, name_en, name_pl, kcal, protein, fat, carbs')
-    .or([
-      `name_ua.ilike.%${likeQuery}%`,
-      `name_en.ilike.%${likeQuery}%`,
-      `name_pl.ilike.%${likeQuery}%`,
-      ...tokens.map(token => `name_ua.ilike.%${token}%`),
-      ...tokens.map(token => `name_en.ilike.%${token}%`),
-      ...tokens.map(token => `name_pl.ilike.%${token}%`),
-    ].join(','))
-    .is('deleted_at', null)
-    .limit(20)
+  const [{ data: directData }, { data: aliasRows }] = await Promise.all([
+    supabase
+      .from('products')
+      .select('id, name_ua, name_en, name_pl, kcal, protein, fat, carbs')
+      .or([
+        `name_ua.ilike.%${likeQuery}%`,
+        `name_en.ilike.%${likeQuery}%`,
+        `name_pl.ilike.%${likeQuery}%`,
+        ...tokens.map(token => `name_ua.ilike.%${token}%`),
+        ...tokens.map(token => `name_en.ilike.%${token}%`),
+        ...tokens.map(token => `name_pl.ilike.%${token}%`),
+      ].join(','))
+      .is('deleted_at', null)
+      .limit(20),
+    supabase
+      .from('product_aliases')
+      .select('product_id')
+      .eq('alias_normalized', normalizeAliasKey(searchName))
+      .limit(20),
+  ])
 
-  if (!data?.length) return null
+  const aliasProductIds = [...new Set((aliasRows ?? []).map(alias => alias.product_id))]
+  const aliasProductIdSet = new Set(aliasProductIds)
+  let aliasProducts: Product[] = []
+  if (aliasProductIds.length) {
+    const { data } = await supabase
+      .from('products')
+      .select('id, name_ua, name_en, name_pl, kcal, protein, fat, carbs')
+      .in('id', aliasProductIds)
+      .is('deleted_at', null)
 
-  return [...data].sort(
-    (a, b) => scoreProductMatch(b, normalizedQuery) - scoreProductMatch(a, normalizedQuery)
-  )[0]
+    aliasProducts = data ?? []
+  }
+
+  const productsById = new Map<number, Product>()
+  for (const product of [...(directData ?? []), ...aliasProducts]) {
+    productsById.set(product.id, product)
+  }
+  const data = [...productsById.values()]
+
+  if (!data.length) return null
+
+  return [...data].sort((a, b) => {
+    const aliasPriority = Number(aliasProductIdSet.has(b.id)) - Number(aliasProductIdSet.has(a.id))
+    if (aliasPriority !== 0) return aliasPriority
+    return scoreProductMatch(b, normalizedQuery) - scoreProductMatch(a, normalizedQuery)
+  })[0]
+}
+
+async function findBestProductMatch(searchName: string, searchAlternatives: string[] = []) {
+  const candidates = [searchName, ...searchAlternatives]
+    .map(candidate => candidate.trim())
+    .filter((candidate, index, all) => candidate.length >= 2 && all.indexOf(candidate) === index)
+
+  for (const candidate of candidates) {
+    const product = await findBestProductMatchSingle(candidate)
+    if (product) return product
+  }
+
+  return null
 }
 
 function ProductSearch({
@@ -335,7 +412,7 @@ export default function IngredientBuilder({ value, onChange }: IngredientBuilder
 
       const rows = await Promise.all(
         parsedLines.map(async item => {
-          const product = await findBestProductMatch(item.productName)
+          const product = await findBestProductMatch(item.productName, item.searchAlternatives)
 
           return {
             product_id: product?.id ?? 0,

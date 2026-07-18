@@ -35,6 +35,7 @@ const UNIT_TO_TYPE = {
   // Штуки
   шт: 'шт', 'шт.': 'шт', штука: 'шт', штуки: 'шт', штук: 'шт',
   pcs: 'шт', piece: 'шт', pieces: 'шт',
+  szt: 'шт', 'szt.': 'шт', sztuka: 'шт', sztuki: 'шт', sztuk: 'шт',
   // Чайна ложка
   'ч.л.': 'ч.л.', 'ч.л': 'ч.л.', чл: 'ч.л.', tsp: 'ч.л.', teaspoon: 'ч.л.',
   // Десертна ложка
@@ -57,7 +58,11 @@ const UNIT_TO_TYPE = {
 const LOOKUP_UNITS = new Set(Object.keys(UNIT_TO_TYPE));
 
 // "Штучні" одиниці (для патернів "2 яйця" → unit='шт'). Підмножина LOOKUP.
-const PIECE_UNITS = new Set(['шт', 'шт.', 'штука', 'штуки', 'штук', 'pcs', 'piece', 'pieces']);
+const PIECE_UNITS = new Set([
+  'шт', 'шт.', 'штука', 'штуки', 'штук',
+  'pcs', 'piece', 'pieces',
+  'szt', 'szt.', 'sztuka', 'sztuki', 'sztuk',
+]);
 
 // Регекс для ВСІХ одиниць — DIRECT + LOOKUP (довші першими, щоб "ст.л." не
 // зматчилось як "ст"). Критично об'єднувати обидва набори, інакше склянки/ложки
@@ -198,6 +203,16 @@ export function parseFoodInput(input) {
   if (!input) return null;
 
   let text = input.toLowerCase().trim();
+  let parentheticalSearchName = '';
+
+  // Кінцеві дужки часто містять уточнення або іншу форму назви:
+  // "jaja 5 szt (jajka)". Вони не є частиною одиниці виміру, тому
+  // відокремлюємо їх до розбору кількості, але зберігаємо як fallback для пошуку.
+  const parentheticalMatch = text.match(/\s*\(([^()]+)\)\s*$/u);
+  if (parentheticalMatch) {
+    parentheticalSearchName = parentheticalMatch[1].trim();
+    text = text.slice(0, parentheticalMatch.index).trim();
+  }
 
   // Нормалізуємо одиниці перед основним парсингом.
   // Люди пишуть по-різному: "ч.л.", "ч. л.", "ч л", "чл" — зводимо до "ч.л.".
@@ -300,6 +315,10 @@ export function parseFoodInput(input) {
   }
 
   const searchName = removeStopWords(name);
+  const searchAlternatives = parentheticalSearchName
+    ? [removeStopWords(parentheticalSearchName)]
+        .filter((candidate) => candidate.length >= 2 && candidate !== searchName)
+    : [];
   const finalUnit = unit || 'шт';
 
   return {
@@ -307,6 +326,7 @@ export function parseFoodInput(input) {
     original: input,            // alias — recipe-ingredients.js читає item.original
     name: name,
     searchName: searchName,
+    searchAlternatives: searchAlternatives,
     amount: amount || 1,
     unit: finalUnit,            // СИРА одиниця для показу "як написала" ("л", "дрібка")
     unitType: UNIT_TO_TYPE[finalUnit] ?? finalUnit, // канон для lookup у product_units

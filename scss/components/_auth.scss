@@ -323,6 +323,20 @@
   }
 }
 
+/* ============ ВІДНОВЛЕННЯ ПАРОЛЯ (reset / new-password) ============ */
+.auth-modal__subtitle {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0 0 8px;
+  color: var(--color-text-primary, inherit);
+}
+
+.auth-modal__hint {
+  font-size: 13px;
+  color: var(--color-text-secondary, #6b7a71);
+  margin: 0 0 16px;
+}
+
 /* ================= КНОПКА ВІДПРАВКИ ================= */
 .auth-modal__submit {
   @extend %button-primary;

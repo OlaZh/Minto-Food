@@ -275,7 +275,16 @@ async function parseAndAddIngredients(text) {
     const parsed = parseIngredientsText(text);
 
     for (const item of parsed) {
-      const product = await findProductMatch(item.name);
+      const searchCandidates = [
+        item.searchName || item.name,
+        ...(item.searchAlternatives || []),
+      ].filter((candidate, index, candidates) => candidate && candidates.indexOf(candidate) === index);
+
+      let product = null;
+      for (const candidate of searchCandidates) {
+        product = await findProductMatch(candidate);
+        if (product) break;
+      }
 
       let grams = item.grams;
       if (product && grams == null && item.amount) {
@@ -307,7 +316,7 @@ async function parseAndAddIngredients(text) {
         fiber: matched ? parseFloat(((product.fiber || 0) * factor).toFixed(1)) : 0,
         matched,
         foodState: product?.food_state || null,
-        originalQuery: item.name,
+        originalQuery: item.searchName || item.name,
       });
     }
 

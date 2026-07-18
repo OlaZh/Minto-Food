@@ -20,6 +20,23 @@ let onAuthChangeCallback = null;
 // isAdmin кеш на сесію — null = не перевірено, true/false = відомо
 let _isAdminCache = null;
 
+// true = юзер прийшов за посиланням з листа "reset password".
+// Поки прапорець активний, SIGNED_IN не закриває модалку і не запускає
+// post-login логіку — спершу юзер має задати новий пароль.
+let _recoveryFlow = false;
+
+// Recovery-маркери в URL (Supabase додає їх у hash після кліку в листі).
+// Best-effort: detectSessionInUrl може встигнути почистити hash, тому
+// основний сигнал — подія PASSWORD_RECOVERY в onAuthStateChange.
+function _detectRecoveryFromUrl() {
+  const hash = window.location.hash || '';
+  if (hash.includes('type=recovery')) return 'recovery';
+  if (hash.includes('error_code=otp_expired') || hash.includes('error=access_denied')) {
+    return 'expired';
+  }
+  return null;
+}
+
 // =============================================================
 // ІНІЦІАЛІЗАЦІЯ — викликати на кожній сторінці
 // =============================================================
@@ -50,6 +67,11 @@ function _clearAuthStorage() {
 export async function initAuth(onAuthChange = null) {
   onAuthChangeCallback = onAuthChange;
 
+  // Прийшли за посиланням з листа reset password? Фіксуємо до того,
+  // як Supabase обробить hash і викличе SIGNED_IN.
+  const recoveryMarker = _detectRecoveryFromUrl();
+  if (recoveryMarker === 'recovery') _recoveryFlow = true;
+
   // Швидке відновлення з кешу — прибирає "моргання" при завантаженні
   if (!currentUser) {
     currentUser = _readCachedUser();
@@ -72,6 +94,14 @@ export async function initAuth(onAuthChange = null) {
     updateAuthUI();
   }
 
+  // Посилання з листа застаріло/використане — кажемо про це і одразу
+  // відкриваємо форму повторного запиту листа.
+  if (recoveryMarker === 'expired') {
+    showToast(t('authRecoveryExpired'), 'error');
+    openAuthModal('reset');
+    history.replaceState(null, '', window.location.pathname + window.location.search);
+  }
+
   // Слухаємо зміни стану авторизації
   supabase.auth.onAuthStateChange((event, session) => {
     currentUser = session?.user || null;
@@ -82,8 +112,22 @@ export async function initAuth(onAuthChange = null) {
       onAuthChangeCallback(event, currentUser);
     }
 
+    // Юзер прийшов за посиланням з листа reset password —
+    // показуємо форму нового пароля замість звичайного post-login флоу.
+    if (event === 'PASSWORD_RECOVERY') {
+      _recoveryFlow = true;
+      openAuthModal('new-password');
+      return;
+    }
+
     // Закриваємо модалку після успішного логіну
     if (event === 'SIGNED_IN') {
+      // Під час recovery сесія вже є, але пароль ще старий — не закриваємо
+      // модалку і не запускаємо onboarding/welcome, поки не збережено новий.
+      if (_recoveryFlow) {
+        openAuthModal('new-password');
+        return;
+      }
       closeAuthModal();
 
       const userId = session?.user?.id;
@@ -287,6 +331,38 @@ export async function signUpWithEmail(email, password, name = '') {
   }
 
   return { error: null, message: t('authCheckEmail') };
+}
+
+// =============================================================
+// ВІДНОВЛЕННЯ ПАРОЛЯ
+// =============================================================
+
+// Крок 1: юзер вводить email → Supabase шле лист з посиланням.
+// redirectTo веде на головну — там initAuth() ловить PASSWORD_RECOVERY
+// і відкриває форму нового пароля.
+export async function requestPasswordReset(email) {
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: getMainSiteUrl(),
+  });
+
+  if (error) {
+    console.error('Помилка запиту reset password:', error);
+    return { error: getErrorMessage(error.message) };
+  }
+
+  return { error: null };
+}
+
+// Крок 2: юзер прийшов з листа (recovery-сесія активна) → зберігаємо новий пароль.
+export async function updatePassword(newPassword) {
+  const { error } = await supabase.auth.updateUser({ password: newPassword });
+
+  if (error) {
+    console.error('Помилка зміни пароля:', error);
+    return { error: getErrorMessage(error.message) };
+  }
+
+  return { error: null };
 }
 
 // =============================================================
@@ -509,9 +585,61 @@ function createAuthModalHTML() {
           </form>
 
           <p class="auth-modal__switch">
+            <button class="auth-modal__switch-btn" data-auth-tab="reset">${t('authForgotPassword')}</button>
+          </p>
+
+          <p class="auth-modal__switch">
             ${t('authNoAccount')}
             <button class="auth-modal__switch-btn" data-auth-tab="register">${t('authRegisterCta')}</button>
           </p>
+        </div>
+
+        <!-- ЗАПИТ ЛИСТА ДЛЯ ВІДНОВЛЕННЯ ПАРОЛЯ -->
+        <div class="auth-modal__content" data-auth-content="reset" hidden>
+          <h3 class="auth-modal__subtitle">${t('authResetTitle')}</h3>
+          <p class="auth-modal__hint">${t('authResetInstructions')}</p>
+
+          <form class="auth-modal__form" id="resetForm" onsubmit="event.preventDefault(); return false;">
+            <div class="form-group">
+              <label>${t('authEmailLabel')}</label>
+              <input type="email" id="resetEmail" placeholder="your@email.com" required autocomplete="email" />
+            </div>
+            <p class="auth-modal__error" id="resetError" hidden></p>
+            <p class="auth-modal__success" id="resetSuccess" hidden></p>
+            <button type="submit" class="auth-modal__submit" id="resetSubmitBtn">${t('authResetSend')}</button>
+          </form>
+
+          <p class="auth-modal__switch">
+            <button class="auth-modal__switch-btn" data-auth-tab="login">${t('authBackToLogin')}</button>
+          </p>
+        </div>
+
+        <!-- НОВИЙ ПАРОЛЬ (юзер прийшов за посиланням з листа) -->
+        <div class="auth-modal__content" data-auth-content="new-password" hidden>
+          <h3 class="auth-modal__subtitle">${t('authNewPasswordTitle')}</h3>
+
+          <form class="auth-modal__form" id="newPasswordForm" onsubmit="event.preventDefault(); return false;">
+            <div class="form-group">
+              <label>${t('authNewPasswordLabel')}</label>
+              <div class="form-group__password-wrap">
+                <input type="password" id="newPassword" placeholder="${t('authPasswordMinPlaceholder')}" required minlength="6" autocomplete="new-password" />
+                <button type="button" class="form-group__eye" data-target="newPassword" aria-label="${t('authShowPassword')}">
+                  ${iconEye.replace('<svg ', '<svg width="18" height="18" ')}
+                </button>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>${t('authNewPasswordRepeatLabel')}</label>
+              <div class="form-group__password-wrap">
+                <input type="password" id="newPasswordRepeat" placeholder="••••••••" required minlength="6" autocomplete="new-password" />
+                <button type="button" class="form-group__eye" data-target="newPasswordRepeat" aria-label="${t('authShowPassword')}">
+                  ${iconEye.replace('<svg ', '<svg width="18" height="18" ')}
+                </button>
+              </div>
+            </div>
+            <p class="auth-modal__error" id="newPasswordError" hidden></p>
+            <button type="submit" class="auth-modal__submit" id="newPasswordSubmitBtn">${t('authNewPasswordSave')}</button>
+          </form>
         </div>
 
         <!-- РЕЄСТРАЦІЯ -->
@@ -622,6 +750,66 @@ function initAuthModal() {
     }
   });
 
+  // Форма запиту листа для відновлення пароля
+  document.getElementById('resetForm')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const email = document.getElementById('resetEmail').value;
+    const errorEl = document.getElementById('resetError');
+    const successEl = document.getElementById('resetSuccess');
+    const submitBtn = document.getElementById('resetSubmitBtn');
+
+    submitBtn.disabled = true;
+    const { error } = await requestPasswordReset(email);
+    submitBtn.disabled = false;
+
+    if (error) {
+      errorEl.textContent = error;
+      errorEl.hidden = false;
+      successEl.hidden = true;
+    } else {
+      errorEl.hidden = true;
+      successEl.textContent = t('authResetSent');
+      successEl.hidden = false;
+    }
+  });
+
+  // Форма нового пароля (recovery-флоу)
+  document.getElementById('newPasswordForm')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const password = document.getElementById('newPassword').value;
+    const passwordRepeat = document.getElementById('newPasswordRepeat').value;
+    const errorEl = document.getElementById('newPasswordError');
+    const submitBtn = document.getElementById('newPasswordSubmitBtn');
+
+    if (password.length < 6) {
+      errorEl.textContent = t('authErrPasswordShort');
+      errorEl.hidden = false;
+      return;
+    }
+    if (password !== passwordRepeat) {
+      errorEl.textContent = t('authNewPasswordMismatch');
+      errorEl.hidden = false;
+      return;
+    }
+
+    submitBtn.disabled = true;
+    const { error } = await updatePassword(password);
+    submitBtn.disabled = false;
+
+    if (error) {
+      errorEl.textContent = error;
+      errorEl.hidden = false;
+      return;
+    }
+
+    errorEl.hidden = true;
+    _recoveryFlow = false;
+    closeAuthModal();
+    showToast(t('authPasswordUpdated'));
+  });
+
   // Age consent — увімкнути/вимкнути кнопку реєстрації
   document.getElementById('registerAgeConsent')?.addEventListener('change', (e) => {
     const btn = document.getElementById('registerSubmitBtn');
@@ -664,6 +852,11 @@ function switchAuthTab(tabName) {
   const modal = document.getElementById('auth-modal');
   if (!modal) return;
 
+  // Вкладки "Вхід/Реєстрація" ховаємо на службових екранах
+  // (відновлення пароля, новий пароль)
+  const tabsRow = modal.querySelector('.auth-modal__tabs');
+  if (tabsRow) tabsRow.hidden = tabName !== 'login' && tabName !== 'register';
+
   modal.querySelectorAll('.auth-modal__tab').forEach((tab) => {
     tab.classList.toggle('auth-modal__tab--active', tab.dataset.authTab === tabName);
   });
@@ -688,6 +881,10 @@ export function closeAuthModal() {
     modal.classList.remove('is-open');
     unlockScroll('auth-modal');
   }
+  // Якщо юзер закрив модалку, не зберігши новий пароль — recovery-сесія
+  // лишається чинною (він залогінений), але флоу вважаємо завершеним,
+  // щоб наступні SIGNED_IN поводились як звичайний вхід.
+  _recoveryFlow = false;
 }
 
 // =============================================================
