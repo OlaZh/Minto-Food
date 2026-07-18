@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<!--
+  Maintenance page. Щоб увімкнути режим техробіт, додай у vercel.json
+  ПЕРШИМ елементом масиву rewrites:
+    { "source": "/((?!maintenance|css|img|js).*)", "destination": "/maintenance.html" }
+  і задеплой. Щоб вимкнути — прибери рядок і задеплой знову.
+-->
+<html lang="uk">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Технічні роботи — MintoFood</title>
+    <meta name="robots" content="noindex" />
+    <link rel="stylesheet" href="/css/main.css" />
+    <link rel="icon" href="/img/favicon.ico" />
+  </head>
+  <body class="page page--maintenance">
+    <main class="main">
+      <div class="container">
+        <div class="status-page">
+          <p class="status-page__emoji" aria-hidden="true">🌿</p>
+          <h1 class="status-page__title" data-i18n="maintTitle">Технічні роботи</h1>
+          <p class="status-page__text" data-i18n="maintText">Ми оновлюємо MintoFood. Повернемось за кілька хвилин — дякуємо за терпіння!</p>
+        </div>
+      </div>
+    </main>
+    <script type="module" src="/js/theme-toggle.js"></script>
+    <script type="module" src="/js/i18n-apply.js"></script>
+  </body>
+</html>

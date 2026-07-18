@@ -33,6 +33,7 @@
 @import './components/book-selector';
 @import './components/new-recipes-drawer';
 @import './components/cookie-consent';
+@import './components/global-ui';
 
 // Pages
 @import './pages/day-menu';
@@ -45,6 +46,7 @@
 @import './pages/recipe';
 @import './pages/admin';
 @import './pages/legal';
+@import './pages/status-page';
 
 // Accessibility — має бути ОСТАННІМ, щоб перекрити всі motion-правила
 @import './utils/a11y-motion';

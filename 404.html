@@ -3,14 +3,14 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Про нас / Imprint — MintoFood</title>
-    <meta name="description" content="Інформація про компанію MintoFood. Imprint / Impressum." />
+    <title>Сторінку не знайдено — MintoFood</title>
+    <meta name="description" content="Сторінку не знайдено" />
     <meta name="robots" content="noindex" />
-    <link rel="stylesheet" href="css/main.css" />
-    <link rel="icon" href="img/favicon.ico" />
+    <link rel="stylesheet" href="/css/main.css" />
+    <link rel="icon" href="/img/favicon.ico" />
   </head>
-  <body class="page page--legal">
-                                                                                        <header class="header">
+  <body class="page page--not-found">
+        <header class="header">
       <div class="header__container">
         <a href="/index.html" class="header__logo"
           ><img src="/img/logo.svg" alt="Logo" class="logo--default"
@@ -104,62 +104,28 @@
 
     <main class="main">
       <div class="container">
-        <div class="legal-page">
-
-          <div class="legal-page__header">
-            <h1 class="legal-page__title">Про нас / Imprint</h1>
+        <div class="status-page">
+          <p class="status-page__code" aria-hidden="true">404</p>
+          <h1 class="status-page__title" data-i18n="nfTitle">Сторінку не знайдено</h1>
+          <p class="status-page__text" data-i18n="nfText">Такої сторінки немає, її перенесли або в адресі одрук.</p>
+          <div class="status-page__actions">
+            <a href="/index.html" class="status-page__btn status-page__btn--primary" data-i18n="nfHome">На головну</a>
+            <a href="/recipes.html" class="status-page__btn" data-i18n="nfRecipes">До рецептів</a>
           </div>
 
-          <div class="legal-page__notice">
-            <svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
-            Заповнити реальними даними перед публікацією. Imprint обов'язковий в ЄС.
-          </div>
-
-          <div class="legal-page__body">
-
-            <section class="legal-page__section">
-              <h2>Оператор сервісу</h2>
-              <p>
-                [НАЗВА КОМПАНІЇ / ФОП]<br />
-                [ВУЛИЦЯ, НОМЕР]<br />
-                [МІСТО, ПОШТОВИЙ КОД]<br />
-                [КРАЇНА]
-              </p>
-              <p>
-                НІП / ЄДРПОУ: [НОМЕР]<br />
-                KRS / КОД РЕЄСТРАЦІЇ: [НОМЕР] (якщо є)
-              </p>
-            </section>
-
-            <section class="legal-page__section">
-              <h2>Контакти</h2>
-              <p>
-                Email: <a href="mailto:support@mintofood.com">support@mintofood.com</a><br />
-                Питання конфіденційності: <a href="mailto:privacy@mintofood.com">privacy@mintofood.com</a><br />
-                DMCA / авторські права: <a href="mailto:dmca@mintofood.com">dmca@mintofood.com</a> (<a href="dmca.html">процедура</a>)
-              </p>
-            </section>
-
-            <section class="legal-page__section">
-              <h2>Хостинг та технічна інфраструктура</h2>
-              <p>
-                Vercel Inc., 340 Pine Street, Suite 701, San Francisco, CA 94104, USA<br />
-                Supabase Inc. (EU-hosted)<br />
-                Cloudflare Inc., 101 Townsend St, San Francisco, CA 94107, USA
-              </p>
-            </section>
-
-            <section class="legal-page__section">
-              <h2>Disclaimer щодо посилань</h2>
-              <p>MintoFood не несе відповідальності за зміст зовнішніх сайтів, на які ведуть посилання з нашого сервісу.</p>
-            </section>
-
+          <div class="status-page__random" id="nfRandom" hidden>
+            <p class="status-page__random-title" data-i18n="nfRandomTitle">А поки — випадковий рецепт:</p>
+            <a class="status-page__recipe" id="nfRecipeLink" href="#">
+              <img class="status-page__recipe-img" id="nfRecipeImg" src="" alt="" hidden />
+              <span class="status-page__recipe-name" id="nfRecipeName"></span>
+              <span class="status-page__recipe-kcal" id="nfRecipeKcal"></span>
+            </a>
           </div>
         </div>
       </div>
     </main>
 
-                                                                                        <footer class="site-footer">
+        <footer class="site-footer">
       <div class="site-footer__inner">
 
         <div class="site-footer__brand">
@@ -249,10 +215,32 @@
       </div>
     </footer>
 
-    <script type="module" src="js/mobile-nav.js"></script>
-    <script type="module" src="js/theme-toggle.js"></script>
-    <script type="module" src="js/auth.js"></script>
-    <script type="module" src="js/cookie-consent.js"></script>
+    <script type="module" src="/js/mobile-nav.js"></script>
+    <script type="module" src="/js/theme-toggle.js"></script>
+    <script type="module">
+      // Випадковий рецепт як CTA — тихо мовчимо при будь-якій помилці
+      import { supabase } from '/js/supabaseClient.js';
+      try {
+        const { data } = await supabase
+          .from('recipes')
+          .select('name_ua, slug, image, kcal')
+          .eq('status', 'published')
+          .eq('is_public', true)
+          .is('deleted_at', null)
+          .not('slug', 'is', null)
+          .limit(30);
+        if (data?.length) {
+          const r = data[Math.floor(Math.random() * data.length)];
+          document.getElementById('nfRecipeLink').href = `/recipe/${r.slug}`;
+          document.getElementById('nfRecipeName').textContent = r.name_ua || '';
+          if (r.kcal) document.getElementById('nfRecipeKcal').textContent = `${r.kcal} ккал`;
+          const img = document.getElementById('nfRecipeImg');
+          if (r.image) { img.src = r.image; img.hidden = false; }
+          document.getElementById('nfRandom').hidden = false;
+        }
+      } catch (_) {}
+    </script>
+  <script type="module" src="js/cookie-consent.js"></script>
   <script type="module" src="js/i18n-apply.js"></script>
   <script type="module" src="js/offline-indicator.js"></script>
   <script type="module" src="js/back-to-top.js"></script>

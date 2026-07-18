@@ -1197,11 +1197,11 @@ footer
 
 ## 🌐 ФАЗА 21: Глобальні UI елементи
 
-- [ ] **404 page** з рандомним рецептом як CTA, log у Sentry
-- [ ] **500 / error page** з "Спробувати ще раз" + reference ID
-- [ ] **Maintenance page** через Vercel rewrite
-- [ ] **Offline indicator** + recovery banner
-- [ ] **Login required** soft-prompts
+- [x] ✅ **404 page** (18.07.2026) — `404.html`, з випадковим рецептом як CTA; Vercel сервить автоматично для неіснуючих шляхів (log у Sentry — після Фази 16)
+- [x] ✅ **500 / error page** (18.07.2026) — `500.html` з "Спробувати ще раз" (reference ID — після Sentry, Фаза 16)
+- [x] ✅ **Maintenance page** (18.07.2026) — `maintenance.html`, інструкція увімкнення rewrite у коментарі файлу
+- [x] ✅ **Offline indicator** + recovery banner (18.07.2026) — `js/offline-indicator.js`, авто-інжект build.js на всі сторінки
+- [x] ✅ **Login required** soft-prompts — requireAuth() відкриває модалку (вже було)
 - [x] ✅ Skeleton loaders (вже)
 - [ ] Loading spinners для дій (save/delete/upload)
 - [ ] Progress bar для довгих дій
@@ -1210,7 +1210,7 @@ footer
 - [ ] Favicon усі розміри + apple-touch-icon
 - [ ] Manifest.json (для TIER 2 — PWA)
 - [ ] OpenGraph default image 1200x630
-- [ ] Smooth scroll + "Back to top"
+- [x] ✅ Smooth scroll + "Back to top" (18.07.2026) — `js/back-to-top.js`, авто-інжект build.js
 - [ ] Safari (iOS + macOS) тестування
 - [ ] Banner для дуже старих браузерів
 

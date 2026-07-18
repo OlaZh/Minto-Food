@@ -24,6 +24,10 @@ const COOKIE_SCRIPT = '<script type="module" src="js/cookie-consent.js"></script
 // (і будь-де на сторінці) + оживляє перемикач мови. Auto-init, як cookie.
 const I18N_SCRIPT = '<script type="module" src="js/i18n-apply.js"></script>';
 
+// Глобальний offline-індикатор + кнопка "Нагору". Auto-init, як cookie.
+const OFFLINE_SCRIPT = '<script type="module" src="js/offline-indicator.js"></script>';
+const BACKTOTOP_SCRIPT = '<script type="module" src="js/back-to-top.js"></script>';
+
 const pages = [
   'index.html',
   'week-menu.html',
@@ -39,6 +43,8 @@ const pages = [
   'cookies.html',
   'imprint.html',
   'dmca.html',
+  '404.html',
+  '500.html',
 ];
 
 function replaceBlock(html, startMarker, endMarker, replacement) {
@@ -89,6 +95,18 @@ for (const page of pages) {
     if (bodyClose !== -1) {
       html = html.slice(0, bodyClose) + I18N_SCRIPT + '\n  ' + html.slice(bodyClose);
       changed = true;
+    }
+  }
+
+  // Інжектимо offline-індикатор і кнопку "Нагору" (ідемпотентно).
+  for (const script of [OFFLINE_SCRIPT, BACKTOTOP_SCRIPT]) {
+    const src = script.match(/src="([^"]+)"/)[1];
+    if (!html.includes(src)) {
+      const bodyClose = html.lastIndexOf('</body>');
+      if (bodyClose !== -1) {
+        html = html.slice(0, bodyClose) + script + '\n  ' + html.slice(bodyClose);
+        changed = true;
+      }
     }
   }
 
