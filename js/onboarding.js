@@ -182,6 +182,11 @@ function _mount(suggested) {
     .onb-save-btn:disabled { background: var(--color-border); cursor: not-allowed; }
     .onb-back { margin-top: 8px; font-size: 12px; color: var(--color-text-secondary); cursor: pointer; background: none; border: none; }
     .onb-back:hover { color: var(--color-text-primary); }
+
+    /* Welcome-екран: цінність за 3 пункти (Фаза 16) */
+    .onb-value-list { display: flex; flex-direction: column; gap: 12px; margin: 0 0 22px; text-align: left; }
+    .onb-value-item { display: flex; gap: 10px; align-items: flex-start; font-size: 14px; color: var(--color-text-primary); line-height: 1.45; }
+    .onb-value-item__emoji { font-size: 20px; flex: 0 0 auto; }
   `;
   document.head.appendChild(style);
 
@@ -192,8 +197,22 @@ function _mount(suggested) {
       <div class="onb-logo">${iconVeg}</div>
       <p class="onb-brand">Minto</p>
 
+      <!-- Welcome: цінність продукту за 3 пункти, показується найпершим -->
+      <div id="onbValueView">
+        <h2 class="onb-title">${t('onbValueTitle')}</h2>
+        <p class="onb-sub">${t('onbValueSub')}</p>
+        <div class="onb-value-list">
+          <div class="onb-value-item"><span class="onb-value-item__emoji">🥗</span><span>${t('onbValue1')}</span></div>
+          <div class="onb-value-item"><span class="onb-value-item__emoji">📖</span><span>${t('onbValue2')}</span></div>
+          <div class="onb-value-item"><span class="onb-value-item__emoji">🛒</span><span>${t('onbValue3')}</span></div>
+        </div>
+        <div class="onb-actions">
+          <button class="onb-btn-primary" id="onbValueStartBtn">${t('onbValueStart')}</button>
+        </div>
+      </div>
+
       <!-- Режим пропозиції -->
-      <div id="onbSuggestView">
+      <div id="onbSuggestView" style="display:none">
         <h2 class="onb-title">${t('onbWelcomeTitle')}</h2>
         <p class="onb-sub">${t('onbWelcomeSub')}</p>
         <div class="onb-suggestion">
@@ -226,6 +245,11 @@ function _mount(suggested) {
 // ── Кнопки першого екрану ─────────────────────────────────────
 
 function _bindSuggestView() {
+  // Welcome → нікнейм
+  document.getElementById('onbValueStartBtn')?.addEventListener('click', () => {
+    document.getElementById('onbValueView').style.display = 'none';
+    document.getElementById('onbSuggestView').style.display = '';
+  });
   document.getElementById('onbAcceptBtn')?.addEventListener('click', () => _save(_suggested));
   document.getElementById('onbLaterBtn')?.addEventListener('click', () => _save(_suggested));
   document.getElementById('onbEditBtn')?.addEventListener('click', _showEditView);

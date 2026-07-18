@@ -19,7 +19,7 @@ import { supabase } from './supabaseClient.js';
 import { t, formatText } from './i18n-apply.js';
 import { calcDailyNorm } from './health-core.js';
 import { saveProfileFields } from './profile-flags.js';
-import { setButtonLoading } from './utils.js';
+import { setButtonLoading, getLocalDateString } from './utils.js';
 
 // Кроки wizard. Значення дзеркалять профіль, лейбли беруться з i18n.
 const GOALS = [
@@ -348,8 +348,41 @@ async function _finish(btn) {
 
   const { error } = await supabase.from('user_profiles').upsert(payload, { onConflict: 'user_id' });
   if (error) console.error('[onboarding-wizard] save failed:', error);
+  else await _seedSampleMeal(user.id);
 
   _close();
+}
+
+// ── Sample data seed (Фаза 16) ────────────────────────────────
+// Один сніданок-приклад, щоб "Меню на день" не зустрічало нового юзера
+// порожнечею і показало механіку (аккордеон, КБЖУ, streak). Тільки якщо
+// в юзера ще немає ЖОДНОГО meal — повторний прохід wizard нічого не сіє.
+async function _seedSampleMeal(userId) {
+  try {
+    const { count } = await supabase
+      .from('meals')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', userId);
+    if (count) return;
+
+    // КБЖУ порції ~250 г вівсянки на молоці з ягодами
+    const { error } = await supabase.from('meals').insert([{
+      meal_type: 'breakfast',
+      name: t('sampleMealName'),
+      weight: 250,
+      kcal: 280,
+      protein: 9,
+      fat: 6,
+      carbs: 45,
+      date: getLocalDateString(),
+      user_id: userId,
+    }]);
+    // Якщо wizard відкрито на "Меню на день" — день уже завантажився
+    // порожнім, тож просимо meals.js перечитати без reload.
+    if (!error) window.dispatchEvent(new CustomEvent('minto:meals-seeded'));
+  } catch (e) {
+    console.warn('[onboarding-wizard] sample seed пропущено:', e);
+  }
 }
 
 function _close() {

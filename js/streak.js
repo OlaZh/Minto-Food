@@ -8,8 +8,8 @@
 
 import { supabase } from './supabaseClient.js';
 import { iconGym, iconSprout, iconTrophy, iconStar } from './icons.js';
-import { plural } from './utils.js';
-import { t } from './i18n-apply.js';
+import { plural, showToast } from './utils.js';
+import { t, formatText } from './i18n-apply.js';
 
 // ============================================================
 //  DOM ELEMENTS
@@ -40,6 +40,25 @@ function getMotivationalText(streak, isActive) {
   if (streak < 30) return t('streakResilient');
   if (streak < 100) return t('streakMonth');
   return `${t('streakLegend')} ${iconStar}`;
+}
+
+// ============================================================
+//  ACTIVATION MILESTONES (Фаза 16)
+// ============================================================
+// Тост «Ти тримаєш серію N днів! 🌿» — лише коли серія ЗРОСЛА в межах
+// цієї сесії (юзер щойно залогував їжу), не при кожному завантаженні
+// сторінки. Прапорів у localStorage нема: інкремент до milestone
+// трапляється раз на день, тож дубль неможливий.
+
+const MILESTONES = [3, 7, 14, 30, 100];
+let _lastSeenStreak = null;
+
+function _maybeCelebrate(streak) {
+  const prev = _lastSeenStreak;
+  _lastSeenStreak = streak;
+  if (prev === null || streak <= prev) return; // перший load або без росту
+  if (!MILESTONES.includes(streak)) return;
+  showToast(formatText('streakMilestone', { n: streak }), 'success', 5000);
 }
 
 /** Локалізований текст «N днів поспіль» (без числа на початку для desktop-варіанту). */
@@ -135,6 +154,7 @@ export async function loadStreak() {
     };
 
     updateStreakUI(streakData);
+    _maybeCelebrate(streakData.current_streak);
     return streakData;
   } catch (err) {
     console.error('[Streak] Unexpected error:', err);

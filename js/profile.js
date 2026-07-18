@@ -2660,6 +2660,71 @@ async function initProfile() {
   initSidebarIcons();
   initProfileTabs();
   initSettings(user);
+  initOnboardingChecklist(user);
+}
+
+// =====================================
+// PROGRESS CHECKLIST ПЕРШИХ КРОКІВ (Фаза 16)
+// =====================================
+// Стан виводиться з реальних даних (нуль нових колонок/прапорів):
+// ціль = user_profiles заповнений, meal/рецепт = count>0,
+// вода = >=5 різних днів. Коли все виконано — блок зникає назавжди.
+
+async function initOnboardingChecklist(user) {
+  const box = document.getElementById('onboardingChecklist');
+  if (!box || !user) return;
+
+  try {
+    const [profileRes, mealsRes, recipesRes, waterRes] = await Promise.all([
+      supabase.from('user_profiles').select('age, height, weight').eq('user_id', user.id).maybeSingle(),
+      supabase.from('meals').select('id', { count: 'exact', head: true }).eq('user_id', user.id),
+      supabase.from('recipes').select('id', { count: 'exact', head: true }).eq('user_id', user.id),
+      supabase.from('water').select('date').eq('user_id', user.id).limit(1000),
+    ]);
+
+    const p = profileRes.data;
+    const waterDays = new Set((waterRes.data || []).map((r) => r.date)).size;
+
+    const items = [
+      { key: 'chkGoal',   done: !!(p && p.age && p.height && p.weight), href: null },
+      { key: 'chkMeal',   done: (mealsRes.count ?? 0) > 0,   href: 'index.html' },
+      { key: 'chkRecipe', done: (recipesRes.count ?? 0) > 0, href: 'recipes.html' },
+      { key: 'chkWater',  done: waterDays >= 5,              href: 'index.html', progress: `${Math.min(waterDays, 5)}/5` },
+    ];
+
+    const doneCount = items.filter((i) => i.done).length;
+    if (doneCount === items.length) return; // все зроблено — не показуємо
+
+    box.innerHTML = `
+      <div class="profile-checklist__title">
+        <span>${t('chkTitle')}</span>
+        <span class="profile-checklist__count">${doneCount}/${items.length}</span>
+      </div>
+      <ul class="profile-checklist__list">
+        ${items.map((i) => {
+          const label = `${t(i.key)}${!i.done && i.progress ? ` · ${i.progress}` : ''}`;
+          const inner = `<span class="profile-checklist__mark" aria-hidden="true">${i.done ? '✓' : ''}</span><span>${label}</span>`;
+          return `<li class="profile-checklist__item ${i.done ? 'profile-checklist__item--done' : ''}">
+            ${!i.done && i.href ? `<a href="${i.href}">${inner}</a>` : inner}
+          </li>`;
+        }).join('')}
+      </ul>
+    `;
+
+    // "Налаштувати ціль" веде на вкладку "Мої дані" цієї ж сторінки
+    if (!items[0].done) {
+      const firstItem = box.querySelector('.profile-checklist__item');
+      firstItem.style.cursor = 'pointer';
+      firstItem.addEventListener('click', () => {
+        document.querySelector('.profile-sidebar__item[data-tab="profileData"]')?.click();
+        document.getElementById('profileDataSection')?.scrollIntoView({ behavior: 'smooth' });
+      });
+    }
+
+    box.hidden = false;
+  } catch (e) {
+    console.warn('[checklist] не вдалося зібрати стан:', e);
+  }
 }
 
 // =====================================

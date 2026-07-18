@@ -689,16 +689,145 @@ footer
 - [x] Disclaimer для weight goals: якщо BMI < 18.5 або ціль <17 → попередження + посилання на лікаря
 - [ ] Disclaimer для пенсіонерів/вагітних — частково: згадано в медичному disclaimer terms.html v1.0 (усі 3 мови); контекстне попередження в UI профілю ще не зроблено
 
-### ✅ QA
+### ✅ QA — консолідований ручний чекліст
 
-- [ ] Тест GDPR data export — отримуєш всі свої дані (⚠️ 18.07.2026: аудит по коду — export розширено ще 4 таблицями: scanned_product_corrections, scanned_product_name_corrections, recipe_pending_updates, recipe_reports — перетестувати e2e)
-- [ ] Тест GDPR delete — акаунт видаляється (⚠️ 18.07.2026: аудит знайшов 3 баги в hard_delete_user_data — неіснуюча таблиця shopping_list_items, пропущені таблиці, блокуючий FK gdpr_requests→auth.users; виправлено міграцією `20260718_1200_gdpr_hard_delete_v2.sql` — **застосувати в Supabase вручну**, потім e2e-тест)
-- [ ] Тест cookie banner — refuse all → не вантажиться analytics (заблоковано: PostHog ще не інтегровано, див. Фазу 16)
-- [x] Тест: signup без accept Terms → блокується — верифіковано по коду (подвійний захист: disabled-кнопка + перевірка в submit-обробнику `js/auth.js`)
-- [x] **Фінальні документи (v1.0, липень 2026)** — Privacy/Terms/Cookies переписані на основі фактів кодової бази (health-дані як особлива категорія ст. 9, private/public рецепти, реальні localStorage-ключі); плейсхолдери `[ДАТА]` і template-попередження прибрано
-- [x] **Переклад документів EN/PL (липень 2026)** — Privacy/Terms/Cookies у 3 мовах через `data-lang-block` (i18n-apply.js перемикає блоки за мовою футера); пункт "мова-оригінал: українська" в кожній версії. Лишились UA-only: `dmca.html`, `imprint.html`
-  - [ ] Заповнити `imprint.html` реальними даними оператора (назва ФОП, адреса, NIP) — єдиний плейсхолдер що лишився
-  - [ ] **Юридичне рев'ю документів — обов'язково ПЕРЕД Фазою 19 (монетизація)**, польський юрист, ~500-1500 zł. До монетизації ризик мінімальний, з платежами — споживче право ЄС, 14 днів відмови, refund policy
+> Перенесено з окремого `docs/phase13-manual-qa.md`, щоб усі активні задачі Фази 13 жили в одному місці.
+
+**Підтверджено по коду та схемі:**
+
+- [x] `profile.html` містить GDPR-картку в Settings, export і delete-account дії.
+- [x] `js/profile.js` підключає `gdprExportBtn` до `GET /api/gdpr-export`, а `deleteAccountBtn` — до confirm → `soft_delete_user`.
+- [x] `api/gdpr-export.js` вимагає bearer token, віддає JSON і логує export у `gdpr_requests`.
+- [x] Cookie consent зберігається для гостя в `localStorage`, для авторизованого користувача — у `profiles.consent_*`.
+- [x] `cookies.html` має кнопку повторного відкриття cookie settings через `reopenCookieBanner()`.
+- [x] Signup без age/consent checkbox блокується подвійно: disabled-кнопкою та перевіркою submit у `js/auth.js`.
+- [x] `soft_delete_user(uuid)` дозволена `authenticated`/`service_role`, заборонена `anon`/`PUBLIC` і відхиляє виклик без `auth.uid()`.
+
+#### QA-13.1 — GDPR export
+
+**Статус:** готово до ручного E2E-тесту.
+
+Передумови: реальний тестовий акаунт із заповненим профілем, хоча б однією книгою і рецептом; користувач залогінений.
+
+- [ ] Відкрити `profile.html` → Settings → `GDPR і приватність`.
+- [ ] Натиснути `Завантажити мої дані` та дочекатися завантаження без падіння сторінки.
+- [ ] Перевірити ім'я файлу виду `mintofood-export-XXXXXXXX.json`.
+- [ ] Перевірити, що JSON містить усі персональні дані:
+  - `exported_at`, `user_id`, `email`, `profile`;
+  - `health_profile` (`user_profiles`: age, height, weight, goals, norms);
+  - `recipes`, `cookbooks`, `meals`, `water`, `week_meals`;
+  - `weight_records`, `activities`, `streaks`;
+  - `shopping_lists`, `shopping_items`, `gdpr_requests`;
+  - `scanned_product_corrections`, `scanned_product_name_corrections`;
+  - `recipe_pending_updates`, `recipe_reports`.
+- [ ] Перевірити, що у `gdpr_requests` з'явився свіжий успішний export:
+
+```sql
+select type, status, requested_at, completed_at
+from gdpr_requests
+where user_id = '<USER_ID>'
+order by requested_at desc;
+```
+
+Очікування: новий рядок `type = 'export'`, після успіху `status = 'completed'`.
+
+#### QA-13.2 — GDPR delete request
+
+**Статус:** готово до ручного тесту запиту; hard-delete потребує застосування виправної міграції.
+
+Передумови: disposable test account, залогінений і ще не запланований на видалення.
+
+- [ ] **Застосувати в Supabase вручну** міграцію `20260718_1200_gdpr_hard_delete_v2.sql`.
+- [ ] Відкрити `profile.html` → Settings → `Запросити видалення акаунту`.
+- [ ] Перевірити confirm modal і підтвердити дію.
+- [ ] Перевірити, що сторінка не падає, показує заплановану дату, а кнопка стає disabled.
+- [ ] Перезавантажити сторінку і переконатися, що scheduled state зберігся.
+- [ ] Перевірити БД:
+
+```sql
+select id, deletion_requested_at, deletion_scheduled_for
+from profiles
+where id = '<USER_ID>';
+
+select type, status, requested_at, completed_at
+from gdpr_requests
+where user_id = '<USER_ID>'
+order by requested_at desc;
+```
+
+Очікування: `deletion_requested_at` заповнене, `deletion_scheduled_for` приблизно через 30 днів, є новий `gdpr_requests.type = 'delete'`.
+
+#### QA-13.3 — Cookie banner для гостя
+
+**Статус:** display/choice/persistence готові до тесту; analytics suppression заблокована до інтеграції PostHog.
+
+Передумови: чистий профіль браузера або очищене site storage; користувач не залогінений.
+
+- [ ] Відкрити будь-яку public page і переконатися, що банер з'явився.
+- [ ] Натиснути `Відхилити все`, перезавантажити сторінку і перевірити, що банер не з'явився повторно для тієї самої consent version.
+- [ ] Перевірити `minto_consent` у localStorage: `necessary: true`, `analytics: false`, `marketing: false`, `version: '1'`.
+- [ ] На `cookies.html` натиснути `Відкрити налаштування cookies`, увімкнути лише analytics і зберегти.
+- [ ] Перевірити, що банер повторно відкрився, а custom choice оновила localStorage.
+- [ ] Після інтеграції PostHog: `Відхилити все` → analytics SDK і запити не завантажуються.
+
+#### QA-13.4 — Cookie consent для авторизованого користувача
+
+**Статус:** готово до ручного тесту.
+
+- [ ] Увійти свіжим тестовим акаунтом і вибрати будь-який consent option.
+- [ ] Перезавантажити сторінку та відкрити іншу public page — банер не повинен з'являтися знову.
+- [ ] За потреби вийти та повторно увійти тим самим акаунтом у тому самому браузері.
+- [ ] Перевірити БД:
+
+```sql
+select consent_analytics, consent_marketing, consent_version, consent_at
+from profiles
+where id = '<USER_ID>';
+```
+
+Очікування: `consent_version = '1'`, значення analytics/marketing відповідають вибору, `consent_at` заповнене.
+
+#### QA-13.5 — Signup age gate
+
+**Статус:** логіка підтверджена по коду, потрібен короткий ручний smoke test.
+
+- [ ] Відкрити auth modal → Register, лишити checkbox порожнім і перевірити disabled submit.
+- [ ] Увімкнути checkbox → submit стає активним; вимкнути → знову disabled.
+- [ ] Перевірити, що consent text веде на `terms.html` і `privacy.html`.
+- [ ] Перевірити fallback-валідацію: примусовий submit без checkbox показує age-required error.
+
+#### QA-13.6 — Legal path smoke test
+
+**Статус:** документи v1.0 готові; лишився imprint оператора та юридичне рев'ю перед монетизацією.
+
+- [ ] `privacy.html` у GDPR rights веде користувача до `Профіль → Налаштування → GDPR`.
+- [ ] `cookies.html` описує `minto_consent`, analytics cookies і кнопку повторного відкриття settings.
+- [x] Privacy/Terms/Cookies переписані на основі фактичної кодової бази; `[ДАТА]` і template warnings прибрані.
+- [x] Privacy/Terms/Cookies перекладені UA/EN/PL через `data-lang-block`; `dmca.html` та `imprint.html` поки UA-only.
+- [ ] Заповнити `imprint.html` реальними даними оператора: назва ФОП/компанії, адреса, NIP.
+- [ ] **Юридичне рев'ю обов'язково перед Фазою 19:** польський юрист, орієнтовно 500–1500 zł; перевірити споживче право ЄС, 14 днів відмови та refund policy.
+
+#### QA-13.7 — Hard delete cron, лише staging
+
+> Не запускати недбало на production. Використовувати disposable account із `deletion_scheduled_for` у минулому.
+
+- [ ] `api/cron/gdpr-hard-delete.js` знаходить користувача, строк якого настав.
+- [ ] `hard_delete_user_data()` видаляє app data.
+- [ ] Supabase Admin API видаляє рядок з `auth.users`.
+
+#### Exit criteria Phase 13 manual QA
+
+- [ ] GDPR export download пройшов.
+- [ ] GDPR delete request пройшов.
+- [ ] Cookie banner choice/persistence пройшов для гостя й авторизованого користувача.
+- [ ] Signup age gate smoke test пройшов.
+- [ ] Legal path smoke test пройшов.
+
+**Тримати відкритим окремо після базового QA:**
+
+- [ ] Analytics suppression proof — після реальної інтеграції PostHog у Фазі 16.
+- [ ] Реальні дані оператора в `imprint.html`.
+- [ ] Фінальне юридичне рев'ю — перед Фазою 19.
 
 ---
 
@@ -860,16 +989,12 @@ footer
 
 > Найдешевший спосіб підняти activation rate. Юзер у момент signup має максимальний інтерес — не втрачаємо його.
 
-- [ ] **Welcome screen** після signup — value за 3 кроки
-- [ ] **Goal setup wizard:**
-  - [ ] Крок 1: ціль (схуднути / набрати / підтримати / здорове харчування)
-  - [ ] Крок 2: параметри тіла (переюз форми профілю)
-  - [ ] Крок 3: рівень активності
-  - [ ] Авто-розрахунок норм + збереження
-- [ ] **Sample data seed** — 1 sample meal "Сніданок: вівсянка з ягодами"
+- [x] ✅ **Welcome screen** після signup (18.07.2026) — перший екран онбординг-оверлею (`onbValueView` в `js/onboarding.js`): 3 цінності (меню з КБЖУ / книга рецептів / список покупок) → "Почати" → нікнейм. Той самий прапор `welcome_intro_seen`, без нової міграції
+- [x] ✅ **Goal setup wizard** — `js/onboarding-wizard.js`: 3 кроки (ціль → параметри тіла → активність), живий розрахунок норми через спільний health-core, збереження в `user_profiles`, skip-прапор `goal_wizard_skipped`
+- [x] ✅ **Sample data seed** (18.07.2026) — після завершення wizard сіється 1 сніданок "Вівсянка з ягодами (приклад)" у `meals` (тільки якщо meals порожній); подія `minto:meals-seeded` перемальовує "Меню на день" без reload
 - [ ] **Empty states з CTA** (вже частково ✅) — аудит на всіх сторінках
-- [ ] **Progress checklist** у sidebar профілю: ✅ Налаштувати ціль / ✅ Додати meal / ⬜ Створити рецепт / ⬜ 5 днів воду
-- [ ] **Activation milestones** — "Ти на 7-денному streak! 🌿"
+- [x] ✅ **Progress checklist** у sidebar профілю (18.07.2026) — `initOnboardingChecklist()` в `profile.js`: Налаштувати ціль / Додати meal / Створити рецепт / Вода 5 днів (з лічильником N/5). Стан виводиться з реальних даних (нуль нових колонок); коли все виконано — блок зникає
+- [x] ✅ **Activation milestones** (18.07.2026) — тост "Ти тримаєш серію {n} днів! 🌿" на 3/7/14/30/100 днів у `streak.js`; спрацьовує лише при рості серії в сесії (після логування їжі), без прапорів у localStorage. Бонус-фікс: картка streak тепер оновлюється одразу після додавання meal
 
 ### ✅ QA
 

@@ -19,6 +19,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   });
 
+  // Онбординг засіяв перший сніданок-приклад → перечитати день без reload
+  window.addEventListener('minto:meals-seeded', () => {
+    loadMealsFromSupabase(currentSelectedDate);
+  });
+
   // ================== LANGUAGE ==================
   let lang = getLang();
 
@@ -1181,6 +1186,10 @@ document.addEventListener('DOMContentLoaded', async () => {
       await maybeSaveBarcodeCorrection(selectedFood, user);
       closeModal();
       await loadMealsFromSupabase(currentSelectedDate);
+      // Тригер у БД уже оновив streak — перечитуємо, щоб картка не
+      // застаріла, і щоб milestone-тост (3/7/14/30 днів) спрацював одразу.
+      const { loadStreak } = await import('./streak.js');
+      loadStreak();
     }
   }
 
