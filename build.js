@@ -36,6 +36,11 @@ const BACKTOTOP_SCRIPT = '<script type="module" src="js/back-to-top.js"></script
 const HEAD_ICON_LINKS =
   '<link rel="icon" type="image/png" sizes="32x32" href="/img/favicon-32.png" />\n' +
   '    <link rel="apple-touch-icon" sizes="180x180" href="/img/apple-touch-icon.png" />';
+// Web app manifest (PWA-фундамент, Фаза 21/26) + theme-color для мобільних
+// браузерів. Іконки 192/512 вже генеруються scripts/gen-icons.mjs.
+const HEAD_MANIFEST_LINKS =
+  '<link rel="manifest" href="/manifest.json" />\n' +
+  '    <meta name="theme-color" content="#4ab584" />';
 const OG_IMAGE_META =
   '<meta property="og:image" content="https://minto-food.vercel.app/img/og-default.png" />\n' +
   '    <meta property="og:image:width" content="1200" />\n' +
@@ -128,6 +133,15 @@ for (const page of pages) {
     const headClose = html.indexOf('</head>');
     if (headClose !== -1) {
       html = html.slice(0, headClose) + '    ' + HEAD_ICON_LINKS + '\n  ' + html.slice(headClose);
+      changed = true;
+    }
+  }
+
+  // Head: manifest + theme-color (ідемпотентно).
+  if (!html.includes('rel="manifest"')) {
+    const headClose = html.indexOf('</head>');
+    if (headClose !== -1) {
+      html = html.slice(0, headClose) + '    ' + HEAD_MANIFEST_LINKS + '\n  ' + html.slice(headClose);
       changed = true;
     }
   }

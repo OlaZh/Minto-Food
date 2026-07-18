@@ -46,6 +46,115 @@ export function showToast(message, type = 'success', duration = 3000) {
 }
 
 // =============================================================
+// BUTTON LOADING STATE (спінер на час async-дії)
+// =============================================================
+
+/**
+ * Увімкнути/вимкнути стан завантаження на кнопці: спінер + disabled +
+ * aria-busy. Оригінальний вміст кнопки відновлюється при вимкненні.
+ * @param {HTMLButtonElement|null} btn - Кнопка
+ * @param {boolean} loading - true = показати спінер, false = відновити
+ * @param {string} [busyText] - Опційний текст на час завантаження
+ *        (напр. "Збереження…"); без нього лишається оригінальний напис
+ */
+export function setButtonLoading(btn, loading, busyText = '') {
+  if (!btn) return;
+
+  if (loading) {
+    if (btn.dataset.loadingHtml !== undefined) return; // вже в loading-стані
+    btn.dataset.loadingHtml = btn.innerHTML;
+    // Фіксуємо ширину, щоб кнопка не "стрибала" від зміни вмісту
+    btn.style.minWidth = `${btn.offsetWidth}px`;
+    btn.disabled = true;
+    btn.setAttribute('aria-busy', 'true');
+    btn.classList.add('btn-is-loading');
+
+    const spinner = document.createElement('span');
+    spinner.className = 'btn-spinner';
+    spinner.setAttribute('aria-hidden', 'true');
+    if (busyText) btn.textContent = busyText;
+    btn.prepend(spinner);
+    return;
+  }
+
+  if (btn.dataset.loadingHtml === undefined) return;
+  btn.innerHTML = btn.dataset.loadingHtml;
+  delete btn.dataset.loadingHtml;
+  btn.style.minWidth = '';
+  btn.disabled = false;
+  btn.removeAttribute('aria-busy');
+  btn.classList.remove('btn-is-loading');
+}
+
+/**
+ * Обгортка для async-дії: спінер на кнопці на час виконання,
+ * гарантоване відновлення у finally (навіть якщо дія кинула помилку).
+ * Повторний клік під час виконання ігнорується (кнопка disabled).
+ * @param {HTMLButtonElement|null} btn - Кнопка
+ * @param {() => Promise<*>} action - Async-функція дії
+ * @param {string} [busyText] - Опційний текст на час завантаження
+ * @returns {Promise<*>} - Результат action
+ */
+export async function withButtonLoading(btn, action, busyText = '') {
+  if (btn?.dataset.loadingHtml !== undefined) return undefined; // вже виконується
+  setButtonLoading(btn, true, busyText);
+  try {
+    return await action();
+  } finally {
+    setButtonLoading(btn, false);
+  }
+}
+
+// =============================================================
+// GLOBAL PROGRESS BAR (тонка смуга вгорі для довгих дій)
+// =============================================================
+
+let _progressEl = null;
+let _progressActive = 0;
+
+/**
+ * Показати глобальний progress bar (indeterminate-режим).
+ * Виклики рахуються: кожному startProgress() має відповідати doneProgress().
+ */
+export function startProgress() {
+  _progressActive += 1;
+  if (_progressEl) return;
+  _progressEl = document.createElement('div');
+  _progressEl.className = 'app-progress app-progress--indeterminate';
+  _progressEl.setAttribute('role', 'progressbar');
+  _progressEl.innerHTML = '<div class="app-progress__bar"></div>';
+  document.body.appendChild(_progressEl);
+}
+
+/**
+ * Перевести progress bar у визначений режим і виставити відсоток.
+ * @param {number} percent - 0..100
+ */
+export function setProgress(percent) {
+  if (!_progressEl) startProgress();
+  _progressEl.classList.remove('app-progress--indeterminate');
+  const bar = _progressEl.querySelector('.app-progress__bar');
+  if (bar) bar.style.width = `${Math.min(100, Math.max(0, percent))}%`;
+}
+
+/**
+ * Завершити progress bar: доливає до 100% і плавно ховає.
+ */
+export function doneProgress() {
+  if (_progressActive > 0) _progressActive -= 1;
+  if (_progressActive > 0 || !_progressEl) return;
+  const el = _progressEl;
+  _progressEl = null;
+  el.classList.remove('app-progress--indeterminate');
+  const bar = el.querySelector('.app-progress__bar');
+  if (bar) bar.style.width = '100%';
+  setTimeout(() => {
+    el.classList.add('app-progress--done');
+    setTimeout(() => el.remove(), 350);
+  }, 150);
+}
+
+// =============================================================
 // FILE CONVERSION
 // =============================================================
 

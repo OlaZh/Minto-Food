@@ -4,7 +4,7 @@ import { i18n } from './i18n.js';
 import { supabase } from './supabaseClient.js';
 import { initAuth, requireAuth } from './auth.js';
 import { initBarcodeScanner, closeScanner } from './barcode-scanner.js';
-import { decodeHTMLEntities, escapeHTML, getLocalDateString, showToast } from './utils.js';
+import { decodeHTMLEntities, escapeHTML, getLocalDateString, showToast, setButtonLoading } from './utils.js';
 import { getDailyCaloriesNorm, getLang, setLang, getItem, setItem } from './storage.js';
 import { showConfirmModal } from './ui-components.js';
 
@@ -459,7 +459,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           return;
         }
 
-        scSaveNameCorrection.disabled = true;
+        setButtonLoading(scSaveNameCorrection, true);
         try {
           const correctionLanguage = getLang() === 'uk' ? 'ua' : getLang();
           const { error } = await supabase.rpc('submit_scanned_name_correction', {
@@ -497,7 +497,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             scNameStatus.textContent = t('nameCorrectionSaveError');
           }
         } finally {
-          scSaveNameCorrection.disabled = false;
+          setButtonLoading(scSaveNameCorrection, false);
         }
       };
     }

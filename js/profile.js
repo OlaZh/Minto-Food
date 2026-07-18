@@ -11,7 +11,7 @@ import {
   iconUser, iconSettings,
 } from './icons.js';
 import { initAuth, requireAuth, getCurrentUser, openAuthModal, signOut } from './auth.js';
-import { showToast, pluralUA } from './utils.js';
+import { showToast, pluralUA, setButtonLoading, startProgress, doneProgress } from './utils.js';
 import { t, formatText } from './i18n-apply.js';
 import {
   setTheme,
@@ -2224,23 +2224,21 @@ function _initNicknameEditor(user) {
     const val = input.value.trim();
     if (!_nbValid || !val) return;
 
-    saveBtn.disabled = true;
-    saveBtn.textContent = t('nickSaving');
+    setButtonLoading(saveBtn, true, t('nickSaving'));
 
     const { saveProfileFields } = await import('./profile-flags.js');
     const ok = await saveProfileFields(user.id, { display_name: val });
 
+    setButtonLoading(saveBtn, false);
+
     if (!ok) {
       _setNbHint(hint, t('saveErrorShort'), '#e74c3c');
-      saveBtn.disabled = false;
-      saveBtn.textContent = t('save');
       return;
     }
 
     if (nameDisplay) nameDisplay.textContent = val;
     editor.hidden = true;
     editBtn.hidden = false;
-    saveBtn.textContent = t('save');
     showToast(t('nicknameSaved'));
   });
 }
@@ -2355,9 +2353,8 @@ async function handleGdprExport() {
     return;
   }
 
-  const originalText = exportBtn.textContent;
-  exportBtn.disabled = true;
-  exportBtn.textContent = gdprText('exportBusy');
+  setButtonLoading(exportBtn, true, gdprText('exportBusy'));
+  startProgress();
 
   try {
     const response = await fetch('/api/gdpr-export', {
@@ -2388,21 +2385,28 @@ async function handleGdprExport() {
     console.error('GDPR export error:', error);
     showToast(gdprText('exportError'), 'error');
   } finally {
-    exportBtn.disabled = false;
-    exportBtn.textContent = originalText || gdprText('exportBtn');
+    doneProgress();
+    setButtonLoading(exportBtn, false);
   }
 }
 
 async function requestAccountDeletion(user) {
+  const deleteBtn = document.getElementById('deleteAccountBtn');
+  setButtonLoading(deleteBtn, true);
+
   try {
     const { error } = await supabase.rpc('soft_delete_user', { p_user_id: user.id });
     if (error) throw error;
 
     const profileData = await fetchSettingsProfile(user.id);
+    // Знімаємо loading ДО updateGdprDeletionUi — інакше відновлення
+    // innerHTML затре текст "видалення заплановано".
+    setButtonLoading(deleteBtn, false);
     updateGdprDeletionUi(profileData?.deletion_scheduled_for || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString());
     showToast(gdprText('deleteRequested'));
   } catch (error) {
     console.error('GDPR delete request error:', error);
+    setButtonLoading(deleteBtn, false);
     showToast(gdprText('deleteError'), 'error');
   }
 }

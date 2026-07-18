@@ -4,7 +4,7 @@
 // =============================================================
 
 import { supabase } from './supabaseClient.js';
-import { showToast } from './utils.js';
+import { showToast, setButtonLoading } from './utils.js';
 import { lockScroll, unlockScroll } from './scroll-lock.js';
 import { t } from './i18n-apply.js';
 import { iconChevronDown, iconUser, iconShield, iconLogOut, iconEye } from './icons.js';
@@ -737,8 +737,11 @@ function initAuthModal() {
     const email = document.getElementById('loginEmail').value;
     const password = document.getElementById('loginPassword').value;
     const errorEl = document.getElementById('loginError');
+    const submitBtn = e.target.querySelector('button[type="submit"]');
 
+    setButtonLoading(submitBtn, true);
     const { error } = await signInWithEmail(email, password);
+    setButtonLoading(submitBtn, false);
 
     if (error) {
       errorEl.textContent = error;
@@ -759,9 +762,9 @@ function initAuthModal() {
     const successEl = document.getElementById('resetSuccess');
     const submitBtn = document.getElementById('resetSubmitBtn');
 
-    submitBtn.disabled = true;
+    setButtonLoading(submitBtn, true);
     const { error } = await requestPasswordReset(email);
-    submitBtn.disabled = false;
+    setButtonLoading(submitBtn, false);
 
     if (error) {
       errorEl.textContent = error;
@@ -794,9 +797,9 @@ function initAuthModal() {
       return;
     }
 
-    submitBtn.disabled = true;
+    setButtonLoading(submitBtn, true);
     const { error } = await updatePassword(password);
-    submitBtn.disabled = false;
+    setButtonLoading(submitBtn, false);
 
     if (error) {
       errorEl.textContent = error;
@@ -834,7 +837,10 @@ function initAuthModal() {
       return;
     }
 
+    const submitBtn = document.getElementById('registerSubmitBtn');
+    setButtonLoading(submitBtn, true);
     const { error, message } = await signUpWithEmail(email, password, name);
+    setButtonLoading(submitBtn, false);
 
     if (error) {
       errorEl.textContent = error;

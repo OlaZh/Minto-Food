@@ -1,6 +1,6 @@
 import { supabase } from './supabaseClient.js';
 import { initAuth } from './auth.js';
-import { showToast, escapeHTML, safeImageUrl } from './utils.js';
+import { showToast, escapeHTML, safeImageUrl, withButtonLoading } from './utils.js';
 import { getLang } from './storage.js';
 import { i18n } from './i18n.js';
 import { getRecipeDisplayName } from './recipe-utils.js';
@@ -1543,12 +1543,12 @@ if (saveNotesBtn) {
   saveNotesBtn.addEventListener('click', async () => {
     const notesValue = document.getElementById('view-notes')?.value;
     if (currentViewingId !== null) {
-      const { error } = await supabase
-        .from('recipes')
-        .update({ notes: notesValue })
-        .eq('id', currentViewingId);
+      const { error } = await withButtonLoading(saveNotesBtn, () =>
+        supabase.from('recipes').update({ notes: notesValue }).eq('id', currentViewingId)
+      ) ?? {};
 
-      if (!error) showToast(t('noteSaved'));
+      if (error) showToast(t('rmSaveError'), 'error');
+      else showToast(t('noteSaved'));
     }
   });
 }

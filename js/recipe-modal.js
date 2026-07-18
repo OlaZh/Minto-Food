@@ -9,7 +9,7 @@ import {
   setIngredientsFromText,
   setLanguage,
 } from './recipe-ingredients.js';
-import { showToast, toBase64, setInputVal } from './utils.js';
+import { showToast, toBase64, setInputVal, withButtonLoading } from './utils.js';
 import { getLang } from './storage.js';
 import { t, formatText } from './i18n-apply.js';
 import { lockScroll, unlockScroll } from './scroll-lock.js';
@@ -323,7 +323,10 @@ export async function initRecipeModal() {
 
   form?.addEventListener('submit', async (event) => {
     event.preventDefault();
-    await saveRecipe();
+    // Спінер + захист від подвійного submit на час збереження
+    // (base64-конвертація фото + кілька запитів до Supabase).
+    const saveBtn = form.querySelector('.btn-save');
+    await withButtonLoading(saveBtn, () => saveRecipe());
   });
 
   totalWeightInput?.addEventListener('input', () => {

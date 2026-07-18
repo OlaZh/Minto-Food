@@ -1203,12 +1203,12 @@ footer
 - [x] ✅ **Offline indicator** + recovery banner (18.07.2026) — `js/offline-indicator.js`, авто-інжект build.js на всі сторінки
 - [x] ✅ **Login required** soft-prompts — requireAuth() відкриває модалку (вже було)
 - [x] ✅ Skeleton loaders (вже)
-- [ ] Loading spinners для дій (save/delete/upload)
-- [ ] Progress bar для довгих дій
+- [x] ✅ Loading spinners для дій (18.07.2026) — `setButtonLoading()`/`withButtonLoading()` в `utils.js` + `.btn-spinner` у `_global-ui.scss`; підключено: auth (4 форми), profile (нікнейм/GDPR export/видалення акаунта), збереження рецепта (recipe-modal), корекція назви скан-продукту (meals), onboarding-wizard, нотатки рецепта (add-recipe)
+- [x] ✅ Progress bar для довгих дій (18.07.2026) — глобальна смуга `startProgress()`/`setProgress()`/`doneProgress()` в `utils.js` (indeterminate + determinate, prefers-reduced-motion); використано в GDPR-експорті
 - [x] ✅ Toast система (`utils.js`)
-- [ ] Аудит — всі дії дають feedback
+- [x] ✅ Аудит — всі дії дають feedback (18.07.2026) — пройдено всі async-дії з `disabled`-only станом, скрізь додано спінер; збереження нотаток отримало error-toast (раніше мовчало при помилці)
 - [x] ✅ Favicon усі розміри + apple-touch-icon (18.07.2026) — стиль "скло + пульс-М" за референсом; генератор `scripts/gen-icons.mjs`; head-теги інжектить build.js
-- [ ] Manifest.json (для TIER 2 — PWA; icon-192/512 вже готові)
+- [x] ✅ Manifest.json (18.07.2026) — `/manifest.json` (name/short_name, standalone, theme `#4ab584`, icons 192/512 + maskable); `<link rel="manifest">` + `<meta name="theme-color">` інжектить build.js на всі сторінки. PWA-решта (SW, Lighthouse) — TIER 2, Фаза 26
 - [x] ✅ OpenGraph default image 1200x630 (18.07.2026) — `img/og-default.png`, той самий стиль; og:image інжектиться на сторінки без власного (абсолютний URL оновити після Фази 17)
 - [x] ✅ Smooth scroll + "Back to top" (18.07.2026) — `js/back-to-top.js`, авто-інжект build.js
 - [ ] Safari (iOS + macOS) тестування

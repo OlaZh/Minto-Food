@@ -19,6 +19,7 @@ import { supabase } from './supabaseClient.js';
 import { t, formatText } from './i18n-apply.js';
 import { calcDailyNorm } from './health-core.js';
 import { saveProfileFields } from './profile-flags.js';
+import { setButtonLoading } from './utils.js';
 
 // Кроки wizard. Значення дзеркалять профіль, лейбли беруться з i18n.
 const GOALS = [
@@ -321,8 +322,7 @@ function _renderActivity(card) {
 // ── Збереження ────────────────────────────────────────────────
 async function _finish(btn) {
   if (!_state.activity) return;
-  btn.disabled = true;
-  btn.textContent = t('nickChecking'); // «Зберігаємо…»-стиль; переюз наявного ключа-індикатора
+  setButtonLoading(btn, true, t('nickSaving')); // «Збереження…» — переюз наявного ключа
 
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) { _close(); return; }

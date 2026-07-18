@@ -24,6 +24,81 @@
   }
 }
 
+/* Спінер усередині кнопки (utils.js → setButtonLoading) */
+.btn-spinner {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  margin-right: 8px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  vertical-align: -0.15em;
+  animation: btn-spin 0.7s linear infinite;
+  flex: 0 0 auto;
+}
+
+.btn-is-loading {
+  pointer-events: none;
+  opacity: 0.75;
+}
+
+@keyframes btn-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Глобальний progress bar для довгих дій (utils.js → startProgress) */
+.app-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  z-index: 2500; /* нарівні з offline-банером, поверх модалок */
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+
+  &__bar {
+    height: 100%;
+    width: 0;
+    border-radius: 0 2px 2px 0;
+    background: var(--color-accent, #4ab584);
+    transition: width 0.2s ease;
+  }
+
+  &--indeterminate &__bar {
+    width: 40%;
+    animation: app-progress-slide 1.1s ease-in-out infinite;
+  }
+
+  &--done {
+    opacity: 0;
+  }
+}
+
+@keyframes app-progress-slide {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(350%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn-spinner {
+    animation-duration: 1.6s;
+  }
+
+  .app-progress--indeterminate .app-progress__bar {
+    animation: none;
+    width: 100%;
+    opacity: 0.5;
+  }
+}
+
 .back-to-top {
   position: fixed;
   right: 20px;
