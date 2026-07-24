@@ -386,15 +386,10 @@
     <script type="module" src="js/mobile-nav.js"></script>
     <script type="module" src="js/theme-toggle.js"></script>
     <script type="module" src="js/auth.js"></script>
-    <script type="module">
-      import { reopenCookieBanner } from './js/cookie-consent.js';
-      // Кнопка є в кожному мовному блоці (ua/en/pl) — тому клас, не id
-      document.querySelectorAll('.js-reopen-cookies').forEach((btn) => {
-        btn.addEventListener('click', () => reopenCookieBanner());
-      });
-    </script>
+    <script type="module" src="./js/cookies-page.js"></script>
   <script type="module" src="js/i18n-apply.js"></script>
   <script type="module" src="js/offline-indicator.js"></script>
   <script type="module" src="js/back-to-top.js"></script>
+  <script type="module" src="js/cookie-consent.js"></script>
   </body>
 </html>

@@ -136,8 +136,7 @@ function renderProducts(items) {
         <img src="${imgSrc}"
              alt="${escapeHTML(product.name_ua)}"
              class="product-card__img"
-             loading="lazy"
-             onerror="this.src='img/placeholder.jpg'">
+             loading="lazy">
       </div>
       <div class="product-card__content">
         <h3 class="product-card__name">${escapeHTML(nameForLang(product)) || t('pgNoName')}</h3>
@@ -147,6 +146,10 @@ function renderProducts(items) {
           <button class="product-card__btn">${t('pgMoreDetails')}</button>
         </div>
       </div>`;
+
+    // Fallback картинки без inline onerror (CSP: script-src без unsafe-inline)
+    const cardImg = card.querySelector('.product-card__img');
+    if (cardImg) cardImg.onerror = () => { cardImg.src = 'img/placeholder.jpg'; };
 
     card.addEventListener('click', () => openProductModal(product));
     productList.appendChild(card);

@@ -27,8 +27,10 @@ const COOKIE_SCRIPT = '<script type="module" src="js/cookie-consent.js"></script
 const I18N_SCRIPT = '<script type="module" src="js/i18n-apply.js"></script>';
 
 // Глобальний offline-індикатор + кнопка "Нагору". Auto-init, як cookie.
-const OFFLINE_SCRIPT = '<script type="module" src="js/offline-indicator.js"></script>';
-const BACKTOTOP_SCRIPT = '<script type="module" src="js/back-to-top.js"></script>';
+// Абсолютні шляхи: сторінки рецептів відкриваються через rewrite /recipe/:slug,
+// де відносний "js/..." резолвиться у "/recipe/js/..." (404).
+const OFFLINE_SCRIPT = '<script type="module" src="/js/offline-indicator.js"></script>';
+const BACKTOTOP_SCRIPT = '<script type="module" src="/js/back-to-top.js"></script>';
 
 // Head-теги: іконки (генеруються scratchpad/gen-icons → img/) + дефолтний
 // OG-image для сторінок без власного. Абсолютний URL оновити після
@@ -119,7 +121,9 @@ for (const page of pages) {
   // Інжектимо offline-індикатор і кнопку "Нагору" (ідемпотентно).
   for (const script of [OFFLINE_SCRIPT, BACKTOTOP_SCRIPT]) {
     const src = script.match(/src="([^"]+)"/)[1];
-    if (!html.includes(src)) {
+    // Dedup за іменем файла, щоб зміна шляху (js/… → /js/…) не давала дубля.
+    const basename = src.split('/').pop();
+    if (!html.includes(basename)) {
       const bodyClose = html.lastIndexOf('</body>');
       if (bodyClose !== -1) {
         html = html.slice(0, bodyClose) + script + '\n  ' + html.slice(bodyClose);

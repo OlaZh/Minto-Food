@@ -566,7 +566,7 @@ function createAuthModalHTML() {
           <div class="auth-modal__divider">
             <span>${t('authOr')}</span>
           </div>
-<form class="auth-modal__form" id="loginForm" onsubmit="event.preventDefault(); return false;">
+<form class="auth-modal__form" id="loginForm">
             <div class="form-group">
               <label>${t('authEmailLabel')}</label>
               <input type="email" id="loginEmail" placeholder="your@email.com" required />
@@ -599,7 +599,7 @@ function createAuthModalHTML() {
           <h3 class="auth-modal__subtitle">${t('authResetTitle')}</h3>
           <p class="auth-modal__hint">${t('authResetInstructions')}</p>
 
-          <form class="auth-modal__form" id="resetForm" onsubmit="event.preventDefault(); return false;">
+          <form class="auth-modal__form" id="resetForm">
             <div class="form-group">
               <label>${t('authEmailLabel')}</label>
               <input type="email" id="resetEmail" placeholder="your@email.com" required autocomplete="email" />
@@ -618,7 +618,7 @@ function createAuthModalHTML() {
         <div class="auth-modal__content" data-auth-content="new-password" hidden>
           <h3 class="auth-modal__subtitle">${t('authNewPasswordTitle')}</h3>
 
-          <form class="auth-modal__form" id="newPasswordForm" onsubmit="event.preventDefault(); return false;">
+          <form class="auth-modal__form" id="newPasswordForm">
             <div class="form-group">
               <label>${t('authNewPasswordLabel')}</label>
               <div class="form-group__password-wrap">
@@ -659,7 +659,7 @@ function createAuthModalHTML() {
             <span>${t('authOr')}</span>
           </div>
 
-          <form class="auth-modal__form" id="registerForm" onsubmit="event.preventDefault(); return false;">
+          <form class="auth-modal__form" id="registerForm">
             <div class="form-group">
               <label>${t('authNameLabel')}</label>
               <input type="text" id="registerName" placeholder="${t('authNamePlaceholder')}" />

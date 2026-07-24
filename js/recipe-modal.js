@@ -202,7 +202,7 @@ function createRecipeModalHTML() {
                   <button
                     type="button"
                     class="btn-upload"
-                    onclick="document.getElementById('rm-image-file').click()"
+                    id="rm-image-upload-btn"
                     data-i18n="uploadPhoto">
                     ${iconCamera} Завантажити фото
                   </button>
@@ -312,6 +312,11 @@ export async function initRecipeModal() {
 
   closeBtn?.addEventListener('click', closeRecipeModal);
   cancelBtn?.addEventListener('click', closeRecipeModal);
+
+  // Кнопка "Завантажити фото" → відкриває file input (без inline onclick, CSP)
+  document.getElementById('rm-image-upload-btn')?.addEventListener('click', () => {
+    document.getElementById('rm-image-file')?.click();
+  });
 
   recipeModalInstance?.querySelectorAll('textarea').forEach((textarea) => {
     textarea.style.overflow = 'hidden';

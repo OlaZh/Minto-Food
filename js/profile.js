@@ -1926,6 +1926,19 @@ function renderActivityHistory(period) {
   const container = document.getElementById('activityHistoryList');
   if (!container) return;
 
+  // Делегування кліку по кнопках видалення (без inline onclick, CSP).
+  // Вішаємо один раз — рендер викликається багато разів при зміні періоду.
+  if (!container.dataset.deleteDelegated) {
+    container.dataset.deleteDelegated = '1';
+    container.addEventListener('click', (e) => {
+      const btn = e.target.closest('.activity-item__delete');
+      if (!btn) return;
+      const item = btn.closest('.activity-item');
+      const id = item?.dataset.id;
+      if (id != null) deleteActivity(Number(id));
+    });
+  }
+
   let history = getActivityHistory();
   const now = new Date();
 
@@ -1977,7 +1990,7 @@ function renderActivityHistory(period) {
             <span class="activity-item__calories-value">-${activity.calories}</span>
             <span class="activity-item__calories-label">${t('kcalShort')}</span>
           </div>
-          <button class="activity-item__delete" onclick="deleteActivity(${activity.id})" title="${t('delete')}">${iconXCircle}</button>
+          <button class="activity-item__delete" title="${t('delete')}">${iconXCircle}</button>
         </div>
       `;
     });

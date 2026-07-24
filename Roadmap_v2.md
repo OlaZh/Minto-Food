@@ -1036,7 +1036,7 @@ where id = '<USER_ID>';
 
 - [ ] Vercel автоматично видає Let's Encrypt — нічого не робити
 - [ ] Cloudflare SSL mode = **Full (Strict)** (не Flexible!)
-- [ ] **HSTS header** базовий (`max-age=63072000; includeSubDomains`)
+- [ ] ⚠️ **Частково — HSTS header** базовий (`max-age=63072000; includeSubDomains`) — прописано у `vercel.json` + admin `next.config.ts` (24.07.2026), але ще не задеплоєно; на живих Vercel URL поки лише платформний HSTS. Див. блок «Безпека — basic → Security headers»
 - [ ] _HSTS preload submission → TIER 3_
 
 ### 📧 Email на власному домені
@@ -1073,12 +1073,17 @@ where id = '<USER_ID>';
 
 - [ ] **2FA на ВСІХ критичних акаунтах:** Vercel, Supabase, Cloudflare, Domain registrar, Stripe/LS, Resend, Sentry, GitHub
 - [ ] Recovery codes зберегти в password manager
-- [ ] **Security headers** базові у `vercel.json`:
-  - [ ] HSTS
-  - [ ] `X-Content-Type-Options: nosniff`
-  - [ ] `X-Frame-Options: DENY`
-  - [ ] `Referrer-Policy: strict-origin-when-cross-origin`
-  - [ ] **Базовий CSP** (не A+, але без `unsafe-inline` для скриптів)
+- [ ] ⚠️ **Частково — Security headers** базові (24.07.2026). Написані/зроблені локально — ⚠️ ще НЕ задеплоєні на Vercel (git uncommitted): перевірка на живих URL лишається. admin-app окремим деплоєм отримав HSTS/nosniff/DENY/Referrer-Policy + `X-Robots-Tag: noindex` через `next.config.ts` (адмінський CSP поки не додано: строгий CSP потребує окремої nonce/hash-конфігурації Next.js 16 і не входить у цей підпункт)
+  - [x] ✅ HSTS (`max-age=63072000; includeSubDomains`) — public + admin
+  - [x] ✅ `X-Content-Type-Options: nosniff` — public + admin
+  - [x] ✅ `X-Frame-Options: DENY` (+ `frame-ancestors 'none'` у public CSP) — public + admin
+  - [x] ✅ `Referrer-Policy: strict-origin-when-cross-origin` — public + admin
+  - [x] ✅ **Базовий CSP** (public сайт) — строгі `script-src`/`connect-src`/`style-src`/`font-src` + `object-src 'none'`, `base-uri 'self'`, `form-action 'self'`, `upgrade-insecure-requests`. `connect-src` включає `wss://*.supabase.co` (Realtime). `img-src https:` — свідомо широкий, бо продукт дозволяє довільні URL фото рецептів + Google OAuth аватарки (`lh3.googleusercontent.com`)
+  - [x] ✅ **`script-src` БЕЗ `'unsafe-inline'`** (24.07.2026) — виконано вимогу roadmap. Рефакторинг: inline anti-FOUC theme-скрипт → спільний `js/theme-init.js` (синхронно в `<head>`, без FOUC); inline module scripts (cookies/404) → `js/cookies-page.js`, `js/not-found-page.js`; `onclick` у `500.html` → `js/error-page.js`; inline `onsubmit` у 4 auth-формах прибрано (дублювали наявний `addEventListener('submit')`+preventDefault); inline-handlери з JS-шаблонів (`product-guide.js` onerror → `.onerror=`, `recipe-modal.js` upload onclick → `addEventListener`, `profile.js` delete onclick → делегування на контейнер). `style-src` свідомо лишає `'unsafe-inline'` (сайт активно юзає inline/dynamic styles; roadmap вимагав прибрати саме для скриптів)
+    - [x] ✅ `js/theme-init.js` та інжектовані `offline-indicator`/`back-to-top` підключено АБСОЛЮТНИМИ шляхами (`/js/…`) — інакше на rewrite-маршруті `/recipe/:slug` відносний `js/…` резолвиться у `/recipe/js/…` (404) і anti-FOUC/скрипти мовчки не працюють. `build.js` теж інжектить абсолютно + dedup за іменем файла
+    - [x] ✅ `theme-init.js` знімає `no-transition` після першого рендеру (double rAF) — інакше колірні transitions лишались би вимкненими назавжди (регресія на profile/cookbook/recipes/shopping-list, які раніше цей клас не отримували; раніше знімав лише `recipe-page.js`)
+    - [x] ✅ Повторюваний тест `scripts/csp-theme-check.mjs` (headless Chrome + CSP-заголовок з vercel.json; rewrite-маршрути емулюються з конфігу, не хардкод): на 10 сторінках, включно з `/recipe/test-slug` — **0 CSP violations**; три глобальні виправлені скрипти (theme-init/offline-indicator/back-to-top) не дають 404 на маршруті рецепта; `data-theme=dark` присутнє після завантаження (правильний anti-FOUC порядок гарантує синхронний `theme-init.js` у `<head>` перед CSS — тест не фіксує буквально перший paint); `no-transition` знято після завантаження — усе PASS. Плюс 0 inline `<script>`/handler-атрибутів (grep-sweep); функціональні DOM-тести auth-submit / activity-delete-делегування / recipe-upload / product-onerror — PASS
+    - [ ] ⚠️ Ручна перевірка на живому деплої після коміту: login/register/reset, 500 retry, 404 random recipe, cookies reopen, recipe image picker, profile activity delete, product image fallback, shopping-list realtime (локально Supabase-дані недоступні)
 - [ ] **Rate limiting** через Vercel Edge Middleware:
   - [ ] Login (5/хв)
   - [ ] Signup (3/хв з IP)
@@ -1086,7 +1091,10 @@ where id = '<USER_ID>';
   - [ ] AI scan (за тарифом)
   - [ ] **Recipe creation (10/хв на користувача)** ← від UGC спаму
   - [ ] **Recipe reports (5/год на користувача)** ← від abuse скаргами
-- [ ] Secret management: усі ключі в Vercel env, окремо preview/production, аудит `.gitignore`
+- [ ] ⚠️ **Частково — Secret management**: аудит `.gitignore` (24.07.2026)
+  - [x] ✅ `.env`/`*.env`/`.env.*` ігноруються (додано `.env.*` + `!.env.example`), 0 `.env` у git/history
+  - [x] ✅ 0 `service_role`/SERVICE_ROLE_KEY у клієнтському коді (лише `process.env` у server API)
+  - [ ] Розділити preview/production env у Vercel dashboard (ручне)
 - [ ] Supabase: аудит RLS, service_role тільки на сервері
 
 ### 🌳 Environment management
