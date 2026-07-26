@@ -120,7 +120,7 @@ async function init() {
   // Отримуємо рецепт по slug
   const { data: recipe, error } = await supabase
     .from('recipes')
-    .select('id, name_ua, name_en, name_pl, slug, image, kcal, protein, fat, carbs, steps, steps_en, steps_pl, category, rating, user_id, created_at, prep_time_min, cook_time_min, total_time_min, recipe_yield')
+    .select('id, name_ua, name_en, name_pl, slug, image, kcal, protein, fat, carbs, steps, steps_en, steps_pl, category, user_id, created_at, prep_time_min, cook_time_min, total_time_min, recipe_yield')
     .eq('slug', _slug)
     .eq('status', 'published')
     .is('deleted_at', null)
@@ -131,7 +131,7 @@ async function init() {
   _recipe = recipe;
 
   // Паралельно: автор + інгредієнти
-  const [profileRes, ingRes] = await Promise.all([
+  const [profileRes, ingRes, ratingRes] = await Promise.all([
     recipe.user_id
       ? supabase.from('profiles').select('display_name, full_name').eq('id', recipe.user_id).maybeSingle()
       : Promise.resolve({ data: null }),
@@ -139,10 +139,19 @@ async function init() {
       .from('product_recipe')
       .select('amount, unit, ingredient:products(name_ua, name_en, name_pl)')
       .eq('recipe_id', recipe.id),
+    supabase.rpc('get_recipe_rating_summaries', {
+      p_recipe_ids: [Number(recipe.id)],
+    }),
   ]);
 
   const authorName  = profileRes.data?.display_name || profileRes.data?.full_name || null;
   const ingredients = ingRes.data ?? [];
+  const ratingSummary = ratingRes.data?.[0];
+  if (ratingRes.error) {
+    console.error('[recipe-page] rating summary failed:', ratingRes.error);
+  }
+  recipe.rating = Number(ratingSummary?.rating) || 0;
+  recipe.rating_count = Number(ratingSummary?.rating_count) || 0;
 
   _renderRecipe(recipe, authorName, ingredients);
   _updateMeta(recipe, authorName);
@@ -170,8 +179,8 @@ function _renderRecipe(recipe, authorName, ingredients) {
   const metaItems = [
     authorName ? `<span>${_t('author')}: <b>${_esc(authorName)}</b></span>` : '',
     catLabel   ? `<span class="rp-meta__chip">${catLabel}</span>`  : '',
-    recipe.rating > 0
-      ? `<span class="rp-meta__rating">${iconStar} ${Number(recipe.rating).toFixed(1)}</span>`
+    recipe.rating_count > 0
+      ? `<span class="rp-meta__rating">${iconStar} ${Number(recipe.rating).toFixed(1)} (${recipe.rating_count})</span>`
       : '',
     ...timeParts.map(t => `<span class="rp-meta__dot">${_esc(t)}</span>`),
     `<span>${_formatDate(recipe.created_at)}</span>`,
@@ -498,13 +507,13 @@ function _injectSchemaOrg(recipe, authorName, ingredients) {
         ...(recipe.carbs   != null && { carbohydrateContent:  `${recipe.carbs} g` }),
       },
     }),
-    ...(recipe.rating > 0 && {
+    ...(recipe.rating > 0 && recipe.rating_count > 0 && {
       aggregateRating: {
         '@type':       'AggregateRating',
-        ratingValue:   Number(recipe.rating).toFixed(1),
+        ratingValue:   Number(recipe.rating),
         bestRating:    '5',
         worstRating:   '1',
-        ratingCount:   '1',
+        ratingCount:   Number(recipe.rating_count),
       },
     }),
   };

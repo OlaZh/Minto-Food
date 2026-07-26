@@ -903,7 +903,7 @@ where id = '<USER_ID>';
 
 - [x] ✅ Усі поля Recipe (name, image, author, nutrition, ingredients, instructions, ratings)
 - [x] ✅ prepTime, cookTime, totalTime, recipeYield (міграція seo_timing_migration.sql)
-- [x] ✅ Аудит markup по коду (18.07.2026): прибрано порожні `datePublished`/`image` при відсутніх даних. ⚠️ aggregateRating має хардкод ratingCount:'1' — переглянути, коли з'являться реальні юзерські оцінки
+- [x] ✅ Аудит markup по коду: `aggregateRating` використовує динамічні `AVG(rating)` і `COUNT(*)` з окремих голосів у `recipe_ratings`; один голос на користувача, власні рецепти оцінювати не можна, старі одиничні `recipes.rating` не враховуються
 - [ ] Тест через Google Rich Results Test (search.google.com/test/rich-results) — потребує deployed URL
 
 ### 🌐 Multi-language SEO — ✅
@@ -916,7 +916,7 @@ where id = '<USER_ID>';
 ### 🗺 Sitemap.xml & robots.txt — здебільшого ✅
 
 - [x] ✅ Динамічний `/sitemap.xml` (статичні + рецепти + hreflang)
-- [ ] Додати продукти з путівника в sitemap (якщо публічні)
+- [x] ✅ Продукти путівника в sitemap — **не додаємо (26.07.2026)**: продукти НЕ мають публічних окремих URL. Путівник рендерить їх модалками на одній сторінці (`product-guide.html`), без slug, deep-link чи канонічних адрес. Додавати fragment-URL (`#...`) у sitemap марно — Google не індексує їх як окремі сторінки. Умова роадмапу «(якщо публічні)» не виконується. Переглянути, якщо в TIER 2+ з'являться публічні сторінки продуктів
 - [x] ✅ `/robots.txt` (Allow public, Disallow admin/profile/api)
 
 ### 🖼 Open Graph + Twitter Cards

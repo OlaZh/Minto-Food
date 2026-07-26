@@ -58,29 +58,102 @@ const SEARCH_PREVIEW_LIMIT = 4;
 // 3. ДОПОМІЖНІ ФУНКЦІЇ
 // =============================================================
 
-const updateStarsUI = (rating) => {
+const updateStarsUI = ({
+  userRating = 0,
+  averageRating = 0,
+  ratingCount = 0,
+  canRate = false,
+  disabledReason = '',
+} = {}) => {
   const ratingContainer = document.querySelector('.recipe-rating');
   if (!ratingContainer) return;
 
   const stars = ratingContainer.querySelectorAll('.star');
   const valDisplay = ratingContainer.querySelector('.rating-value');
-  const numericRating = Number(rating) || 0;
+  const numericUserRating = Number(userRating) || 0;
+  const numericAverage = Number(averageRating) || 0;
+  const numericCount = Number(ratingCount) || 0;
+
+  ratingContainer.dataset.canRate = String(canRate);
+  ratingContainer.dataset.disabledReason = disabledReason;
+  ratingContainer.classList.toggle('is-disabled', !canRate);
+  ratingContainer.title = disabledReason;
 
   stars.forEach((star) => {
     const starValue = Number(star.dataset.value);
-    if (starValue <= numericRating) {
+    if (starValue <= numericUserRating) {
       star.classList.add('filled');
       star.innerHTML = iconStarFilled;
     } else {
       star.classList.remove('filled');
       star.innerHTML = iconStar;
     }
+    star.setAttribute('aria-disabled', String(!canRate));
   });
 
   if (valDisplay) {
-    valDisplay.textContent = numericRating > 0 ? numericRating.toFixed(1) : '0.0';
+    valDisplay.textContent = numericCount > 0
+      ? `${numericAverage.toFixed(1)} · ${formatText('ratingVotes', { count: numericCount })}`
+      : t('ratingNoVotes');
   }
 };
+
+async function getRecipeRatingSummaries(recipeIds) {
+  const ids = [...new Set(
+    recipeIds
+      .map((id) => Number(id))
+      .filter((id) => Number.isInteger(id)),
+  )];
+
+  if (ids.length === 0) return new Map();
+
+  const { data, error } = await supabase.rpc('get_recipe_rating_summaries', {
+    p_recipe_ids: ids,
+  });
+
+  if (error) {
+    console.error('Помилка завантаження рейтингів:', error);
+    return new Map();
+  }
+
+  return new Map((data || []).map((row) => [
+    Number(row.recipe_id),
+    {
+      rating: Number(row.rating) || 0,
+      ratingCount: Number(row.rating_count) || 0,
+    },
+  ]));
+}
+
+async function attachRatingSummaries(recipes) {
+  const summaries = await getRecipeRatingSummaries(recipes.map((recipe) => recipe.id));
+
+  recipes.forEach((recipe) => {
+    const summary = summaries.get(Number(recipe.id));
+    recipe.rating = summary?.rating ?? 0;
+    recipe.rating_count = summary?.ratingCount ?? 0;
+  });
+
+  return recipes;
+}
+
+async function getOwnRecipeRating(recipeId) {
+  if (!currentUser) return 0;
+
+  const { data, error } = await supabase
+    .from('recipe_ratings')
+    .select('rating')
+    .eq('recipe_id', recipeId)
+    .eq('user_id', currentUser.id)
+    .maybeSingle();
+
+  if (error) {
+    console.error('Помилка завантаження власної оцінки:', error);
+    return 0;
+  }
+
+  return Number(data?.rating) || 0;
+}
 
 function getRecipeName(recipe) {
   return getRecipeDisplayName(recipe, getLang());
@@ -652,6 +725,7 @@ async function buildFilterPanel() {
 
 function buildRecipeCard(recipe, savedRecipeIds) {
   const rating = recipe.rating || 0;
+  const ratingCount = Number(recipe.rating_count) || 0;
   const name = getRecipeName(recipe);
   const fallbackImage = 'https://images.unsplash.com/photo-1495521821757-a1efb6729352?q=80&w=500';
   const cardImage = safeImageUrl(recipe.image) || fallbackImage;
@@ -682,7 +756,7 @@ function buildRecipeCard(recipe, savedRecipeIds) {
     <img src="${cardImage}" alt="${safeName}" class="recipe-card__img" loading="lazy">
     <div class="recipe-card__rating-badge">
       <span class="recipe-card__rating-star">${iconStarFilled}</span>
-      <span>${rating > 0 ? Number(rating).toFixed(1) : '0'}</span>
+      <span>${ratingCount > 0 ? `${Number(rating).toFixed(1)} (${ratingCount})` : '—'}</span>
     </div>
     ${isOwn ? (recipe.is_public
       ? `<div class="recipe-card__visibility recipe-card__visibility--public" title="${t('publicRecipeTitle')}">${iconGlobal}<span>${t('publicRecipe')}</span></div>`
@@ -745,6 +819,8 @@ function buildRecipeCard(recipe, savedRecipeIds) {
 // =============================================================
 
 async function displayRecipes(recipes, isSearch = false) {
+  await attachRatingSummaries(recipes);
+
   // --- Завантажити збережені рецепти ---
   let savedRecipeIds = [];
   if (currentUser) {
@@ -947,6 +1023,13 @@ export async function openRecipeView(recipeId) {
 
   const name = getRecipeName(recipe);
   const isOwn = isOwnRecipe(recipe);
+  const [ratingSummaries, ownRating] = await Promise.all([
+    getRecipeRatingSummaries([recipe.id]),
+    getOwnRecipeRating(recipe.id),
+  ]);
+  const ratingSummary = ratingSummaries.get(Number(recipe.id));
+  recipe.rating = ratingSummary?.rating ?? 0;
+  recipe.rating_count = ratingSummary?.ratingCount ?? 0;
 
   const setT = (id, val) => {
     const el = document.getElementById(id);
@@ -979,7 +1062,19 @@ export async function openRecipeView(recipeId) {
     }
   }
 
-  updateStarsUI(recipe.rating || 0);
+  const canRate = Boolean(currentUser && !isOwn && recipe.status === 'published');
+  const disabledReason = !currentUser
+    ? t('ratingLoginRequired')
+    : isOwn
+      ? t('ratingOwnForbidden')
+      : '';
+  updateStarsUI({
+    userRating: ownRating,
+    averageRating: recipe.rating,
+    ratingCount: recipe.rating_count,
+    canRate,
+    disabledReason,
+  });
 
   const notesField = document.getElementById('view-notes');
   if (notesField) notesField.value = recipe.notes || '';
@@ -1385,6 +1480,8 @@ async function loadNewRecipes() {
     return;
   }
 
+  await attachRatingSummaries(data);
+
   const now = Date.now();
   const TWO_HOURS = 2 * 60 * 60 * 1000;
 
@@ -1416,6 +1513,7 @@ async function loadNewRecipes() {
       const isOwn = user && recipe.user_id === user.id;
       const name = getRecipeName(recipe);
       const rating = recipe.rating || 0;
+      const ratingCount = Number(recipe.rating_count) || 0;
       const safeName = escapeHTML(name);
 
       const item = document.createElement('div');
@@ -1429,7 +1527,7 @@ async function loadNewRecipes() {
             <span>${formatTimeAgo(recipe.created_at)}</span>
           </div>
         </div>
-        ${rating > 0 ? `<div class="new-recipe-item__rating"><span>${iconStarFilled}</span>${rating.toFixed(1)}</div>` : ''}
+        ${ratingCount > 0 ? `<div class="new-recipe-item__rating"><span>${iconStarFilled}</span>${rating.toFixed(1)} (${ratingCount})</div>` : ''}
       `;
 
       item.addEventListener('click', () => {
@@ -1508,22 +1606,46 @@ document.addEventListener('DOMContentLoaded', async () => {
   const ratingContainer = document.querySelector('.recipe-rating');
   if (ratingContainer) {
     ratingContainer.addEventListener('click', async (e) => {
-      if (e.target.classList.contains('star')) {
-        const newRating = Number(e.target.dataset.value);
+      const star = e.target.closest('.star');
+      if (!star || currentViewingId === null) return;
 
-        if (currentViewingId !== null) {
-          const { error } = await supabase
-            .from('recipes')
-            .update({ rating: newRating })
-            .eq('id', currentViewingId);
-
-          if (!error) {
-            updateStarsUI(newRating);
-            loadAndDisplayRecipes(true);
-            showToast(t('ratingSaved'));
-          }
-        }
+      if (!currentUser) {
+        showToast(t('ratingLoginRequired'), 'error');
+        return;
       }
+      if (ratingContainer.dataset.canRate !== 'true') {
+        showToast(ratingContainer.dataset.disabledReason || t('ratingSaveError'), 'error');
+        return;
+      }
+
+      const newRating = Number(star.dataset.value);
+      const { error } = await supabase
+        .from('recipe_ratings')
+        .upsert(
+          {
+            recipe_id: Number(currentViewingId),
+            user_id: currentUser.id,
+            rating: newRating,
+          },
+          { onConflict: 'recipe_id,user_id' },
+        );
+
+      if (error) {
+        console.error('Помилка збереження оцінки:', error);
+        showToast(t('ratingSaveError'), 'error');
+        return;
+      }
+
+      const summaries = await getRecipeRatingSummaries([currentViewingId]);
+      const summary = summaries.get(Number(currentViewingId));
+      updateStarsUI({
+        userRating: newRating,
+        averageRating: summary?.rating ?? 0,
+        ratingCount: summary?.ratingCount ?? 0,
+        canRate: true,
+      });
+      await loadAndDisplayRecipes(true);
+      showToast(t('ratingSaved'));
     });
   }
 });
