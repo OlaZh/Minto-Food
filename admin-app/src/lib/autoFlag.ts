@@ -1,4 +1,4 @@
-export type FlagType = 'inappropriate' | 'suspicious_link'
+export type FlagType = 'inappropriate' | 'suspicious_link' | 'nsfw_image'
 
 export interface AutoFlag {
   type: FlagType
@@ -38,7 +38,13 @@ function extractText(recipe: {
 }
 
 export function detectFlags(
-  recipe: { name_ua?: string | null; name_en?: string | null; steps?: unknown },
+  recipe: {
+    name_ua?: string | null
+    name_en?: string | null
+    steps?: unknown
+    is_image_flagged?: boolean | null
+    image_nsfw_score?: number | null
+  },
 ): AutoFlag[] {
   const flags: AutoFlag[] = []
   const text = extractText(recipe)
@@ -49,6 +55,14 @@ export function detectFlags(
 
   if (SUSPICIOUS_LINK_PATTERNS.some(p => p.test(text))) {
     flags.push({ type: 'suspicious_link', label: '🔗 Підозрілі посилання' })
+  }
+
+  // Phase 18 — image moderation flagged this photo as NSFW (auto-flagged).
+  if (recipe.is_image_flagged) {
+    const pct = typeof recipe.image_nsfw_score === 'number'
+      ? ` ${Math.round(recipe.image_nsfw_score * 100)}%`
+      : ''
+    flags.push({ type: 'nsfw_image', label: `🔞 Фото auto-flagged${pct}` })
   }
 
   return flags

@@ -3,6 +3,7 @@ import { type AutoFlag } from '@/lib/autoFlag'
 const FLAG_STYLES: Record<string, string> = {
   inappropriate: 'bg-red-50 text-red-600 border-red-200',
   suspicious_link: 'bg-orange-50 text-orange-600 border-orange-200',
+  nsfw_image: 'bg-red-100 text-red-700 border-red-300',
 }
 
 export default function AutoFlagBadges({ flags }: { flags: AutoFlag[] }) {

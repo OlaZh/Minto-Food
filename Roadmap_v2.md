@@ -1129,19 +1129,85 @@ where id = '<USER_ID>';
 
 ---
 
-## 🖼 ФАЗА 18: Image moderation (НОВА)
+## 🖼 ФАЗА 18: Image moderation (НОВА) — ✅ ядро зроблено (24.07.2026)
 
 > UGC платформа без image moderation = NSFW спам у перший тиждень. Це не "after traction".
+> **Статус:** провайдер-агностичний пайплайн реалізовано. Після аудиту (25.07.2026) архітектуру **переписано** — три критичні діри закрито (див. нижче). Лишилось: зареєструвати провайдера (env-ключ) + ручний E2E на deployed URL + застосувати міграцію.
+> **Архітектура (v2):** запис рецепта + модерація — **разом на сервері** (`/api/save-recipe`), в одному кроці. Скоринг оцінює САМЕ те фото, що записується → клієнт не може підмінити фото між скорингом і записом. service_role пише moderation-колонки; DB-тригер стирає їх з будь-якого клієнтського запису (виняток — service_role і admin). Оскільки сервер обходить RLS, endpoint сам форсує `user_id=JWT` і перевіряє власника при edit.
 
 - [ ] **Cloudflare Images** має built-in moderation (легко вмикається при upload)
 - [ ] АБО **Sightengine** API ($29/міс за 5K зображень) — більший контроль
 - [ ] АБО **Hive Moderation** — найкраща точність, але дорожче
-- [ ] Інтеграція:
-  - [ ] При upload recipe photo → перевірка
-  - [ ] Якщо NSFW score > 0.8 → автоматично `is_shadow_banned = true` на recipe
-  - [ ] Подія в admin queue з тегом "auto-flagged"
-- [ ] Дополнення auto-flagging (Фаза 10.6) для зображень
-- [ ] Логування рішень для audit (admin може override)
+
+  > _Адаптер Sightengine (nudity-2.1) уже написаний у `api/save-recipe.js`. Провайдер вмикається `SIGHTENGINE_USER`+`SIGHTENGINE_SECRET` у Vercel env — БЕЗ змін коду. Без ключів працює `stub` (score 0, пропускає), тож потік живий уже зараз. Cloudflare/Hive → нова гілка в `pickProvider()`._
+
+- [x] ✅ **Інтеграція:**
+  - [x] ✅ Збереження рецепта йде через `/api/save-recipe`; нове фото (файл або змінений URL) модерується там-таки перед записом
+  - [x] ✅ NSFW score ≥ 0.8 (`IMAGE_NSFW_THRESHOLD`) → `is_image_flagged=true` + `image_nsfw_score`. Публічний flagged → `pending` (у черзі); приватний flagged лишається `draft` (не витікає — публічні листинги фільтрують `status='published'`), позначений для аудиту
+  - [x] ✅ Тег "auto-flagged" у черзі — бейдж `🔞 Фото auto-flagged NN%` (`autoFlag.ts` тип `nsfw_image`); черга тягне `status='pending' OR is_image_flagged=true`
+- [x] ✅ Auto-flagging (Фаза 10.6) для зображень — той самий `detectFlags()`
+- [x] ✅ Логування для audit — `image_moderation_log`; override через `override_image_flag()` + `clearImageFlag`
+
+**Критичні виправлення після аудиту (25.07.2026):**
+
+- [x] ✅ **#1 Підміну фото усунено** — модерація і запис нерозривні на сервері (`/api/save-recipe` оцінює фото з того самого payload, що записує). Прибрано окремий `/api/moderate-image`, який довіряв парі (клієнтське фото + recipe_id)
+- [x] ✅ **#2 Приватний рецепт не публікується** — `approveRecipe` тепер відмовляє, якщо `is_public=false` (публікація приватного = витік). Для приватного flagged у UI ховається «Схвалити», натомість «✓ Зняти флаг фото» / «✕ Відхилити фото» (`rejectImage` прибирає фото, лишає рецепт приватним)
+- [x] ✅ **#3 override реально спрацьовує** — trigger-guard тепер пропускає не лише service_role, а й admin (`is_admin`); `override_image_flag`/`approveRecipe`/`rejectRecipe` (admin JWT) справді пишуть moderation-колонки
+- [x] ✅ **pending_updates розсинхрон** — при edit опублікованого нове фото йде в `recipe_pending_updates`; сервер модерує саме staged-фото і паркує весь update у чергу, якщо воно flagged (адмін бачить те фото, що модерувалось)
+- [x] ✅ **approve/reject знімають image-флаг** — інакше рецепт лишався б у черзі назавжди
+- [x] ✅ **regex data URI** — `data:image/png;base64,!!!!` та надто короткі payload тепер відхиляються (не шлемо провайдеру)
+- [x] ✅ **Rate limiting** — ≥20 provider-викликів/год на юзера (`IMAGE_MOD_RATE_PER_HOUR`) → фото не шлемо провайдеру, рецепт іде в чергу на ручну модерацію (квота захищена, спам ловить людина)
+- [x] ✅ **`>=` vs `>`** — свідомо `>=` (суворіше: рівно 0.8 → у чергу); задокументовано
+- [x] ✅ **Explicit grant** `service_role` на `image_moderation_log`
+
+**Другий аудит виправлено (26.07.2026) — блокери, що runtime виявив би одразу:**
+
+- [x] ✅ **Модерація мовчки падала** — `NSFW_THRESHOLD` був випадково видалений (ReferenceError ловився в catch → усе проходило як `flagged:false`). Повернено. Причина пропуску: не ганяв ESLint `no-undef` на `api/` і не було runtime-тесту. Обидва додано
+- [x] ✅ **Клієнтський `imageIsNew` більше не довіряється** — СЕРВЕР визначає, чи фото нове (create з фото → нове; edit → порівняння з `original.image`). Закрито обхід `imageIsNew:false` для нового фото
+- [x] ✅ **status при edit** — сервер перераховує status завжди: create/draft-edit public→pending/private→draft; published→private знімає з ефіру (`status='draft'`). Раніше status при edit не оновлювався (перемикання public/private ламалось, published міг лишитись видимим)
+- [x] ✅ **invalid фото → 400**, не зберігається (раніше `provider:'invalid'` + `flagged:false` і зберігалось)
+- [x] ✅ **Атомарність published-edit** — усе (direct PATCH + staged INSERT + flag) в одній транзакції через RPC `stage_recipe_update` (раніше 3 окремі REST — часткова невдача лишала пів-оновлення)
+- [x] ✅ **Атомарний rate limit** — RPC `reserve_moderation_slot` з `pg_advisory_xact_lock` серіалізує check+reserve per-user (раніше count-then-call мав гонку; бурст обходив ліміт)
+- [x] ✅ **staged-фото в адмінці** — черга показує `recipe_pending_updates.changes.image` (бейдж «staged»); `approveRecipe` переносить staged→live; `rejectImage` чистить staged (не видаляє живе фото)
+- [x] ✅ **Тип `recipes.id` = integer** (не uuid) — виправлено FK/RPC-параметри/rollback (див. [[project_dead_recipe_columns]] контекст типів)
+- [x] ✅ **Runtime-тест** `scripts/save-recipe-check.mjs` — мокає fetch (Supabase+provider), ганяє гілки handler.
+
+**Третій аудит виправлено (26.07.2026) — блокери, що мок-тест маскував:**
+
+- [x] ✅ **GRANT EXECUTE service_role** на 3 нові RPC (`stage_recipe_update`, `reserve_moderation_slot`, `finalize_moderation_slot`) — після `REVOKE ALL` вони були недоступні service_role → published-edit падав би permission-denied, а rate-limit RPC мовчки провалювався (handler ішов fail-open → провайдер БЕЗ ліміту). SECURITY DEFINER не рятує: EXECUTE перевіряється для ролі, що викликає
+- [x] ✅ **Clean staged-оновлення потрапляють у чергу** — черга тепер `status=pending OR is_image_flagged OR has_pending_update`. Раніше безпечне нове фото / edited name/steps на published рецепті лишались у БД, але адмін їх не бачив (черга ігнорувала `has_pending_update`)
+- [x] ✅ **not-an-image відхиляється** — звичайний рядок (не data-URI, не URL) тепер `invalid`→400, не зберігається (раніше `provider:'none'`, flagged:false, зберігалось)
+- [x] ✅ **approveRecipe/rejectImage error-перевірки** — усі читання/delete/update `recipe_pending_updates` перевіряються; після застосування/видалення staged коректно перераховується `has_pending_update`
+- [x] ✅ **Тест посилено (22/22)** — додано: RPC-відмова (fail-open спостережуваний), not-an-image БЕЗ запису рецепта, invalid БЕЗ запису, published-edit викликає stage RPC. Мок тепер програмований на помилки (раніше RPC безумовно успішні — маскували блокери)
+- [x] ✅ **Скрипти в package.json** — `npm run test:save-recipe` + `npm run lint:api` (`scripts/lint-api.cjs`, no-undef на всіх `api/*.js`) — тепер справді «в процесі»
+
+**Файли:** `supabase/migrations/20260724_1000_image_moderation.sql` (+rollback), `api/save-recipe.js`, `scripts/{save-recipe-check.mjs,lint-api.cjs}`, `package.json`, `js/recipe-modal.js`, `js/i18n.js`, `admin-app`: `lib/autoFlag.ts`, `components/moderation/AutoFlagBadges.tsx`, `app/(admin)/moderation/{page,ModerationClient}.tsx`, `app/actions/moderation.ts`.
+
+**Четвертий аудит виправлено (26.07.2026) — повний staged-workflow:**
+
+> Продуктове рішення: «Схвалити» застосовує ВСІ staged-поля (фото+назва+кроки); «Відхилити» відкидає ЛИШЕ staged (опублікований рецепт лишається — автора не карають).
+
+- [x] ✅ **Admin-flow тепер атомарний** — 2 транзакційні RPC: `apply_pending_update` (мержить усі staged-поля oldest→newest у live, чистить pending, published, знімає флаги — одна транзакція) і `discard_pending_update` (видаляє pending, знімає флаг). `approveRecipe`/`rejectRecipe` — тонкі обгортки: якщо `has_pending_update` → відповідний RPC, інакше звичайна публікація/reject. Раніше admin-flow був послідовністю REST — часткова невдача лишала пів-стану
+- [x] ✅ **Text-only staged застосовуються/відхиляються** — `apply_pending_update` мержить name/steps теж (не лише фото); `discard` відкидає весь staged. Раніше approve шукав лише `changes.image` → text-only лишався з `has_pending_update=true` назавжди
+- [x] ✅ **rejectRecipe для staged** — тепер `discard_pending_update` (не переводив весь рецепт у rejected, лишаючи pending). `rejectImage` спрощено до live-flagged (staged закриває rejectRecipe)
+- [x] ✅ **has_pending_update без гонки** — рахується в транзакції БД (RPC), не зі старого JS-`pendingRows.length`
+- [x] ✅ **Тест 24/24** — негативні кейси: stage RPC→500, finalize→200 (best-effort)
+
+**П'ятий аудит виправлено (26.07.2026) — concurrency + чесність тесту:**
+
+- [x] ✅ **Concurrency lost-update** — `apply_pending_update`/`discard_pending_update` тепер БЛОКУЮТЬ `recipes` row `FOR UPDATE` **першою дією** (той самий lock-order, що `stage_recipe_update`) + видаляють лише **snapshot** id прочитаних pending. Раніше різний порядок блокувань → паралельний edit міг втратити зміни (apply видаляв незастосований новий pending; discard лишав його з `has_pending_update=false`)
+- [x] ✅ **Edge published→private+staged** — `apply_pending_update` ставить status ЗА `is_public` (`CASE WHEN is_public THEN 'published' ELSE 'draft'`), не сліпо published. `approveRecipe` private-guard тепер лише для non-staged (нова публікація); staged застосовується через RPC, який приватний рецепт не публікує
+- [x] ✅ **Edge discard score/time** — `discard_pending_update` тепер обнуляє `image_nsfw_score`+`image_moderated_at` (описували відхилене staged-фото; live-фото лишилось старим)
+- [x] ⚠️ **ЧЕСНО про тест:** заяву «видалення GRANT зламає тест» ВІДКЛИКАНО — вона хибна. Тест мокає fetch (`stageFails`→403 за командою), НЕ читає SQL і НЕ виконує Postgres. Тест доводить лише: handler на 403 повертає 500; finalize best-effort. Grants на `apply_pending_update`/`discard_pending_update` статично правильні, але тестом НЕ захищені — перевірка grant можлива лише на живій БД (E2E)
+
+**Хвіст (закрити перед launch):**
+
+- [ ] **Перевірити живий тип** `recipe_pending_updates.recipe_id` (історичний `admin_migration.sql` каже uuid, але запит 25.07 показав integer — підтвердити перед застосуванням; RPC розрахований на integer). SQL: `SELECT column_name,data_type FROM information_schema.columns WHERE table_name='recipe_pending_updates'`
+- [ ] Застосувати міграцію `20260724_1000_image_moderation.sql` у Supabase вручну
+- [ ] Зареєструвати акаунт провайдера + env-ключі у Vercel (до цього moderation = stub)
+- [ ] Ручний E2E на живій БД: RPC-транзакції, advisory-lock rate limit, staged-flow в реальній адмінці (мок-тест БД не покриває)
+- [ ] Rescan наявних фото після підключення провайдера (модеруються лише НОВІ)
+- [ ] Відомий борг (передіснуючий): staged name/steps з `recipe_pending_updates` застосовуються лише частково (approve застосовує staged **фото**; загального apply-механізму для name/steps у проєкті нема)
 
 ---
 

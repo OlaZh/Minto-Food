@@ -104,25 +104,111 @@ export async function deleteRecipeFromReport(
 export async function approveRecipe(recipeId: string) {
   const supabase = await createClient()
   const admin = await assertAdmin(supabase)
-  const { error } = await supabase.from('recipes').update({ status: 'published' }).eq('id', recipeId)
+  const rid = Number(recipeId)
 
-  throwIfError(error, 'Не вдалося опублікувати рецепт')
-  await logAction(supabase, admin.id, 'recipes', recipeId, 'approve')
+  const { data: recipe, error: fetchErr } = await supabase
+    .from('recipes')
+    .select('is_public, has_pending_update')
+    .eq('id', recipeId)
+    .single()
+  throwIfError(fetchErr, 'Не вдалося прочитати рецепт')
+
+  if (recipe?.has_pending_update) {
+    // Staged edit: apply ALL staged fields atomically (photo + name + steps).
+    // No private-guard needed here — apply_pending_update sets status FROM
+    // is_public, so applying an edit to a now-private recipe keeps it draft
+    // (it does NOT publish a private recipe). Edge: published→private+staged.
+    const { error } = await supabase.rpc('apply_pending_update', { p_recipe_id: rid })
+    throwIfError(error, 'Не вдалося застосувати staged-зміни')
+    await logAction(supabase, admin.id, 'recipes', recipeId, 'approve_pending')
+  } else {
+    // Plain pending recipe (new submission). Guard (#2): only PUBLIC recipes may
+    // be published — a private recipe is in the queue only because its photo was
+    // auto-flagged, and publishing it would leak it to everyone.
+    if (!recipe?.is_public) {
+      throw new Error('Приватний рецепт не можна публікувати. Використайте «Зняти флаг фото» або «Відхилити фото».')
+    }
+    const { error } = await supabase
+      .from('recipes')
+      .update({ status: 'published', is_image_flagged: false })
+      .eq('id', rid)
+    throwIfError(error, 'Не вдалося опублікувати рецепт')
+    await logAction(supabase, admin.id, 'recipes', recipeId, 'approve')
+  }
+
   revalidatePath('/moderation')
-
   return { ok: true as const }
 }
 
 export async function rejectRecipe(recipeId: string, note: string) {
   const supabase = await createClient()
   const admin = await assertAdmin(supabase)
-  const { error } = await supabase.from('recipes').update({
-    status: 'rejected',
-    moderation_note: note || null,
-  }).eq('id', recipeId)
+  const rid = Number(recipeId)
 
-  throwIfError(error, 'Не вдалося відхилити рецепт')
-  await logAction(supabase, admin.id, 'recipes', recipeId, 'reject', { note })
+  const { data: recipe, error: fetchErr } = await supabase
+    .from('recipes')
+    .select('has_pending_update')
+    .eq('id', recipeId)
+    .single()
+  throwIfError(fetchErr, 'Не вдалося прочитати рецепт')
+
+  if (recipe?.has_pending_update) {
+    // Staged edit: reject the STAGED changes only — the published recipe stays
+    // exactly as it was (don't punish the author for a rejected edit).
+    // Atomic via discard_pending_update.
+    const { error } = await supabase.rpc('discard_pending_update', { p_recipe_id: rid })
+    throwIfError(error, 'Не вдалося відхилити staged-зміни')
+    await logAction(supabase, admin.id, 'recipes', recipeId, 'reject_pending', { note })
+  } else {
+    // Plain pending recipe: reject the whole recipe.
+    const { error } = await supabase.from('recipes').update({
+      status: 'rejected',
+      moderation_note: note || null,
+      is_image_flagged: false,
+    }).eq('id', rid)
+    throwIfError(error, 'Не вдалося відхилити рецепт')
+    await logAction(supabase, admin.id, 'recipes', recipeId, 'reject', { note })
+  }
+
+  revalidatePath('/moderation')
+  return { ok: true as const }
+}
+
+// Phase 18 — clear a photo's auto-flag after human review. The recipe stays
+// in whatever status it had (an admin uses Схвалити/Відхилити to move it); this
+// just lifts the NSFW mark so it no longer shows as auto-flagged.
+export async function clearImageFlag(recipeId: string) {
+  const supabase = await createClient()
+  const admin = await assertAdmin(supabase)
+  const { error } = await supabase.rpc('override_image_flag', {
+    p_recipe_id: Number(recipeId),  // recipes.id is integer
+    p_flagged: false,
+  })
+
+  throwIfError(error, 'Не вдалося зняти флаг фото')
+  await logAction(supabase, admin.id, 'recipes', recipeId, 'clear_image_flag')
+  revalidatePath('/moderation')
+
+  return { ok: true as const }
+}
+
+// Phase 18 — reject the LIVE photo of a recipe whose live image was auto-flagged
+// (a private draft / a new pending recipe). Strips the photo and clears the
+// flag in one update. Staged photos (edit of a published recipe) are NOT handled
+// here — those go through rejectRecipe → discard_pending_update, which drops the
+// whole staged edit and keeps the published recipe intact.
+export async function rejectImage(recipeId: string) {
+  const supabase = await createClient()
+  const admin = await assertAdmin(supabase)
+  const rid = Number(recipeId)
+
+  const { error } = await supabase
+    .from('recipes')
+    .update({ image: null, is_image_flagged: false })
+    .eq('id', rid)
+  throwIfError(error, 'Не вдалося прибрати фото')
+
+  await logAction(supabase, admin.id, 'recipes', recipeId, 'reject_image')
   revalidatePath('/moderation')
 
   return { ok: true as const }

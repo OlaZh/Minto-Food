@@ -517,6 +517,39 @@ async function showRecipeForm(data = null) {
   }
 }
 
+// Phase 18 — записуємо рецепт через сервер, який модерує САМЕ те фото, що
+// зберігає (score нерозривний із записом — клієнт не може підмінити фото між
+// скорингом і записом). Сервер також робить серверну валідацію public і
+// перевірку власника. Повертає { recipe, flagged } або кидає при помилці.
+async function saveRecipeViaServer(payload, editingId, isPublic, imageIsNew) {
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+  if (!session?.access_token) throw new Error('no session');
+
+  const res = await fetch('/api/save-recipe', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${session.access_token}`,
+    },
+    body: JSON.stringify({
+      recipe: payload,
+      editingRecipeId: editingId,
+      isPublicSubmission: isPublic,
+      imageIsNew,
+    }),
+  });
+
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    const err = new Error(data?.error || 'save_failed');
+    err.code = data?.error;
+    throw err;
+  }
+  return data; // { recipe, flagged, score, provider }
+}
+
 async function saveRecipe() {
   const {
     data: { user },
@@ -540,11 +573,16 @@ async function saveRecipe() {
   const fileInput = document.getElementById('rm-image-file');
   const urlInput = document.getElementById('rm-image-url');
   let finalImage = '';
+  // Фото вважаємо новим (потребує модерації), лише якщо юзер обрав файл або
+  // ввів URL, що відрізняється від уже збереженого. Незмінене фото не рескануємо.
+  let imageIsNew = false;
 
   if (fileInput?.files?.[0]) {
     finalImage = await toBase64(fileInput.files[0]);
+    imageIsNew = true;
   } else if (urlInput?.value.trim()) {
     finalImage = urlInput.value.trim();
+    imageIsNew = finalImage !== (editingRecipeOriginal?.image ?? '');
   } else if (editingRecipeOriginal?.image) {
     finalImage = editingRecipeOriginal.image;
   }
@@ -553,25 +591,16 @@ async function saveRecipe() {
   const totalWeightVal = parsePositiveNumber(document.getElementById('rm-total-weight')?.value);
   const displayedNutrition = getDisplayedNutrition(totals, totalWeightVal);
 
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('is_shadow_banned')
-    .eq('id', user.id)
-    .single();
-
-  const isShadowBanned = profile?.is_shadow_banned === true;
   const isPublicSubmission = recipeVisibility === 'public';
-  const status = isShadowBanned ? 'pending' : (isPublicSubmission ? 'pending' : 'draft');
-
   const nameVal = document.getElementById('rm-name')?.value.trim() ?? '';
   const stepsVal = document.getElementById('rm-steps')?.value.trim() ?? '';
 
+  // Клієнтська валідація — швидкий feedback. Сервер валідує повторно (авторитет).
   if (isPublicSubmission) {
     if (!nameVal) {
       showToast(t('rmPublishNeedsName'), 'error');
       return;
     }
-
     const hasIngredients = !!getIngredientsText().trim();
     if (!hasIngredients && !stepsVal) {
       showToast(t('rmNeedIngredientsOrSteps'), 'error');
@@ -579,6 +608,8 @@ async function saveRecipe() {
     }
   }
 
+  // Поля рецепта. user_id/status/moderation-колонки НЕ передаємо — їх вирішує
+  // сервер (клієнтські значення все одно ігноруються).
   const payload = {
     name_ua: nameVal,
     kcal: parseFloat(displayedNutrition.kcal.toFixed(1)) || 0,
@@ -591,90 +622,31 @@ async function saveRecipe() {
     ingredients: getIngredientsText(),
     steps: stepsVal,
     image: finalImage,
-    user_id: user.id,
-    status,
-    is_public: isPublicSubmission,
   };
 
   let data = null;
-  let error = null;
-
-  if (editingRecipeId !== null) {
-    if (editingRecipeOriginal?.status === 'published') {
-      const moderatedFields = ['image', 'steps', 'name_ua'];
-      const pendingChanges = {};
-      const directPayload = { ...payload };
-
-      moderatedFields.forEach((field) => {
-        const newValue = payload[field];
-        const oldValue = editingRecipeOriginal?.[field];
-        const changed = newValue !== oldValue && !(newValue == null && oldValue == null);
-
-        if (changed) {
-          pendingChanges[field] = newValue;
-          delete directPayload[field];
-        }
-      });
-
-      if (Object.keys(directPayload).length > 0) {
-        const directResult = await supabase
-          .from('recipes')
-          .update(directPayload)
-          .eq('id', editingRecipeId)
-          .eq('user_id', user.id);
-        error = directResult.error || null;
-      }
-
-      if (!error && Object.keys(pendingChanges).length > 0) {
-        const pendingResult = await supabase.from('recipe_pending_updates').insert({
-          recipe_id: editingRecipeId,
-          user_id: user.id,
-          changes: pendingChanges,
-        });
-        error = pendingResult.error || null;
-
-        if (!error) {
-          const pendingFlagResult = await supabase
-            .from('recipes')
-            .update({ has_pending_update: true })
-            .eq('id', editingRecipeId)
-            .eq('user_id', user.id);
-          error = pendingFlagResult.error || null;
-        }
-      }
-
-      if (!error) {
-        const fetchResult = await supabase
-          .from('recipes')
-          .select('*')
-          .eq('id', editingRecipeId)
-          .eq('user_id', user.id)
-          .single();
-        data = fetchResult.data || null;
-        error = fetchResult.error || null;
-      }
-    } else {
-      const updateResult = await supabase
-        .from('recipes')
-        .update(payload)
-        .eq('id', editingRecipeId)
-        .eq('user_id', user.id)
-        .select()
-        .single();
-      data = updateResult.data || null;
-      error = updateResult.error || null;
-    }
-  } else {
-    const insertResult = await supabase.from('recipes').insert([payload]).select().single();
-    data = insertResult.data || null;
-    error = insertResult.error || null;
+  let imageFlagged = false;
+  try {
+    const result = await saveRecipeViaServer(payload, editingRecipeId, isPublicSubmission, imageIsNew);
+    data = result.recipe || null;
+    imageFlagged = result.flagged === true;
+  } catch (err) {
+    console.error('Помилка збереження рецепту:', err);
+    // Серверні валідаційні коди → зрозумілі повідомлення.
+    if (err.code === 'name_required') showToast(t('rmPublishNeedsName'), 'error');
+    else if (err.code === 'content_required') showToast(t('rmNeedIngredientsOrSteps'), 'error');
+    else if (err.code === 'image_too_large') showToast(t('rmImageTooLarge'), 'error');
+    else showToast(t('rmSaveError'), 'error');
+    return;
   }
 
-  if (error) {
-    console.error('Помилка збереження рецепту:', error);
+  if (!data?.id) {
     showToast(t('rmSaveError'), 'error');
     return;
   }
+
+  // status для фінального повідомлення беремо з того, що реально записав сервер.
+  const status = data.status;
 
   const ingredients = getIngredients();
 
@@ -725,6 +697,15 @@ async function saveRecipe() {
   const selectedBookIds = getSelectedBooksFromContainer('rm-book-selector');
   if (editingRecipeId === null && selectedBookIds.length > 0 && data?.id) {
     await saveRecipeToBooks(data.id, selectedBookIds);
+  }
+
+  // Phase 18 — фото модерував сервер разом із записом (imageFlagged з відповіді).
+  if (imageFlagged) {
+    // Незалежно від решти повідомлень — попереджаємо, що фото на перевірці.
+    showToast(t('rmImageUnderReview'), 'info');
+    closeRecipeModal();
+    if (onRecipeSavedCallback) onRecipeSavedCallback(data);
+    return;
   }
 
   if (editingRecipeId !== null) {
