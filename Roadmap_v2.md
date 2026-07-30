@@ -904,6 +904,7 @@ where id = '<USER_ID>';
 - [x] ✅ Усі поля Recipe (name, image, author, nutrition, ingredients, instructions, ratings)
 - [x] ✅ prepTime, cookTime, totalTime, recipeYield (міграція seo_timing_migration.sql)
 - [x] ✅ Аудит markup по коду: `aggregateRating` використовує динамічні `AVG(rating)` і `COUNT(*)` з окремих голосів у `recipe_ratings`; один голос на користувача, власні рецепти оцінювати не можна, старі одиничні `recipes.rating` не враховуються
+- [ ] ⚠️ **Застосувати міграцію `20260726_1000_recipe_ratings.sql` у Supabase вручну** (+ rollback поруч) — до цього RPC `get_recipe_rating_summaries` не існує на живій БД → оцінки повертають 0, оцінювання падає. Як [[project_image_moderation]] і [[project_gdpr_pipeline]], міграція чекає ручного застосування
 - [ ] Тест через Google Rich Results Test (search.google.com/test/rich-results) — потребує deployed URL
 
 ### 🌐 Multi-language SEO — ✅
@@ -1084,13 +1085,14 @@ where id = '<USER_ID>';
     - [x] ✅ `theme-init.js` знімає `no-transition` після першого рендеру (double rAF) — інакше колірні transitions лишались би вимкненими назавжди (регресія на profile/cookbook/recipes/shopping-list, які раніше цей клас не отримували; раніше знімав лише `recipe-page.js`)
     - [x] ✅ Повторюваний тест `scripts/csp-theme-check.mjs` (headless Chrome + CSP-заголовок з vercel.json; rewrite-маршрути емулюються з конфігу, не хардкод): на 10 сторінках, включно з `/recipe/test-slug` — **0 CSP violations**; три глобальні виправлені скрипти (theme-init/offline-indicator/back-to-top) не дають 404 на маршруті рецепта; `data-theme=dark` присутнє після завантаження (правильний anti-FOUC порядок гарантує синхронний `theme-init.js` у `<head>` перед CSS — тест не фіксує буквально перший paint); `no-transition` знято після завантаження — усе PASS. Плюс 0 inline `<script>`/handler-атрибутів (grep-sweep); функціональні DOM-тести auth-submit / activity-delete-делегування / recipe-upload / product-onerror — PASS
     - [ ] ⚠️ Ручна перевірка на живому деплої після коміту: login/register/reset, 500 retry, 404 random recipe, cookies reopen, recipe image picker, profile activity delete, product image fallback, shopping-list realtime (локально Supabase-дані недоступні)
-- [ ] **Rate limiting** через Vercel Edge Middleware:
-  - [ ] Login (5/хв)
-  - [ ] Signup (3/хв з IP)
-  - [ ] Webhook endpoints
-  - [ ] AI scan (за тарифом)
-  - [ ] **Recipe creation (10/хв на користувача)** ← від UGC спаму
-  - [ ] **Recipe reports (5/год на користувача)** ← від abuse скаргами
+- [ ] **Rate limiting** через Vercel Edge Middleware — ⚠️ **аудит (29.07.2026): Login/Signup/Recipe reports НЕ проходять через наш Vercel-домен**, тому Middleware їх фізично не бачить і не може лімітувати:
+  - [ ] ~~Login (5/хв) / Signup (3/хв з IP)~~ → `supabase.auth.signInWithPassword`/`signUp` ідуть напряму з браузера в Supabase Auth, не через наш домен. Лімітується в Supabase Dashboard → Auth → Rate Limits, АЛЕ два окремі числа "5/хв login" і "3/хв signup" там неможливо виставити буквально: sign-in і sign-up діляться одним per-IP bucket на 5-хвилинне вікно (Supabase docs, `sign_in_sign_ups`). Перевірити фактичні ліміти в дашборді перед launch, а не покладатись на цифри з цього roadmap
+  - [ ] Webhook endpoints → ще не існують (з'являться у Фазі 19, лімітувати разом з ними)
+  - [ ] AI scan (за тарифом) → ще не реалізовано (TIER 3, Фаза 36)
+  - [x] ✅ **Recipe creation (10/хв на користувача, 29.07.2026)** — єдиний пункт, що реально йде через наш `/api/*`. `check_rate_limit` RPC (advisory-lock, той самий патерн що `reserve_moderation_slot` Фази 18) підключено в `api/save-recipe.js`, лімітує лише `editingRecipeId===null` (створення, не редагування). Рахує СПРОБИ створення (виклик до серверної валідації), не лише успішно збережені рецепти — свідомо: типова anti-spam поведінка. Fail-open на DB-помилку. Toast `rmRateLimited` у 3 мовах. Мок-тест 30/30 (`npm run test:save-recipe`) — доводить лише поведінку handler, НЕ живу RPC
+    - [x] ✅ **GDPR-очищення (29.07.2026):** `api_rate_limits.user_id` → `REFERENCES auth.users ON DELETE CASCADE` + явний DELETE в `hard_delete_user_data()` v3 (`20260729_1100`, покриває заразом і пропущений раніше `recipe_ratings`). Глобальний cleanup `cleanup_api_rate_limits()` (не per-user-on-hit — той підхід лишав рядки неактивних юзерів назавжди) — **не підключений до крону**, викликати вручну або додати в `vercel.json` crons поруч з `gdpr-hard-delete`
+    - [ ] ⚠️ **Міграції `20260729_1000` + `20260729_1100` чекають ручного застосування в Supabase** — після застосування обов'язковий живий integration smoke-test: викликати `check_rate_limit` RPC напряму (не мок), перевірити GRANT на `service_role`, прогнати паралельний burst і підтвердити, що advisory-lock реально серіалізує. Мок-тест цього не доводить
+  - [ ] Recipe reports (5/год на користувача) → `supabase.from('recipe_reports').insert()` пишеться напряму з клієнта під RLS, тому конкретно Vercel Middleware тут не варіант. Два шляхи (не зроблено, окрема задача): (а) новий серверний endpoint `/api/report-recipe` + міграція, що забороняє прямий client-side insert — якщо ліміт обов'язково має йти через Vercel; (б) або лишити insert клієнтським і зробити ліміт атомарним у SQL — RLS/тригер/RPC на кшталт `check_rate_limit`, що рахує рядки `recipe_reports` цього юзера за вікно і відхиляє insert понад ліміт. (б) простіше і не потребує нового API-файлу
 - [ ] ⚠️ **Частково — Secret management**: аудит `.gitignore` (24.07.2026)
   - [x] ✅ `.env`/`*.env`/`.env.*` ігноруються (додано `.env.*` + `!.env.example`), 0 `.env` у git/history
   - [x] ✅ 0 `service_role`/SERVICE_ROLE_KEY у клієнтському коді (лише `process.env` у server API)

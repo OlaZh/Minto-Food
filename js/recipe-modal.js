@@ -636,6 +636,7 @@ async function saveRecipe() {
     if (err.code === 'name_required') showToast(t('rmPublishNeedsName'), 'error');
     else if (err.code === 'content_required') showToast(t('rmNeedIngredientsOrSteps'), 'error');
     else if (err.code === 'image_too_large') showToast(t('rmImageTooLarge'), 'error');
+    else if (err.code === 'rate_limited') showToast(t('rmRateLimited'), 'error');
     else showToast(t('rmSaveError'), 'error');
     return;
   }

@@ -41,6 +41,18 @@ const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
 // nothing NSFW slips through; we just stop burning paid API calls.
 const MODERATION_RATE_LIMIT = Number(process.env.IMAGE_MOD_RATE_PER_HOUR || '20');
 
+// Recipe-CREATION-ATTEMPT rate limit (Roadmap Фаза 17: "10/хв на користувача"
+// — anti-spam for UGC). This counts attempts reaching this endpoint, not
+// successfully saved recipes: it is checked BEFORE server-side validation, so
+// invalid submissions, rejected photos, and failed writes each still spend a
+// slot. That is the correct anti-spam framing — "10 creation attempts per
+// minute", not "10 recipes per minute" — a spammer retrying with slightly
+// different invalid payloads should not get unlimited free tries. Edits are
+// NOT limited here — only brand-new recipes count, since a single user
+// rapidly editing their own drafts is not the abuse pattern this guards against.
+const RECIPE_CREATE_LIMIT = Number(process.env.RECIPE_CREATE_RATE_PER_MIN || '10');
+const RECIPE_CREATE_WINDOW_SECONDS = 60;
+
 // Only these recipe fields are accepted from the client; everything else
 // (user_id, status, moderation columns) is decided here.
 const ALLOWED_FIELDS = [
@@ -168,6 +180,21 @@ async function scoreImage(image) {
   return { flagged, score: result.score, provider: result.provider, raw: result.raw };
 }
 
+// Atomic per-user rolling-window rate check via check_rate_limit RPC (same
+// advisory-lock pattern as reserve_moderation_slot below). Fails OPEN on a DB
+// error — a transient RPC fault must not block every recipe save; it just
+// means the limit is momentarily not enforced, same tradeoff as moderation.
+async function checkRateLimit(uid, bucket, limit, windowSeconds) {
+  try {
+    return await rest('POST', 'rpc/check_rate_limit', {
+      p_user_id: uid, p_bucket: bucket, p_limit: limit, p_window_seconds: windowSeconds,
+    });
+  } catch (err) {
+    console.error('check_rate_limit failed:', err);
+    return true;
+  }
+}
+
 function logDecision(uid, recipeId, provider, score, decision, raw) {
   return rest('POST', 'image_moderation_log', {
     recipe_id: recipeId, user_id: uid, provider, nsfw_score: score, decision, raw,
@@ -237,6 +264,11 @@ export default async function handler(req, res) {
   }
   const editingRecipeId = normalizeRecipeId(req.body?.editingRecipeId);
   const isPublicSubmission = req.body?.isPublicSubmission === true;
+
+  if (editingRecipeId === null) {
+    const admitted = await checkRateLimit(uid, 'recipe_create', RECIPE_CREATE_LIMIT, RECIPE_CREATE_WINDOW_SECONDS);
+    if (!admitted) return res.status(429).json({ error: 'rate_limited' });
+  }
 
   // Whitelist fields; never trust client-sent user_id/status/moderation columns.
   const fields = {};

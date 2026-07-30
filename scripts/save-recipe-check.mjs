@@ -44,6 +44,14 @@ globalThis.fetch = async (url, opts = {}) => {
     return json({ status: 'success', nudity: { sexual_display: scenario.score ?? 0, none: 1 - (scenario.score ?? 0) } });
   }
 
+  // RPC: recipe-create rate limit — scenario.rateLimited simulates the caller
+  // being over the per-minute limit; scenario.rateLimitRpcFails simulates a
+  // missing GRANT so we can prove the fail-open behaviour is observable.
+  if (u.includes('/rpc/check_rate_limit')) {
+    if (scenario.rateLimitRpcFails) return fail(403, { message: 'permission denied for function check_rate_limit' });
+    return json(!scenario.rateLimited);
+  }
+
   // RPC: reserve slot — scenario.reserveFails simulates a missing GRANT
   // (permission denied) so we can prove the fail-open behaviour is observable.
   if (u.includes('/rpc/reserve_moderation_slot')) {
@@ -248,6 +256,42 @@ scenario = { score: 0.1, finalizeFails: true };
   await handler({ method: 'POST', headers: { authorization: 'Bearer x' },
     body: { recipe: { name_ua: 'X', steps: 'boil', image: IMG }, editingRecipeId: null, isPublicSubmission: true } }, res);
   assert('finalize fails → save still 200 (best-effort audit)', res._status === 200, `status=${res._status}`);
+}
+
+// ── 13. Recipe-create rate limit: over limit → 429, recipe NOT written, no
+//        moderation call spent on a rejected request. ──
+scenario = { score: 0.1, rateLimited: true };
+{
+  calls.length = 0;
+  const res = mockRes();
+  await handler({ method: 'POST', headers: { authorization: 'Bearer x' },
+    body: { recipe: { name_ua: 'X', steps: 'boil', image: IMG }, editingRecipeId: null, isPublicSubmission: true } }, res);
+  assert('create over rate limit → 429', res._status === 429, `status=${res._status}`);
+  assert('create over rate limit → error rate_limited', res._json?.error === 'rate_limited', JSON.stringify(res._json));
+  const wrote = calls.some(c => c.url.includes('/rest/v1/recipes') && c.method === 'POST');
+  assert('create over rate limit → recipe NOT written', !wrote);
+  const providerCalled = calls.some(c => c.url.includes('sightengine.com'));
+  assert('create over rate limit → moderation provider NOT called', !providerCalled);
+}
+
+// ── 14. Recipe-create rate limit does NOT apply to edits (only new recipes
+//        count against the create limit). ──
+scenario = { score: 0.1, rateLimited: true, original: { id: 42, user_id: 'user-1', status: 'draft', image: IMG } };
+{
+  const res = mockRes();
+  await handler({ method: 'POST', headers: { authorization: 'Bearer x' },
+    body: { recipe: { name_ua: 'X', steps: 'boil', image: IMG }, editingRecipeId: 42, isPublicSubmission: false } }, res);
+  assert('edit ignores create rate limit → 200', res._status === 200, `status=${res._status}`);
+}
+
+// ── 15. check_rate_limit RPC fails (missing GRANT) → fail-open: create still
+//        succeeds. Documents the observable fail-open behaviour. ──
+scenario = { score: 0.1, rateLimitRpcFails: true };
+{
+  const res = mockRes();
+  await handler({ method: 'POST', headers: { authorization: 'Bearer x' },
+    body: { recipe: { name_ua: 'X', steps: 'boil', image: IMG }, editingRecipeId: null, isPublicSubmission: true } }, res);
+  assert('rate-limit RPC fails → create still succeeds (fail-open)', res._status === 200, `status=${res._status}`);
 }
 
 console.log(`\n${passed} passed, ${failed} failed`);
