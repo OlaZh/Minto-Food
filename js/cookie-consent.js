@@ -233,6 +233,37 @@ function bindAuthListener() {
 
 let _consentInitDone = false;
 
+// consentReady — диспатчиться РІВНО ОДИН РАЗ за виклик initCookieConsent(),
+// коли джерело правди (БД для залогіненого, localStorage для гостя)
+// остаточно визначене. На відміну від consentUpdated (стріляє на КОЖНУ зміну
+// вибору), це "можна безпечно перевіряти consent зараз" сигнал — модулі на
+// кшталt analytics.js мають чекати САМЕ на нього перед першим рішенням
+// вантажити SDK чи ні, інакше для залогіненого юзера з БД-згодою false є
+// вікно, де синхронне читання localStorage поверне застаріле/відсутнє
+// значення до завершення асинхронного getConsentFromDB().
+// detail: поточний consent-об'єкт АБО null, якщо ще не визначено (банер
+// показано, юзер ще не відповів).
+//
+// "Replay last value" патерн (як BehaviorSubject): _consentReadyState
+// зберігає останній стан, а getConsentReadyState() дозволяє пізньому
+// підписнику (напр. analytics.js, якщо він з будь-якої причини
+// зареєструвався ПІСЛЯ того, як подія вже пролетіла — порядок виконання
+// top-level auto-init коду між модулями НЕ гарантований у 100% сценаріїв,
+// напр. якщо колись з'явиться третій модуль між ними, чи зміниться порядок
+// script-тегів) синхронно дізнатись поточний стан, а не чекати наступної
+// події, яка може ніколи не настати повторно (dispatchConsentReady
+// викликається лише ОДИН РАЗ за initCookieConsent()).
+let _consentReadyState = { resolved: false, consent: null };
+
+export function getConsentReadyState() {
+  return _consentReadyState;
+}
+
+function dispatchConsentReady(consent) {
+  _consentReadyState = { resolved: true, consent: consent ?? null };
+  document.dispatchEvent(new CustomEvent('consentReady', { detail: consent ?? null }));
+}
+
 export async function initCookieConsent() {
   // Захист від подвійного запуску: авто-init при завантаженні + можливий
   // ручний виклик (напр. кнопка "перевідкрити" на cookies.html).
@@ -250,6 +281,7 @@ export async function initCookieConsent() {
       // Згода є в акаунті — банер не показуємо на жодному пристрої.
       // Синхронізуємо локальний кеш щоб аналітика на цій вкладці знала вибір.
       saveLocal(dbConsent);
+      dispatchConsentReady(dbConsent);
       return;
     }
 
@@ -258,18 +290,30 @@ export async function initCookieConsent() {
     const local = getConsent();
     if (local) {
       await saveConsentToDB(userId, local);
+      dispatchConsentReady(local);
       return;
     }
 
-    // Ніде немає згоди — показуємо банер, відповідь піде в БД.
+    // Ніде немає згоди — показуємо банер, відповідь піде в БД. Consent ще
+    // не визначено (null) — модулі, що чекають на consentReady, це побачать
+    // і не стартують нічого до explicit вибору юзера в банері.
     showBanner(userId);
+    dispatchConsentReady(null);
     return;
   }
 
   // ── Гість: localStorage ──
-  if (getConsent()) return;
-  if (seenForCurrentVersion()) return;
+  const existing = getConsent();
+  if (existing) {
+    dispatchConsentReady(existing);
+    return;
+  }
+  if (seenForCurrentVersion()) {
+    dispatchConsentReady(null);
+    return;
+  }
   showBanner(null);
+  dispatchConsentReady(null);
 }
 
 // Примусово перевідкрити банер (кнопка "Налаштування cookies" на cookies.html).

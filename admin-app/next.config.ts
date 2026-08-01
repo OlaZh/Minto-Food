@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { withSentryConfig } from "@sentry/nextjs";
 
 const securityHeaders = [
   { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains" },
@@ -20,4 +21,12 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+// withSentryConfig no-op-безпечний без SENTRY_AUTH_TOKEN (просто пропускає
+// source maps upload) — не блокує білд до реєстрації акаунту.
+export default withSentryConfig(nextConfig, {
+  org: process.env.SENTRY_ORG,
+  project: process.env.SENTRY_PROJECT,
+  authToken: process.env.SENTRY_AUTH_TOKEN,
+  silent: true,
+  webpack: { treeshake: { removeDebugLogging: true } },
+});

@@ -15,7 +15,8 @@
     <meta property="og:image:height" content="630" />
       <link rel="manifest" href="/manifest.json" />
     <meta name="theme-color" content="#4ab584" />
-  </head>
+      <script type="module" src="/js/error-tracking.js"></script>
+</head>
   <body class="page page--legal">
                                                                                                         <header class="header">
       <div class="header__container">
@@ -151,7 +152,7 @@
                   <tr><th>Назва</th><th>Мета</th><th>Термін</th><th>Провайдер</th></tr>
                 </thead>
                 <tbody>
-                  <tr><td>ph_*</td><td>PostHog — знеособлена аналітика використання (EU-хостинг). Не вантажиться без вашої згоди</td><td>1 рік</td><td>PostHog EU</td></tr>
+                  <tr><td>ph_*</td><td>PostHog — псевдонімізована аналітика використання (EU-хостинг). Не вантажиться без вашої згоди</td><td>1 рік</td><td>PostHog EU</td></tr>
                 </tbody>
               </table>
 
@@ -210,7 +211,7 @@
                   <tr><th>Name</th><th>Purpose</th><th>Duration</th><th>Provider</th></tr>
                 </thead>
                 <tbody>
-                  <tr><td>ph_*</td><td>PostHog — anonymised usage analytics (EU hosting). Does not load without your consent</td><td>1 year</td><td>PostHog EU</td></tr>
+                  <tr><td>ph_*</td><td>PostHog — pseudonymised usage analytics (EU hosting). Does not load without your consent</td><td>1 year</td><td>PostHog EU</td></tr>
                 </tbody>
               </table>
 
@@ -269,7 +270,7 @@
                   <tr><th>Nazwa</th><th>Cel</th><th>Okres</th><th>Dostawca</th></tr>
                 </thead>
                 <tbody>
-                  <tr><td>ph_*</td><td>PostHog — zanonimizowana analityka użytkowania (hosting UE). Nie ładuje się bez Twojej zgody</td><td>1 rok</td><td>PostHog EU</td></tr>
+                  <tr><td>ph_*</td><td>PostHog — pseudonimizowana analityka użytkowania (hosting UE). Nie ładuje się bez Twojej zgody</td><td>1 rok</td><td>PostHog EU</td></tr>
                 </tbody>
               </table>
 
@@ -391,5 +392,6 @@
   <script type="module" src="js/offline-indicator.js"></script>
   <script type="module" src="js/back-to-top.js"></script>
   <script type="module" src="js/cookie-consent.js"></script>
+  <script type="module" src="/js/analytics.js"></script>
   </body>
 </html>

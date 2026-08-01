@@ -142,6 +142,7 @@ export async function saveRecipeToBook(recipeId, bookId, bookName = null) {
     return false;
   }
 
+  import('./analytics.js').then(({ track }) => track('recipe_saved_to_book'));
   showToast(formatText('savedToBook', { book: bookName || t('bookFallbackAccusative') }));
   return true;
 }

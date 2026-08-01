@@ -149,6 +149,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     if (!error) {
       loadWaterFromSupabase(currentSelectedDate);
+      import('./analytics.js').then(({ track }) => track('water_logged', { amount }));
     }
   }
 
@@ -1184,6 +1185,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     if (!error) {
       await maybeSaveBarcodeCorrection(selectedFood, user);
+      if (editingIndex === null) {
+        import('./analytics.js').then(({ track }) => track('meal_logged', { meal_type: activeMealKey }));
+      }
       closeModal();
       await loadMealsFromSupabase(currentSelectedDate);
       // Тригер у БД уже оновив streak — перечитуємо, щоб картка не

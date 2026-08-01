@@ -420,6 +420,7 @@ async function saveWeightToSupabase(userId, weight) {
     .from('weight_records')
     .upsert({ user_id: userId, date, weight }, { onConflict: 'user_id,date' });
   if (error) console.warn('weight_records upsert:', error.message);
+  else import('./analytics.js').then(({ track }) => track('weight_logged'));
   return !error;
 }
 

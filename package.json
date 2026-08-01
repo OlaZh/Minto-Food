@@ -7,6 +7,7 @@
     "build:shell": "node build.js",
     "build:css": "npx sass scss/main.scss css/main.css",
     "watch:css": "npx sass --watch scss/main.scss css/main.css",
+    "test:consent-gate": "node --no-warnings --test scripts/consent-gate-check.mjs",
     "test:save-recipe": "node scripts/save-recipe-check.mjs",
     "lint:api": "node scripts/lint-api.cjs"
   },

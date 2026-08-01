@@ -737,7 +737,7 @@ order by requested_at desc;
 
 Передумови: disposable test account, залогінений і ще не запланований на видалення.
 
-- [ ] **Застосувати в Supabase вручну** міграцію `20260718_1200_gdpr_hard_delete_v2.sql`.
+- [x] ✅ Міграцію `20260718_1200_gdpr_hard_delete_v2.sql` застосовано в Supabase (v3 від 29.07 надбудовується на неї, отже v2 точно застосована).
 - [ ] Відкрити `profile.html` → Settings → `Запросити видалення акаунту`.
 - [ ] Перевірити confirm modal і підтвердити дію.
 - [ ] Перевірити, що сторінка не падає, показує заплановану дату, а кнопка стає disabled.
@@ -904,7 +904,7 @@ where id = '<USER_ID>';
 - [x] ✅ Усі поля Recipe (name, image, author, nutrition, ingredients, instructions, ratings)
 - [x] ✅ prepTime, cookTime, totalTime, recipeYield (міграція seo_timing_migration.sql)
 - [x] ✅ Аудит markup по коду: `aggregateRating` використовує динамічні `AVG(rating)` і `COUNT(*)` з окремих голосів у `recipe_ratings`; один голос на користувача, власні рецепти оцінювати не можна, старі одиничні `recipes.rating` не враховуються
-- [ ] ⚠️ **Застосувати міграцію `20260726_1000_recipe_ratings.sql` у Supabase вручну** (+ rollback поруч) — до цього RPC `get_recipe_rating_summaries` не існує на живій БД → оцінки повертають 0, оцінювання падає. Як [[project_image_moderation]] і [[project_gdpr_pipeline]], міграція чекає ручного застосування
+- [x] ✅ Міграцію `20260726_1000_recipe_ratings.sql` застосовано в Supabase (підтверджено 30.07.2026: таблиця `recipe_ratings` існує на живій БД) — лишився живий smoke-test RPC `get_recipe_rating_summaries`
 - [ ] Тест через Google Rich Results Test (search.google.com/test/rich-results) — потребує deployed URL
 
 ### 🌐 Multi-language SEO — ✅
@@ -951,34 +951,38 @@ where id = '<USER_ID>';
 
 ## 📊 ФАЗА 16: Analytics + Error Tracking + Onboarding
 
-### 📈 PostHog (EU hosting)
+### 📈 PostHog (EU hosting) — код готовий (30.07.2026, виправлено після рев'ю), чекає акаунту
+
+> `js/analytics.js`: auto-init за патерном `cookie-consent.js`, SDK (зафіксована версія `posthog-js@1.203.1`, не floating tag) вантажиться лінькво через jsDelivr лише коли `consent_analytics===true`. Перший стан надходить через **`getConsentReadyState()` / `consentReady`** з `cookie-consent.js`: для залогіненого користувача аналітика чекає завершення синхронізації БД, а не читає localStorage передчасно. Наступні зміни приходять через `consentUpdated`. Last-write-wins та race-safe identify винесені в чистий `js/analytics-consent-gate.js`; повторний однаковий analytics-стан не створює дубль `$pageview`, `SIGNED_OUT` інвалідовує pending identify, а product events після revoke блокуються самим gate. Без ключа (`meta[name="minto-posthog-key"]`) CDN не завантажується. `connect-src`/`script-src` у `vercel.json` CSP дозволяють PostHog + jsDelivr. **Реальне підставлення ключа:** `build.js` інжектить `<meta>` з env var `POSTHOG_KEY`/`POSTHOG_HOST` при `npm run build` (Vercel buildCommand) і змінює runtime-блок лише коли його вміст відрізняється — другий build з тими самими env дає `0 updated`.
 
 - [ ] Створити акаунт (EU-hosting обов'язково для GDPR)
-- [ ] Інтеграція через `posthog-js`
-- [ ] Респект cookie consent
-- [ ] Identify users після login
-- [ ] **Tracking events (мінімальний набір):**
-  - [ ] `signup_started` / `signup_completed`
-  - [ ] `recipe_created` / `recipe_published`
-  - [ ] `meal_logged` / `water_logged` / `weight_logged`
-  - [ ] `recipe_saved_to_book` / `cookbook_created`
-  - [ ] `paywall_shown` (з `feature` property)
-  - [ ] `checkout_started` / `subscription_started` / `subscription_canceled`
-  - [ ] `ai_scan_used`
-- [ ] **Funnels:** signup → first meal → 7-day retention → trial → paid
-- [ ] **Cohort retention** weekly
-- [ ] Session recordings з GDPR-маскою (no PII)
+- [x] ✅ Інтеграція через `posthog-js` (CDN-модуль, зафіксована версія, без npm — сайт vanilla JS без бандлера)
+- [x] ✅ Респект cookie consent — `getConsentReadyState()`/`consentReady` для першого стану, `consentUpdated` для змін, симетричний `opt_in`/`opt_out_capturing()`
+- [x] ✅ Identify users після login — `posthog.identify(uid)` на `SIGNED_IN`, `reset()` на `SIGNED_OUT`. **Це псевдонімізація, не анонімність** — `cookies.html` виправлено в UA/EN/PL: «псевдонімізована» / `pseudonymised` / `pseudonimizowana`
+- [x] ✅ **Tracking events (мінімальний набір):**
+  - [x] ✅ `signup_started` / `signup_completed` — `js/auth.js` (`signUpWithEmail`)
+  - [x] ✅ `recipe_created` — `js/recipe-modal.js` (лише на створення, не на edit)
+  - [ ] ⚠️ `recipe_published` — клієнтський код у `recipe-modal.js` виправлено (правильна умова `status==='published'`, не `pending`), АЛЕ подія фактично **ніколи не спрацьовує в реальному потоці**: `api/save-recipe.js` завжди повертає публічний рецепт зі статусом `pending` (модерація), реальний перехід у `published` відбувається пізніше, коли адмін схвалює в `admin-app/src/app/actions/moderation.ts` — окремому застосунку, де PostHog взагалі не підключений. Track-виклик потрібно перенести в admin-app на момент approve (з ID автора рецепта), інакше подія мертва. `recipe_submitted_for_review` (перехід у `pending`) — єдина, що реально спрацьовує зараз
+  - [x] ✅ `meal_logged` / `water_logged` / `weight_logged` — `js/meals.js`, `js/profile.js`
+  - [x] ✅ `recipe_saved_to_book` / `cookbook_created` — `js/book-selector.js`, `js/cookbook.js`
+  - [ ] `paywall_shown` / `checkout_started` / `subscription_*` / `ai_scan_used` — фічі ще не існують (Фаза 19/36), додати разом з ними
+- [ ] **Funnels:** signup → first meal → 7-day retention → trial → paid (налаштовується в PostHog dashboard, після акаунту)
+- [ ] **Cohort retention** weekly (dashboard, після акаунту)
+- [ ] Session recordings з GDPR-маскою (no PII) — `disable_session_recording:true` в коді зараз; увімкнути свідомо окремим кроком з маскою
 
-### 🚨 Sentry
+### 🚨 Sentry — код готовий (30.07.2026, виправлено після рев'ю), чекає акаунту
 
-- [ ] Free tier 5K events/міс
-- [ ] `@sentry/browser` у front-end
-- [ ] `@sentry/node` у Vercel functions (webhooks)
-- [ ] Source maps upload при білді
-- [ ] User context після login (без PII у meta — тільки user.id)
-- [ ] Filter expected errors (network, AbortController)
-- [ ] **Alert rules:** >10 errors/5хв → email; new error type → email; webhook crashes → critical
-- [ ] Щоденна перевірка зранку
+> Публічний сайт: `js/error-tracking.js` — SDK з **офіційного Sentry CDN** (`browser.sentry-cdn.com`, зафіксована версія `10.69.0`), НЕ jsDelivr/npm: з версії 10.x `@sentry/browser` більше не публікує standalone browser-bundle через npm registry (лише ESM з relative імпортами між файлами — не працює як єдиний CDN `import()`). Офіційний CDN віддає classic IIFE-script (`window.Sentry`), підключається через `<script>` тег, не `import()`. **Breadcrumbs (кліки/навігація/fetch) і BrowserSession явно вилучені з `defaultIntegrations`** — `integrations:[]` дефолтні інтеграції не вимикає. Лишаються технічні дані помилки, URL/user-agent та, після входу, `user.id`; рішення тримати Sentry поза analytics consent потребує окремого підтвердження правової підстави перед додаванням DSN. Admin-app: офіційний Next.js 16 патерн — `src/instrumentation-client.ts` (клієнт, з обов'язковим `onRouterTransitionStart` — інакше build-warning) + `src/instrumentation.ts` (`register()`+`onRequestError`), `next.config.ts` обгорнуто `withSentryConfig` (`webpack.treeshake.removeDebugLogging`, не deprecated `disableLogger`). **`@sentry/nextjs` реально встановлено** (`npm install` виконано, версія `^10` — v8 НЕ підтримує Next.js 16, помилка знайдена рев'ю), `npm run build` в admin-app проходить чисто без попереджень. Без DSN (`SENTRY_DSN`/`NEXT_PUBLIC_SENTRY_DSN`/`meta[name="minto-sentry-dsn"]`) — усюди no-op. **Реальне підставлення DSN на публічному сайті:** `build.js` інжектить `<meta>` з env var `SENTRY_DSN_PUBLIC`; runtime-блок оновлюється лише коли значення реально змінилося.
+
+- [ ] Створити акаунт, free tier 5K events/міс
+- [x] ✅ `@sentry/browser` у публічному front-end (`js/error-tracking.js`, офіційний CDN, зафіксована версія)
+- [x] ✅ `@sentry/nextjs@^10` у admin-app (`src/instrumentation.ts`, `src/instrumentation-client.ts`) — встановлено в `node_modules`+`package-lock.json`, `npm run build` пройдено
+- [ ] ⚠️ Source maps upload при білді — `withSentryConfig` **налаштовано** у `admin-app/next.config.ts` (код на місці, `npm run build` компілюється чисто), але **НЕ перевірено фактичне завантаження**: потребує реального `SENTRY_ORG`/`SENTRY_PROJECT`/`SENTRY_AUTH_TOKEN` і живого Sentry-акаунту, щоб підтвердити, що source maps реально долітають до Sentry, а не просто мовчки no-op через відсутній токен
+- [x] ✅ User context після login (без PII у meta — тільки user.id) — публічний сайт: `Sentry.setUser({id})` на `SIGNED_IN`/`SIGNED_OUT`; admin-app: `src/components/SentryUserSync.tsx` (client-компонент у `(admin)/layout.tsx`, той самий патерн)
+- [x] ✅ Filter expected errors (network, AbortController) — `ignoreErrors` на обох сторонах (`AbortError`, `Failed to fetch`, `Load failed`, `ResizeObserver loop`)
+- [x] ✅ Breadcrumbs (кліки/навігація/URL) явно вимкнені на публічному сайті — правова підстава для "не за cookie-consent" (без цього Sentry збирав би поведінкові дані без згоди)
+- [ ] **Alert rules:** >10 errors/5хв → email; new error type → email; webhook crashes → critical (налаштовується в Sentry dashboard, після акаунту)
+- [ ] Щоденна перевірка зранку (звичка, не код)
 
 ### 🟢 Uptime monitoring
 
@@ -1025,6 +1029,7 @@ where id = '<USER_ID>';
 
 - [ ] Cloudflare DNS (free tier достатній)
 - [ ] Increase TTL на стабільні записи (3600s+)
+- [ ] ⚠️ **CSP-заголовки живуть у `vercel.json` — Cloudflare їх НЕ дублює автоматично.** Домен на Cloudflare — це лише DNS/proxy, самі security headers (HSTS/CSP/тощо) як і раніше віддає Vercel. Якщо колись CSP переїде на Cloudflare-рівень (Workers/Transform Rules) — звірити з `vercel.json`, щоб не розійшлись у два джерела правди
 
 ### 🏠 Subdomain — мінімум для launch
 
@@ -1074,7 +1079,7 @@ where id = '<USER_ID>';
 
 - [ ] **2FA на ВСІХ критичних акаунтах:** Vercel, Supabase, Cloudflare, Domain registrar, Stripe/LS, Resend, Sentry, GitHub
 - [ ] Recovery codes зберегти в password manager
-- [ ] ⚠️ **Частково — Security headers** базові (24.07.2026). Написані/зроблені локально — ⚠️ ще НЕ задеплоєні на Vercel (git uncommitted): перевірка на живих URL лишається. admin-app окремим деплоєм отримав HSTS/nosniff/DENY/Referrer-Policy + `X-Robots-Tag: noindex` через `next.config.ts` (адмінський CSP поки не додано: строгий CSP потребує окремої nonce/hash-конфігурації Next.js 16 і не входить у цей підпункт)
+- [x] ✅ **Security headers** базові (24.07.2026, коміт `e8671f9`) — закомічені й запушені в `origin/main`, деплоються автоматично при push. admin-app окремим деплоєм отримав HSTS/nosniff/DENY/Referrer-Policy + `X-Robots-Tag: noindex` через `next.config.ts` (адмінський CSP поки не додано: строгий CSP потребує окремої nonce/hash-конфігурації Next.js 16 і не входить у цей підпункт). Перевірка на живому URL — після деплою, разом з рештою QA
   - [x] ✅ HSTS (`max-age=63072000; includeSubDomains`) — public + admin
   - [x] ✅ `X-Content-Type-Options: nosniff` — public + admin
   - [x] ✅ `X-Frame-Options: DENY` (+ `frame-ancestors 'none'` у public CSP) — public + admin
@@ -1091,7 +1096,8 @@ where id = '<USER_ID>';
   - [ ] AI scan (за тарифом) → ще не реалізовано (TIER 3, Фаза 36)
   - [x] ✅ **Recipe creation (10/хв на користувача, 29.07.2026)** — єдиний пункт, що реально йде через наш `/api/*`. `check_rate_limit` RPC (advisory-lock, той самий патерн що `reserve_moderation_slot` Фази 18) підключено в `api/save-recipe.js`, лімітує лише `editingRecipeId===null` (створення, не редагування). Рахує СПРОБИ створення (виклик до серверної валідації), не лише успішно збережені рецепти — свідомо: типова anti-spam поведінка. Fail-open на DB-помилку. Toast `rmRateLimited` у 3 мовах. Мок-тест 30/30 (`npm run test:save-recipe`) — доводить лише поведінку handler, НЕ живу RPC
     - [x] ✅ **GDPR-очищення (29.07.2026):** `api_rate_limits.user_id` → `REFERENCES auth.users ON DELETE CASCADE` + явний DELETE в `hard_delete_user_data()` v3 (`20260729_1100`, покриває заразом і пропущений раніше `recipe_ratings`). Глобальний cleanup `cleanup_api_rate_limits()` (не per-user-on-hit — той підхід лишав рядки неактивних юзерів назавжди) — **не підключений до крону**, викликати вручну або додати в `vercel.json` crons поруч з `gdpr-hard-delete`
-    - [ ] ⚠️ **Міграції `20260729_1000` + `20260729_1100` чекають ручного застосування в Supabase** — після застосування обов'язковий живий integration smoke-test: викликати `check_rate_limit` RPC напряму (не мок), перевірити GRANT на `service_role`, прогнати паралельний burst і підтвердити, що advisory-lock реально серіалізує. Мок-тест цього не доводить
+    - [x] ✅ Міграції `20260729_1000` + `20260729_1100` застосовано в Supabase (підтверджено 30.07.2026: `api_rate_limits` існує, `hard_delete_user_data` v3 містить CASCADE на неї)
+    - [ ] ⚠️ Живий integration smoke-test лишається: викликати `check_rate_limit` RPC напряму (не мок), перевірити GRANT на `service_role`, прогнати паралельний burst і підтвердити, що advisory-lock реально серіалізує. Мок-тест цього не доводить
   - [ ] Recipe reports (5/год на користувача) → `supabase.from('recipe_reports').insert()` пишеться напряму з клієнта під RLS, тому конкретно Vercel Middleware тут не варіант. Два шляхи (не зроблено, окрема задача): (а) новий серверний endpoint `/api/report-recipe` + міграція, що забороняє прямий client-side insert — якщо ліміт обов'язково має йти через Vercel; (б) або лишити insert клієнтським і зробити ліміт атомарним у SQL — RLS/тригер/RPC на кшталт `check_rate_limit`, що рахує рядки `recipe_reports` цього юзера за вікно і відхиляє insert понад ліміт. (б) простіше і не потребує нового API-файлу
 - [ ] ⚠️ **Частково — Secret management**: аудит `.gitignore` (24.07.2026)
   - [x] ✅ `.env`/`*.env`/`.env.*` ігноруються (додано `.env.*` + `!.env.example`), 0 `.env` у git/history
@@ -1205,7 +1211,7 @@ where id = '<USER_ID>';
 **Хвіст (закрити перед launch):**
 
 - [ ] **Перевірити живий тип** `recipe_pending_updates.recipe_id` (історичний `admin_migration.sql` каже uuid, але запит 25.07 показав integer — підтвердити перед застосуванням; RPC розрахований на integer). SQL: `SELECT column_name,data_type FROM information_schema.columns WHERE table_name='recipe_pending_updates'`
-- [ ] Застосувати міграцію `20260724_1000_image_moderation.sql` у Supabase вручну
+- [x] ✅ Міграцію `20260724_1000_image_moderation.sql` застосовано в Supabase (підтверджено 30.07.2026: `image_moderation_log` існує на живій БД)
 - [ ] Зареєструвати акаунт провайдера + env-ключі у Vercel (до цього moderation = stub)
 - [ ] Ручний E2E на живій БД: RPC-транзакції, advisory-lock rate limit, staged-flow в реальній адмінці (мок-тест БД не покриває)
 - [ ] Rescan наявних фото після підключення провайдера (модеруються лише НОВІ)

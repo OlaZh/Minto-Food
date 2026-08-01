@@ -649,6 +649,22 @@ async function saveRecipe() {
   // status для фінального повідомлення беремо з того, що реально записав сервер.
   const status = data.status;
 
+  import('./analytics.js').then(({ track }) => {
+    if (editingRecipeId === null) {
+      track('recipe_created', { is_public: isPublicSubmission });
+    }
+    // recipe_published — лише коли статус РЕАЛЬНО published (пройшло
+    // модерацію/не потребує її), не при постановці в чергу. Рахуємо і нові
+    // рецепти, і "Зробити публічним" на вже існуючому приватному (той шлях
+    // мав editingRecipeId!==null і раніше взагалі не трекався).
+    const wasPublished = editingRecipeOriginal?.status === 'published';
+    if (status === 'published' && !wasPublished) {
+      track('recipe_published', { status });
+    } else if (status === 'pending' && editingRecipeOriginal?.status !== 'pending') {
+      track('recipe_submitted_for_review', { status });
+    }
+  });
+
   const ingredients = getIngredients();
 
   // Нерозпізнані інгредієнти (без product_id) → у чергу для адміна:

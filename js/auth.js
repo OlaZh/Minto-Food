@@ -317,6 +317,11 @@ export async function signInWithEmail(email, password) {
 // =============================================================
 
 export async function signUpWithEmail(email, password, name = '') {
+  // Аналітика не повинна блокувати core-flow реєстрації, навіть якщо її
+  // модуль не завантажився або був заблокований браузером/CSP.
+  const analyticsModule = import('./analytics.js').catch(() => null);
+  void analyticsModule.then((analytics) => analytics?.track('signup_started'));
+
   const { error } = await supabase.auth.signUp({
     email,
     password,
@@ -330,6 +335,7 @@ export async function signUpWithEmail(email, password, name = '') {
     return { error: getErrorMessage(error.message) };
   }
 
+  void analyticsModule.then((analytics) => analytics?.track('signup_completed'));
   return { error: null, message: t('authCheckEmail') };
 }
 

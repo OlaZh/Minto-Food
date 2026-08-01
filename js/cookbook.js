@@ -372,6 +372,7 @@ async function handleCreateBook(e) {
       btn.classList.toggle('cookbook-form__icon--active', i === 0);
     });
 
+    import('./analytics.js').then(({ track }) => track('cookbook_created'));
     showToast(t('bookCreated'));
   } catch (err) {
     console.error('Error creating book:', err);

@@ -3,10 +3,12 @@ import { ChefHat, ExternalLink } from 'lucide-react'
 import AdminSidebarNav from '@/components/AdminSidebarNav'
 import MobileNav from '@/components/MobileNav'
 import LogoutButton from '@/components/LogoutButton'
+import SentryUserSync from '@/components/SentryUserSync'
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex h-screen" style={{ background: '#f0f7f3' }}>
+      <SentryUserSync />
       <aside
         className="hidden md:flex w-56 flex-col shrink-0"
         style={{ background: '#9fd1b1', borderRight: '1px solid #82bf99' }}
