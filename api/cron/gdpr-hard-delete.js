@@ -6,7 +6,7 @@
 //   1. RPC hard_delete_user_data() — видаляє всі прикладні дані
 //   2. Supabase Admin API deleteUser() — видаляє запис auth.users
 //
-// Вимагає: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY у Vercel env vars.
+// Вимагає: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY і CRON_SECRET у Vercel env vars.
 
 const SUPABASE_URL     = process.env.SUPABASE_URL;
 const SERVICE_KEY      = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -51,11 +51,14 @@ async function deleteAuthUser(userId) {
 
 export default async function handler(req, res) {
   // Vercel Cron передає Authorization: Bearer <CRON_SECRET>
-  if (CRON_SECRET) {
-    const auth = (req.headers.authorization || '').replace('Bearer ', '');
-    if (auth !== CRON_SECRET) {
-      return res.status(401).json({ error: 'Unauthorized' });
-    }
+  // Fail closed: відсутній server-side secret ніколи не вимикає захист endpoint.
+  if (!CRON_SECRET) {
+    console.error('[gdpr-cron] CRON_SECRET is not configured');
+    return res.status(500).json({ error: 'Server misconfigured' });
+  }
+
+  if (req.headers.authorization !== `Bearer ${CRON_SECRET}`) {
+    return res.status(401).json({ error: 'Unauthorized' });
   }
 
   if (!SUPABASE_URL || !SERVICE_KEY) {
