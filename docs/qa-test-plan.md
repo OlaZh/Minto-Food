@@ -2,7 +2,7 @@
 
 > **Версія:** 2.0
 >
-> **Оновлено:** 01.08.2026
+> **Оновлено:** 05.08.2026
 >
 > **Середовище:** поточні Supabase і Vercel використовуються як **pre-production**, оскільки реальних користувачів ще немає. Новий чистий production створюється перед soft launch; поточне середовище після цього стає staging.
 >
@@ -40,6 +40,25 @@
 | Test ID | Status | Environment / commit | Actual result | Evidence / issue | Cleanup |
 |---|---|---|---|---|---|
 | _приклад: AUTH-01_ | _NOT RUN_ |  |  |  |  |
+| AUTO-01 | PASS | 05.08.2026, Codex; local Windows; `e102bf9` | API lint чистий | `npm.cmd run lint:api`: `no no-undef errors` | N/A |
+| AUTO-02 | PASS | 05.08.2026, Codex; local Windows; `e102bf9` | 30/30 mock-тестів пройшли | `npm.cmd run test:save-recipe` | N/A |
+| AUTO-03 | PASS | 05.08.2026, Codex; local Windows; `e102bf9` | 12/12 тестів пройшли | `npm.cmd run test:consent-gate` | N/A |
+| AUTO-04 | PASS | 05.08.2026, Codex; local Windows; `e102bf9` | 22/22 security-тестів пройшли | `admin-app: npm.cmd run test:security` | N/A |
+| AUTO-05 | PASS | 05.08.2026, Codex; local Windows; `e102bf9` | ESLint завершився без помилок | `admin-app: npm.cmd run lint` | N/A |
+| AUTO-06 | PASS | 05.08.2026, Codex; local Windows; `e102bf9` | Next.js production build успішний; 24/24 static pages | `admin-app: npm.cmd run build` | Build artifacts у ignored `.next` |
+| AUTO-07 | BLOCKED | 05.08.2026, Codex; local Windows; `e102bf9` | Root build не запускався: локальний Sass і root `package-lock.json` відсутні | `node_modules/sass/package.json=False`; `package-lock.json=False`; потрібне погоджене встановлення | N/A |
+| AUTO-08 | BLOCKED | 05.08.2026, Codex; local Windows; `e102bf9` | CSP/theme check не завершився за 90 с | `node scripts/csp-theme-check.mjs`: timeout, exit `124` | Процес завершено таймаутом |
+| AUTO-09 | PASS | 05.08.2026, Codex; local Windows; `e102bf9` | 17/17 page-файлів мають один канонічний `main.main`; зайвих shell-wrapper немає | `div.app-bg=0`, `div.app-shell=0`, main anomalies `0` | N/A |
+| AUTO-11 | PASS | 05.08.2026, Codex; local Windows; `e102bf9` | Persona/interview script і всі release/migration/staging/PR artifacts на місці; застарілих шляхів у перевірених файлах не знайдено | `docs/customer-research.md`; `docs/migrations.md`; `docs/release-checklist.md`; `supabase/staging-sync.ps1`; PR template | N/A |
+| AUTO-13 | PASS | 05.08.2026, Codex; local Windows; `e102bf9` | Env-файли не tracked; current tree, source maps, admin build і Git history не містять secret-shaped service/API credentials | Filename-only/redacted sweep; historical matches — publishable key або test placeholders | N/A |
+| SEC-01 | PASS | 05.08.2026, Codex; local Windows; `e102bf9` | 4/4 fail-closed regression-тестів пройшли | `npm.cmd run test:gdpr-cron` | N/A |
+| DEP-01 | PASS | 05.08.2026, Codex; `https://minto-food.vercel.app/`; `e102bf9` | Home повернув `200`, redirect відсутній | `curl` response headers, `QA_STATUS=200` | N/A |
+| DEP-02 | PASS | 05.08.2026, Codex; admin Vercel; `e102bf9` | `/dashboard` без сесії повернув `307` на `/login` | `Location: /login` | N/A |
+| DEP-03 | PASS | 05.08.2026, Codex; public Vercel; `e102bf9` | Усі заявлені public security headers присутні | HSTS; CSP; `nosniff`; `DENY`; `strict-origin-when-cross-origin` | N/A |
+| DEP-04 | PASS | 05.08.2026, Codex; admin Vercel; `e102bf9` | Усі заявлені admin security headers присутні на redirect response | HSTS; `nosniff`; `DENY`; Referrer-Policy; `noindex, nofollow` | N/A |
+| DEP-05 | PASS | 05.08.2026, Codex; public Vercel; `e102bf9` | `script-src` без `'unsafe-inline'`; Supabase Realtime, PostHog і Sentry origins дозволені | Live `Content-Security-Policy` header | N/A |
+| DEP-06 | PASS | 05.08.2026, Codex; public Vercel; `e102bf9` | GDPR export без Bearer повернув `401` | `{"error":"Unauthorized"}` | N/A |
+| DEP-07 | PASS | 05.08.2026, Codex; public Vercel; `e102bf9` | POST без Bearer → `401`; з invalid JWT → `401`; GET → `405` | Response bodies: `Unauthorized`, `Invalid token`, `Method not allowed` | N/A |
 
 ---
 
@@ -88,11 +107,11 @@
 - [ ] **AUTO-08:** `node scripts/csp-theme-check.mjs` завершується й дає 0 CSP violations.
 
   Історичний PASS є в Roadmap, але повторний запуск 01.08.2026 завис до таймауту — потрібна діагностика скрипта.
-- [ ] **AUTO-09:** статично 0 `div.app-bg`, 0 `div.app-shell`, немає вкладених `<main>`, усі page-файли мають канонічний `main.main`.
+- [x] **AUTO-09:** статично 0 `div.app-bg`, 0 `div.app-shell`, немає вкладених `<main>`, усі page-файли мають канонічний `main.main`.
 - [ ] **AUTO-10:** кожна активна migration має коректний rollback або документовану причину його відсутності; naming convention відповідає `YYYYMMDD_HHMM_description.sql`.
-- [ ] **AUTO-11:** `docs/customer-research.md` містить target persona й актуальний interview script; `docs/migrations.md`, `docs/release-checklist.md`, staging sync script і PR template існують та не містять застарілих шляхів.
+- [x] **AUTO-11:** `docs/customer-research.md` містить target persona й актуальний interview script; `docs/migrations.md`, `docs/release-checklist.md`, staging sync script і PR template існують та не містять застарілих шляхів.
 - [ ] **AUTO-12:** live schema підтверджує розділення `profiles` (auth/admin) і `user_profiles` (health); видалені legacy tables (`old_products`, `recipetest`, `cookbook_notes`, `cookbook_notebooks`, `shopping_list`, `meals_backup_before_streaks`, `product_similar`) справді відсутні.
-- [ ] **AUTO-13:** `.env`, `.env.*` (крім `.env.example`) не tracked; secret sweep client bundle/source maps і доступної Git history не знаходить реальних service-role/API secrets.
+- [x] **AUTO-13:** `.env`, `.env.*` (крім `.env.example`) не tracked; secret sweep client bundle/source maps і доступної Git history не знаходить реальних service-role/API secrets.
 
 ---
 
@@ -100,13 +119,13 @@
 
 Відомі read-only smoke results від 01.08.2026: public home `200`; admin `/` і `/dashboard` без сесії `307 → /login`; sitemap `200`; anon GDPR export `401`; `GET /api/save-recipe` `405`; public/admin security headers присутні.
 
-- [ ] **DEP-01:** public home повертає `200`, немає redirect loop.
-- [ ] **DEP-02:** admin protected route без сесії редіректить на `/login`.
-- [ ] **DEP-03:** public headers: HSTS, CSP, `nosniff`, `DENY`, Referrer-Policy.
-- [ ] **DEP-04:** admin headers: HSTS, `nosniff`, `DENY`, Referrer-Policy, `X-Robots-Tag: noindex, nofollow`.
-- [ ] **DEP-05:** public CSP не містить `script-src 'unsafe-inline'`; дозволені Supabase Realtime, PostHog і Sentry origins відповідають коду.
-- [ ] **DEP-06:** `GET /api/gdpr-export` без Bearer → `401`.
-- [ ] **DEP-07:** `POST /api/save-recipe` без Bearer/з невалідним JWT → `401`; неправильний HTTP method → `405`.
+- [x] **DEP-01:** public home повертає `200`, немає redirect loop.
+- [x] **DEP-02:** admin protected route без сесії редіректить на `/login`.
+- [x] **DEP-03:** public headers: HSTS, CSP, `nosniff`, `DENY`, Referrer-Policy.
+- [x] **DEP-04:** admin headers: HSTS, `nosniff`, `DENY`, Referrer-Policy, `X-Robots-Tag: noindex, nofollow`.
+- [x] **DEP-05:** public CSP не містить `script-src 'unsafe-inline'`; дозволені Supabase Realtime, PostHog і Sentry origins відповідають коду.
+- [x] **DEP-06:** `GET /api/gdpr-export` без Bearer → `401`.
+- [x] **DEP-07:** `POST /api/save-recipe` без Bearer/з невалідним JWT → `401`; неправильний HTTP method → `405`.
 - [ ] **DEP-08:** service-role key відсутній у client JS, HTML, source maps і network responses.
 - [ ] **DEP-09:** admin URL не містить access/refresh tokens після auth transfer.
 
