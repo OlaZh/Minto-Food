@@ -10,12 +10,12 @@
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
 
-  border-bottom: 1px solid rgba(255, 255, 255, 0.25);
+  border-bottom: 1px solid rgba(213, 225, 197, 0.25);
 }
 
 [data-theme='dark'] .header {
   background: rgba(15, 31, 27, 0.5);
-  border-bottom-color: rgba(255, 255, 255, 0.06);
+  border-bottom-color: rgba(213, 225, 197, 0.06);
 }
 
 .header__container {
@@ -459,7 +459,7 @@
   .header__nav-link:focus-visible,
   .header__profile-name:hover,
   .header__profile-name:focus-visible {
-    color: #ffffff;
+    color: var(--color-text-inverse);
   }
 
   .theme-toggle {

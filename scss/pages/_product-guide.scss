@@ -231,14 +231,14 @@
     bottom: 0;
     right: 0;
     background: rgba(0, 0, 0, 0.45);
-    color: #fff;
+    color: var(--color-text-inverse);
     font-size: 8px;
     padding: 2px 6px;
     opacity: 0;
     transition: opacity var(--duration-hover) var(--ease-out);
 
     a {
-      color: #fff;
+      color: var(--color-text-inverse);
       text-decoration: underline;
     }
   }
@@ -368,7 +368,7 @@
   &__icon {
     font-size: 64px;
     line-height: 1;
-    color: #f1faf5;
+    color: #dce7d0;
     opacity: 0.92;
     filter: drop-shadow(0 3px 12px rgba(0, 0, 0, 0.55));
   }
@@ -377,7 +377,7 @@
     font-family: var(--font-body);
     font-size: 22px;
     font-weight: 600;
-    color: #f5fcf8;
+    color: #e1ead6;
     margin: 0;
     text-shadow: 0 2px 12px rgba(0, 0, 0, 0.72);
   }
@@ -386,7 +386,7 @@
     font-family: var(--font-body);
     font-size: 14px;
     font-weight: 600;
-    color: #e8f5ed;
+    color: #cdddbf;
     margin: 0;
     max-width: 320px;
     line-height: 1.5;

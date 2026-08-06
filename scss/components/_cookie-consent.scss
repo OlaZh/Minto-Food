@@ -91,7 +91,7 @@
 
     &--accept {
       background: var(--color-accent);
-      color: #fff;
+      color: var(--color-text-inverse);
       border-color: var(--color-accent);
 
       &:hover {
@@ -101,7 +101,7 @@
 
     &--save {
       background: var(--color-accent);
-      color: #fff;
+      color: var(--color-text-inverse);
       border-color: var(--color-accent);
       padding: 9px 24px;
 

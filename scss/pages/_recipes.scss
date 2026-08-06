@@ -257,7 +257,7 @@
 
   &__icon {
     font-size: 64px;
-    color: #f1faf5;
+    color: #dce7d0;
     opacity: 0.92;
     line-height: 1;
     filter: drop-shadow(0 3px 12px rgba(0, 0, 0, 0.55));
@@ -267,7 +267,7 @@
     font-family: var(--font-body);
     font-size: 22px;
     font-weight: 600;
-    color: #f5fcf8;
+    color: #e1ead6;
     margin: 0;
     text-shadow: 0 2px 12px rgba(0, 0, 0, 0.72);
   }
@@ -276,7 +276,7 @@
     font-family: var(--font-body);
     font-size: 14px;
     font-weight: 600;
-    color: #e8f5ed;
+    color: #cdddbf;
     margin: 0;
     max-width: 320px;
     line-height: 1.5;
@@ -289,9 +289,9 @@
 
   .btn--secondary,
   &__cta {
-    background: rgba(238, 249, 243, 0.88);
+    background: rgba(190, 205, 169, 0.88);
     color: #173a29;
-    border-color: rgba(255, 255, 255, 0.82);
+    border-color: rgba(213, 225, 197, 0.82);
   }
 }
 

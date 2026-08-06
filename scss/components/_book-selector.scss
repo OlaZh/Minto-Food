@@ -233,7 +233,7 @@
   svg {
     width: 18px;
     height: 18px;
-    stroke: #fff;
+    stroke: var(--color-text-inverse);
     stroke-width: 2;
     fill: transparent;
     filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.5));
@@ -246,7 +246,7 @@
 
     svg {
       fill: rgba(231, 76, 60, 0.3);
-      stroke: #fff;
+      stroke: var(--color-text-inverse);
     }
   }
 

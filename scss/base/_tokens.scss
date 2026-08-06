@@ -1,8 +1,8 @@
 :root {
   /* Backgrounds */
-  --color-bg-primary: rgba(238, 249, 243, 0.78);
-  --color-bg-secondary: rgba(231, 246, 237, 0.58);
-  --color-bg-sidebar: rgba(231, 246, 237, 0.5);
+  --color-bg-primary: rgba(186, 202, 166, 0.78);
+  --color-bg-secondary: rgba(166, 188, 146, 0.58);
+  --color-bg-sidebar: rgba(166, 188, 146, 0.5);
   --color-bg-hover: rgba(47, 101, 72, 0.15);
 
   /* Gradient bg stops (light theme) */
@@ -10,13 +10,13 @@
   --color-bg-gradient-end: #2d6b4a;
 
   /* Surface */
-  --color-surface: rgba(231, 246, 237, 0.46);
+  --color-surface: rgba(174, 195, 154, 0.46);
   --premium-glass-surface: linear-gradient(
     145deg,
-    rgba(231, 246, 237, 0.4),
-    rgba(231, 246, 237, 0.36)
+    rgba(184, 201, 163, 0.4),
+    rgba(158, 181, 139, 0.36)
   );
-  --premium-glass-filter: blur(8px) saturate(125%) brightness(1.55);
+  --premium-glass-filter: blur(8px) saturate(120%) brightness(1.18);
 
   /* Accent (МʼЯТНИЙ, НЕ СИНІЙ) */
   --color-accent: #{$color-primary};
@@ -29,7 +29,7 @@
   --color-text-inverse: #{$color-text-inverse};
 
   /* Border */
-  --color-border: rgba(255, 255, 255, 0.7);
+  --color-border: rgba(213, 225, 197, 0.72);
 
   /* Water card */
   --water-bg: rgba(56, 189, 248, 0.08);
@@ -87,7 +87,7 @@
   --color-accent-hover: #{$color-primary-hover-dark};
   --color-accent-soft: rgba(86, 126, 99, 0.22);
 
-  --color-text-primary: #f0faf6;
+  --color-text-primary: #dfe9d6;
   --color-text-secondary: #c5ded4;
   --color-text-inverse: #{$color-text-inverse-dark};
 
@@ -102,5 +102,5 @@
   --color-danger-soft: rgba(231, 76, 60, 0.12);
 
   /* Progress / chart track */
-  --color-progress-track: rgba(255, 255, 255, 0.08);
+  --color-progress-track: rgba(213, 225, 197, 0.08);
 }

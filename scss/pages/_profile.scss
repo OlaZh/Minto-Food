@@ -697,7 +697,7 @@
   }
 
   .apexcharts-pie-series path {
-    filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.18));
+    filter: drop-shadow(0 0 6px rgba(213, 225, 197, 0.18));
   }
 }
 
@@ -731,7 +731,7 @@
   }
 
   &__name {
-    color: #f1f5f3;
+    color: #d6e1cc;
     font-weight: 600;
   }
 
@@ -2186,7 +2186,7 @@
       width: 18px;
       height: 18px;
       border-radius: 50%;
-      background: #fff;
+      background: var(--color-text-inverse);
       transition: transform var(--duration-hover) ease;
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
     }
