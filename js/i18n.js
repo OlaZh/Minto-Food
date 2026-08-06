@@ -434,6 +434,7 @@ export const i18n = {
     weightLabel: 'Вага', timesLabel: 'Разів',
     userDefault: 'Користувач', goalLoseVerb: 'скинути', goalGainVerb: 'набрати',
     nickOnlyChars: 'Тільки літери, цифри, пробіл, . - _', nickChecking: 'Перевіряємо…', nickSaving: 'Збереження…', nickTaken: 'Це ім\'я вже зайняте, спробуй інше',
+    onbwSaveError: 'Не вдалося зберегти дані. Спробуйте ще раз.',
     // Поради по вазі (weight-advice) — {bmi}/{min}/{max} замінюються в коді
     bmiYour: 'Ваш ІМТ: {bmi}',
     adviceUnder: '— недостатня вага. Рекомендована вага: {min}–{max} кг.',
@@ -1285,6 +1286,7 @@ export const i18n = {
     weightLabel: 'Waga', timesLabel: 'Razy',
     userDefault: 'Użytkownik', goalLoseVerb: 'schudnąć', goalGainVerb: 'przytyć',
     nickOnlyChars: 'Tylko litery, cyfry, spacja, . - _', nickChecking: 'Sprawdzamy…', nickSaving: 'Zapisywanie…', nickTaken: 'Ta nazwa jest już zajęta, spróbuj innej',
+    onbwSaveError: 'Nie udało się zapisać danych. Spróbuj ponownie.',
     // Porady wagowe (weight-advice)
     bmiYour: 'Twoje BMI: {bmi}',
     adviceUnder: '— niedowaga. Zalecana waga: {min}–{max} kg.',
@@ -2135,6 +2137,7 @@ export const i18n = {
     weightLabel: 'Weight', timesLabel: 'Times',
     userDefault: 'User', goalLoseVerb: 'lose', goalGainVerb: 'gain',
     nickOnlyChars: 'Only letters, digits, space, . - _', nickChecking: 'Checking…', nickSaving: 'Saving…', nickTaken: 'This name is already taken, try another',
+    onbwSaveError: 'Failed to save data. Please try again.',
     // Weight advice
     bmiYour: 'Your BMI: {bmi}',
     adviceUnder: '— underweight. Recommended weight: {min}–{max} kg.',

@@ -7,6 +7,7 @@
 
     <script src="/js/theme-init.js"></script>
 
+    <link rel="preload" as="image" href="/img/terms-botanical-bg.webp" type="image/webp" fetchpriority="high" />
     <link rel="stylesheet" href="./css/main.css" />
       <link rel="icon" type="image/png" sizes="32x32" href="/img/favicon-32.png" />
     <link rel="apple-touch-icon" sizes="180x180" href="/img/apple-touch-icon.png" />
@@ -138,7 +139,28 @@
 
           <div class="cookbook-layout">
             <section class="cookbook-main">
-              <div class="cookbook-books__grid" id="booksGrid"></div>
+              <div class="cookbook-books__grid" id="booksGrid" aria-busy="true">
+                <div class="skeleton-book" aria-hidden="true">
+                  <div class="skeleton-book__cover"></div>
+                  <div class="skeleton-book__title"></div>
+                  <div class="skeleton-book__sub"></div>
+                </div>
+                <div class="skeleton-book" aria-hidden="true">
+                  <div class="skeleton-book__cover"></div>
+                  <div class="skeleton-book__title"></div>
+                  <div class="skeleton-book__sub"></div>
+                </div>
+                <div class="skeleton-book" aria-hidden="true">
+                  <div class="skeleton-book__cover"></div>
+                  <div class="skeleton-book__title"></div>
+                  <div class="skeleton-book__sub"></div>
+                </div>
+                <div class="skeleton-book" aria-hidden="true">
+                  <div class="skeleton-book__cover"></div>
+                  <div class="skeleton-book__title"></div>
+                  <div class="skeleton-book__sub"></div>
+                </div>
+              </div>
             </section>
 
             <aside class="cookbook-sidebar">
@@ -161,7 +183,22 @@
                 <span data-i18n="newBook">Нова книга</span>
               </button>
               <h2 class="cookbook-sidebar__title" data-i18n="recentViewed">Нещодавно переглянуті</h2>
-              <div class="cookbook-recent" id="recentRecipes"></div>
+              <div class="cookbook-recent" id="recentRecipes" aria-busy="true">
+                <div class="skeleton-list-item" aria-hidden="true">
+                  <div class="skeleton-list-item__icon"></div>
+                  <div class="skeleton-list-item__text">
+                    <div class="skeleton-list-item__name"></div>
+                    <div class="skeleton-list-item__sub"></div>
+                  </div>
+                </div>
+                <div class="skeleton-list-item" aria-hidden="true">
+                  <div class="skeleton-list-item__icon"></div>
+                  <div class="skeleton-list-item__text">
+                    <div class="skeleton-list-item__name"></div>
+                    <div class="skeleton-list-item__sub"></div>
+                  </div>
+                </div>
+              </div>
             </aside>
           </div>
         </div>

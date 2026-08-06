@@ -197,26 +197,25 @@ function closeModal(modal) {
 
 function showBookSkeletons(count = 4) {
   if (!booksGrid) return;
-  const existing = booksGrid.querySelectorAll('.cookbook-book, .skeleton-book');
-  existing.forEach((el) => el.remove());
+  booksGrid.setAttribute('aria-busy', 'true');
+  const fragment = document.createDocumentFragment();
   Array.from({ length: count }, () => {
     const el = document.createElement('div');
     el.className = 'skeleton-book';
+    el.setAttribute('aria-hidden', 'true');
     el.innerHTML = `
       <div class="skeleton-book__cover"></div>
       <div class="skeleton-book__title"></div>
       <div class="skeleton-book__sub"></div>
     `;
-    booksGrid.appendChild(el);
+    fragment.appendChild(el);
   });
+  booksGrid.replaceChildren(fragment);
 }
 
 async function loadBooks() {
   const version = ++_loadVersion;
-
-  const skeletonTimer = setTimeout(() => {
-    if (version === _loadVersion) showBookSkeletons();
-  }, 200);
+  showBookSkeletons();
 
   try {
     const { data: books, error } = await supabase
@@ -226,23 +225,19 @@ async function loadBooks() {
       .order('is_default', { ascending: false })
       .order('created_at', { ascending: true });
 
-    clearTimeout(skeletonTimer);
     if (version !== _loadVersion) return;
     if (error) throw error;
 
     await renderBooks(books || [], version);
   } catch (err) {
-    clearTimeout(skeletonTimer);
     if (version !== _loadVersion) return;
     console.error('Error loading books:', err);
     booksGrid?.querySelectorAll('.skeleton-book').forEach((el) => el.remove());
+    booksGrid?.setAttribute('aria-busy', 'false');
   }
 }
 
 async function renderBooks(books, version) {
-  const existingBooks = booksGrid.querySelectorAll('.cookbook-book, .skeleton-book, .cookbook-empty');
-  existingBooks.forEach((el) => el.remove());
-
   if (books.length === 0) {
     const empty = document.createElement('div');
     empty.className = 'cookbook-empty';
@@ -250,16 +245,20 @@ async function renderBooks(books, version) {
       <p class="cookbook-empty__text">${t('noBooksYet')}</p>
       <button class="cookbook-empty__cta js-add-book-btn">${t('createFirstBook')}</button>
     `;
-    booksGrid.appendChild(empty);
+    booksGrid.replaceChildren(empty);
+    booksGrid.setAttribute('aria-busy', 'false');
     return;
   }
 
+  const fragment = document.createDocumentFragment();
   for (const book of books) {
     if (version !== _loadVersion) return;
     const bookEl = await createBookElement(book);
     if (version !== _loadVersion) return;
-    booksGrid.appendChild(bookEl);
+    fragment.appendChild(bookEl);
   }
+  booksGrid.replaceChildren(fragment);
+  booksGrid.setAttribute('aria-busy', 'false');
 }
 
 // Замінити функцію createBookElement в cookbook.js
@@ -694,13 +693,18 @@ async function loadRecentRecipes() {
   const container = document.getElementById('recentRecipes');
   if (!container) return;
 
+  container.setAttribute('aria-busy', 'true');
+
   try {
     const { data: books } = await supabase
       .from('cookbooks')
       .select('id')
       .eq('user_id', currentUser.id);
 
-    if (!books?.length) return;
+    if (!books?.length) {
+      container.replaceChildren();
+      return;
+    }
 
     const bookIds = books.map((b) => b.id);
 
@@ -722,7 +726,7 @@ async function loadRecentRecipes() {
       .slice(0, 8);
 
     if (!unique.length) {
-      container.innerHTML = '';
+      container.replaceChildren();
       return;
     }
 
@@ -747,5 +751,8 @@ async function loadRecentRecipes() {
       .join('');
   } catch (err) {
     console.error('Error loading recent recipes:', err);
+    container.replaceChildren();
+  } finally {
+    container.setAttribute('aria-busy', 'false');
   }
 }

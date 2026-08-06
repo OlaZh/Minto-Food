@@ -16,9 +16,23 @@ let _debounceTimer = null;
 let _isValid = false;
 let _suggested = '';
 
+// Supabase може викликати SIGNED_IN більше одного разу поспіль (токен-рефреш,
+// повторна ініціалізація клієнта після OAuth redirect тощо). Без цього guard-а
+// паралельні виклики checkOnboarding() перезаписують module-scoped _suggested/
+// _resolveFn один одного, і другий overlay/wizard "зависає" або монтується
+// вдруге. Лок гарантує, що весь флоу виконується не більше одного разу
+// одночасно — наступний виклик чекає на поточний замість власного запуску.
+let _inFlight = null;
+
 // ── Публічний метод ───────────────────────────────────────────
 
 export async function checkOnboarding(user) {
+  if (_inFlight) return _inFlight;
+  _inFlight = _checkOnboardingImpl(user).finally(() => { _inFlight = null; });
+  return _inFlight;
+}
+
+async function _checkOnboardingImpl(user) {
   // Джерело правди — БД: онбординг показуємо РІВНО ОДИН РАЗ за весь час,
   // на будь-якому пристрої. Прапор welcome_intro_seen прив'язаний до акаунта,
   // тому не залежить від localStorage (чистка кешу / новий пристрій не вертають онбординг).

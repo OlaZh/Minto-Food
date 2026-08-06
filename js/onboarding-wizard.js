@@ -19,7 +19,7 @@ import { supabase } from './supabaseClient.js';
 import { t, formatText } from './i18n-apply.js';
 import { calcDailyNorm } from './health-core.js';
 import { saveProfileFields } from './profile-flags.js';
-import { setButtonLoading, getLocalDateString } from './utils.js';
+import { setButtonLoading, getLocalDateString, showToast } from './utils.js';
 
 // Кроки wizard. Значення дзеркалять профіль, лейбли беруться з i18n.
 const GOALS = [
@@ -347,9 +347,14 @@ async function _finish(btn) {
   };
 
   const { error } = await supabase.from('user_profiles').upsert(payload, { onConflict: 'user_id' });
-  if (error) console.error('[onboarding-wizard] save failed:', error);
-  else await _seedSampleMeal(user.id);
+  if (error) {
+    console.error('[onboarding-wizard] save failed:', error);
+    setButtonLoading(btn, false);
+    showToast(t('onbwSaveError'), 'error');
+    return;
+  }
 
+  await _seedSampleMeal(user.id);
   _close();
 }
 

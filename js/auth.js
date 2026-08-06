@@ -176,11 +176,15 @@ export async function initAuth(onAuthChange = null) {
   });
 
   // Перевіряємо поточну сесію
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-  currentUser = session?.user || null;
-  updateAuthUI();
+  try {
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    currentUser = session?.user || null;
+    updateAuthUI();
+  } finally {
+    document.documentElement.classList.add('auth-state-ready');
+  }
 
   return currentUser;
 }

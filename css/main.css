@@ -2310,7 +2310,7 @@ svg[viewBox="0 0 24 24"] {
     background-position: 600px 0;
   }
 }
-.admin-skeleton-card, .skeleton-list-item__sub, .skeleton-list-item__name, .skeleton-list-item__icon, .skeleton-book__sub, .skeleton-book__title, .skeleton-book__cover, .skeleton-card__btn, .skeleton-card__badge, .skeleton-card__subtitle, .skeleton-card__title, .skeleton-card__image {
+.admin-skeleton-card, html:not(.auth-state-ready) .page--cookbook .header__right::after, .skeleton-list-item__sub, .skeleton-list-item__name, .skeleton-list-item__icon, .skeleton-book__sub, .skeleton-book__title, .skeleton-book__cover, .skeleton-card__btn, .skeleton-card__badge, .skeleton-card__subtitle, .skeleton-card__title, .skeleton-card__image {
   background: linear-gradient(90deg, var(--color-bg-secondary) 25%, var(--color-surface) 50%, var(--color-bg-secondary) 75%);
   background-size: 1200px 100%;
   animation: skeleton-shimmer 1.6s infinite linear;
@@ -11901,6 +11901,28 @@ input:checked + .settings-toggle__track::after {
 /* ================= PAGE LAYOUT ================= */
 .cookbook-page {
   padding: 0 0 60px;
+}
+
+html:not(.auth-state-ready) .page--cookbook .header__right {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  min-width: 96px;
+  min-height: 42px;
+  pointer-events: none;
+}
+html:not(.auth-state-ready) .page--cookbook .header__right > * {
+  visibility: hidden;
+}
+html:not(.auth-state-ready) .page--cookbook .header__right::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  width: 82px;
+  height: 36px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
 }
 
 .cookbook-page__add-btn {

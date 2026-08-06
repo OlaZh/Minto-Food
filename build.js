@@ -77,6 +77,8 @@ const HEAD_ICON_LINKS =
 const HEAD_MANIFEST_LINKS =
   '<link rel="manifest" href="/manifest.json" />\n' +
   '    <meta name="theme-color" content="#4ab584" />';
+const HEAD_BACKGROUND_PRELOAD =
+  '<link rel="preload" as="image" href="/img/terms-botanical-bg.webp" type="image/webp" fetchpriority="high" />';
 const OG_IMAGE_META =
   '<meta property="og:image" content="https://minto-food.vercel.app/img/og-default.png" />\n' +
   '    <meta property="og:image:width" content="1200" />\n' +
@@ -172,6 +174,20 @@ for (const page of pages) {
     const headClose = html.indexOf('</head>');
     if (headClose !== -1) {
       html = html.slice(0, headClose) + '    ' + ERROR_TRACKING_SCRIPT + '\n  ' + html.slice(headClose);
+      changed = true;
+    }
+  }
+
+  // Head: preload the shared above-the-fold background before the stylesheet.
+  if (!html.includes('rel="preload" as="image" href="/img/terms-botanical-bg.webp"')) {
+    const stylesheetStart = html.search(/<link\s+rel=["']stylesheet["']/i);
+    const insertAt = stylesheetStart !== -1 ? stylesheetStart : html.indexOf('</head>');
+    if (insertAt !== -1) {
+      html =
+        html.slice(0, insertAt) +
+        HEAD_BACKGROUND_PRELOAD +
+        '\n    ' +
+        html.slice(insertAt);
       changed = true;
     }
   }
