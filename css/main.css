@@ -5873,7 +5873,8 @@ svg[viewBox="0 0 24 24"] {
   position: relative;
   isolation: isolate;
   overflow: hidden;
-  max-width: 1240px;
+  width: 100%;
+  max-width: none;
   margin: clamp(24px, 5vw, 56px) auto clamp(48px, 8vw, 96px);
   padding: clamp(28px, 5vw, 56px);
   background: linear-gradient(145deg, rgba(231, 246, 237, 0.4) 0%, rgba(231, 246, 237, 0.36) 100%);
