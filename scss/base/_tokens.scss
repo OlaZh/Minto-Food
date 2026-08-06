@@ -3,7 +3,7 @@
   --color-bg-primary: rgba(238, 249, 243, 0.78);
   --color-bg-secondary: rgba(231, 246, 237, 0.58);
   --color-bg-sidebar: rgba(231, 246, 237, 0.5);
-  --color-bg-hover: rgba(74, 181, 132, 0.15);
+  --color-bg-hover: rgba(47, 101, 72, 0.15);
 
   /* Gradient bg stops (light theme) */
   --color-bg-gradient-mid: #5d9e78;
@@ -21,7 +21,7 @@
   /* Accent (МʼЯТНИЙ, НЕ СИНІЙ) */
   --color-accent: #{$color-primary};
   --color-accent-hover: #{$color-primary-hover};
-  --color-accent-soft: rgba(74, 181, 132, 0.22);
+  --color-accent-soft: rgba(47, 101, 72, 0.22);
 
   /* Text */
   --color-text-primary: #010a04;
@@ -40,7 +40,7 @@
   --color-danger-soft: rgba(192, 57, 43, 0.1);
 
   /* Macro nutrients */
-  --color-macro-protein: #6fcfba;
+  --color-macro-protein: #567e63;
   --color-macro-fat: #f5a623;
   --color-macro-carbs: #7b9cda;
 
@@ -69,7 +69,7 @@
   --color-bg-primary: rgba(15, 38, 30, 0.78);
   --color-bg-secondary: rgba(14, 38, 30, 0.58);
   --color-bg-sidebar: rgba(14, 38, 30, 0.5);
-  --color-bg-hover: rgba(111, 207, 186, 0.12);
+  --color-bg-hover: rgba(86, 126, 99, 0.12);
 
   /* Gradient bg stops (dark theme — без різкого градієнту) */
   --color-bg-gradient-mid: #111e1a;
@@ -85,7 +85,7 @@
 
   --color-accent: #{$color-primary-dark};
   --color-accent-hover: #{$color-primary-hover-dark};
-  --color-accent-soft: rgba(111, 207, 186, 0.22);
+  --color-accent-soft: rgba(86, 126, 99, 0.22);
 
   --color-text-primary: #f0faf6;
   --color-text-secondary: #c5ded4;

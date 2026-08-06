@@ -16,7 +16,7 @@
   background: var(--color-danger, #c0392b);
 
   &--online {
-    background: var(--color-accent, #4ab584);
+    background: var(--color-accent, #2f6548);
   }
 
   &[hidden] {
@@ -64,7 +64,7 @@
     height: 100%;
     width: 0;
     border-radius: 0 2px 2px 0;
-    background: var(--color-accent, #4ab584);
+    background: var(--color-accent, #2f6548);
     transition: width 0.2s ease;
   }
 

@@ -233,7 +233,7 @@
 
   &:hover {
     transform: translateY(-8px);
-    border-color: rgba(111, 207, 186, 0.5);
+    border-color: rgba(86, 126, 99, 0.5);
     box-shadow:
       0 28px 60px rgba(0, 0, 0, 0.13),
       0 8px 20px rgba(0, 0, 0, 0.07),
@@ -561,7 +561,7 @@
   &:hover {
     transform: translateY(-4px);
     border-color: var(--color-accent);
-    box-shadow: 0 16px 32px rgba(111, 207, 186, 0.18);
+    box-shadow: 0 16px 32px rgba(86, 126, 99, 0.18);
 
     .cookbook-recipe-card__remove {
       opacity: 1;
@@ -696,7 +696,7 @@
       &:focus {
         outline: none;
         border-color: var(--color-accent);
-        box-shadow: 0 0 0 3px rgba(111, 207, 186, 0.15);
+        box-shadow: 0 0 0 3px rgba(86, 126, 99, 0.15);
       }
 
       &::placeholder {
@@ -770,7 +770,7 @@
     &:hover {
       background: var(--color-accent-hover);
       transform: translateY(-2px);
-      box-shadow: 0 8px 20px rgba(111, 207, 186, 0.3);
+      box-shadow: 0 8px 20px rgba(86, 126, 99, 0.3);
     }
   }
 
@@ -968,7 +968,7 @@
 
   &--active {
     border-color: var(--color-accent);
-    box-shadow: 0 0 0 3px rgba(74, 181, 132, 0.25);
+    box-shadow: 0 0 0 3px rgba(47, 101, 72, 0.25);
   }
 
   &--none {

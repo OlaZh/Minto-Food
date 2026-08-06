@@ -131,7 +131,7 @@
 
   &--matched {
     border-color: var(--color-accent);
-    background: rgba(74, 181, 132, 0.12);
+    background: rgba(47, 101, 72, 0.12);
   }
 
   &--unmatched {
@@ -288,7 +288,7 @@
   padding: 12px 14px;
   border-radius: 10px;
   background: var(--color-accent-soft);
-  border: 1px solid rgba(111, 207, 186, 0.35);
+  border: 1px solid rgba(86, 126, 99, 0.35);
 }
 
 .ingredient-builder__total-label {

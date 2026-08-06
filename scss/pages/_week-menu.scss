@@ -47,19 +47,63 @@
   @extend %button-secondary;
   font-size: 13px;
   gap: var(--space-xs);
+  background: rgba(238, 249, 243, 0.86);
+  color: #173a29;
+  border-color: rgba(255, 255, 255, 0.8);
+
+  &:hover:not(:disabled) {
+    background: var(--color-accent);
+    color: #fff;
+    border-color: var(--color-accent);
+  }
+
+  [data-theme='dark'] & {
+    background: rgba(226, 240, 232, 0.8);
+    color: #122f21;
+    border-color: rgba(255, 255, 255, 0.42);
+
+    &:hover:not(:disabled) {
+      background: var(--color-accent);
+      color: #fff;
+      border-color: var(--color-accent);
+    }
+  }
+}
+
+#clearWeekBtn {
+  background: rgba(117, 48, 43, 0.82);
+  color: #fff;
+  border-color: rgba(255, 222, 218, 0.65);
+
+  &:hover:not(:disabled) {
+    background: #662a26;
+    border-color: rgba(255, 235, 232, 0.8);
+  }
 }
 
 .week-action-btn--primary {
   background: var(--color-accent);
-  color: var(--color-text-inverse);
+  color: #fff;
   border-color: var(--color-accent);
   box-shadow: var(--shadow-1);
 
   &:hover:not(:disabled) {
     background: var(--color-accent-hover);
+    color: #fff;
     border-color: var(--color-accent-hover);
     transform: translateY(-1px);
     box-shadow: var(--shadow-2);
+  }
+
+  [data-theme='dark'] & {
+    background: var(--color-accent);
+    color: #fff;
+    border-color: var(--color-accent);
+
+    &:hover:not(:disabled) {
+      background: var(--color-accent-hover);
+      border-color: var(--color-accent-hover);
+    }
   }
 }
 
@@ -634,7 +678,7 @@
 .week-modal__api-btn {
   padding: 10px 16px;
   border-radius: 10px;
-  border: 1px solid rgba(111, 207, 186, 0.45);
+  border: 1px solid rgba(86, 126, 99, 0.45);
   background: var(--color-accent-soft);
   color: var(--color-text-primary);
   font-family: var(--font-body);
@@ -647,7 +691,7 @@
     transform var(--duration-hover) ease;
 
   &:hover {
-    background: rgba(111, 207, 186, 0.32);
+    background: rgba(86, 126, 99, 0.32);
     border-color: var(--color-accent);
     transform: translateY(-1px);
   }
@@ -707,7 +751,7 @@
   width: 28px;
   height: 28px;
   border-radius: 8px;
-  border: 1px solid rgba(111, 207, 186, 0.45);
+  border: 1px solid rgba(86, 126, 99, 0.45);
   background: var(--color-accent-soft);
   color: var(--color-text-primary);
   font-size: 16px;
@@ -722,7 +766,7 @@
     transform var(--duration-hover) ease;
 
   &:hover {
-    background: rgba(111, 207, 186, 0.32);
+    background: rgba(86, 126, 99, 0.32);
     border-color: var(--color-accent);
     transform: scale(1.1);
   }
@@ -886,7 +930,7 @@
   width: 40px;
   height: 40px;
   border-radius: 10px;
-  border: 1px solid rgba(111, 207, 186, 0.45);
+  border: 1px solid rgba(86, 126, 99, 0.45);
   background: var(--color-accent-soft);
   color: var(--color-text-primary);
   font-size: 20px;
@@ -901,7 +945,7 @@
     transform var(--duration-hover) ease;
 
   &:hover {
-    background: rgba(111, 207, 186, 0.32);
+    background: rgba(86, 126, 99, 0.32);
     border-color: var(--color-accent);
     transform: scale(1.05);
   }
@@ -970,7 +1014,7 @@
   padding: 10px 14px;
   border-radius: 10px;
   background: var(--color-accent-soft);
-  border: 1px solid rgba(111, 207, 186, 0.35);
+  border: 1px solid rgba(86, 126, 99, 0.35);
 }
 
 .builder__total-kcal {
@@ -1016,7 +1060,7 @@
   flex-shrink: 0;
 
   &:hover {
-    background: rgba(111, 207, 186, 0.32);
+    background: rgba(86, 126, 99, 0.32);
     border-style: solid;
     transform: translateY(-1px);
     box-shadow: var(--shadow-2);
@@ -1136,7 +1180,7 @@
   &[aria-current='true'] {
     background: var(--color-accent);
     border-color: var(--color-accent);
-    box-shadow: 0 4px 12px rgba(74, 181, 132, 0.3);
+    box-shadow: 0 4px 12px rgba(47, 101, 72, 0.3);
 
     .week-mobile__pill-abbr,
     .week-mobile__pill-num {
@@ -1289,7 +1333,7 @@
   }
 
   &.is-open .week-mobile__accordion-header {
-    background: var(--color-accent-soft, rgba(74, 181, 132, 0.06));
+    background: var(--color-accent-soft, rgba(47, 101, 72, 0.06));
   }
 }
 
@@ -1323,8 +1367,8 @@
   background: transparent;
 
   &--filled {
-    background: var(--color-accent, #4ab584);
-    border-color: var(--color-accent, #4ab584);
+    background: var(--color-accent, #2f6548);
+    border-color: var(--color-accent, #2f6548);
   }
 }
 
@@ -1360,8 +1404,8 @@
     border-color var(--duration-hover);
 
   &:hover {
-    background: var(--color-accent, #4ab584);
-    border-color: var(--color-accent, #4ab584);
+    background: var(--color-accent, #2f6548);
+    border-color: var(--color-accent, #2f6548);
     color: var(--color-text-inverse);
   }
 }
@@ -1482,7 +1526,7 @@
   cursor: default;
 
   &--active {
-    background: var(--color-accent, #4ab584);
+    background: var(--color-accent, #2f6548);
 
     .mob-week-grid__day-abbr,
     .mob-week-grid__day-num {
@@ -1533,7 +1577,7 @@
   transition: background var(--duration-hover);
 
   &:hover {
-    background: rgba(74, 181, 132, 0.08);
+    background: rgba(47, 101, 72, 0.08);
   }
 }
 
@@ -1549,7 +1593,7 @@
   width: 5px;
   height: 5px;
   border-radius: 50%;
-  background: var(--color-accent, #4ab584);
+  background: var(--color-accent, #2f6548);
 }
 
 .mob-week-grid__kcal {
@@ -1650,7 +1694,7 @@
   &--today {
     background: var(--color-accent);
     border-color: var(--color-accent);
-    box-shadow: 0 4px 12px rgba(74, 181, 132, 0.3);
+    box-shadow: 0 4px 12px rgba(47, 101, 72, 0.3);
   }
 }
 

@@ -19,7 +19,7 @@
     background: var(--color-accent-soft);
     backdrop-filter: blur(10px);
     border-radius: 16px;
-    border: 1px solid rgba(111, 207, 186, 0.35);
+    border: 1px solid rgba(86, 126, 99, 0.35);
     box-shadow: 0 4px 12px rgba(46, 204, 113, 0.12);
     transition: transform var(--duration-hover) ease,
       background var(--duration-hover) ease,
@@ -28,8 +28,8 @@
 
     &:hover {
       transform: translateY(-3px);
-      background: rgba(111, 207, 186, 0.28);
-      border-color: rgba(111, 207, 186, 0.55);
+      background: rgba(86, 126, 99, 0.28);
+      border-color: rgba(86, 126, 99, 0.55);
       box-shadow: 0 15px 25px rgba(46, 204, 113, 0.22);
     }
 
@@ -91,7 +91,7 @@
   background: var(--color-accent-soft);
   backdrop-filter: blur(10px);
   border-radius: 20px;
-  border: 1px solid rgba(111, 207, 186, 0.45);
+  border: 1px solid rgba(86, 126, 99, 0.45);
   box-shadow: 0 4px 12px rgba(46, 204, 113, 0.12);
 }
 
@@ -135,7 +135,7 @@
   padding: 12px 16px;
   border-radius: 14px;
   background: rgba(255, 255, 255, 0.38);
-  border: 1px solid rgba(111, 207, 186, 0.3);
+  border: 1px solid rgba(86, 126, 99, 0.3);
   color: var(--color-text-secondary);
   font-size: 14px;
   line-height: 1.5;
@@ -171,7 +171,7 @@
   padding: 15px;
   background: var(--color-accent-soft);
   border-radius: 16px;
-  border: 1px solid rgba(111, 207, 186, 0.45);
+  border: 1px solid rgba(86, 126, 99, 0.45);
   transition: transform var(--duration-hover) ease,
     box-shadow var(--duration-hover) ease,
     border-color var(--duration-hover) ease;

@@ -104,7 +104,7 @@
   &:hover {
     background: var(--color-surface);
     transform: translateY(-3px);
-    border-color: rgba(111, 207, 186, 0.55);
+    border-color: rgba(86, 126, 99, 0.55);
     box-shadow: 0 15px 25px rgba(46, 204, 113, 0.15);
   }
 
@@ -221,7 +221,7 @@
       max-width: 140px;
       height: 48px;
       background: var(--color-accent-soft);
-      border: 1px solid rgba(111, 207, 186, 0.45);
+      border: 1px solid rgba(86, 126, 99, 0.45);
       border-radius: 14px;
       font-weight: 700;
       font-family: inherit;
@@ -231,7 +231,7 @@
         transform var(--duration-hover) ease;
 
       &:hover {
-        background: rgba(111, 207, 186, 0.18);
+        background: rgba(86, 126, 99, 0.18);
         transform: translateY(-2px);
       }
     }

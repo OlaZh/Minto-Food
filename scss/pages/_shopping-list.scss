@@ -1178,7 +1178,7 @@
 
     &:has(input:checked) {
       border-color: var(--color-accent);
-      background: var(--color-accent-soft, rgba(74, 181, 132, 0.08));
+      background: var(--color-accent-soft, rgba(47, 101, 72, 0.08));
     }
 
     strong {
@@ -1295,7 +1295,7 @@
   &:focus {
     outline: none;
     border-color: var(--color-accent);
-    box-shadow: 0 0 0 3px rgba(74, 181, 132, 0.15);
+    box-shadow: 0 0 0 3px rgba(47, 101, 72, 0.15);
   }
 }
 
@@ -1310,7 +1310,7 @@
   30%,
   70% {
     border-color: var(--color-accent);
-    background: rgba(74, 181, 132, 0.18);
+    background: rgba(47, 101, 72, 0.18);
   }
 }
 

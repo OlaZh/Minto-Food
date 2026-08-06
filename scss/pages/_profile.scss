@@ -693,7 +693,7 @@
 #lastWeekChart,
 #thisWeekChart {
   .apexcharts-pie {
-    filter: drop-shadow(0 4px 14px rgba(111, 207, 186, 0.25));
+    filter: drop-shadow(0 4px 14px rgba(86, 126, 99, 0.25));
   }
 
   .apexcharts-pie-series path {
@@ -766,7 +766,7 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: var(--dot-color, #6fcfba);
+  background: var(--dot-color, #567e63);
   flex-shrink: 0;
   margin-left: 10px;
 
@@ -829,7 +829,7 @@
   color: var(--color-accent);
 
   &.pos {
-    color: #6fcfba;
+    color: #567e63;
   }
 
   &.neg {
@@ -919,8 +919,8 @@
   display: block;
   height: 100%;
   border-radius: 6px;
-  background: linear-gradient(90deg, #f5a623 0%, #6fcfba 100%);
-  box-shadow: 0 0 12px rgba(111, 207, 186, 0.4);
+  background: linear-gradient(90deg, #f5a623 0%, #567e63 100%);
+  box-shadow: 0 0 12px rgba(86, 126, 99, 0.4);
   transition: width 0.7s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
@@ -977,7 +977,7 @@
   width: 28px;
   height: 28px;
   border-radius: 8px;
-  background: rgba(74, 181, 132, 0.12);
+  background: rgba(47, 101, 72, 0.12);
   color: var(--color-accent);
   flex-shrink: 0;
   margin-top: 1px;

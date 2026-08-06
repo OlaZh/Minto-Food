@@ -165,7 +165,7 @@
     &.is-active {
       background: var(--color-accent);
       border-color: var(--color-accent);
-      box-shadow: 0 4px 12px rgba(74, 181, 132, 0.3);
+      box-shadow: 0 4px 12px rgba(47, 101, 72, 0.3);
       transform: none;
 
       .day-week-nav__pill-abbr,
@@ -779,7 +779,7 @@
     &.is-open {
       border-color: var(--color-accent);
       color: var(--color-accent);
-      background: var(--color-accent-soft, rgba(74, 181, 132, 0.08));
+      background: var(--color-accent-soft, rgba(47, 101, 72, 0.08));
     }
   }
 
