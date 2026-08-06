@@ -5857,6 +5857,10 @@ svg[viewBox="0 0 24 24"] {
   background: linear-gradient(rgba(7, 29, 20, 0.28), rgba(7, 29, 20, 0.42)), url("/img/terms-botanical-bg.webp") center top/cover fixed;
 }
 
+.page--terms-glass .header {
+  background: rgba(166, 214, 184, 0.4);
+}
+
 .page--terms-glass .header__nav-link,
 .page--terms-glass .header__profile-name {
   color: #061a0d;
@@ -5920,11 +5924,11 @@ svg[viewBox="0 0 24 24"] {
 }
 
 .page--terms-glass .site-footer {
-  background: linear-gradient(135deg, rgba(5, 25, 17, 0.68), rgba(10, 42, 29, 0.58));
+  background: linear-gradient(135deg, rgba(5, 25, 17, 0.55), rgba(10, 42, 29, 0.55));
   border-top-color: rgba(226, 247, 237, 0.24);
   box-shadow: 0 -18px 48px rgba(3, 18, 12, 0.24);
-  -webkit-backdrop-filter: blur(14px) saturate(120%) brightness(0.82);
-  backdrop-filter: blur(14px) saturate(120%) brightness(0.82);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
 }
 
 .page--terms-glass .site-footer__logo img {
@@ -5975,6 +5979,10 @@ svg[viewBox="0 0 24 24"] {
   --terms-glass-link: #8fe0c4;
 }
 
+[data-theme=dark] .page--terms-glass .header {
+  background: rgba(15, 31, 27, 0.5);
+}
+
 [data-theme=dark] .page--terms-glass .header__nav-link,
 [data-theme=dark] .page--terms-glass .header__profile-name {
   color: #e4f2eb;
@@ -5995,6 +6003,10 @@ svg[viewBox="0 0 24 24"] {
   backdrop-filter: blur(8px) saturate(115%) brightness(0.78);
 }
 
+[data-theme=dark] .page--terms-glass .site-footer {
+  background: linear-gradient(135deg, rgba(5, 25, 17, 0.65), rgba(10, 42, 29, 0.65));
+}
+
 @supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
   .page--terms-glass .legal-page {
     background: rgba(231, 246, 237, 0.66);
@@ -6005,7 +6017,11 @@ svg[viewBox="0 0 24 24"] {
   }
 
   .page--terms-glass .site-footer {
-    background: rgba(7, 31, 22, 0.9);
+    background: rgba(7, 31, 22, 0.55);
+  }
+
+  [data-theme=dark] .page--terms-glass .site-footer {
+    background: rgba(7, 31, 22, 0.65);
   }
 }
 .back-to-top {
