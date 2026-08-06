@@ -5851,9 +5851,9 @@ svg[viewBox="0 0 24 24"] {
 
 /* Terms page visual prototype: photographic backdrop + accessible frosted glass. */
 .page--terms-glass {
-  --terms-glass-text: #102719;
-  --terms-glass-muted: #183b28;
-  --terms-glass-link: #073d23;
+  --terms-glass-text: #04170c;
+  --terms-glass-muted: #071d11;
+  --terms-glass-link: #001f12;
   background: linear-gradient(rgba(7, 29, 20, 0.28), rgba(7, 29, 20, 0.42)), url("/img/terms-botanical-bg.webp") center top/cover fixed;
 }
 
@@ -5864,26 +5864,12 @@ svg[viewBox="0 0 24 24"] {
   max-width: 860px;
   margin: clamp(24px, 5vw, 56px) auto clamp(48px, 8vw, 96px);
   padding: clamp(28px, 5vw, 56px);
-  background: linear-gradient(145deg, rgba(238, 249, 242, 0.7) 0%, rgba(216, 239, 225, 0.64) 100%);
+  background: linear-gradient(145deg, rgba(231, 246, 237, 0.54) 0%, rgba(231, 246, 237, 0.48) 100%);
   border: 1px solid rgba(255, 255, 255, 0.84);
   border-radius: 28px;
   box-shadow: 0 12px 30px rgba(5, 25, 17, 0.28), 0 42px 110px rgba(5, 25, 17, 0.38), inset 0 1px 0 rgba(255, 255, 255, 0.92), inset 0 -1px 0 rgba(255, 255, 255, 0.3);
-  -webkit-backdrop-filter: blur(30px) saturate(145%) brightness(1.08);
-  backdrop-filter: blur(30px) saturate(145%) brightness(1.08);
-}
-
-.page--terms-glass .legal-page::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  background: radial-gradient(circle at 8% 0%, rgba(255, 255, 255, 0.42), transparent 34%), linear-gradient(115deg, rgba(255, 255, 255, 0.2), transparent 38%);
-}
-
-.page--terms-glass .legal-page > * {
-  position: relative;
-  z-index: 1;
+  -webkit-backdrop-filter: blur(14px) saturate(125%) brightness(1.05);
+  backdrop-filter: blur(14px) saturate(125%) brightness(1.05);
 }
 
 .page--terms-glass .legal-page__title,
@@ -5924,9 +5910,9 @@ svg[viewBox="0 0 24 24"] {
     margin: 16px auto 48px;
     padding: 28px 20px 36px;
     border-radius: 20px;
-    background: linear-gradient(145deg, rgba(238, 249, 242, 0.76), rgba(216, 239, 225, 0.7));
-    -webkit-backdrop-filter: blur(22px) saturate(135%) brightness(1.06);
-    backdrop-filter: blur(22px) saturate(135%) brightness(1.06);
+    background: linear-gradient(145deg, rgba(231, 246, 237, 0.62), rgba(231, 246, 237, 0.56));
+    -webkit-backdrop-filter: blur(12px) saturate(120%) brightness(1.04);
+    backdrop-filter: blur(12px) saturate(120%) brightness(1.04);
   }
 }
 
@@ -5937,22 +5923,18 @@ svg[viewBox="0 0 24 24"] {
 }
 
 [data-theme=dark] .page--terms-glass .legal-page {
-  background: linear-gradient(145deg, rgba(14, 38, 30, 0.72), rgba(5, 22, 17, 0.6));
+  background: linear-gradient(145deg, rgba(14, 38, 30, 0.54), rgba(5, 22, 17, 0.46));
   border-color: rgba(225, 247, 238, 0.28);
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.42), 0 44px 110px rgba(0, 0, 0, 0.56), inset 0 1px 0 rgba(255, 255, 255, 0.16), inset 0 -1px 0 rgba(255, 255, 255, 0.06);
 }
 
-[data-theme=dark] .page--terms-glass .legal-page::before {
-  background: radial-gradient(circle at 8% 0%, rgba(255, 255, 255, 0.15), transparent 34%), linear-gradient(115deg, rgba(255, 255, 255, 0.08), transparent 38%);
-}
-
 @supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
   .page--terms-glass .legal-page {
-    background: #eef9f2;
+    background: rgba(231, 246, 237, 0.74);
   }
 
   [data-theme=dark] .page--terms-glass .legal-page {
-    background: #102b23;
+    background: rgba(16, 43, 35, 0.78);
   }
 }
 .back-to-top {
