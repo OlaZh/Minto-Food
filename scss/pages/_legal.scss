@@ -122,9 +122,9 @@
 
 /* Terms page visual prototype: photographic backdrop + accessible frosted glass. */
 .page--terms-glass {
-  --terms-glass-text: #04170c;
-  --terms-glass-muted: #071d11;
-  --terms-glass-link: #001f12;
+  --terms-glass-text: #010a04;
+  --terms-glass-muted: #020d06;
+  --terms-glass-link: #020d06;
 
   background:
     linear-gradient(rgba(7, 29, 20, 0.28), rgba(7, 29, 20, 0.42)),
@@ -139,8 +139,8 @@
     padding: clamp(28px, 5vw, 56px);
     background: linear-gradient(
       145deg,
-      rgba(231, 246, 237, 0.54) 0%,
-      rgba(231, 246, 237, 0.48) 100%
+      rgba(231, 246, 237, 0.4) 0%,
+      rgba(231, 246, 237, 0.36) 100%
     );
     border: 1px solid rgba(255, 255, 255, 0.84);
     border-radius: 28px;
@@ -149,8 +149,8 @@
       0 42px 110px rgba(5, 25, 17, 0.38),
       inset 0 1px 0 rgba(255, 255, 255, 0.92),
       inset 0 -1px 0 rgba(255, 255, 255, 0.3);
-    -webkit-backdrop-filter: blur(14px) saturate(125%) brightness(1.05);
-    backdrop-filter: blur(14px) saturate(125%) brightness(1.05);
+    -webkit-backdrop-filter: blur(8px) saturate(125%) brightness(1.55);
+    backdrop-filter: blur(8px) saturate(125%) brightness(1.55);
   }
 
   .legal-page__title,
@@ -190,11 +190,11 @@
       border-radius: 20px;
       background: linear-gradient(
         145deg,
-        rgba(231, 246, 237, 0.62),
-        rgba(231, 246, 237, 0.56)
+        rgba(231, 246, 237, 0.48),
+        rgba(231, 246, 237, 0.44)
       );
-      -webkit-backdrop-filter: blur(12px) saturate(120%) brightness(1.04);
-      backdrop-filter: blur(12px) saturate(120%) brightness(1.04);
+      -webkit-backdrop-filter: blur(9px) saturate(120%) brightness(1.4);
+      backdrop-filter: blur(9px) saturate(120%) brightness(1.4);
     }
   }
 }
@@ -207,8 +207,8 @@
   .legal-page {
     background: linear-gradient(
       145deg,
-      rgba(14, 38, 30, 0.54),
-      rgba(5, 22, 17, 0.46)
+      rgba(14, 38, 30, 0.42),
+      rgba(5, 22, 17, 0.34)
     );
     border-color: rgba(225, 247, 238, 0.28);
     box-shadow:
@@ -216,16 +216,17 @@
       0 44px 110px rgba(0, 0, 0, 0.56),
       inset 0 1px 0 rgba(255, 255, 255, 0.16),
       inset 0 -1px 0 rgba(255, 255, 255, 0.06);
-
+    -webkit-backdrop-filter: blur(8px) saturate(115%) brightness(0.78);
+    backdrop-filter: blur(8px) saturate(115%) brightness(0.78);
   }
 }
 
 @supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
   .page--terms-glass .legal-page {
-    background: rgba(231, 246, 237, 0.74);
+    background: rgba(231, 246, 237, 0.66);
   }
 
   [data-theme='dark'] .page--terms-glass .legal-page {
-    background: rgba(16, 43, 35, 0.78);
+    background: rgba(16, 43, 35, 0.68);
   }
 }
