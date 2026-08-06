@@ -11,6 +11,8 @@
 
   /* Surface */
   --color-surface: rgba(174, 195, 154, 0.46);
+  --color-dropdown-surface: #b6c5a2;
+  --color-dropdown-surface-hover: #a6b991;
   --premium-glass-surface: linear-gradient(
     145deg,
     rgba(184, 201, 163, 0.4),
@@ -76,6 +78,8 @@
   --color-bg-gradient-end: #0c1714;
 
   --color-surface: rgba(14, 38, 30, 0.46);
+  --color-dropdown-surface: #1d382b;
+  --color-dropdown-surface-hover: #294a38;
   --premium-glass-surface: linear-gradient(
     145deg,
     rgba(14, 38, 30, 0.42),

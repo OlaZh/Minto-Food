@@ -40,6 +40,20 @@
 | Test ID | Status | Environment / commit | Actual result | Evidence / issue | Cleanup |
 |---|---|---|---|---|---|
 | _приклад: AUTH-01_ | _NOT RUN_ |  |  |  |  |
+| AUTH-01 | FAIL | 06.08.2026, Ola; local; `f2dfb3d` | Client-side JS блокує submit без consent, але серверної перевірки немає — прямий `POST /auth/v1/signup` до Supabase створить акаунт без consent | `js/auth.js:325-331` (signUp не передає consent), `js/auth.js:838-844` (лише client JS-перевірка); issue TBD | N/A |
+| UI-04 (нотатка) | FAIL | 06.08.2026, Ola; local; `f2dfb3d` | Залогінений юзер, клік "умови" у футері → на `terms.html` header/nav виглядає як для гостя (сесія фактично жива, це UI-баг, не logout) | опис користувача; потрібен screenshot | N/A |
+| AUTH-02 | PASS | 06.08.2026, Ola; local; `f2dfb3d` | Посилання на умови/приватність з форми реєстрації ведуть на `terms.html`/`privacy.html`, відкриваються коректно | візуальна перевірка | N/A |
+| AUTH-03 | PASS | 06.08.2026, Ola; local; `f2dfb3d` | Повторна реєстрація з тим самим email показує плашку "email вже зареєстровано", другий акаунт не створюється | візуальна перевірка | N/A |
+| AUTH-04 | FAIL | 06.08.2026, Ola; local; `f2dfb3d` | Пароль "111111111" (9 цифр, без букв/символів) прийнято без жодної помилки чи індикації сили пароля; реальна Supabase policy практично відсутня/мінімальна | реєстрація пройшла успішно з цим паролем | видалити тестовий акаунт зі слабким паролем |
+| AUTH-05 | BLOCKED | 06.08.2026, Ola; local; `f2dfb3d` | Зареєстровано новий тестовий акаунт, лист підтвердження на пошту не прийшов | email confirmation provider не налаштований/не працює | N/A |
+| UI (нотатка) | FAIL | 06.08.2026, Ola; local; `f2dfb3d` | Модалка "Відновлення пароля": текст підтвердження ("Лист надіслано...") зелений на зеленому фоні, нечитабельний | screenshot користувача | N/A |
+| AUTH-06 | PARTIAL FAIL | 06.08.2026, Ola; local; `f2dfb3d` | Reset-флоу (лист → лінк → зміна пароля → старий пароль інвалідовано, новий працює) функціонально ОК; але password policy слабка: `123456` відхилено, `12345@` прийнято — лише "мін. 6 символів" | ручна перевірка обох значень + повторний логін старим/новим паролем | видалити тестовий пароль/акаунт |
+| AUTH-07 | FAIL | 06.08.2026, Ola; local; `f2dfb3d` | Google OAuth вхід сам по собі працює; але Google-акаунт і email/password-акаунт з однаковим email НЕ зв'язані — вхід іншим методом для того ж email дає помилку "невірний email/пароль" | ручна перевірка обома напрямками (signup Google → email login; signup email → Google login) | N/A |
+| AUTH-08 | PASS | 06.08.2026, Ola; local; `f2dfb3d` | Невірний пароль одразу показує локалізовану помилку "пароль або логін невірний"; повторні спроби не зависають, кнопка не блокується | кілька спроб поспіль перевірено вручну | N/A |
+| AUTH-09 | FIXED (was CRITICAL) | 06.08.2026, Ola; local; `f2dfb3d`+fix | Було: після logout "Створити рецепт"/"Увійти" не реагували через 404 на транзитивній залежності esm.sh (`postgrest-js@2.112.2`) при плаваючому `@2` імпорті. Виправлено пінінгом версії `@supabase/supabase-js@2.105.4` у `js/supabaseClient.js:1` (та сама версія, що вже в `admin-app/package.json`). Повторна ручна перевірка: login→logout→login без помилок консолі, "Створити рецепт" відкриває модалку | до: `GET .../postgrest-js@2.112.2/... 404`; після: 0 помилок консолі, функціонал відновлено | N/A |
+| AUTH-flow (нотатка) | PASS | 06.08.2026, Ola; `https://minto-food.vercel.app/`; `f2dfb3d`+fix | Гість заповнює форму рецепта → клік "Зберегти" відкриває login modal → у модалці обрано саме "Увійти через Google" (повний OAuth redirect на Google і назад) → рецепт автоматично зберігається ("Ваш рецепт збережено", потім "Збережено в «Для себе»") без втрати введених даних, попри повний redirect сторінки. Підтверджує, що draft переживає сесійне сховище (sessionStorage) через OAuth-redirect, не лише email/password. (На локальному Python static-сервері був `501` на `/api/save-recipe` — обмеження local test server, не Vercel.) | screenshots користувача з prod | N/A |
+| AUTH-10 | FAIL | 06.08.2026, Ola; `https://minto-food.vercel.app/`; `f2dfb3d`+fix | Welcome screen "Ласкаво просимо в Minto!" (3 заявлені цінності — присутні) показується ДВІЧІ поспіль в одному onboarding без перезавантажень: раз одразу після реєстрації, і вдруге після завершення goal wizard (ціль→тіло→активність), перед nickname-кроком. Користувач сприймає весь onboarding (welcome→wizard×3→welcome знову→nickname) як занадто довгий/дратівливий | 5 послідовних screenshots користувача | N/A |
+| CONSENT-01 (нотатка) | N/A | 06.08.2026, Ola; `https://minto-food.vercel.app/`; `f2dfb3d`+fix | Cookie banner не з'явився для нового логіну — очікувано: `minto_consent` в localStorage скоуплений на браузер, не на акаунт; та сама вкладка вже мала збережений consent з попереднього тесту. Не баг, а сподівана поведінка; окремо перевірити CONSENT-02…06 з чистим localStorage | user підтвердив: той самий браузер, localStorage не очищався | N/A |
 | AUTO-01 | PASS | 05.08.2026, Codex; local Windows; `e102bf9` | API lint чистий | `npm.cmd run lint:api`: `no no-undef errors` | N/A |
 | AUTO-02 | PASS | 05.08.2026, Codex; local Windows; `e102bf9` | 30/30 mock-тестів пройшли | `npm.cmd run test:save-recipe` | N/A |
 | AUTO-03 | PASS | 05.08.2026, Codex; local Windows; `e102bf9` | 12/12 тестів пройшли | `npm.cmd run test:consent-gate` | N/A |
@@ -140,16 +154,16 @@
 
 ## 5. Round B — Auth, onboarding і сесія
 
-- [ ] **AUTH-01:** signup submit disabled без age/terms checkbox; примусовий submit також відхиляється.
-- [ ] **AUTH-02:** consent text веде на `terms.html` і `privacy.html`.
-- [ ] **AUTH-03:** signup із валідними даними; зайнятий email не створює другий акаунт і не розкриває зайвих даних.
-- [ ] **AUTH-04:** слабкий пароль обробляється згідно з реальною Supabase password policy; policy записана в evidence.
-- [ ] **AUTH-05:** email confirmation веде назад на правильний Vercel URL і створює валідну сесію. `BLOCKED`, якщо confirmation provider не налаштований.
-- [ ] **AUTH-06:** password reset — request, email link, новий пароль, старий пароль більше не працює. `BLOCKED`, якщо email не налаштований.
-- [ ] **AUTH-07:** Google OAuth login/callback/logout; redirect URL і allowed origins коректні. `BLOCKED`, якщо provider не налаштований.
-- [ ] **AUTH-08:** невірний пароль показує локалізовану помилку без завислого loading state.
-- [ ] **AUTH-09:** logout очищає session UI; захищена дія знову відкриває login modal.
-- [ ] **AUTH-10:** welcome screen показується новому користувачу один раз і містить три заявлені цінності.
+- [x] **AUTH-01:** FAIL — signup submit disabled без age/terms checkbox (client-side OK), але примусовий submit (напряму до Supabase Auth API) НЕ відхиляється сервером; consent взагалі не зберігається.
+- [x] **AUTH-02:** consent text веде на `terms.html` і `privacy.html`.
+- [x] **AUTH-03:** signup із валідними даними; зайнятий email не створює другий акаунт і не розкриває зайвих даних.
+- [x] **AUTH-04:** FAIL — пароль "111111111" (9 цифр) пройшов без жодного попередження; ефективна Supabase password policy мінімальна/відсутня.
+- [x] **AUTH-05:** BLOCKED — лист підтвердження не прийшов на реальну пошту при реєстрації; confirmation provider схоже не налаштований.
+- [x] **AUTH-06:** PARTIAL FAIL — reset-флоу працює (лист/лінк/новий пароль/старий інвалідовано), але password policy слабка (той самий дефект, що AUTH-04).
+- [x] **AUTH-07:** FAIL — Google OAuth login/callback/logout працює, але акаунти Google і email/password з однаковим email не зв'язані (identity linking відсутній) — вхід "не тим" методом дає хибну помилку "невірний email/пароль".
+- [x] **AUTH-08:** невірний пароль показує локалізовану помилку без завислого loading state.
+- [x] **AUTH-09:** FIXED — logout очищає session UI, захищена дія знову відкриває login modal. Був CRITICAL bug (esm.sh 404 на плаваючій версії `@2`), виправлено пінінгом `@supabase/supabase-js@2.105.4`.
+- [x] **AUTH-10:** FAIL — welcome screen містить три заявлені цінності, але показується ДВІЧІ поспіль (до і після goal wizard), не один раз. Онбординг сприймається як задовгий (welcome→wizard×3→welcome→nickname).
 - [ ] **AUTH-11:** nickname step зберігається; validation/error/loading feedback працює.
 - [ ] **AUTH-12:** goal wizard: ціль → параметри тіла → активність; норми перераховуються й записуються в `user_profiles`.
 - [ ] **AUTH-13:** skip wizard записує `goal_wizard_skipped`; повторний reload не запускає wizard безумовно.

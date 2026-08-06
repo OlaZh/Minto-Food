@@ -27,7 +27,7 @@
     > label {
       font-weight: 700;
       font-size: 12px;
-      color: #7a9a9a;
+      color: var(--color-text-secondary);
       text-transform: uppercase;
       letter-spacing: 0.5px;
       padding-left: 4px;
@@ -242,13 +242,13 @@
 
 .smart-import__hint {
   font-size: 12px;
-  color: #7fb4a9;
+  color: var(--color-text-secondary);
   margin-top: 12px;
   display: flex;
   align-items: center;
   gap: 8px;
   line-height: 1.4;
-  opacity: 0.9;
+  opacity: 1;
   font-weight: 500;
   font-family: inherit;
   padding-left: 0;
