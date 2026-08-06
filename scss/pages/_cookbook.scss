@@ -113,9 +113,12 @@
 /* ================= RIGHT SIDEBAR ================= */
 
 .cookbook-sidebar {
+  @extend %glass-surface;
   position: sticky;
   top: var(--space-lg);
   min-width: 0;
+  padding: 16px;
+  border-radius: 22px;
 
   @media (max-width: 600px) {
     position: static;
@@ -147,12 +150,11 @@
 }
 
 .cookbook-recent-item {
+  @extend %glass-surface;
   display: flex;
   align-items: center;
   gap: 10px;
   padding: 9px 12px;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
   border-radius: 12px;
   text-decoration: none;
   transition:
@@ -215,6 +217,7 @@
 /* ================= BOOK CARD (PREMIUM) ================= */
 
 .cookbook-book {
+  @extend %glass-surface;
   position: relative;
   display: flex;
   flex-direction: column;
@@ -223,16 +226,10 @@
   border-radius: 22px;
   overflow: hidden;
   cursor: pointer;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
   transition:
     transform var(--duration-hover) cubic-bezier(0.34, 1.56, 0.64, 1),
     box-shadow var(--duration-hover) ease,
     border-color var(--duration-hover) ease;
-  box-shadow:
-    0 4px 16px rgba(0, 0, 0, 0.07),
-    0 1px 4px rgba(0, 0, 0, 0.04),
-    inset 0 1px 0 rgba(255, 255, 255, 0.4);
 
   &:hover {
     transform: translateY(-8px);

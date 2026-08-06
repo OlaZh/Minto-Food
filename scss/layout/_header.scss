@@ -6,7 +6,7 @@
   top: 0;
   z-index: 100;
 
-  background: rgba(166, 214, 184, 0.55);
+  background: rgba(166, 214, 184, 0.4);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
 
@@ -14,7 +14,7 @@
 }
 
 [data-theme='dark'] .header {
-  background: rgba(15, 31, 27, 0.65);
+  background: rgba(15, 31, 27, 0.5);
   border-bottom-color: rgba(255, 255, 255, 0.06);
 }
 
@@ -72,7 +72,7 @@
 .header__nav-link {
   font-family: var(--font-body);
   font-size: 16px;
-  color: var(--color-text-secondary);
+  color: #061a0d;
   text-decoration: none;
   position: relative;
   padding-bottom: 4px;
@@ -82,7 +82,7 @@
 /* Ховер */
 .header__nav-link:hover,
 .header__nav-link:focus-visible {
-  color: var(--color-text-primary);
+  color: #010a04;
 }
 
 /* АКТИВНИЙ СТАН (без вкладеності, для надійності) */
@@ -209,7 +209,7 @@
   font-family: var(--font-body);
   font-size: 14px;
   font-weight: 600;
-  color: var(--color-text-primary);
+  color: #061a0d;
   text-decoration: none;
   padding: 6px 12px;
   border-radius: var(--radius-sm);
@@ -221,7 +221,7 @@
 
   &:hover {
     border-color: var(--color-accent);
-    color: var(--color-accent);
+    color: #010a04;
   }
 }
 
@@ -450,6 +450,18 @@
 /* ---------- DARK THEME ---------- */
 
 [data-theme='dark'] {
+  .header__nav-link,
+  .header__profile-name {
+    color: #e4f2eb;
+  }
+
+  .header__nav-link:hover,
+  .header__nav-link:focus-visible,
+  .header__profile-name:hover,
+  .header__profile-name:focus-visible {
+    color: #ffffff;
+  }
+
   .theme-toggle {
     .sun-icon {
       display: none;

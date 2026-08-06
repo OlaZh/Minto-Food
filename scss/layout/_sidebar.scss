@@ -3,8 +3,11 @@
    ============================================================= */
 
 .sidebar {
+  @extend %glass-surface;
   flex-direction: column;
   gap: var(--space-md);
+  padding: 16px;
+  border-radius: 22px;
 }
 
 .sidebar__days {
@@ -125,11 +128,10 @@
    ============================================================= */
 
 .water-sidebar {
+  @extend %glass-surface;
   flex-direction: column;
   gap: var(--space-xxs);
   align-items: center;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
   padding: var(--space-sm);
 }

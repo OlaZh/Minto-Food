@@ -43,10 +43,10 @@
 
   // ---------- ELEVATION (SHADOWS) ----------
   // Level 1 — статичні картки
-  --shadow-1: 0 1px 2px rgba(15, 31, 27, 0.04), 0 2px 6px rgba(15, 31, 27, 0.06);
+  --shadow-1: 0 10px 26px rgba(5, 25, 17, 0.2), 0 2px 7px rgba(5, 25, 17, 0.14);
 
   // Level 2 — hover state
-  --shadow-2: 0 6px 20px rgba(15, 31, 27, 0.08), 0 14px 32px rgba(15, 31, 27, 0.1);
+  --shadow-2: 0 18px 42px rgba(5, 25, 17, 0.28), 0 6px 16px rgba(5, 25, 17, 0.18);
 
   // Level 3 — модалки, dropdowns
   --shadow-3: 0 12px 30px rgba(15, 31, 27, 0.14), 0 30px 60px rgba(15, 31, 27, 0.18);
@@ -68,17 +68,17 @@
   --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
 
   // ---------- CARD BORDER (soft, without harsh outline) ----------
-  --color-border-card: rgba(130, 191, 153, 0.3);
+  --color-border-card: rgba(255, 255, 255, 0.78);
 }
 
 // ---------- DARK THEME OVERRIDES ----------
 // Тіні мають бути глибшими в темній темі, бо на тлі темного фону
 // стандартна rgba(0,0,0,.08) не читається
 [data-theme='dark'] {
-  --color-border-card: rgba(111, 207, 186, 0.12);
-  --shadow-1: 0 2px 4px rgba(0, 0, 0, 0.3), 0 4px 12px rgba(0, 0, 0, 0.35);
+  --color-border-card: rgba(225, 247, 238, 0.26);
+  --shadow-1: 0 12px 30px rgba(0, 0, 0, 0.36), 0 3px 9px rgba(0, 0, 0, 0.3);
 
-  --shadow-2: 0 8px 24px rgba(0, 0, 0, 0.4), 0 16px 40px rgba(0, 0, 0, 0.45);
+  --shadow-2: 0 22px 48px rgba(0, 0, 0, 0.46), 0 8px 20px rgba(0, 0, 0, 0.34);
 
   --shadow-3: 0 16px 40px rgba(0, 0, 0, 0.5), 0 40px 80px rgba(0, 0, 0, 0.55);
 
@@ -406,13 +406,22 @@
 //  6. CARD (base surface for all content blocks)
 // ============================================================
 
-// Базова "преміум" картка — поверхня без жорстких контурів, тінь робить глибину
-// Приклад: day-ring-card, streak-card, macros-card, meal-block
-%premium-card {
-  background: var(--color-surface);
+// Базова скляна поверхня без інтерактивного hover-руху.
+%glass-surface {
+  background: var(--premium-glass-surface);
   border: 1px solid var(--color-border-card);
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-1);
+  box-shadow:
+    var(--shadow-1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.78),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.2);
+  -webkit-backdrop-filter: var(--premium-glass-filter);
+  backdrop-filter: var(--premium-glass-filter);
+}
+
+// Інтерактивна преміум-картка з підйомом на hover.
+%premium-card {
+  @extend %glass-surface;
 
   transition:
     box-shadow var(--duration-hover) var(--ease-out),

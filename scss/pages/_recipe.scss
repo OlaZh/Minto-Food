@@ -25,9 +25,11 @@
 /* ── Content ──────────────────────────────────────── */
 
 .rp-content {
+  @extend %glass-surface;
   max-width: 820px;
-  margin: 0 auto;
+  margin: 32px auto 48px;
   padding: 36px 24px 72px;
+  border-radius: 28px;
 }
 
 .rp-title {
@@ -363,7 +365,9 @@
   }
 
   .rp-content {
+    margin: 16px auto 32px;
     padding: 24px 16px 56px;
+    border-radius: 20px;
   }
 
   .rp-macros {

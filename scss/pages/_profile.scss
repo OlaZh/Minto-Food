@@ -146,13 +146,9 @@
 /* ================= КАРТКИ ================= */
 
 .profile-card {
-  background: linear-gradient(180deg, var(--color-surface) 0%, var(--color-bg-secondary) 100%);
-  border: 1px solid var(--color-border);
+  @extend %glass-surface;
   border-radius: 20px;
   padding: 26px;
-  box-shadow:
-    0 4px 16px rgba(0, 0, 0, 0.05),
-    inset 0 1px 0 rgba(255, 255, 255, 0.4);
   width: 100%;
   box-sizing: border-box;
 
@@ -1013,6 +1009,7 @@
 /* ================= SIDEBAR ================= */
 
 .profile-sidebar {
+  @extend %glass-surface;
   display: flex;
   flex-direction: column;
   gap: 2px;
@@ -1022,13 +1019,8 @@
   height: fit-content;
 
   // Уся навігація — єдина карта
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
   border-radius: 22px;
   padding: 20px;
-  box-shadow:
-    0 4px 16px rgba(0, 0, 0, 0.05),
-    inset 0 1px 0 rgba(255, 255, 255, 0.4);
 }
 
 .profile-sidebar__item {

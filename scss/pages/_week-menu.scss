@@ -65,10 +65,13 @@
 
 /* ================= GRID ================= */
 .week-grid {
+  @extend %glass-surface;
   display: grid;
   grid-auto-rows: minmax(46px, auto);
   gap: 5px;
   margin-top: 6px;
+  padding: 8px;
+  border-radius: 22px;
 }
 
 .week-grid__row {

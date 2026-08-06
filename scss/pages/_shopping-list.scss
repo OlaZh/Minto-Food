@@ -210,7 +210,10 @@
 /* ================= CENTER MAIN ================= */
 
 .shop-main {
+  @extend %glass-surface;
   min-width: 0;
+  padding: clamp(20px, 3vw, 32px);
+  border-radius: 24px;
 
   @media (max-width: 900px) {
     order: 1;
@@ -1318,10 +1321,15 @@
 /* ================= SHARED LIST PAGE ================= */
 
 .shared-list-page {
-  padding: 40px 0 60px;
+  @extend %glass-surface;
+  padding: clamp(20px, 3vw, 32px);
+  margin: 40px 0 60px;
+  border-radius: 24px;
 
   @media (max-width: 768px) {
-    padding: 24px 0 60px;
+    padding: 16px;
+    margin: 24px 0 60px;
+    border-radius: 20px;
   }
 }
 

@@ -9,6 +9,7 @@
 /* ================= SEARCH FIELD ================= */
 
 .product-search {
+  @extend %glass-surface;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -20,8 +21,6 @@
   }
   padding: 8px 14px;
   border-radius: var(--radius-md);
-  border: 1px solid var(--color-border);
-  background: var(--color-bg-secondary);
   transition: border-color var(--duration-hover) var(--ease-out),
     box-shadow var(--duration-hover) var(--ease-out);
 

@@ -24,7 +24,9 @@
 
 .page {
   min-height: 100vh;
-  background-color: transparent;
+  background:
+    linear-gradient(rgba(7, 29, 20, 0.28), rgba(7, 29, 20, 0.42)),
+    url('/img/terms-botanical-bg.webp') center top / cover fixed;
   display: flex;
   flex-direction: column;
 }
@@ -39,12 +41,15 @@
    ============================================================= */
 
 .page-header {
+  @extend %glass-surface;
   position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 28px 0 16px;
+  padding: 20px 56px;
+  margin-top: 24px;
   margin-bottom: 24px;
+  border-radius: 22px;
 
   &__title {
     font-family: var(--font-heading);
@@ -73,8 +78,10 @@
   }
 
   @media (max-width: 768px) {
-    padding: 12px 48px;
+    padding: 14px 48px;
+    margin-top: 16px;
     margin-bottom: 0;
+    border-radius: 18px;
 
     &__title {
       font-size: 20px;
