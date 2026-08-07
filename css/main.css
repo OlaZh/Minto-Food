@@ -4746,15 +4746,12 @@ svg[viewBox="0 0 24 24"] {
 
 .auth-modal__success {
   font-size: 13px;
-  color: #27ae60;
-  background: rgba(86, 126, 99, 0.15);
-  border: 1px solid rgba(86, 126, 99, 0.4);
+  color: var(--color-text-primary);
+  background: var(--color-accent-soft);
+  border: 1px solid var(--color-accent);
   border-radius: 8px;
   padding: 8px 12px;
   margin: 0;
-}
-[data-theme=dark] .auth-modal__success {
-  color: #567e63;
 }
 .auth-modal__success[hidden] {
   display: none;

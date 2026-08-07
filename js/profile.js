@@ -2638,7 +2638,10 @@ async function initProfile() {
     }
 
     if (event === 'SIGNED_OUT') {
-      loadFromLocalStorage();
+      // Профіль містить приватні дані й не має лишатися відкритим після logout.
+      // Не підставляємо кеш localStorage: це повертало на екран ім'я, email і
+      // параметри щойно відключеного користувача, особливо при виході з хедера.
+      window.location.replace('index.html');
     }
   });
 

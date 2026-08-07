@@ -326,16 +326,12 @@
 
 .auth-modal__success {
   font-size: 13px;
-  color: #27ae60;
-  background: rgba(86, 126, 99, 0.15);
-  border: 1px solid rgba(86, 126, 99, 0.4);
+  color: var(--color-text-primary);
+  background: var(--color-accent-soft);
+  border: 1px solid var(--color-accent);
   border-radius: 8px;
   padding: 8px 12px;
   margin: 0;
-
-  [data-theme='dark'] & {
-    color: #567e63;
-  }
 
   &[hidden] {
     display: none;
