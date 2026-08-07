@@ -27,10 +27,17 @@ let previouslySavedBookIds = [];
 // перед кожним показом форми (refreshBooks), щоб логін/логаут після init
 // не лишав застарілий null/чужий id (інакше quickSave/книги «замерзають»).
 async function syncCurrentUser() {
+  const previousUserId = currentUserId;
   const {
     data: { user },
   } = await supabase.auth.getUser();
   currentUserId = user?.id ?? null;
+
+  // Не переносимо кеш книг між акаунтами після logout/login без reload.
+  if (previousUserId !== currentUserId) {
+    cachedBooks = [];
+  }
+
   return currentUserId;
 }
 
@@ -44,7 +51,10 @@ export async function initBookSelector() {
 }
 
 async function loadBooks() {
-  if (!currentUserId) return;
+  if (!currentUserId) {
+    cachedBooks = [];
+    return false;
+  }
 
   const { data, error } = await supabase
     .from('cookbooks')
@@ -53,9 +63,13 @@ async function loadBooks() {
     .order('is_default', { ascending: false })
     .order('created_at', { ascending: true });
 
-  if (!error) {
-    cachedBooks = data || [];
+  if (error) {
+    console.error('Error loading books:', error);
+    return false;
   }
+
+  cachedBooks = data || [];
+  return true;
 }
 
 // =============================================================
@@ -64,6 +78,10 @@ async function loadBooks() {
 
 export function getDefaultBook() {
   return cachedBooks.find((b) => b.is_default) || cachedBooks[0] || null;
+}
+
+export function getBookName(bookId) {
+  return cachedBooks.find((b) => b.id === bookId)?.name ?? null;
 }
 
 export async function refreshBooks() {
@@ -76,56 +94,90 @@ export async function refreshBooks() {
 // ШВИДКЕ ЗБЕРЕЖЕННЯ (СЕРДЕЧКО)
 // =============================================================
 
+// Повертає дефолтну книгу, створюючи її за потреби. Спільна точка для
+// «сердечка» і для створення власного рецепта, щоб логіка не дублювалась.
+export async function ensureDefaultBook() {
+  // Завжди перечитуємо сесію: на цій самій сторінці користувач міг увійти,
+  // вийти або змінити акаунт після ініціалізації модуля.
+  await syncCurrentUser();
+  if (!currentUserId) return null;
+
+  // Беремо свіжий список перед check-then-insert. За правилами продукту
+  // головна книга — позначена is_default, а якщо такої немає — перша створена.
+  if (!(await loadBooks())) return null;
+  const existing = getDefaultBook();
+  if (existing) return existing;
+
+  const { data, error } = await supabase
+    .from('cookbooks')
+    .insert([
+      {
+        user_id: currentUserId,
+        name: t('myRecipesBook'),
+        icon: 'book',
+        is_default: true,
+      },
+    ])
+    .select()
+    .maybeSingle();
+
+  if (error) {
+    // 23505 — паралельна вкладка/запит уже створили книгу (за наявності
+    // unique-констрейнта). Перечитуємо й віддаємо чужу, а не падаємо.
+    if (error.code === '23505') {
+      if (!(await loadBooks())) return null;
+      return getDefaultBook();
+    }
+    console.error('Error creating default book:', error);
+    return null;
+  }
+
+  if (!data) {
+    console.error('Default book insert returned no row');
+    return null;
+  }
+
+  cachedBooks = [data, ...cachedBooks];
+  return data;
+}
+
 export async function quickSaveToDefault(recipeId) {
-  if (!currentUserId) {
-    showToast(t('loginToSaveRecipes'), 'error');
+  // Перевірку авторизації робить ensureDefaultBook(): він сам перечитає юзера,
+  // якщо логін стався без перезавантаження сторінки.
+  const book = await ensureDefaultBook();
+  if (!book) {
+    showToast(currentUserId ? t('createBookError') : t('loginToSaveRecipes'), 'error');
     return false;
   }
 
-  const defaultBook = getDefaultBook();
-
-  if (!defaultBook) {
-    // Створюємо головну книгу якщо немає
-    const { data, error } = await supabase
-      .from('cookbooks')
-      .insert([
-        {
-          user_id: currentUserId,
-          name: t('myRecipesBook'),
-          icon: 'book',
-          is_default: true,
-        },
-      ])
-      .select()
-      .maybeSingle();
-
-    if (error) {
-      showToast(t('createBookError'), 'error');
-      return false;
-    }
-
-    cachedBooks = [data];
-    return await saveRecipeToBook(recipeId, data.id, data.name);
-  }
-
-  return await saveRecipeToBook(recipeId, defaultBook.id, defaultBook.name);
+  return await saveRecipeToBook(recipeId, book.id, book.name);
 }
 
 // =============================================================
 // ЗБЕРЕЖЕННЯ В КОНКРЕТНУ КНИГУ
 // =============================================================
 
-export async function saveRecipeToBook(recipeId, bookId, bookName = null) {
+// silent — не показувати власний тост: викликач покаже одне зведене
+// повідомлення замість двох, що накладаються одне на одне.
+export async function saveRecipeToBook(recipeId, bookId, bookName = null, silent = false) {
   // Перевіряємо чи вже збережено
-  const { data: existing } = await supabase
+  const { data: existing, error: lookupError } = await supabase
     .from('cookbook_recipes')
     .select('id')
     .eq('recipe_id', recipeId)
     .eq('cookbook_id', bookId)
     .maybeSingle();
 
+  if (lookupError) {
+    console.error('Error checking recipe book:', lookupError);
+    if (!silent) showToast(t('saveError'), 'error');
+    return false;
+  }
+
   if (existing) {
-    showToast(formatText('alreadyInBook', { book: bookName || t('bookFallbackLocative') }), 'info');
+    if (!silent) {
+      showToast(formatText('alreadyInBook', { book: bookName || t('bookFallbackLocative') }), 'info');
+    }
     return true;
   }
 
@@ -138,12 +190,14 @@ export async function saveRecipeToBook(recipeId, bookId, bookName = null) {
 
   if (error) {
     console.error('Error saving to book:', error);
-    showToast(t('saveError'), 'error');
+    if (!silent) showToast(t('saveError'), 'error');
     return false;
   }
 
   import('./analytics.js').then(({ track }) => track('recipe_saved_to_book'));
-  showToast(formatText('savedToBook', { book: bookName || t('bookFallbackAccusative') }));
+  if (!silent) {
+    showToast(formatText('savedToBook', { book: bookName || t('bookFallbackAccusative') }));
+  }
   return true;
 }
 
@@ -151,13 +205,13 @@ export async function saveRecipeToBook(recipeId, bookId, bookName = null) {
 // ЗБЕРЕЖЕННЯ В КІЛЬКА КНИГ
 // =============================================================
 
-export async function saveRecipeToBooks(recipeId, bookIds) {
+export async function saveRecipeToBooks(recipeId, bookIds, silent = false) {
   if (!bookIds.length) return false;
 
   const results = await Promise.all(
     bookIds.map(async (bookId) => {
       const book = cachedBooks.find((b) => b.id === bookId);
-      return await saveRecipeToBook(recipeId, bookId, book?.name);
+      return await saveRecipeToBook(recipeId, bookId, book?.name, silent);
     }),
   );
 

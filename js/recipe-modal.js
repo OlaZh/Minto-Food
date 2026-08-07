@@ -20,6 +20,9 @@ import {
   getRecipeBooks,
   getSelectedBooksFromContainer,
   saveRecipeToBooks,
+  saveRecipeToBook,
+  ensureDefaultBook,
+  getBookName,
   refreshBooks,
 } from './book-selector.js';
 import { initCustomSelect, setSelectValue, initSelectsGlobalListener } from './ui-components.js';
@@ -711,15 +714,45 @@ async function saveRecipe() {
     }
   }
 
+  // Власний рецепт завжди потрапляє в книгу: інакше «Книга рецептів» лишається
+  // порожньою і юзер не розуміє, куди зберігся щойно створений рецепт.
+  // Тости книг придушуємо (silent) і показуємо нижче рівно одне зведене
+  // повідомлення — інакше вони накладаються один на одного (однакові координати).
+  let bookSaveAttempted = false;
+  let bookSaveSucceeded = false;
+  let savedBookNames = [];
   const selectedBookIds = getSelectedBooksFromContainer('rm-book-selector');
-  if (editingRecipeId === null && selectedBookIds.length > 0 && data?.id) {
-    await saveRecipeToBooks(data.id, selectedBookIds);
+  if (editingRecipeId === null && data?.id) {
+    bookSaveAttempted = true;
+
+    try {
+      if (selectedBookIds.length > 0) {
+        bookSaveSucceeded = await saveRecipeToBooks(data.id, selectedBookIds, true);
+        if (bookSaveSucceeded) {
+          savedBookNames = selectedBookIds
+            .map((bookId) => getBookName(bookId))
+            .filter(Boolean);
+        }
+      } else {
+        const book = await ensureDefaultBook();
+        if (book) {
+          bookSaveSucceeded = await saveRecipeToBook(data.id, book.id, book.name, true);
+          if (bookSaveSucceeded) savedBookNames = [book.name];
+        }
+      }
+    } catch (bookError) {
+      console.error('Error adding created recipe to cookbook:', bookError);
+    }
   }
+
+  const bookSaveFailed = bookSaveAttempted && !bookSaveSucceeded;
 
   // Phase 18 — фото модерував сервер разом із записом (imageFlagged з відповіді).
   if (imageFlagged) {
-    // Незалежно від решти повідомлень — попереджаємо, що фото на перевірці.
-    showToast(t('rmImageUnderReview'), 'info');
+    showToast(
+      t(bookSaveFailed ? 'rmImageUnderReviewBookSaveFailed' : 'rmImageUnderReview'),
+      bookSaveFailed ? 'error' : 'info',
+    );
     closeRecipeModal();
     if (onRecipeSavedCallback) onRecipeSavedCallback(data);
     return;
@@ -733,8 +766,19 @@ async function saveRecipe() {
     );
 
     showToast(hasModeratedChanges ? t('rmChangesSentForReview') : t('rmRecipeUpdated'));
-  } else if (selectedBookIds.length === 0) {
-    showToast(status === 'pending' ? t('rmRecipeSentToModeration') : t('rmRecipeSaved'));
+  } else if (status === 'pending') {
+    showToast(
+      t(bookSaveFailed ? 'rmRecipeModerationBookSaveFailed' : 'rmRecipeSentToModeration'),
+      bookSaveFailed ? 'error' : 'success',
+    );
+  } else if (bookSaveFailed) {
+    showToast(t('rmRecipeSavedBookSaveFailed'), 'error');
+  } else if (savedBookNames.length === 1) {
+    showToast(formatText('savedToBook', { book: savedBookNames[0] }));
+  } else if (savedBookNames.length > 1) {
+    showToast(formatText('savedToBooks', { books: savedBookNames.join(', ') }));
+  } else {
+    showToast(t('rmRecipeSaved'));
   }
 
   closeRecipeModal();

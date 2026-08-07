@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
+    "dev:vercel": "vercel dev --listen 8765",
     "build": "node build.js && npx sass scss/main.scss css/main.css --style compressed",
     "build:shell": "node build.js",
     "build:css": "npx sass scss/main.scss css/main.css",
@@ -13,6 +14,7 @@
     "lint:api": "node scripts/lint-api.cjs"
   },
   "devDependencies": {
-    "sass": "^1.77.0"
+    "sass": "^1.77.0",
+    "vercel": "^58.7.1"
   }
 }

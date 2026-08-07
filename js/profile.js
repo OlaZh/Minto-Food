@@ -2629,12 +2629,52 @@ async function loadProfileStreak(userId) {
   }
 }
 
+let authenticatedProfileInitPromise = null;
+
+async function initAuthenticatedProfile(user) {
+  initCustomSelect('genderSelect', 'genderInput');
+  initCustomSelect('activitySelect', 'activityInput');
+  initCustomSelect('goalSelect', 'goalInput');
+
+  initCaloriesInlineEdit();
+  recordWeightBtn?.addEventListener('click', recordNewWeight);
+
+  initSelectsGlobalListener();
+  await loadProfileFromSupabase();
+
+  // Streak і checklist — незалежні блоки. Checklist не повинен зникати лише
+  // через те, що RPC серії для нового акаунта відповідає із затримкою.
+  // Запускаємо обидва запити паралельно й не блокуємо решту профілю.
+  void loadProfileStreak(user.id);
+  void initOnboardingChecklist(user);
+
+  initWeightChart();
+  initSidebarIcons();
+  initProfileTabs();
+  initSettings(user);
+}
+
+function ensureAuthenticatedProfile(user) {
+  if (!user) return Promise.resolve();
+  if (!authenticatedProfileInitPromise) {
+    authenticatedProfileInitPromise = initAuthenticatedProfile(user).catch((error) => {
+      authenticatedProfileInitPromise = null;
+      throw error;
+    });
+  }
+  return authenticatedProfileInitPromise;
+}
+
 async function initProfile() {
-  const user = await initAuth(async (event, user) => {
-    if (event === 'SIGNED_IN') {
-      await loadProfileFromSupabase();
-      updateProfileHeader(user);
-      initProfileTabs();
+  const user = await initAuth((event, user) => {
+    if (event === 'SIGNED_IN' && user) {
+      // Не запускаємо Supabase-запити всередині auth callback: від'єднуємо
+      // повну ініціалізацію профілю від внутрішнього auth-lock.
+      window.setTimeout(() => {
+        void ensureAuthenticatedProfile(user).catch((error) => {
+          console.error('[profile] Не вдалося ініціалізувати профіль після входу:', error);
+        });
+      }, 0);
     }
 
     if (event === 'SIGNED_OUT') {
@@ -2662,26 +2702,7 @@ async function initProfile() {
     return;
   }
 
-  initCustomSelect('genderSelect', 'genderInput');
-  initCustomSelect('activitySelect', 'activityInput');
-  initCustomSelect('goalSelect', 'goalInput');
-
-  initCaloriesInlineEdit();
-  recordWeightBtn?.addEventListener('click', recordNewWeight);
-
-  initSelectsGlobalListener();
-  await loadProfileFromSupabase();
-
-  // Streak і checklist — незалежні блоки. Checklist не повинен зникати лише
-  // через те, що RPC серії для нового акаунта відповідає із затримкою.
-  // Запускаємо обидва запити паралельно й не блокуємо решту профілю.
-  void loadProfileStreak(user.id);
-  void initOnboardingChecklist(user);
-
-  initWeightChart();
-  initSidebarIcons();
-  initProfileTabs();
-  initSettings(user);
+  await ensureAuthenticatedProfile(user);
 }
 
 // =====================================
