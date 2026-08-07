@@ -3657,7 +3657,7 @@ svg[viewBox="0 0 24 24"] {
 .toast-text {
   font-size: 14px;
   line-height: 1.4;
-  color: #2c4e47;
+  color: var(--color-text-primary);
 }
 
 @keyframes slideIn {

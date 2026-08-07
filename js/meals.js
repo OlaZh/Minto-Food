@@ -19,11 +19,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   });
 
-  // Онбординг засіяв перший сніданок-приклад → перечитати день без reload
-  window.addEventListener('minto:meals-seeded', () => {
-    loadMealsFromSupabase(currentSelectedDate);
-  });
-
   // ================== LANGUAGE ==================
   let lang = getLang();
 
