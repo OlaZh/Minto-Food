@@ -4641,6 +4641,17 @@ svg[viewBox="0 0 24 24"] {
   outline: none;
   border-color: var(--color-accent);
 }
+.auth-modal__form .form-group input:-webkit-autofill, .auth-modal__form .form-group input:-webkit-autofill:hover, .auth-modal__form .form-group input:-webkit-autofill:focus, .auth-modal__form .form-group input:-webkit-autofill:active {
+  -webkit-text-fill-color: var(--color-text-primary) !important;
+  caret-color: var(--color-text-primary);
+  -webkit-box-shadow: 0 0 0 1000px var(--color-dropdown-surface) inset !important;
+  box-shadow: 0 0 0 1000px var(--color-dropdown-surface) inset !important;
+  border-color: var(--color-border) !important;
+  transition: background-color 9999s ease-out 0s;
+}
+[data-theme=dark] .auth-modal__form .form-group input {
+  color-scheme: dark;
+}
 .auth-modal__form .form-group__password-wrap {
   position: relative;
 }

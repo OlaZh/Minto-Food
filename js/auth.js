@@ -579,12 +579,12 @@ function createAuthModalHTML() {
 <form class="auth-modal__form" id="loginForm">
             <div class="form-group">
               <label>${t('authEmailLabel')}</label>
-              <input type="email" id="loginEmail" placeholder="your@email.com" required />
+              <input type="email" id="loginEmail" placeholder="your@email.com" autocomplete="username" required />
             </div>
             <div class="form-group">
               <label>${t('authPasswordLabel')}</label>
               <div class="form-group__password-wrap">
-                <input type="password" id="loginPassword" placeholder="••••••••" required />
+                <input type="password" id="loginPassword" placeholder="••••••••" autocomplete="current-password" required />
                 <button type="button" class="form-group__eye" data-target="loginPassword" aria-label="${t('authShowPassword')}">
                   ${iconEye.replace('<svg ', '<svg width="18" height="18" ')}
                 </button>
@@ -672,16 +672,16 @@ function createAuthModalHTML() {
           <form class="auth-modal__form" id="registerForm">
             <div class="form-group">
               <label>${t('authNameLabel')}</label>
-              <input type="text" id="registerName" placeholder="${t('authNamePlaceholder')}" />
+              <input type="text" id="registerName" placeholder="${t('authNamePlaceholder')}" autocomplete="name" />
             </div>
             <div class="form-group">
               <label>${t('authEmailLabel')}</label>
-              <input type="email" id="registerEmail" placeholder="your@email.com" required />
+              <input type="email" id="registerEmail" placeholder="your@email.com" autocomplete="email" required />
             </div>
             <div class="form-group">
               <label>${t('authPasswordLabel')}</label>
               <div class="form-group__password-wrap">
-                <input type="password" id="registerPassword" placeholder="${t('authPasswordMinPlaceholder')}" required />
+                <input type="password" id="registerPassword" placeholder="${t('authPasswordMinPlaceholder')}" autocomplete="new-password" required />
                 <button type="button" class="form-group__eye" data-target="registerPassword" aria-label="${t('authShowPassword')}">
                   ${iconEye.replace('<svg ', '<svg width="18" height="18" ')}
                 </button>

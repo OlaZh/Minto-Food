@@ -198,6 +198,25 @@
         outline: none;
         border-color: var(--color-accent);
       }
+
+      // Chrome/Edge autofill малює власний світло-блакитний фон поверх
+      // напівпрозорого glass-input. Перекриваємо його непрозорою поверхнею
+      // поточної теми та явно задаємо читабельний колір тексту/курсора.
+      &:-webkit-autofill,
+      &:-webkit-autofill:hover,
+      &:-webkit-autofill:focus,
+      &:-webkit-autofill:active {
+        -webkit-text-fill-color: var(--color-text-primary) !important;
+        caret-color: var(--color-text-primary);
+        -webkit-box-shadow: 0 0 0 1000px var(--color-dropdown-surface) inset !important;
+        box-shadow: 0 0 0 1000px var(--color-dropdown-surface) inset !important;
+        border-color: var(--color-border) !important;
+        transition: background-color 9999s ease-out 0s;
+      }
+
+      [data-theme='dark'] & {
+        color-scheme: dark;
+      }
     }
 
     &__password-wrap {
