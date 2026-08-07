@@ -73,7 +73,14 @@ async function _checkOnboardingImpl(user) {
   // health-core (без дубля формули).
   const { needsGoalSetup, startGoalWizard } = await import('./onboarding-wizard.js');
   if (await needsGoalSetup(user.id)) {
-    await startGoalWizard(user.id);
+    // startGoalWizard монтує наступний overlay синхронно. Спочатку ставимо
+    // його поверх nickname-вікна, і лише тоді прибираємо попереднє — сайт
+    // не встигає промайнути між двома кроками onboarding.
+    const goalWizardFlow = startGoalWizard(user.id);
+    document.getElementById('onboarding-overlay')?.remove();
+    await goalWizardFlow;
+  } else {
+    document.getElementById('onboarding-overlay')?.remove();
   }
 }
 
@@ -135,9 +142,10 @@ function _mount(suggested) {
     }
     @keyframes onb-fade { from { opacity:0; transform:translateY(8px) } to { opacity:1; transform:none } }
     .onb-card {
-      background: var(--color-surface); border-radius: 20px;
+      background: var(--color-surface); border-radius: 24px;
       padding: 36px 28px 28px; max-width: 400px; width: 100%;
-      text-align: center; box-shadow: 0 12px 48px rgba(15,40,24,.18);
+      text-align: center; border: 1px solid var(--color-border);
+      box-shadow: var(--shadow-3), inset 0 1px 0 rgba(225,247,238,.12);
     }
     .onb-logo { font-size: 38px; margin-bottom: 2px; }
     .onb-brand { font-family: var(--font-logo); font-size: 20px; color: var(--color-text-primary); margin: 0 0 18px; }
@@ -157,23 +165,31 @@ function _mount(suggested) {
       width: 100%; padding: 13px; font-size: 15px; font-weight: 600;
       font-family: var(--font-body);
       background: var(--color-accent); color: var(--color-text-inverse);
-      border: none; border-radius: 12px; cursor: pointer; transition: background .2s;
+      border: 1px solid var(--color-accent); border-radius: 14px; cursor: pointer;
+      box-shadow: var(--shadow-1);
+      transition: background-color .2s ease, border-color .2s ease, color .2s ease, transform .2s ease, box-shadow .2s ease;
     }
-    .onb-btn-primary:hover { background: var(--color-accent-hover); }
+    .onb-btn-primary:hover:not(:disabled) { background: var(--color-accent-hover); border-color: var(--color-accent-hover); transform: translateY(-2px); box-shadow: var(--shadow-2); }
+    .onb-btn-primary:active:not(:disabled) { transform: translateY(0) scale(.98); box-shadow: var(--shadow-1); }
     .onb-btn-outline {
       width: 100%; padding: 11px; font-size: 14px; font-weight: 500;
       font-family: var(--font-body);
-      background: transparent; color: var(--color-text-primary);
-      border: 2px solid var(--color-border); border-radius: 12px; cursor: pointer; transition: border-color .2s;
+      background: var(--color-bg-secondary); color: var(--color-text-primary);
+      border: 2px solid var(--color-border); border-radius: 14px; cursor: pointer;
+      box-shadow: var(--shadow-1);
+      transition: background-color .2s ease, border-color .2s ease, color .2s ease, transform .2s ease, box-shadow .2s ease;
     }
-    .onb-btn-outline:hover { border-color: var(--color-accent); }
+    .onb-btn-outline:hover:not(:disabled) { background: var(--color-accent-soft); border-color: var(--color-accent); color: var(--color-text-primary); transform: translateY(-2px); box-shadow: var(--shadow-2); }
+    .onb-btn-outline:active:not(:disabled) { transform: translateY(0) scale(.98); box-shadow: var(--shadow-1); }
     .onb-btn-ghost {
       width: 100%; padding: 8px; font-size: 13px;
       font-family: var(--font-body);
       background: transparent; color: var(--color-text-secondary);
-      border: none; cursor: pointer; transition: color .2s;
+      border: 1px solid transparent; border-radius: 12px; cursor: pointer;
+      transition: background-color .2s ease, color .2s ease, transform .2s ease, box-shadow .2s ease;
     }
-    .onb-btn-ghost:hover { color: var(--color-text-primary); }
+    .onb-btn-ghost:hover:not(:disabled) { background: var(--color-bg-hover); color: var(--color-text-primary); transform: translateY(-1px); box-shadow: var(--shadow-1); }
+    .onb-btn-ghost:active:not(:disabled) { transform: translateY(0) scale(.98); box-shadow: none; }
 
     /* Режим редагування */
     .onb-edit { display: none; }
@@ -196,12 +212,17 @@ function _mount(suggested) {
       width: 100%; padding: 13px; font-size: 15px; font-weight: 600;
       font-family: var(--font-body);
       background: var(--color-accent); color: var(--color-text-inverse);
-      border: none; border-radius: 12px; cursor: pointer; transition: background .2s;
+      border: 1px solid var(--color-accent); border-radius: 14px; cursor: pointer;
+      box-shadow: var(--shadow-1);
+      transition: background-color .2s ease, border-color .2s ease, transform .2s ease, box-shadow .2s ease;
     }
-    .onb-save-btn:hover:not(:disabled) { background: var(--color-accent-hover); }
-    .onb-save-btn:disabled { background: var(--color-border); cursor: not-allowed; }
-    .onb-back { margin-top: 8px; font-size: 12px; color: var(--color-text-secondary); cursor: pointer; background: none; border: none; }
-    .onb-back:hover { color: var(--color-text-primary); }
+    .onb-save-btn:hover:not(:disabled) { background: var(--color-accent-hover); border-color: var(--color-accent-hover); transform: translateY(-2px); box-shadow: var(--shadow-2); }
+    .onb-save-btn:active:not(:disabled) { transform: translateY(0) scale(.98); box-shadow: var(--shadow-1); }
+    .onb-save-btn:disabled { background: var(--color-border); border-color: transparent; box-shadow: none; cursor: not-allowed; opacity: .55; }
+    .onb-back { margin-top: 8px; padding: 8px 12px; font-size: 12px; color: var(--color-text-secondary); cursor: pointer; background: transparent; border: 1px solid transparent; border-radius: 12px; transition: background-color .2s ease, color .2s ease, transform .2s ease, box-shadow .2s ease; }
+    .onb-back:hover:not(:disabled) { background: var(--color-bg-hover); color: var(--color-text-primary); transform: translateY(-1px); box-shadow: var(--shadow-1); }
+    .onb-back:active:not(:disabled) { transform: translateY(0) scale(.98); box-shadow: none; }
+    .onb-btn-primary:focus-visible, .onb-btn-outline:focus-visible, .onb-btn-ghost:focus-visible, .onb-save-btn:focus-visible, .onb-back:focus-visible { outline: none; box-shadow: var(--focus-ring), var(--shadow-1); }
 
     /* Welcome-екран: цінність за 3 пункти (Фаза 16) */
     .onb-value-list { display: flex; flex-direction: column; gap: 12px; margin: 0 0 22px; text-align: left; }
@@ -365,12 +386,23 @@ async function _save(displayName) {
     return;
   }
 
-  await saveProfileFields(_userId, {
+  const overlay = document.getElementById('onboarding-overlay');
+  const buttons = [...(overlay?.querySelectorAll('button') ?? [])];
+  const disabledStates = buttons.map((button) => button.disabled);
+  buttons.forEach((button) => { button.disabled = true; });
+
+  const saved = await saveProfileFields(_userId, {
     display_name: displayName,
     welcome_intro_seen: true,
   });
 
-  document.getElementById('onboarding-overlay')?.remove();
+  if (!saved) {
+    buttons.forEach((button, index) => { button.disabled = disabledStates[index]; });
+    return;
+  }
+
+  // Overlay прибере _checkOnboardingImpl лише після монтування наступного
+  // кроку, щоб між nickname та goal wizard не було спалаху сторінки.
   _resolveFn?.();
 }
 
