@@ -15,6 +15,7 @@ let _resolveFn = null;
 let _debounceTimer = null;
 let _isValid = false;
 let _suggested = '';
+let _userId = null;
 
 // Supabase може викликати SIGNED_IN більше одного разу поспіль (токен-рефреш,
 // повторна ініціалізація клієнта після OAuth redirect тощо). Без цього guard-а
@@ -33,6 +34,11 @@ export async function checkOnboarding(user) {
 }
 
 async function _checkOnboardingImpl(user) {
+  // SIGNED_IN уже передав нам перевіреного користувача. Зберігаємо id для
+  // подальших дій у формі, щоб не викликати supabase.auth.getUser() повторно
+  // всередині post-login флоу (цей виклик може чекати завершення auth-події).
+  _userId = user.id;
+
   // Джерело правди — БД: онбординг показуємо РІВНО ОДИН РАЗ за весь час,
   // на будь-якому пристрої. Прапор welcome_intro_seen прив'язаний до акаунта,
   // тому не залежить від localStorage (чистка кешу / новий пристрій не вертають онбординг).
@@ -326,15 +332,13 @@ async function _checkUnique(val, silent = false) {
   const btn   = document.getElementById('onbSaveBtn');
   if (!input) return;
 
-  const { data: { user } } = await supabase.auth.getUser();
-
   const { count } = await supabase
     .from('profiles')
     .select('id', { count: 'exact', head: true })
     .ilike('display_name', val)
-    .neq('id', user?.id ?? '');
+    .neq('id', _userId ?? '');
 
-  if (input.value.trim() !== val && !silent) return;
+  if (input.value.trim() !== val) return;
 
   if (count > 0) {
     if (!silent) {
@@ -356,10 +360,12 @@ async function _checkUnique(val, silent = false) {
 // ── Збереження ────────────────────────────────────────────────
 
 async function _save(displayName) {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return;
+  if (!_userId) {
+    console.error('[onboarding] Неможливо зберегти нікнейм: відсутній user id');
+    return;
+  }
 
-  await saveProfileFields(user.id, {
+  await saveProfileFields(_userId, {
     display_name: displayName,
     welcome_intro_seen: true,
   });
