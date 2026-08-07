@@ -214,19 +214,29 @@ function bindAuthListener() {
   if (_authListenerBound) return;
   _authListenerBound = true;
 
-  supabase.auth.onAuthStateChange(async (event, session) => {
+  supabase.auth.onAuthStateChange((event, session) => {
     const uid = session?.user?.id;
     if (event === 'SIGNED_IN' && uid) {
-      const dbConsent = await getConsentFromDB(uid);
-      if (dbConsent) {
-        // В акаунті вже є згода — банер більше не потрібен
-        saveLocal(dbConsent);
-        document.querySelector('.cookie-banner')?.remove();
-      } else {
-        // Переносимо згоду, яку гість міг дати в localStorage
-        const local = getConsent();
-        if (local) await saveConsentToDB(uid, local);
-      }
+      // onAuthStateChange має завершитися синхронно. Запити до Supabase
+      // всередині async auth-callback можуть чекати на auth-lock, який сама
+      // подія SIGNED_IN тримає до завершення callback — у результаті
+      // зависають усі наступні запити (зокрема перевірка нікнейму).
+      window.setTimeout(() => {
+        void (async () => {
+          const dbConsent = await getConsentFromDB(uid);
+          if (dbConsent) {
+            // В акаунті вже є згода — банер більше не потрібен
+            saveLocal(dbConsent);
+            document.querySelector('.cookie-banner')?.remove();
+          } else {
+            // Переносимо згоду, яку гість міг дати в localStorage
+            const local = getConsent();
+            if (local) await saveConsentToDB(uid, local);
+          }
+        })().catch((error) => {
+          console.warn('Cookie consent: не вдалося синхронізувати згоду після входу', error);
+        });
+      }, 0);
     }
   });
 }
