@@ -2668,13 +2668,17 @@ async function initProfile() {
 
   initSelectsGlobalListener();
   await loadProfileFromSupabase();
-  await loadProfileStreak(user.id);
+
+  // Streak і checklist — незалежні блоки. Checklist не повинен зникати лише
+  // через те, що RPC серії для нового акаунта відповідає із затримкою.
+  // Запускаємо обидва запити паралельно й не блокуємо решту профілю.
+  void loadProfileStreak(user.id);
+  void initOnboardingChecklist(user);
 
   initWeightChart();
   initSidebarIcons();
   initProfileTabs();
   initSettings(user);
-  initOnboardingChecklist(user);
 }
 
 // =====================================
