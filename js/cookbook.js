@@ -74,6 +74,8 @@ let selectedIcon = 'book';
 let editSelectedCover = null;
 let _setupDone = false;
 let _loadVersion = 0;
+let _recentLoadVersion = 0;
+let _bookLoadVersion = 0;
 let _initialLoadDone = false;
 
 // =====================================
@@ -111,6 +113,7 @@ async function init() {
     if (event === 'SIGNED_OUT') {
       currentUser = null;
       _initialLoadDone = false;
+      clearCookbookUserUI();
     }
   });
 
@@ -139,6 +142,37 @@ function _onUserReady() {
   }
 }
 
+function clearCookbookUserUI() {
+  // Invalidate requests started for the previous session so that a late
+  // response cannot put another user's data back into the DOM after logout.
+  _loadVersion += 1;
+  _recentLoadVersion += 1;
+  _bookLoadVersion += 1;
+
+  currentBookId = null;
+  editSelectedCover = null;
+  selectedIcon = 'book';
+
+  booksGrid?.replaceChildren();
+  booksGrid?.setAttribute('aria-busy', 'false');
+
+  const recentRecipes = document.getElementById('recentRecipes');
+  recentRecipes?.replaceChildren();
+  recentRecipes?.setAttribute('aria-busy', 'false');
+
+  bookRecipes?.replaceChildren();
+  if (bookModalTitle) bookModalTitle.textContent = '';
+
+  closeModal(bookModal);
+  closeModal(newBookModal);
+  newBookForm?.reset();
+  initIconPicker();
+
+  const editBookModal = document.getElementById('editBookModal');
+  closeModal(editBookModal);
+  editBookModal?.remove();
+}
+
 function initIconPicker() {
   const picker = document.getElementById('iconPicker');
   if (picker) picker.innerHTML = renderIconPickerHTML('book');
@@ -147,7 +181,12 @@ function initIconPicker() {
 function setupEventListeners() {
   // Додати книгу — делегація, бо кнопка в empty state додається динамічно
   document.addEventListener('click', (e) => {
-    if (e.target.closest('.js-add-book-btn')) openModal(newBookModal);
+    if (!e.target.closest('.js-add-book-btn')) return;
+    if (!currentUser) {
+      openAuthModal('login');
+      return;
+    }
+    openModal(newBookModal);
   });
 
   // Закрити модалки
@@ -215,17 +254,25 @@ function showBookSkeletons(count = 4) {
 
 async function loadBooks() {
   const version = ++_loadVersion;
+  const userId = currentUser?.id;
+
+  if (!userId) {
+    booksGrid?.replaceChildren();
+    booksGrid?.setAttribute('aria-busy', 'false');
+    return;
+  }
+
   showBookSkeletons();
 
   try {
     const { data: books, error } = await supabase
       .from('cookbooks')
       .select('*')
-      .eq('user_id', currentUser.id)
+      .eq('user_id', userId)
       .order('is_default', { ascending: false })
       .order('created_at', { ascending: true });
 
-    if (version !== _loadVersion) return;
+    if (version !== _loadVersion || currentUser?.id !== userId) return;
     if (error) throw error;
 
     await renderBooks(books || [], version);
@@ -340,8 +387,15 @@ async function createBookElement(book) {
 async function handleCreateBook(e) {
   e.preventDefault();
 
+  if (!currentUser) {
+    closeModal(newBookModal);
+    openAuthModal('login');
+    return;
+  }
+
   const name = newBookName.value.trim();
   if (!name) return;
+  const userId = currentUser.id;
 
   try {
     const { data, error } = await supabase
@@ -350,7 +404,7 @@ async function handleCreateBook(e) {
         {
           name,
           icon: selectedIcon,
-          user_id: currentUser.id,
+          user_id: userId,
           is_default: false,
         },
       ])
@@ -358,9 +412,11 @@ async function handleCreateBook(e) {
       .single();
 
     if (error) throw error;
+    if (currentUser?.id !== userId) return;
 
     // Додаємо в DOM
     const bookEl = await createBookElement(data);
+    if (currentUser?.id !== userId) return;
     booksGrid.appendChild(bookEl);
 
     // Закриваємо і очищаємо
@@ -481,9 +537,16 @@ function createEditBookModal() {
   document.getElementById('editBookForm').addEventListener('submit', async (e) => {
     e.preventDefault();
 
+    if (!currentUser) {
+      closeModal(modal);
+      openAuthModal('login');
+      return;
+    }
+
     const bookId = modal.dataset.bookId;
     const name = document.getElementById('editBookName').value.trim();
     const makeDefault = document.getElementById('editBookDefault').checked;
+    const userId = currentUser.id;
 
     if (!name) return;
 
@@ -493,8 +556,10 @@ function createEditBookModal() {
         await supabase
           .from('cookbooks')
           .update({ is_default: false })
-          .eq('user_id', currentUser.id);
+          .eq('user_id', userId);
       }
+
+      if (currentUser?.id !== userId) return;
 
       const updateData = {
         name,
@@ -509,6 +574,7 @@ function createEditBookModal() {
       const { error } = await supabase.from('cookbooks').update(updateData).eq('id', bookId);
 
       if (error) throw error;
+      if (currentUser?.id !== userId) return;
 
       closeModal(modal);
       await loadBooks(); // Перезавантажуємо список
@@ -548,15 +614,30 @@ function openEditBookModal(book) {
 // =====================================
 
 async function openBook(book) {
+  if (!currentUser) {
+    openAuthModal('login');
+    return;
+  }
+
   currentBookId = book.id;
   bookModalTitle.textContent = book.name;
 
   await loadBookRecipes();
 
+  if (!currentUser || currentBookId !== book.id) return;
   openModal(bookModal);
 }
 
 async function loadBookRecipes() {
+  const version = ++_bookLoadVersion;
+  const userId = currentUser?.id;
+  const bookId = currentBookId;
+
+  if (!userId || !bookId) {
+    bookRecipes?.replaceChildren();
+    return;
+  }
+
   try {
     const { data, error } = await supabase
       .from('cookbook_recipes')
@@ -574,12 +655,14 @@ async function loadBookRecipes() {
         )
       `,
       )
-      .eq('cookbook_id', currentBookId);
+      .eq('cookbook_id', bookId);
 
+    if (version !== _bookLoadVersion || currentUser?.id !== userId || currentBookId !== bookId) return;
     if (error) throw error;
 
     renderBookRecipes(data || []);
   } catch (err) {
+    if (version !== _bookLoadVersion) return;
     console.error('Error loading recipes:', err);
   }
 }
@@ -693,13 +776,24 @@ async function loadRecentRecipes() {
   const container = document.getElementById('recentRecipes');
   if (!container) return;
 
+  const version = ++_recentLoadVersion;
+  const userId = currentUser?.id;
+
+  if (!userId) {
+    container.replaceChildren();
+    container.setAttribute('aria-busy', 'false');
+    return;
+  }
+
   container.setAttribute('aria-busy', 'true');
 
   try {
     const { data: books } = await supabase
       .from('cookbooks')
       .select('id')
-      .eq('user_id', currentUser.id);
+      .eq('user_id', userId);
+
+    if (version !== _recentLoadVersion || currentUser?.id !== userId) return;
 
     if (!books?.length) {
       container.replaceChildren();
@@ -714,6 +808,7 @@ async function loadRecentRecipes() {
       .in('cookbook_id', bookIds)
       .limit(20);
 
+    if (version !== _recentLoadVersion || currentUser?.id !== userId) return;
     if (error) throw error;
 
     const seen = new Set();
@@ -750,9 +845,12 @@ async function loadRecentRecipes() {
       })
       .join('');
   } catch (err) {
+    if (version !== _recentLoadVersion) return;
     console.error('Error loading recent recipes:', err);
     container.replaceChildren();
   } finally {
-    container.setAttribute('aria-busy', 'false');
+    if (version === _recentLoadVersion) {
+      container.setAttribute('aria-busy', 'false');
+    }
   }
 }
