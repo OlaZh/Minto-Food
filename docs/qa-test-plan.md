@@ -96,11 +96,11 @@
 | DEP-06 | PASS | 05.08.2026, Codex; public Vercel; `e102bf9` | GDPR export без Bearer повернув `401` | `{"error":"Unauthorized"}` | N/A |
 | DEP-07 | PASS | 05.08.2026, Codex; public Vercel; `e102bf9` | POST без Bearer → `401`; з invalid JWT → `401`; GET → `405` | Response bodies: `Unauthorized`, `Invalid token`, `Method not allowed` | N/A |
 | DEP-08 | PASS | 08.08.2026, Ola; `https://minto-food.vercel.app/`; `0b0da5f` | Service-role key відсутній у клієнті. Завантажено 67 live-файлів (усі tracked `js/*.js` + `*.html`) з prod і просканованo: 0 JWT-shaped токенів (`eyJ…eyJ…`), 0 входжень `service_role`/`SERVICE_ROLE`/`sb_secret_`/`CRON_SECRET`. У клієнті лише publishable key `sb_publishable_…` (`js/supabaseClient.js:4`) — за призначенням. `sourceMappingURL` у live JS відсутній; `css/main.css.map` віддається `200`, але це SCSS-мапа без секретів. `.env`/`.env.*` не tracked (`git ls-files` порожній) | live sweep 67 файлів; `js/supabaseClient.js:4`; `git ls-files \| grep .env` = порожньо | N/A |
-| DEP-09 | PASS (with defect DEP-09a) | 08.08.2026, Ola; `0b0da5f` | Токени в URL відсутні за дизайном: `openAdminPanel()` (`js/auth.js:924-954`) передає access/refresh token як hidden inputs у POST-формі, не в query/hash; серверний `/auth/transfer/session` читає їх з body (`admin-app/src/app/auth/transfer/session/route.ts:50-56`). Grep по `js/` і `admin-app/src` на `access_token=`/`#access_token` — 0 збігів. Admin `/dashboard` без сесії → `307 → /login`, усі headers на місці, `X-Robots-Tag: noindex, nofollow`. **Але:** сам transfer зараз зламаний CSP — див. DEP-09a | live `curl` admin headers; code review; `git log -S` | N/A |
-| DEP-09a | FAIL (регресія) | 08.08.2026, Ola; `https://minto-food.vercel.app/`; `0b0da5f` | Public CSP містить `form-action 'self'` (`vercel.json:31`), що забороняє submit форми на сторонній origin. `openAdminPanel()` сабмітить POST-форму на `https://minto-food-xv5f.vercel.app/auth/transfer/session` — інший origin ⇒ браузер блокує submit і кнопка "Відкрити адмінку" не працює. Регресія: POST-форму додано `76486da` (13.07.2026), `form-action 'self'` — пізніше в `e8671f9` (24.07.2026), тобто CSP-рефактор не врахував існуючий cross-origin transfer. Фікс: додати admin-origin у `form-action` | live CSP header; `vercel.json:31`; `js/auth.js:936`; `git merge-base --is-ancestor` підтвердив порядок комітів | N/A |
-| DEP-10 | FAIL | 08.08.2026, Ola; `https://minto-food.vercel.app/`; `0b0da5f` | Очікувалось `401`, фактично `500 {"error":"Server misconfigured"}` — бо `CRON_SECRET` не заданий у Vercel env. Fail-closed логіка правильна (`api/cron/gdpr-hard-delete.js:55-58` спрацьовує ДО будь-якого Supabase-запиту, дані не чіпаються), але це означає, що щоденний GDPR hard-delete cron **не працює взагалі** — кожен запуск о 02:00 UTC падає на 500 | `curl` без Bearer → `HTTP 500`; `.env.local` (pull з Vercel) містить `SUPABASE_SERVICE_ROLE_KEY`, але не містить `CRON_SECRET` | N/A |
-| DEP-11 | FAIL | 08.08.2026, Ola; `https://minto-food.vercel.app/`; `0b0da5f` | Очікувалось `401`, фактично `500 Server misconfigured` — та сама причина, що DEP-10: без `CRON_SECRET` handler не доходить до порівняння Bearer. Перевірено GET і POST з `Bearer wrong-secret-qa-test` — обидва `500` | `curl` з невірним Bearer, GET і POST → `HTTP 500` | N/A |
-| DEP-12 | BLOCKED | 08.08.2026, Ola; `https://minto-food.vercel.app/`; `0b0da5f` | Неможливо перевірити: правильного `CRON_SECRET` не існує в середовищі (не заданий у Vercel). Розблокується після встановлення env var — тоді ж перевірити DEP-10/DEP-11 повторно | залежність від DEP-10 | N/A |
+| DEP-09 | PASS | 09.08.2026, Codex; live production | Токени передаються hidden inputs у тілі POST-форми, не через URL/query/hash. Пов'язаний CSP-дефект DEP-09a виправлено окремо | code review; live CSP header | N/A |
+| DEP-09a | FIXED (live CSP) | 09.08.2026, Codex; `https://minto-food.vercel.app/`; deployment `dpl_CY67rPbPUFdzr9FHzGEgooUG7UiL` | До `form-action` додано точний admin-origin `https://minto-food-xv5f.vercel.app`. Production deployment успішний, live CSP містить дозволений origin. Ручний вхід адмін-акаунтом ще не повторювався | `vercel.json:36`; live `HEAD /` → `200`; live CSP match → `true` | N/A |
+| DEP-10 | PASS | 09.08.2026, Codex; `https://minto-food.vercel.app/`; deployment `dpl_CY67rPbPUFdzr9FHzGEgooUG7UiL` | `CRON_SECRET` додано у Vercel Production як Sensitive env var. Запит без Bearer тепер повертає очікуваний `401` замість `500` | live `GET /api/cron/gdpr-hard-delete` без Authorization → `401` | N/A |
+| DEP-11 | PASS | 09.08.2026, Codex; `https://minto-food.vercel.app/`; deployment `dpl_CY67rPbPUFdzr9FHzGEgooUG7UiL` | Запит із неправильним Bearer повертає очікуваний `401`; handler не переходить до Supabase-операцій | live GET з `Bearer wrong-secret-qa-test` → `401` | N/A |
+| DEP-12 | READY — NOT RUN | 09.08.2026, Codex; production | Блокер відсутнього `CRON_SECRET` усунуто. Авторизований запуск навмисно не виконано без preflight кількості акаунтів із простроченим `deletion_scheduled_for`, оскільки endpoint виконує незворотне hard-delete | потрібен read-only Supabase preflight перед запуском | N/A |
 
 ---
 
@@ -170,14 +170,14 @@
 - [x] **DEP-07:** `POST /api/save-recipe` без Bearer/з невалідним JWT → `401`; неправильний HTTP method → `405`.
 - [x] **DEP-08:** PASS — service-role key відсутній у client JS, HTML і source maps. Live sweep 67 файлів з prod: 0 JWT-shaped токенів, 0 `service_role`/`CRON_SECRET`. У клієнті тільки publishable key, `.env*` не tracked.
 - [x] **DEP-09:** PASS — токени передаються POST-формою (hidden inputs), не через URL/hash; сервер читає їх з body. 0 збігів `access_token=`/`#access_token` у клієнтському коді.
-- [ ] **DEP-09a:** FAIL — `form-action 'self'` у public CSP блокує cross-origin submit форми transfer на admin-origin; кнопка "Відкрити адмінку" не працює. Регресія `e8671f9` (24.07) поверх `76486da` (13.07).
+- [x] **DEP-09a:** FIXED — admin-origin додано до `form-action`; production deployment успішний, live CSP містить дозвіл. Ручний auth-flow ще потрібно повторити адмін-акаунтом.
 
 ### Cron fail-closed
 
 - [x] **SEC-01:** handler повертає `500` без `CRON_SECRET` і `401` без правильного Bearer до будь-якого Supabase-запиту; regression-тест `npm run test:gdpr-cron` додано 01.08.2026.
-- [ ] **DEP-10:** FAIL — cron без Bearer повертає `500 Server misconfigured` замість `401`, бо `CRON_SECRET` не заданий у Vercel env. Fail-closed працює, але GDPR hard-delete cron не виконується взагалі.
-- [ ] **DEP-11:** FAIL — cron із неправильним Bearer теж `500` (та сама причина).
-- [ ] **DEP-12:** BLOCKED — правильного `CRON_SECRET` не існує в середовищі; розблокується після встановлення env var.
+- [x] **DEP-10:** PASS — `CRON_SECRET` додано як Sensitive Production env; live cron без Bearer повертає `401`.
+- [x] **DEP-11:** PASS — live cron із неправильним Bearer повертає `401`.
+- [ ] **DEP-12:** READY — блокер усунуто, але авторизований hard-delete не запускався без read-only preflight прострочених заявок.
 
 ---
 
