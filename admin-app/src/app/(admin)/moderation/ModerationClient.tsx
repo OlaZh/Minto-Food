@@ -42,6 +42,9 @@ type ModerationRecipe = {
 
 interface ModerationClientProps {
   recipes: ModerationRecipe[]
+  page: number
+  totalCount: number
+  totalPages: number
 }
 
 type PendingDialog = {
@@ -51,7 +54,12 @@ type PendingDialog = {
 
 const passthroughImageLoader = ({ src }: { src: string }) => src
 
-export default function ModerationClient({ recipes }: ModerationClientProps) {
+export default function ModerationClient({
+  recipes,
+  page,
+  totalCount,
+  totalPages,
+}: ModerationClientProps) {
   const router = useRouter()
   const [dialog, setDialog] = useState<PendingDialog | null>(null)
 
@@ -59,7 +67,7 @@ export default function ModerationClient({ recipes }: ModerationClientProps) {
     <div>
       <div className="sticky top-0 z-10 bg-white border-b border-gray-200 px-4 md:px-8 py-4 flex items-center justify-between">
         <h1 className="text-lg font-semibold">Модерація рецептів</h1>
-        <span className="text-sm text-gray-400">{recipes.length} на перевірці</span>
+        <span className="text-sm text-gray-400">{totalCount} на перевірці</span>
       </div>
 
       {recipes.length === 0 && (
@@ -82,10 +90,11 @@ export default function ModerationClient({ recipes }: ModerationClientProps) {
           })()
 
           const flags = detectFlags(recipe)
-          // Приватний рецепт у черзі лише через auto-flag ЖИВОГО фото — його НЕ
-          // можна публікувати. Для нього ховаємо «Схвалити» й показуємо дії з фото.
+          // A private recipe may be reviewed and edited, but it must not be
+          // published until an admin explicitly makes it public. This also
+          // protects imported rows that are missing ingredients/steps.
           const hasStaged = !!recipe.has_pending_update
-          const isPrivateFlagged = !recipe.is_public && !!recipe.is_image_flagged && !hasStaged
+          const canApprove = hasStaged || recipe.is_public === true
 
           // The photo the admin must review is the STAGED one if present
           // (edit of a published recipe), otherwise the live photo.
@@ -159,10 +168,10 @@ export default function ModerationClient({ recipes }: ModerationClientProps) {
               </div>
 
               <div className="flex flex-wrap gap-2 mt-3 pl-0 md:pl-17">
-                {/* Публікувати можна ЛИШЕ публічні. Приватний у черзі лише через
-                    auto-flag живого фото — «Схвалити» ховаємо (інакше приватний
-                    вийде на загал). */}
-                {!isPrivateFlagged && (
+                {/* Only public recipes (or staged edits of an existing public
+                    recipe) can be approved. Private/incomplete imports must be
+                    corrected and explicitly made public first. */}
+                {canApprove && (
                   <ActionButton
                     label={hasStaged ? 'Схвалити зміни' : 'Схвалити'}
                     confirmText={
@@ -228,6 +237,43 @@ export default function ModerationClient({ recipes }: ModerationClientProps) {
           )
         })}
       </div>
+
+      {totalPages > 1 && (
+        <nav
+          className="flex items-center justify-between gap-3 border-t border-gray-200 px-4 py-4 md:px-8"
+          aria-label="Сторінки черги модерації"
+        >
+          {page > 1 ? (
+            <Link
+              href={page === 2 ? '/moderation' : `/moderation?page=${page - 1}`}
+              className="rounded-md border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700 transition-colors hover:border-gray-400 hover:bg-gray-50"
+            >
+              ← Попередня
+            </Link>
+          ) : (
+            <span className="rounded-md border border-gray-100 px-3 py-2 text-sm text-gray-300" aria-disabled="true">
+              ← Попередня
+            </span>
+          )}
+
+          <span className="text-sm text-gray-500">
+            Сторінка {page} з {totalPages}
+          </span>
+
+          {page < totalPages ? (
+            <Link
+              href={`/moderation?page=${page + 1}`}
+              className="rounded-md border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700 transition-colors hover:border-gray-400 hover:bg-gray-50"
+            >
+              Наступна →
+            </Link>
+          ) : (
+            <span className="rounded-md border border-gray-100 px-3 py-2 text-sm text-gray-300" aria-disabled="true">
+              Наступна →
+            </span>
+          )}
+        </nav>
+      )}
 
       <ModerationReasonDialog
         open={!!dialog}

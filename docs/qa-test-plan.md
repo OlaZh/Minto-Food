@@ -2,7 +2,7 @@
 
 > **Версія:** 2.0
 >
-> **Оновлено:** 05.08.2026
+> **Оновлено:** 08.08.2026
 >
 > **Середовище:** поточні Supabase і Vercel використовуються як **pre-production**, оскільки реальних користувачів ще немає. Новий чистий production створюється перед soft launch; поточне середовище після цього стає staging.
 >
@@ -60,7 +60,21 @@
 | AUTH-13 | PASS | 07.08.2026, Ola; `https://minto-food.vercel.app/` | На кроці "Яка твоя ціль?" натиснуто "Пропустити"; wizard закрився, профіль лишився порожнім (очікувано); перезавантаження сторінки НЕ запустило wizard знову | screenshot профілю з порожніми полями після skip + reload | N/A |
 | AUTH-15 | PASS | 07.08.2026, Ola; `https://minto-food.vercel.app/` | "ПЕРШІ КРОКИ" checklist у сайдбарі профілю (4 пункти: Налаштувати ціль/Додати перший прийом їжі/Створити рецепт/Записувати воду 5 днів) показує реальний прогрес 1/4 — "Налаштувати ціль" закреслена коректно для акаунта, що щойно пройшов goal wizard. Початкове враження "неправильно закреслено" пояснювалось саме тим, що ціль дійсно вже була встановлена | screenshot checklist з профілю | N/A |
 | AUTH-16 | BLOCKED | 07.08.2026, Ola; `https://minto-food.vercel.app/` | Жоден тестовий акаунт ще не назбирав кількаденний streak — activation milestone toast (поріг днів поспіль) фізично не міг спрацювати за один день тестування | немає придатного акаунта для тесту | N/A |
-| BOOK-02 (UX) | FAIL | 07.08.2026, Ola; `https://minto-food.vercel.app/` | Створений власний рецепт видно в пошуку рецептів, але "Книга рецептів" лишається порожньою ("У вас поки немає жодної книги") — користувач не розуміє, куди подівся рецепт і не здогадується, що книгу треба спершу створити вручну. Додатково: тост після створення пише лише "Рецепт збережено" без вказівки місця — на відміну від збереження в наявну книгу, де тост каже "Збережено в «Назва книги»". Через це юзер думає, що сайт лагає. Рішення власниці: (1) автоматично створювати книгу "Мої рецепти" при першому створеному рецепті й класти власні рецепти туди; (2) тост має називати книгу, куди збережено | screenshot порожньої Книги рецептів при наявному створеному рецепті | N/A |
+| BOOK-02 | PASS (fixed) | 08.08.2026, Ola; `https://minto-food.vercel.app/`; deployed fix | Для акаунта без книг перший створений рецепт автоматично створив головну книгу «Мої рецепти» і зберігся в неї; другий рецепт зберігся в ту саму книгу. Після створення другої книги й призначення її головною наступний рецепт зберігся саме в нову головну книгу. Тост у кожному випадку назвав фактичну книгу | live-перевірка і screenshots користувача | N/A |
+| BOOK-06 | FIXED — LIVE REGRESSION REQUIRED | 08.08.2026, Codex; local worktree | Було: у модалці редагування книги список обкладинок не прокручувався і нижні варіанти були недоступні. Додано окремий вертикальний scroll для форми/сітки обкладинок без прокручування фону | `scss/pages/_cookbook.scss:970`; зібраний `css/main.css` | після деплою перевірити wheel, scrollbar і touch scroll |
+| BOOK-07 | FIXED — LIVE REGRESSION REQUIRED | 08.08.2026, Codex; local worktree | Було: після logout картки книг і «Нещодавно переглянуті» попереднього користувача залишалися в DOM; рецепти всередині не відкривалися завдяки RLS, а після входу в інший акаунт чужі книги вже не поверталися. Виправлено повне очищення книг, recent list і модалок на `SIGNED_OUT`; результати незавершених запитів старої сесії інвалідуються, дії з книгами без сесії блокуються | screenshot дефекту; `js/cookbook.js:145`, `js/cookbook.js:255`, `js/cookbook.js:631`, `js/cookbook.js:775`; `node --check js/cookbook.js`; `git diff --check` | після деплою перевірити logout під час відкритої книги та швидкий logout→login іншим акаунтом |
+| RLS-01 | PASS | 08.08.2026, Codex; live Supabase/Vercel | User A створив private/draft і public/pending рецепти через `/api/save-recipe`; прямий SELECT під JWT User B повернув 0 рядків | `scripts/rls-round-c-check.mjs`; два однакові live-прогони | QA-рецепти видалені |
+| RLS-02 | PASS | 08.08.2026, Codex; live Supabase | Прямі PATCH і DELETE рецепта User A під JWT User B повернули 0 змінених/видалених рядків; повторний SELECT User A підтвердив, що назва й сам рецепт не змінилися | live REST: foreign PATCH `200 []`, DELETE `200 []`, owner row intact | QA-рецепти видалені |
+| RLS-03 | PASS | 08.08.2026, Codex; live Supabase | Спершу підтверджено, що User A бачить власні seed-записи; User B отримав 0 чужих рядків у всіх 10 перевірених таблицях: `meals`, `water`, `week_meals`, `weight_records`, `user_activities`, `user_streaks`, `shopping_lists`, `shopping_items`, `cookbooks`, `gdpr_requests` | посилений повторний прогін `scripts/rls-round-c-check.mjs` | створені прикладні QA-рядки видалені |
+| RLS-04 | PASS | 08.08.2026, Codex; live Supabase | User B бачить один власний raw rating; User A й anon не бачать його; спроба User B вставити rating з `user_id` User A відхилена `403` | прямі REST-запити `recipe_ratings` | QA-rating видалений |
+| RLS-05 | PASS | 08.08.2026, Codex; live Supabase | `get_recipe_rating_summaries` повернув агрегований rating/count для published recipe як anon і як authenticated, не розкривши raw voters | прямі anon/User A RPC-запити | QA-rating видалений після перевірки |
+| RLS-06 | FIX APPLIED — DB POSTFLIGHT PASS; DIRECT REST REGRESSION REQUIRED | 09.08.2026, Ola; live Supabase | Застосовано guarded migration: усі 750 активних imported/test recipes переведені в `pending`; 735 повних мають `is_public=true`, 15 без ingredients/steps залишені `is_public=false`; active published/public = 0. Старі broad SELECT policies видалені, залишені strict public + owner + admin | live postflight: `active=750`, `pending_public=735`, `pending_private=15`, `public_catalog=0`, `unexpected=0`; `no_public_select_policy=true`, `strict_anon_policy_ok=true` | повторити прямий anon REST SELECT і весь `RLS-01…RLS-10`; після deploy перевірити порожній public каталог та поступову появу схвалених рецептів |
+| RLS-10 | FIX APPLIED — DB POSTFLIGHT PASS; DIRECT REST REGRESSION REQUIRED | 09.08.2026, Ola; live Supabase | Write-lockdown і stage-2 policies застосовані. `anon` має лише SELECT; `authenticated` має SELECT/INSERT/UPDATE/DELETE без TRUNCATE/REFERENCES/TRIGGER; owner policies вимагають `user_id=auth.uid()`, admin policies обмежені роллю authenticated та admin predicate | live policy/grant inventory; `anon_grants_ok=true`; усі шість compact postflight booleans = true | повторити прямі anon/owner/foreign/admin write probes |
+| ADM-08 (pagination) | FIXED — DEPLOY/LIVE REGRESSION REQUIRED | 08.08.2026, Codex; local worktree | Черга модерації раніше безумовно обрізалась на 100 записах, тому після постановки 750 рецептів у `pending` наступні 650 були б недоступні з цієї сторінки. Додано серверну пагінацію по 100, загальну кількість і переходи «Попередня/Наступна» | `admin-app/src/app/(admin)/moderation/page.tsx`; `ModerationClient.tsx`; targeted ESLint PASS | після деплою перевірити 8 сторінок, перехід після схвалення останнього запису на сторінці та некоректний `?page=` |
+| MOD-01 (private guard) | FIXED — DEPLOY/LIVE REGRESSION REQUIRED | 09.08.2026, Codex; local worktree | Кнопка «Схвалити» раніше показувалася для private pending recipe, хоча server action закономірно відхиляв публікацію. Тепер approve доступний лише для `is_public=true` або staged edit; у формі додано відсутній status option «На модерації», щоб 15 неповних імпортів можна було відкрити, доповнити й зберегти без випадкового переведення в draft/published | `ModerationClient.tsx`; `RecipeForm.tsx`; ESLint PASS; security 22/22; production build 24/24 | після deploy перевірити один із 15 blocker IDs: private pending → edit/add steps/public → save pending → approve |
+| RLS-07 | PASS | 08.08.2026, Codex; live Supabase | Authenticated non-admin не зміг підробити moderation fields власного рецепта: trigger не зберіг атакуючі значення. Auth/anon insert у `image_moderation_log` відхилено `403/401`, anon PATCH чужого recipe не змінив рядок | прямі REST-запити recipes/image_moderation_log | QA-рецепти видалені |
+| RLS-08 | PASS | 08.08.2026, Codex; live Supabase + local admin tests | Non-admin отримав 0 рядків `admin_actions`; `admin_search_users` відхилено `403`; `override_image_flag` відхилено як `not authorized`. Додатково повторно пройдено admin security suite `22/22` | `scripts/rls-round-c-check.mjs`; `admin-app: npm.cmd run test:security` | N/A |
+| RLS-09 | PASS | 08.08.2026, Codex; live Supabase | anon виклик `soft_delete_user()` відхилено `401`; User B не зміг передати UUID User A (`Access denied`); власні UUID User A/User B прийняті `204` | прямі RPC-запити | обидва одноразові QA-акаунти поставлені на GDPR hard-delete через 30 днів; cleanup failures `0` |
 | AUTH-11 | FIXED (was CRITICAL) | 06.08.2026, Ola; `https://minto-food.vercel.app/`; `f2dfb3d`+fix | Було: на повторному welcome-екрані (дублюючий показ через race condition, див. AUTH-10) кнопки "Пізніше"/"Залишити" не реагували, "Змінити зараз" зависав. Root cause: `checkOnboarding()` в `js/onboarding.js` не мала guard-у проти паралельних викликів — Supabase інколи емітить `SIGNED_IN` двічі поспіль, і два паралельні виклики перезаписували module-scoped `_suggested`/`_resolveFn`, тому кнопки резолвили не той Promise, на який чекав активний UI. Виправлено: доданий `_inFlight` lock (`js/onboarding.js:19-33`) — другий паралельний виклик тепер очікує на перший замість власного запуску | 3 послідовних screenshots (симптом); фікс не переперевірений live | треба live-регрес на новому тестовому акаунті |
 | AUTO-01 | PASS | 05.08.2026, Codex; local Windows; `e102bf9` | API lint чистий | `npm.cmd run lint:api`: `no no-undef errors` | N/A |
 | AUTO-02 | PASS | 05.08.2026, Codex; local Windows; `e102bf9` | 30/30 mock-тестів пройшли | `npm.cmd run test:save-recipe` | N/A |
@@ -81,6 +95,12 @@
 | DEP-05 | PASS | 05.08.2026, Codex; public Vercel; `e102bf9` | `script-src` без `'unsafe-inline'`; Supabase Realtime, PostHog і Sentry origins дозволені | Live `Content-Security-Policy` header | N/A |
 | DEP-06 | PASS | 05.08.2026, Codex; public Vercel; `e102bf9` | GDPR export без Bearer повернув `401` | `{"error":"Unauthorized"}` | N/A |
 | DEP-07 | PASS | 05.08.2026, Codex; public Vercel; `e102bf9` | POST без Bearer → `401`; з invalid JWT → `401`; GET → `405` | Response bodies: `Unauthorized`, `Invalid token`, `Method not allowed` | N/A |
+| DEP-08 | PASS | 08.08.2026, Ola; `https://minto-food.vercel.app/`; `0b0da5f` | Service-role key відсутній у клієнті. Завантажено 67 live-файлів (усі tracked `js/*.js` + `*.html`) з prod і просканованo: 0 JWT-shaped токенів (`eyJ…eyJ…`), 0 входжень `service_role`/`SERVICE_ROLE`/`sb_secret_`/`CRON_SECRET`. У клієнті лише publishable key `sb_publishable_…` (`js/supabaseClient.js:4`) — за призначенням. `sourceMappingURL` у live JS відсутній; `css/main.css.map` віддається `200`, але це SCSS-мапа без секретів. `.env`/`.env.*` не tracked (`git ls-files` порожній) | live sweep 67 файлів; `js/supabaseClient.js:4`; `git ls-files \| grep .env` = порожньо | N/A |
+| DEP-09 | PASS (with defect DEP-09a) | 08.08.2026, Ola; `0b0da5f` | Токени в URL відсутні за дизайном: `openAdminPanel()` (`js/auth.js:924-954`) передає access/refresh token як hidden inputs у POST-формі, не в query/hash; серверний `/auth/transfer/session` читає їх з body (`admin-app/src/app/auth/transfer/session/route.ts:50-56`). Grep по `js/` і `admin-app/src` на `access_token=`/`#access_token` — 0 збігів. Admin `/dashboard` без сесії → `307 → /login`, усі headers на місці, `X-Robots-Tag: noindex, nofollow`. **Але:** сам transfer зараз зламаний CSP — див. DEP-09a | live `curl` admin headers; code review; `git log -S` | N/A |
+| DEP-09a | FAIL (регресія) | 08.08.2026, Ola; `https://minto-food.vercel.app/`; `0b0da5f` | Public CSP містить `form-action 'self'` (`vercel.json:31`), що забороняє submit форми на сторонній origin. `openAdminPanel()` сабмітить POST-форму на `https://minto-food-xv5f.vercel.app/auth/transfer/session` — інший origin ⇒ браузер блокує submit і кнопка "Відкрити адмінку" не працює. Регресія: POST-форму додано `76486da` (13.07.2026), `form-action 'self'` — пізніше в `e8671f9` (24.07.2026), тобто CSP-рефактор не врахував існуючий cross-origin transfer. Фікс: додати admin-origin у `form-action` | live CSP header; `vercel.json:31`; `js/auth.js:936`; `git merge-base --is-ancestor` підтвердив порядок комітів | N/A |
+| DEP-10 | FAIL | 08.08.2026, Ola; `https://minto-food.vercel.app/`; `0b0da5f` | Очікувалось `401`, фактично `500 {"error":"Server misconfigured"}` — бо `CRON_SECRET` не заданий у Vercel env. Fail-closed логіка правильна (`api/cron/gdpr-hard-delete.js:55-58` спрацьовує ДО будь-якого Supabase-запиту, дані не чіпаються), але це означає, що щоденний GDPR hard-delete cron **не працює взагалі** — кожен запуск о 02:00 UTC падає на 500 | `curl` без Bearer → `HTTP 500`; `.env.local` (pull з Vercel) містить `SUPABASE_SERVICE_ROLE_KEY`, але не містить `CRON_SECRET` | N/A |
+| DEP-11 | FAIL | 08.08.2026, Ola; `https://minto-food.vercel.app/`; `0b0da5f` | Очікувалось `401`, фактично `500 Server misconfigured` — та сама причина, що DEP-10: без `CRON_SECRET` handler не доходить до порівняння Bearer. Перевірено GET і POST з `Bearer wrong-secret-qa-test` — обидва `500` | `curl` з невірним Bearer, GET і POST → `HTTP 500` | N/A |
+| DEP-12 | BLOCKED | 08.08.2026, Ola; `https://minto-food.vercel.app/`; `0b0da5f` | Неможливо перевірити: правильного `CRON_SECRET` не існує в середовищі (не заданий у Vercel). Розблокується після встановлення env var — тоді ж перевірити DEP-10/DEP-11 повторно | залежність від DEP-10 | N/A |
 
 ---
 
@@ -148,15 +168,16 @@
 - [x] **DEP-05:** public CSP не містить `script-src 'unsafe-inline'`; дозволені Supabase Realtime, PostHog і Sentry origins відповідають коду.
 - [x] **DEP-06:** `GET /api/gdpr-export` без Bearer → `401`.
 - [x] **DEP-07:** `POST /api/save-recipe` без Bearer/з невалідним JWT → `401`; неправильний HTTP method → `405`.
-- [ ] **DEP-08:** service-role key відсутній у client JS, HTML, source maps і network responses.
-- [ ] **DEP-09:** admin URL не містить access/refresh tokens після auth transfer.
+- [x] **DEP-08:** PASS — service-role key відсутній у client JS, HTML і source maps. Live sweep 67 файлів з prod: 0 JWT-shaped токенів, 0 `service_role`/`CRON_SECRET`. У клієнті тільки publishable key, `.env*` не tracked.
+- [x] **DEP-09:** PASS — токени передаються POST-формою (hidden inputs), не через URL/hash; сервер читає їх з body. 0 збігів `access_token=`/`#access_token` у клієнтському коді.
+- [ ] **DEP-09a:** FAIL — `form-action 'self'` у public CSP блокує cross-origin submit форми transfer на admin-origin; кнопка "Відкрити адмінку" не працює. Регресія `e8671f9` (24.07) поверх `76486da` (13.07).
 
 ### Cron fail-closed
 
 - [x] **SEC-01:** handler повертає `500` без `CRON_SECRET` і `401` без правильного Bearer до будь-якого Supabase-запиту; regression-тест `npm run test:gdpr-cron` додано 01.08.2026.
-- [ ] **DEP-10:** після виправлення/підтвердження env: cron без Bearer → `401`.
-- [ ] **DEP-11:** cron із неправильним Bearer → `401`.
-- [ ] **DEP-12:** cron із правильним Bearer допускається до виконання.
+- [ ] **DEP-10:** FAIL — cron без Bearer повертає `500 Server misconfigured` замість `401`, бо `CRON_SECRET` не заданий у Vercel env. Fail-closed працює, але GDPR hard-delete cron не виконується взагалі.
+- [ ] **DEP-11:** FAIL — cron із неправильним Bearer теж `500` (та сама причина).
+- [ ] **DEP-12:** BLOCKED — правильного `CRON_SECRET` не існує в середовищі; розблокується після встановлення env var.
 
 ---
 
@@ -185,15 +206,18 @@
 
 Перевіряти не лише відсутність UI-кнопки, а й прямий Supabase REST/RPC/mutation під відповідним JWT.
 
-- [ ] **RLS-01:** User B не бачить private/draft/pending recipe User A.
-- [ ] **RLS-02:** User B не може update/delete recipe User A навіть прямим запитом.
-- [ ] **RLS-03:** User B не бачить meals, water, week meals, weight, activities, streaks, shopping data, cookbooks і GDPR requests User A.
-- [ ] **RLS-04:** User B бачить лише власні raw `recipe_ratings`; ідентичність інших voters не витікає.
-- [ ] **RLS-05:** агрегований rating/count published recipe доступний User B та anon через `get_recipe_rating_summaries`.
-- [ ] **RLS-06:** anon бачить лише `is_public=true`, `status='published'`, `deleted_at IS NULL` recipes.
-- [ ] **RLS-07:** anon/authenticated не можуть напряму писати moderation columns або `image_moderation_log`.
-- [ ] **RLS-08:** non-admin не читає admin-only tables/RPC і не виконує admin server actions.
-- [ ] **RLS-09:** `soft_delete_user()` відхиляє anon і чужий UUID; власний UUID допускається лише для authenticated user.
+> **Live-прогін 08.08.2026:** виконано 9/9 тестів — **8 PASS, 1 CRITICAL FAIL (`RLS-06`)**. Round C протестований повністю, але не може пройти exit criteria до закриття витоку anon recipe SELECT.
+
+- [x] **RLS-01 — PASS:** User B не бачить private/draft/pending recipe User A.
+- [x] **RLS-02 — PASS:** User B не може update/delete recipe User A навіть прямим запитом.
+- [x] **RLS-03 — PASS:** User B не бачить meals, water, week meals, weight, activities, streaks, shopping data, cookbooks і GDPR requests User A.
+- [x] **RLS-04 — PASS:** User B бачить лише власні raw `recipe_ratings`; ідентичність інших voters не витікає.
+- [x] **RLS-05 — PASS:** агрегований rating/count published recipe доступний User B та anon через `get_recipe_rating_summaries`.
+- [x] **RLS-06 — FIX APPLIED / DB POSTFLIGHT PASS / DIRECT REST REGRESSION REQUIRED:** усі 750 активних recipes тепер `pending`; 735 public pending + 15 private incomplete; active public catalog = 0; strict anon SELECT policy встановлена, broad PUBLIC SELECT policies відсутні.
+- [x] **RLS-07 — PASS:** anon/authenticated не можуть напряму писати moderation columns або `image_moderation_log`.
+- [x] **RLS-08 — PASS:** non-admin не читає admin-only tables/RPC і не виконує admin server actions.
+- [x] **RLS-09 — PASS:** `soft_delete_user()` відхиляє anon і чужий UUID; власний UUID допускається лише для authenticated user.
+- [x] **RLS-10 — FIX APPLIED / DB POSTFLIGHT PASS / DIRECT REST REGRESSION REQUIRED:** anon залишено лише SELECT; authenticated — SELECT/INSERT/UPDATE/DELETE; небезпечних client TRUNCATE/REFERENCES/TRIGGER grants і PUBLIC/anon write policies немає.
 
 ---
 
@@ -276,11 +300,13 @@
 
 ### Cookbook
 
-- [ ] **BOOK-01:** створення/редагування/видалення книги та empty state.
-- [ ] **BOOK-02:** save recipe to book/login prompt; повторне збереження не створює неправильний дубль.
+- [ ] **BOOK-01:** PARTIAL PASS — створення, редагування і призначення головної книги підтверджені; видалення книги та повний empty-state сценарій ще не перевірені.
+- [x] **BOOK-02:** PASS — перший рецепт автоматично створює «Мої рецепти»; наступні йдуть у поточну головну книгу; тост показує її назву; неправильних дублів книг не виявлено.
 - [ ] **BOOK-03:** cards, recent list і book modal відповідають БД.
 - [ ] **BOOK-04:** notes/stickers save, reload і error feedback.
 - [ ] **BOOK-05:** mobile layout не має overflow.
+- [x] **BOOK-06:** FIXED — обкладинки в модалці редагування книги прокручуються; потрібен live-регрес після деплою.
+- [x] **BOOK-07:** FIXED — logout очищає книги, recent list і модалки та інвалідує запити попередньої сесії; потрібен live-регрес після деплою.
 
 ### Profile і health data
 
@@ -315,7 +341,7 @@
 
 - [ ] **ADM-06:** top stats pills відповідають даним; “Активних (7д)” рахує unique users, не meal rows.
 - [ ] **ADM-07:** reports: grouping, drawer, filters, bulk actions і resolution reasons.
-- [ ] **ADM-08:** moderation queue: new/public/pending/flagged/staged items, spam detection `>10/day`, inline edit, auto-flag badges і author mini-history.
+- [ ] **ADM-08:** moderation queue: new/public/pending/flagged/staged items, spam detection `>10/day`, inline edit, auto-flag badges і author mini-history. Пагінацію по 100 та загальний count реалізовано локально 08.08.2026; потрібен deploy/live regression на черзі понад 100.
 - [ ] **ADM-09:** recipes search знаходить `name_ua`, `name_en`, `name_pl`; status/search state не губиться між tabs.
 - [ ] **ADM-10:** products: approve, duplicate detection/merge, pagination після filtering, clear search.
 - [ ] **ADM-11:** users: local/global search, pagination, admin toggle, ban/unban, shadow ban.
@@ -520,7 +546,7 @@
 | 4 Recipes | REC-01…REC-11, FLOW-01…FLOW-11, SEO-01…SEO-03 |
 | 5 Product guide | PROD-01…PROD-04 |
 | 6 Shopping list | SHOP-01…SHOP-05 |
-| 7 Cookbook | BOOK-01…BOOK-05 |
+| 7 Cookbook | BOOK-01…BOOK-07 |
 | 8 Profile | PROFILE-01…PROFILE-08, GDPR/DEL rounds |
 | 9 Navigation/Auth | AUTH round, ADM-01…ADM-04, UI-04 |
 | 10 Polish | UI/PERF page matrix, states, focus, lazy load |

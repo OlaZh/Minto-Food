@@ -505,6 +505,7 @@ export default function RecipeForm({ recipe, initialIngredients = [] }: RecipeFo
                 className="w-full h-9 text-sm border border-gray-200 rounded-md px-2 bg-white focus:outline-none focus:ring-2 focus:ring-ring"
               >
                 <option value="draft">Чернетка</option>
+                <option value="pending">На модерації</option>
                 <option value="scheduled">Заплановано</option>
                 <option value="published">Опубліковано</option>
               </select>
