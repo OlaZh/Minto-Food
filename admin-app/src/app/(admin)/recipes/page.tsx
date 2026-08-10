@@ -24,8 +24,6 @@ const STATUS_TABS = [
 
 const PAGE_SIZE = 100
 
-const passthroughImageLoader = ({ src }: { src: string }) => src
-
 type RecipeAuthor = {
   display_name: string | null
 }
@@ -231,7 +229,6 @@ export default async function RecipesPage({
                     fill
                     sizes="48px"
                     unoptimized
-                    loader={passthroughImageLoader}
                     className="object-cover"
                   />
                 ) : (
