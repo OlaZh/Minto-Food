@@ -125,12 +125,17 @@ function render(newIds) {
             ${item.is_checked ? 'checked' : ''} aria-label="${t('boughtLabel')}">
           <span class="shop-item__custom-check"></span>
         </label>
-        <span class="shop-item__name">${escapeHTML(item.name)}</span>
+        <div class="shop-item__info">
+          <span class="shop-item__name">${escapeHTML(item.name)}</span>
+          ${item.note ? `<span class="shop-item__note">${escapeHTML(item.note)}</span>` : ''}
+        </div>
         ${amountText ? `<span class="shop-item__amount">${escapeHTML(amountText)}</span>` : ''}
       `;
 
       li.addEventListener('click', e => {
         const cb = li.querySelector('.shop-item__checkbox');
+        // Клік по label/чекбоксу браузер обробляє сам; по info/name/note/amount —
+        // перемикаємо вручну.
         const clickedLabel = e.target.closest('.shop-item__check-label');
         if (!clickedLabel) {
           cb.checked = !cb.checked;
