@@ -1,8 +1,8 @@
 # MintoFood — повний QA test plan перед наступним кроком roadmap
 
-> **Версія:** 2.0
+> **Версія:** 2.3
 >
-> **Оновлено:** 08.08.2026
+> **Оновлено:** 14.09.2026
 >
 > **Середовище:** поточні Supabase і Vercel використовуються як **pre-production**, оскільки реальних користувачів ще немає. Новий чистий production створюється перед soft launch; поточне середовище після цього стає staging.
 >
@@ -17,12 +17,13 @@
 Для кожного тесту використовувати один зі статусів:
 
 - `PASS` — очікуваний результат підтверджено, є доказ;
+- `PARTIAL` — підтверджено лише частину сценарію; межі покриття й неперевірені кроки записані, чекбокс залишається відкритим;
 - `FAIL` — фактичний результат не відповідає очікуваному, створено issue;
 - `BLOCKED` — тест неможливо виконати через відсутній сервіс, ключ, конфігурацію або відоме виправлення;
 - `NOT RUN` — тест ще не запускався;
 - `N/A` — пункт свідомо не застосовується, причина записана.
 
-Чекбокс закривається лише разом із записом у журналі результатів. Для кожного запуску фіксувати:
+Чекбокс закривається лише після підтвердження повного очікуваного результату й запису в журналі; успіх спрощеного тестового сценарію не закриває весь пункт. Для кожного запуску фіксувати:
 
 - ID тесту;
 - дату й тестувальника;
@@ -40,6 +41,15 @@
 | Test ID | Status | Environment / commit | Actual result | Evidence / issue | Cleanup |
 |---|---|---|---|---|---|
 | _приклад: AUTH-01_ | _NOT RUN_ |  |  |  |  |
+| QA22-AUTO (AUTO-01…08, SEC-01) | PASS | 08.09.2026, Codex; local Windows; `0218bb5` + local fixes | 68/68 наявних тестів, API/admin lint, root/admin build; CSP/theme 10/10. Sass та root lockfile вже встановлені. Admin build має warning про inferred workspace root | [Повний звіт](qa/phase22-2026-09-08/report.md) | Нові залежності не встановлювались |
+| UI-01/02/06/08 (guest subset) | PASS — scoped | 08.09.2026, Codex; local HTTP; Chrome 152; `0218bb5` + local fixes | 17 сторінок × 2 теми × 6 ширин: 204/204 автоматичних початкових станів. Геометрія/тема/console/resources чисті; це не підтвердження всіх авторизованих станів чи повної accessibility | [JSON-докази](qa/phase22-2026-09-08/evidence.json), runs.matrix/breakpoints | Локальні сервери/Chrome завершено |
+| QA22-FIX-01 (profile hidden) | FIXED — LOCAL | 08.09.2026, Codex; `0218bb5` + local CSS | До: 5 видимих секцій, 4 з hidden. Після CSS-фіксу видима 1, 4 приховані на всіх 12 комбінаціях теми/ширини | evidence.json: profileBefore → matrix/breakpoints | Deployment не виконувався |
+| QA22-FIX-02 (UI-04 active header) | FIXED — LOCAL | 08.09.2026, Codex; `0218bb5` + local JS | href `/index.html` більше не порівнюється з `index.html` без нормалізації; активні пункти всіх 6 відповідних сторінок підтверджено браузером | [Скриншот](qa/phase22-2026-09-08/index-dark-desktop.png), final matrix/breakpoints | Deployment не виконувався |
+| UI-04/05/14 (interactions subset) | PASS — scoped | 08.09.2026, Codex; guest; Chrome 152; 1440/390; light/dark | Theme toggle, header login/close, burger/More Escape, footer accordion, terms back-to-top, offline/online banners працюють | evidence.json: runs.interactions; перелік перевірених дій у звіті | Серверних записів немає |
+| UI-09 / QA22-01 | FAIL | 08.09.2026, Codex; index/terms × light/dark × 1440/390 | Модалка входу лишає фокус за собою, Esc її не закриває; відтворено 8/8 | [QA22-01 у звіті](qa/phase22-2026-09-08/report.md#qa22-01--клавіатура-в-модалці-входу-ui-09), evidence.json | Очікує рішення щодо keyboard behavior |
+| PROD-01/03/04 / QA22-02 | PARTIAL / FAIL resources | 08.09.2026, Codex; guest; Chrome 152; 1440/390; light/dark | Після завантаження products пошук `яблу` дав 5 карток; modal open/close працює. Три фото Storage повертають HTTP 400 + `Object not found` | [Звіт](qa/phase22-2026-09-08/report.md), runs.products, QA22-02 | Файли/дані Storage не змінювались |
+| UI-15 (recipe rewrite subset) | PASS | 08.09.2026, Codex; local HTTP; `0218bb5`; Chrome 152 | `/recipe/nonexistent-slug`: 4/4 стани, 0 failed resources/CSP errors, правильна not-found сторінка | evidence.json: runs.recipeRoute | N/A |
+| DEP-02 (repeat) | PASS | 08.09.2026, Codex; `https://minto-food-xv5f.vercel.app`; guest | `/dashboard` і `/moderation` без сесії → `307`, `Location: /login`; non-admin workflow цим не перевірявся | Read-only GET з redirect:manual | N/A |
 | AUTH-01 | FAIL | 06.08.2026, Ola; local; `f2dfb3d` | Client-side JS блокує submit без consent, але серверної перевірки немає — прямий `POST /auth/v1/signup` до Supabase створить акаунт без consent | `js/auth.js:325-331` (signUp не передає consent), `js/auth.js:838-844` (лише client JS-перевірка); issue TBD | N/A |
 | UI-04 (нотатка) | FAIL | 06.08.2026, Ola; local; `f2dfb3d` | Залогінений юзер, клік "умови" у футері → на `terms.html` header/nav виглядає як для гостя (сесія фактично жива, це UI-баг, не logout) | опис користувача; потрібен screenshot | N/A |
 | AUTH-02 | PASS | 06.08.2026, Ola; local; `f2dfb3d` | Посилання на умови/приватність з форми реєстрації ведуть на `terms.html`/`privacy.html`, відкриваються коректно | візуальна перевірка | N/A |
@@ -61,8 +71,8 @@
 | AUTH-15 | PASS | 07.08.2026, Ola; `https://minto-food.vercel.app/` | "ПЕРШІ КРОКИ" checklist у сайдбарі профілю (4 пункти: Налаштувати ціль/Додати перший прийом їжі/Створити рецепт/Записувати воду 5 днів) показує реальний прогрес 1/4 — "Налаштувати ціль" закреслена коректно для акаунта, що щойно пройшов goal wizard. Початкове враження "неправильно закреслено" пояснювалось саме тим, що ціль дійсно вже була встановлена | screenshot checklist з профілю | N/A |
 | AUTH-16 | BLOCKED | 07.08.2026, Ola; `https://minto-food.vercel.app/` | Жоден тестовий акаунт ще не назбирав кількаденний streak — activation milestone toast (поріг днів поспіль) фізично не міг спрацювати за один день тестування | немає придатного акаунта для тесту | N/A |
 | BOOK-02 | PASS (fixed) | 08.08.2026, Ola; `https://minto-food.vercel.app/`; deployed fix | Для акаунта без книг перший створений рецепт автоматично створив головну книгу «Мої рецепти» і зберігся в неї; другий рецепт зберігся в ту саму книгу. Після створення другої книги й призначення її головною наступний рецепт зберігся саме в нову головну книгу. Тост у кожному випадку назвав фактичну книгу | live-перевірка і screenshots користувача | N/A |
-| BOOK-06 | FIXED — LIVE REGRESSION REQUIRED | 08.08.2026, Codex; local worktree | Було: у модалці редагування книги список обкладинок не прокручувався і нижні варіанти були недоступні. Додано окремий вертикальний scroll для форми/сітки обкладинок без прокручування фону | `scss/pages/_cookbook.scss:970`; зібраний `css/main.css` | після деплою перевірити wheel, scrollbar і touch scroll |
-| BOOK-07 | FIXED — LIVE REGRESSION REQUIRED | 08.08.2026, Codex; local worktree | Було: після logout картки книг і «Нещодавно переглянуті» попереднього користувача залишалися в DOM; рецепти всередині не відкривалися завдяки RLS, а після входу в інший акаунт чужі книги вже не поверталися. Виправлено повне очищення книг, recent list і модалок на `SIGNED_OUT`; результати незавершених запитів старої сесії інвалідуються, дії з книгами без сесії блокуються | screenshot дефекту; `js/cookbook.js:145`, `js/cookbook.js:255`, `js/cookbook.js:631`, `js/cookbook.js:775`; `node --check js/cookbook.js`; `git diff --check` | після деплою перевірити logout під час відкритої книги та швидкий logout→login іншим акаунтом |
+| BOOK-06 | PARTIAL — synthetic CSS fixture | Звіт 08.09.2026, Claude; `https://minto-food.vercel.app/`; заявлений commit `0218bb5`. Перегляд покриття 14.09.2026, Codex | У попередньому звіті заявлено **18/18**: власний скрол спрощеної сітки, доступність і click 30-ї вставленої кнопки, wheel; світла тема, viewport 1440×900, 390×844, 1280×600. Реальні renderer/модалка та вибір обкладинки не викликаються. `window.scrollY` вимірюється лише при програмній зміні `grid.scrollTop`, тому body lock не доведено. Повторний браузерний результат під час перегляду не отримано: `ERR_MODULE_NOT_FOUND` для playwright-core | `scripts/book-06-cover-scroll-check.mjs`; [межі покриття й залишок](qa/book-06-07-review-2026-09-14.md). Заявлені скриншоти не знайдені в репо; попередні 18/18 незалежно не відтворено | За попереднім звітом: лише QA-вузли в пам'яті сторінки |
+| BOOK-07 | PARTIAL — synthetic DOM/static smoke | Звіт 08.09.2026, Claude; `https://minto-food.vercel.app/`; заявлений commit `0218bb5`. Перегляд покриття 14.09.2026, Codex | У попередньому звіті заявлено **13/13**: 6 перевірок текстових шаблонів і 7 перевірок виклику/DOM. Штучні книги, optional recent і неактивний edit-вузол вставляються гостю; після виклику signOut перевіряється очищення. Отримання `SIGNED_OUT` окремо не перевіряється; regex не доводять обробку пізніх відповідей. Реальна сесія, відкриті модалки та зміна A → B не перевірені. Повторний браузерний результат не отримано через відсутній playwright-core | `scripts/book-07-logout-cleanup-check.mjs`; [межі покриття й залишок](qa/book-06-07-review-2026-09-14.md). Заявлений скриншот не знайдений у репо; попередні 13/13 незалежно не відтворено | За попереднім звітом: сесії не створювались, лише QA-вузли в пам'яті сторінки |
 | RLS-01 | PASS | 08.08.2026, Codex; live Supabase/Vercel | User A створив private/draft і public/pending рецепти через `/api/save-recipe`; прямий SELECT під JWT User B повернув 0 рядків | `scripts/rls-round-c-check.mjs`; два однакові live-прогони | QA-рецепти видалені |
 | RLS-02 | PASS | 08.08.2026, Codex; live Supabase | Прямі PATCH і DELETE рецепта User A під JWT User B повернули 0 змінених/видалених рядків; повторний SELECT User A підтвердив, що назва й сам рецепт не змінилися | live REST: foreign PATCH `200 []`, DELETE `200 []`, owner row intact | QA-рецепти видалені |
 | RLS-03 | PASS | 08.08.2026, Codex; live Supabase | Спершу підтверджено, що User A бачить власні seed-записи; User B отримав 0 чужих рядків у всіх 10 перевірених таблицях: `meals`, `water`, `week_meals`, `weight_records`, `user_activities`, `user_streaks`, `shopping_lists`, `shopping_items`, `cookbooks`, `gdpr_requests` | посилений повторний прогін `scripts/rls-round-c-check.mjs` | створені прикладні QA-рядки видалені |
@@ -70,8 +80,8 @@
 | RLS-05 | PASS | 08.08.2026, Codex; live Supabase | `get_recipe_rating_summaries` повернув агрегований rating/count для published recipe як anon і як authenticated, не розкривши raw voters | прямі anon/User A RPC-запити | QA-rating видалений після перевірки |
 | RLS-06 | PASS (direct anon REST regression) | 10.08.2026, Claude; live Supabase; `2794b7a` | Прямий anon REST-регрес підтвердив фікс: `recipes` SELECT → `200`, `content-range=*/0`, 0 рядків, 0 невалідних; `status=eq.pending` → 0 рядків; `is_public=eq.false` → 0 рядків. Live sitemap віддає лише 3 статичні URL, жодного рецепта — узгоджено з порожнім каталогом | read-only anon probe (без мутацій); `curl /api/sitemap` → 3 `<loc>` | N/A |
 | RLS-10 | PASS (direct anon REST regression) | 10.08.2026, Claude; live Supabase; `2794b7a` | anon не має write-доступу: INSERT/PATCH/DELETE на `recipes` → усі `401 42501 permission denied for table recipes`. Admin/GDPR RPC із коректними сигнатурами (`soft_delete_user`, `admin_search_users`, `override_image_flag`) → `401 permission denied for function`. Публічний шлях цілий: `get_recipe_rating_summaries` → `200`; прямий `recipe_ratings` → `401` (raw voters закриті). Примітка: `recipes` дає `200 []` (grant є, політика фільтрує), `recipe_ratings` дає `401` (grant відкликаний) — різні механізми, обидва прийнятні | read-only anon probe; UPDATE/DELETE скоуплені на `id=eq.-1`, реальні рядки не зачіпались | N/A |
-| ADM-08 (pagination) | FIXED — DEPLOY/LIVE REGRESSION REQUIRED | 08.08.2026, Codex; local worktree | Черга модерації раніше безумовно обрізалась на 100 записах, тому після постановки 750 рецептів у `pending` наступні 650 були б недоступні з цієї сторінки. Додано серверну пагінацію по 100, загальну кількість і переходи «Попередня/Наступна» | `admin-app/src/app/(admin)/moderation/page.tsx`; `ModerationClient.tsx`; targeted ESLint PASS | після деплою перевірити 8 сторінок, перехід після схвалення останнього запису на сторінці та некоректний `?page=` |
-| MOD-01 (private guard) | FIXED — DEPLOY/LIVE REGRESSION REQUIRED | 09.08.2026, Codex; local worktree | Кнопка «Схвалити» раніше показувалася для private pending recipe, хоча server action закономірно відхиляв публікацію. Тепер approve доступний лише для `is_public=true` або staged edit; у формі додано відсутній status option «На модерації», щоб 15 неповних імпортів можна було відкрити, доповнити й зберегти без випадкового переведення в draft/published | `ModerationClient.tsx`; `RecipeForm.tsx`; ESLint PASS; security 22/22; production build 24/24 | після deploy перевірити один із 15 blocker IDs: private pending → edit/add steps/public → save pending → approve |
+| ADM-08 (pagination) | MERGED — LIVE REGRESSION BLOCKED (admin session) | 08.09.2026, Claude; admin Vercel; `0218bb5` | Код у `main` і на деплої: `PAGE_SIZE=100`, серверний `.range(from,to)` з `count:'exact'`, `totalPages`. Некоректний `?page=` захищений двічі — `Number.isFinite(parsedPage) && parsedPage > 0 ? parsedPage : 1` (page.tsx:55-56) і redirect при `page > totalPages` (page.tsx:77-78). Live-перевірка UI неможлива без адмін-сесії: `/moderation` і `/moderation?page=abc` без сесії → `307 → /login` (очікувано) | `admin-app/src/app/(admin)/moderation/page.tsx:46,55-57,64-78,158`; live `curl /moderation` → `307` | потрібна адмін-сесія: 8 сторінок, перехід після схвалення останнього запису на сторінці, `?page=abc` і `?page=999` |
+| MOD-01 (private guard) | MERGED — LIVE REGRESSION BLOCKED (admin session) | 08.09.2026, Claude; admin Vercel; `0218bb5` | Код у `main` і на деплої: guard `const canApprove = hasStaged \|\| recipe.is_public === true` (ModerationClient.tsx:97), кнопка approve рендериться лише під `{canApprove && ...}` (:174). Live-перевірка UI неможлива без адмін-сесії (`307 → /login`) | `admin-app/src/app/(admin)/moderation/ModerationClient.tsx:97,172-183`; `RecipeForm.tsx` | потрібна адмін-сесія: один із 15 blocker IDs — private pending → edit/add steps/public → save pending → approve |
 | RLS-07 | PASS | 08.08.2026, Codex; live Supabase | Authenticated non-admin не зміг підробити moderation fields власного рецепта: trigger не зберіг атакуючі значення. Auth/anon insert у `image_moderation_log` відхилено `403/401`, anon PATCH чужого recipe не змінив рядок | прямі REST-запити recipes/image_moderation_log | QA-рецепти видалені |
 | RLS-08 | PASS | 08.08.2026, Codex; live Supabase + local admin tests | Non-admin отримав 0 рядків `admin_actions`; `admin_search_users` відхилено `403`; `override_image_flag` відхилено як `not authorized`. Додатково повторно пройдено admin security suite `22/22` | `scripts/rls-round-c-check.mjs`; `admin-app: npm.cmd run test:security` | N/A |
 | RLS-09 | PASS | 08.08.2026, Codex; live Supabase | anon виклик `soft_delete_user()` відхилено `401`; User B не зміг передати UUID User A (`Access denied`); власні UUID User A/User B прийняті `204` | прямі RPC-запити | обидва одноразові QA-акаунти поставлені на GDPR hard-delete через 30 днів; cleanup failures `0` |
@@ -142,13 +152,13 @@
 
 ### Потрібно повторити або розблокувати
 
-- [ ] **AUTO-07:** root `npm run build` завершується локально й не створює неочікуваного diff.
+- [x] **AUTO-07:** PASS 08.09.2026 — root `npm run build` успішний, HTML `0 updated`; зміна expanded CSS на compressed відповідає команді build, інших неочікуваних змін немає.
 
-  **BLOCKED:** у корені не встановлений Sass і немає root `package-lock.json`; встановлення залежностей/створення lock-файла погоджується окремо.
+  Старий блокер усунутий: Sass і root `package-lock.json` уже наявні. Є non-blocking deprecation warnings; у локальному diff лишено expanded CSS після `npm run build:css`.
 
-- [ ] **AUTO-08:** `node scripts/csp-theme-check.mjs` завершується й дає 0 CSP violations.
+- [x] **AUTO-08:** PASS 08.09.2026 — `node scripts/csp-theme-check.mjs` завершується, 10/10 сторінок, 0 CSP violations.
 
-  Історичний PASS є в Roadmap, але повторний запуск 01.08.2026 завис до таймауту — потрібна діагностика скрипта.
+  У поточній пісочниці Chrome не відкрив CDP port; поза нею той самий скрипт пройшов. Причину історичного зависання 01.08.2026 цим не доведено.
 - [x] **AUTO-09:** статично 0 `div.app-bg`, 0 `div.app-shell`, немає вкладених `<main>`, усі page-файли мають канонічний `main.main`.
 - [ ] **AUTO-10:** кожна активна migration має коректний rollback або документовану причину його відсутності; naming convention відповідає `YYYYMMDD_HHMM_description.sql`.
 - [x] **AUTO-11:** `docs/customer-research.md` містить target persona й актуальний interview script; `docs/migrations.md`, `docs/release-checklist.md`, staging sync script і PR template існують та не містять застарілих шляхів.
@@ -305,8 +315,8 @@
 - [ ] **BOOK-03:** cards, recent list і book modal відповідають БД.
 - [ ] **BOOK-04:** notes/stickers save, reload і error feedback.
 - [ ] **BOOK-05:** mobile layout не має overflow.
-- [x] **BOOK-06:** FIXED — обкладинки в модалці редагування книги прокручуються; потрібен live-регрес після деплою.
-- [x] **BOOK-07:** FIXED — logout очищає книги, recent list і модалки та інвалідує запити попередньої сесії; потрібен live-регрес після деплою.
+- [ ] **BOOK-06:** PARTIAL — заявлені 18/18 від 08.09 стосуються спрощеної CSS-модалки. Залишилось: відкрити реальну edit-модалку, доскролити до останньої обкладинки, перевірити вибір/збереження та body lock під час wheel/touch, зокрема на межі скролу; перевірити обидві теми. [Перегляд 14.09.2026](qa/book-06-07-review-2026-09-14.md).
+- [ ] **BOOK-07:** PARTIAL — заявлені 13/13 від 08.09 стосуються regex і штучного DOM гостя. Залишилось: logout справжньої сесії з відкритою книгою/edit-модалкою, пізні відповіді books/recent/book recipes після logout і швидка зміна A → B без повернення даних A. [Перегляд 14.09.2026](qa/book-06-07-review-2026-09-14.md).
 
 ### Profile і health data
 
@@ -317,7 +327,7 @@
 - [ ] **PROFILE-05:** activity CRUD; steps/distance/energy totals коректні.
 - [ ] **PROFILE-06:** current/longest streak у profile відповідає day menu.
 - [ ] **PROFILE-07:** усі async actions мають spinner/progress/toast/error feedback.
-- [ ] **PROFILE-08:** unauthenticated profile не показує всі tab sections стосом за login modal; відомий баг Roadmap перевіряється окремо.
+- [ ] **PROFILE-08:** FIXED — LOCAL (08.09.2026, QA22-FIX-01): приховування tab sections до auth підтверджено на 12 комбінаціях теми/ширини. Deployment і live-регрес не підтверджені; чекбокс відкритий до перевірки deployed версії.
 
 ### Scanner/corrections
 
@@ -341,7 +351,7 @@
 
 - [ ] **ADM-06:** top stats pills відповідають даним; “Активних (7д)” рахує unique users, не meal rows.
 - [ ] **ADM-07:** reports: grouping, drawer, filters, bulk actions і resolution reasons.
-- [ ] **ADM-08:** moderation queue: new/public/pending/flagged/staged items, spam detection `>10/day`, inline edit, auto-flag badges і author mini-history. Пагінацію по 100 та загальний count реалізовано локально 08.08.2026; потрібен deploy/live regression на черзі понад 100.
+- [ ] **ADM-08:** moderation queue: new/public/pending/flagged/staged items, spam detection `>10/day`, inline edit, auto-flag badges і author mini-history. Пагінація по 100, загальний count і guard некоректного `?page=` підтверджені в задеплоєному коді 08.09.2026; live regression на черзі понад 100 потребує адмін-сесії.
 - [ ] **ADM-09:** recipes search знаходить `name_ua`, `name_en`, `name_pl`; status/search state не губиться між tabs.
 - [ ] **ADM-10:** products: approve, duplicate detection/merge, pagination після filtering, clear search.
 - [ ] **ADM-11:** users: local/global search, pagination, admin toggle, ban/unban, shadow ban.
@@ -352,7 +362,7 @@
 
 ### Moderation semantics і regressions
 
-- [ ] **MOD-01:** approve/reject public recipe; private recipe approve заблокований.
+- [ ] **MOD-01:** approve/reject public recipe; private recipe approve заблокований. Guard `canApprove = hasStaged || is_public === true` підтверджений у задеплоєному коді 08.09.2026; live regression потребує адмін-сесії.
 - [ ] **MOD-02:** delete recipe from report також закриває pending report.
 - [ ] **MOD-03:** ban ставить `is_banned=true`, published recipes → draft, pending reports resolved. За поточним кодом login користувача не блокується — іншу семантику треба окремо погодити.
 - [ ] **MOD-04:** unban знімає flag, але не републікує recipes автоматично.
@@ -421,6 +431,8 @@
 ### Page matrix
 
 Перевірити 17 page-файлів: `index`, `week-menu`, `recipes`, `recipe`, `product-guide`, `shopping-list`, `shared-list`, `cookbook`, `profile`, `privacy`, `terms`, `cookies`, `imprint`, `dmca`, `404`, `500`, `maintenance`.
+
+> **08.09.2026:** локальний гостьовий subset пройдено на 6 ширинах у двох темах (204 стани). Повні UI-чекбокси нижче лишаються відкритими через непокриті auth/device/interaction сценарії та QA22-01/02. [Звіт фази 22](qa/phase22-2026-09-08/report.md).
 
 - [ ] **UI-01:** кожна сторінка — light/dark × 1440×900/390×844; 0 horizontal overflow, content не перекритий.
 - [ ] **UI-02:** breakpoints 1200/1024/768/480; окремо tablet portrait/landscape.

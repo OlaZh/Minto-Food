@@ -98,6 +98,11 @@
   width: 100%;
 }
 
+// Flex/grid layout must respect the initial hidden state before auth and tabs init.
+[data-profile-section][hidden] {
+  display: none;
+}
+
 /* ================= ВЕРХНІЙ РЯД: Параметри + (Денна норма + Аналіз) ================= */
 
 .profile-top-row {

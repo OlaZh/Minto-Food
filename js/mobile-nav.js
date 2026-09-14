@@ -7,7 +7,7 @@ initCookieConsent();
 (() => {
   const filename = location.pathname.split('/').pop() || 'index.html';
   document.querySelectorAll('.header__nav-link').forEach((link) => {
-    const href = link.getAttribute('href');
+    const href = link.getAttribute('href')?.split('/').pop();
     link.classList.toggle('header__nav-link--active', href === filename);
   });
 })();

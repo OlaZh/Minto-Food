@@ -7491,6 +7491,10 @@ svg[viewBox="0 0 24 24"] {
   width: 100%;
 }
 
+[data-profile-section][hidden] {
+  display: none;
+}
+
 /* ================= ВЕРХНІЙ РЯД: Параметри + (Денна норма + Аналіз) ================= */
 .profile-top-row {
   display: grid;
