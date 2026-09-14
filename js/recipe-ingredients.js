@@ -17,10 +17,15 @@ let currentLang = 'ua';
 let productUnitsCache = [];
 let productMeasureCache = [];
 
+// Temporarily paused while recipe parsing/nutrition is being corrected.
+// Keep this independent of meal entry and barcode scanning elsewhere in the app.
+export const RECIPE_NUTRITION_ENABLED = false;
+
 const i18nIngredients = {
   ua: {
     pasteIngredients: 'Вставте список інгредієнтів...',
-    parseBtn: 'Розпізнати',
+    parseBtn: 'Розрахувати КБЖВ',
+    calculationPaused: 'Розрахунок КБЖВ тимчасово недоступний — допрацьовуємо. Рецепт можна зберегти без нього.',
     parsing: 'Розпізнаю...',
     scanBtn: 'Сканувати',
     unitG: 'г',
@@ -31,7 +36,7 @@ const i18nIngredients = {
     carbsShort: 'В',
     notFound: 'Не розпізнано',
     found: 'Розпізнано',
-    addIngredients: 'Вставте інгредієнти та натисніть "Розпізнати"',
+    addIngredients: 'Введіть або вставте інгредієнти та збережіть рецепт.',
     clearAll: 'Очистити',
     searchProduct: 'Пошук продукту...',
     productNotFound: 'Продукт не знайдено в базі',
@@ -44,7 +49,8 @@ const i18nIngredients = {
   },
   en: {
     pasteIngredients: 'Paste ingredient list...',
-    parseBtn: 'Parse',
+    parseBtn: 'Calculate nutrition',
+    calculationPaused: 'Nutrition calculation is temporarily unavailable while we improve it. You can save the recipe without it.',
     parsing: 'Parsing...',
     scanBtn: 'Scan',
     unitG: 'g',
@@ -55,7 +61,7 @@ const i18nIngredients = {
     carbsShort: 'C',
     notFound: 'Not recognized',
     found: 'Recognized',
-    addIngredients: 'Paste ingredients and click "Parse"',
+    addIngredients: 'Type or paste ingredients and save the recipe.',
     clearAll: 'Clear',
     searchProduct: 'Search product...',
     productNotFound: 'Product not found in database',
@@ -68,7 +74,8 @@ const i18nIngredients = {
   },
   pl: {
     pasteIngredients: 'Wklej listę składników...',
-    parseBtn: 'Rozpoznaj',
+    parseBtn: 'Oblicz wartości odżywcze',
+    calculationPaused: 'Obliczanie wartości odżywczych jest tymczasowo niedostępne — pracujemy nad poprawkami. Możesz zapisać przepis bez obliczeń.',
     parsing: 'Rozpoznaję...',
     scanBtn: 'Skanuj',
     unitG: 'g',
@@ -79,7 +86,7 @@ const i18nIngredients = {
     carbsShort: 'W',
     notFound: 'Nie rozpoznano',
     found: 'Rozpoznano',
-    addIngredients: 'Wklej składniki i kliknij "Rozpoznaj"',
+    addIngredients: 'Wpisz lub wklej składniki i zapisz przepis.',
     clearAll: 'Wyczyść',
     searchProduct: 'Szukaj produktu...',
     productNotFound: 'Produktu nie znaleziono w bazie',
@@ -147,10 +154,10 @@ export function initIngredientBuilder(containerSelector, onChange, lang = 'ua') 
           rows="5"
         ></textarea>
         <div class="ingredient-builder__actions">
-          <button type="button" class="ingredient-builder__parse-btn" id="parseIngredientsBtn">
+          <button type="button" class="ingredient-builder__parse-btn" id="parseIngredientsBtn" ${RECIPE_NUTRITION_ENABLED ? '' : 'disabled aria-describedby="ingredientCalculationNotice"'}>
             ${t('parseBtn')}
           </button>
-          <button type="button" class="ingredient-builder__scan-btn" id="scanIngredientBtn">
+          <button type="button" class="ingredient-builder__scan-btn" id="scanIngredientBtn" ${RECIPE_NUTRITION_ENABLED ? '' : 'disabled aria-describedby="ingredientCalculationNotice"'}>
             ${iconScan} ${t('scanBtn')}
           </button>
           <button type="button" class="ingredient-builder__clear-btn" id="clearIngredientsBtn">
@@ -159,11 +166,12 @@ export function initIngredientBuilder(containerSelector, onChange, lang = 'ua') 
         </div>
       </div>
 
+      <p class="ingredient-builder__check-hint" id="ingredientCalculationNotice" ${RECIPE_NUTRITION_ENABLED ? 'hidden' : ''}>${t('calculationPaused')}</p>
       <p class="ingredient-builder__check-hint" id="ingredientCheckHint" hidden>${t('checkHint')}</p>
 
       <ul class="ingredient-builder__list" id="ingredientList"></ul>
 
-      <div class="ingredient-builder__total" id="ingredientTotal">
+      <div class="ingredient-builder__total" id="ingredientTotal" ${RECIPE_NUTRITION_ENABLED ? '' : 'hidden'}>
         <span class="ingredient-builder__total-label">${t('total')}</span>
         <span class="ingredient-builder__total-values">0 ${t('kcal')}</span>
       </div>
@@ -171,7 +179,7 @@ export function initIngredientBuilder(containerSelector, onChange, lang = 'ua') 
   `;
 
   initEventListeners();
-  loadProductsCache();
+  if (RECIPE_NUTRITION_ENABLED) loadProductsCache();
   renderIngredientsList();
 }
 
@@ -232,6 +240,7 @@ function initEventListeners() {
   });
 
   scanBtn?.addEventListener('click', () => {
+    if (!RECIPE_NUTRITION_ENABLED) return;
     scanBarcode(addScannedIngredient, { askWeight: true });
   });
 
@@ -262,6 +271,7 @@ function initEventListeners() {
 }
 
 async function parseAndAddIngredients(text) {
+  if (!RECIPE_NUTRITION_ENABLED) return;
   if (!text.trim()) return;
 
   const parseBtn = document.getElementById('parseIngredientsBtn');
@@ -331,6 +341,7 @@ async function parseAndAddIngredients(text) {
 }
 
 function addScannedIngredient(product, grams) {
+  if (!RECIPE_NUTRITION_ENABLED) return;
   if (!product || !grams || grams <= 0) return;
 
   const factor = grams / 100;
@@ -614,7 +625,7 @@ export async function setIngredientsFromText(text) {
   const textarea = getTextareaEl();
   if (textarea) textarea.value = normalizedText;
 
-  if (!normalizedText) {
+  if (!normalizedText || !RECIPE_NUTRITION_ENABLED) {
     renderIngredientsList();
     updateTotals();
     notifyChange();
@@ -641,6 +652,9 @@ export function setLanguage(lang) {
 
   const hintEl = document.getElementById('ingredientCheckHint');
   if (hintEl) hintEl.textContent = t('checkHint');
+
+  const calculationNotice = document.getElementById('ingredientCalculationNotice');
+  if (calculationNotice) calculationNotice.textContent = t('calculationPaused');
 
   const totalLabel = document.querySelector('.ingredient-builder__total-label');
   if (totalLabel) totalLabel.textContent = t('total');

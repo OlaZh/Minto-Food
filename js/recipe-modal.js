@@ -8,6 +8,7 @@ import {
   clearIngredients,
   setIngredientsFromText,
   setLanguage,
+  RECIPE_NUTRITION_ENABLED,
 } from './recipe-ingredients.js';
 import { showToast, toBase64, setInputVal, withButtonLoading } from './utils.js';
 import { getLang } from './storage.js';
@@ -32,6 +33,40 @@ let recipeModalInstance = null;
 let onRecipeSavedCallback = null;
 let editingRecipeId = null;
 let editingRecipeOriginal = null;
+
+const MANUAL_NUTRITION_FIELDS = [
+  ['rm-calories', 'kcal'], ['rm-proteins', 'protein'],
+  ['rm-fats', 'fat'], ['rm-carbs', 'carbs'],
+];
+
+function restoreManualNutrition(values = {}) {
+  for (const [id, key] of MANUAL_NUTRITION_FIELDS) {
+    const input = document.getElementById(id);
+    if (input) {
+      input.value = values[key] ?? '';
+      input.setCustomValidity('');
+    }
+  }
+}
+
+function readManualNutrition() {
+  const values = {};
+  for (const [id, key] of MANUAL_NUTRITION_FIELDS) {
+    const input = document.getElementById(id);
+    const text = String(input?.value ?? '').trim().replace(',', '.');
+    input?.setCustomValidity('');
+    // Optional blanks do not overwrite previously saved values with zero.
+    if (!text) continue;
+    const value = Number(text);
+    if (!/^(?:\d+(?:\.\d*)?|\.\d+)$/.test(text) || !Number.isFinite(value)) {
+      input?.setCustomValidity(t('rmNutritionInvalid'));
+      input?.reportValidity();
+      return null;
+    }
+    values[key] = value;
+  }
+  return values;
+}
 
 function parsePositiveNumber(value) {
   const normalized = String(value ?? '').replace(',', '.').trim();
@@ -79,6 +114,11 @@ function getDisplayedNutrition(totals, totalWeight) {
 }
 
 function updateRecipeNutritionPreview(totals = getTotals()) {
+  if (!RECIPE_NUTRITION_ENABLED) {
+    // Ingredient/weight changes must never reset or scale manual values.
+    updateNutritionNoteOnly();
+    return;
+  }
   const totalWeight = parsePositiveNumber(document.getElementById('rm-total-weight')?.value);
   const displayed = getDisplayedNutrition(totals, totalWeight);
 
@@ -105,6 +145,13 @@ function updateRecipeNutritionPreview(totals = getTotals()) {
 function updateNutritionNoteOnly(kcalForNote) {
   const noteEl = document.getElementById('rm-macros-note');
   if (!noteEl) return;
+
+  if (!RECIPE_NUTRITION_ENABLED) {
+    const key = editingRecipeId !== null ? 'rmNutritionManualExisting' : 'rmNutritionManual';
+    noteEl.dataset.i18n = key;
+    noteEl.textContent = t(key);
+    return;
+  }
 
   const totalWeight = parsePositiveNumber(document.getElementById('rm-total-weight')?.value);
   noteEl.textContent = totalWeight
@@ -140,20 +187,20 @@ function createRecipeModalHTML() {
 
               <div class="recipe-macros-grid">
                 <div class="form-group">
-                  <label data-i18n="calories">Ккал</label>
-                  <input type="number" id="rm-calories" placeholder="0" readonly />
+                  <label for="rm-calories" data-i18n="calories">Ккал</label>
+                  <input type="text" inputmode="decimal" id="rm-calories" placeholder="—" aria-describedby="rm-macros-note" ${RECIPE_NUTRITION_ENABLED ? 'readonly' : ''} />
                 </div>
                 <div class="form-group">
-                  <label data-i18n="proteins">Б</label>
-                  <input type="number" id="rm-proteins" placeholder="0" readonly />
+                  <label for="rm-proteins" data-i18n="proteins">Б</label>
+                  <input type="text" inputmode="decimal" id="rm-proteins" placeholder="—" aria-describedby="rm-macros-note" ${RECIPE_NUTRITION_ENABLED ? 'readonly' : ''} />
                 </div>
                 <div class="form-group">
-                  <label data-i18n="fats">Ж</label>
-                  <input type="number" id="rm-fats" placeholder="0" readonly />
+                  <label for="rm-fats" data-i18n="fats">Ж</label>
+                  <input type="text" inputmode="decimal" id="rm-fats" placeholder="—" aria-describedby="rm-macros-note" ${RECIPE_NUTRITION_ENABLED ? 'readonly' : ''} />
                 </div>
                 <div class="form-group">
-                  <label data-i18n="carbs">В</label>
-                  <input type="number" id="rm-carbs" placeholder="0" readonly />
+                  <label for="rm-carbs" data-i18n="carbs">В</label>
+                  <input type="text" inputmode="decimal" id="rm-carbs" placeholder="—" aria-describedby="rm-macros-note" ${RECIPE_NUTRITION_ENABLED ? 'readonly' : ''} />
                 </div>
               </div>
 
@@ -341,6 +388,11 @@ export async function initRecipeModal() {
     updateRecipeNutritionPreview();
   });
 
+  for (const [id] of MANUAL_NUTRITION_FIELDS) {
+    const input = document.getElementById(id);
+    input?.addEventListener('input', () => input.setCustomValidity(''));
+  }
+
   initVisibilityToggle();
   bindIngredientBuilder();
   initCustomSelect('rm-category-select', 'rm-category');
@@ -364,6 +416,7 @@ function savePendingRecipeDraft() {
     image: document.getElementById('rm-image-url')?.value ?? '',
     ingredients: getIngredientsText(),
     visibility: recipeVisibility,
+    manualNutrition: Object.fromEntries(MANUAL_NUTRITION_FIELDS.map(([id, key]) => [key, document.getElementById(id)?.value ?? ''])),
   };
   try {
     sessionStorage.setItem(PENDING_RECIPE_KEY, JSON.stringify(draft));
@@ -413,6 +466,7 @@ async function restorePendingRecipeDraft() {
   setSelectValue('rm-category-select', 'rm-category', draft.category || 'lunch');
   setInputVal('rm-image-url', draft.image);
   await setIngredientsFromText(draft.ingredients || '');
+  if (!RECIPE_NUTRITION_ENABLED) restoreManualNutrition(draft.manualNutrition);
   if (draft.visibility) setVisibilityToggle(draft.visibility);
   updateRecipeNutritionPreview();
 
@@ -471,6 +525,7 @@ export function closeRecipeModal() {
 function resetRecipeForm() {
   const form = document.getElementById('recipe-modal-form');
   if (form) form.reset();
+  if (!RECIPE_NUTRITION_ENABLED) restoreManualNutrition();
 
   clearIngredients();
   resetVisibilityToggle();
@@ -502,19 +557,23 @@ async function showRecipeForm(data = null) {
     setInputVal('rm-image-url', data.image);
     setVisibilityToggle(data.is_public ? 'public' : 'private');
 
-    // Парсинг інгредієнтів тригерить перерахунок КБЖ (через notifyChange).
-    // Робимо це ДО відновлення збережених значень, щоб вони не затирались.
+    // While calculation is paused this only restores text, with no product lookups.
     await setIngredientsFromText(data.ingredients || '');
 
     // При редагуванні показуємо вже збережені КБЖ, а не перерахунок з нуля:
     // повторний парсинг може не розпізнати частину інгредієнтів і дати 0.
-    // Реальний перерахунок відбудеться, лише якщо людина змінить інгредієнти.
-    const savedKcal = data.kcal || data.calories || 0;
-    setInputVal('rm-calories', savedKcal);
-    setInputVal('rm-proteins', data.proteins || data.protein);
-    setInputVal('rm-fats', data.fats || data.fat);
-    setInputVal('rm-carbs', data.carbs);
-    updateNutritionNoteOnly(savedKcal);
+    // Manual inputs start with saved values; ingredient/weight changes do not scale them.
+    if (RECIPE_NUTRITION_ENABLED) {
+      const savedKcal = data.kcal ?? data.calories ?? 0;
+      setInputVal('rm-calories', savedKcal);
+      setInputVal('rm-proteins', data.protein ?? data.proteins);
+      setInputVal('rm-fats', data.fat ?? data.fats);
+      setInputVal('rm-carbs', data.carbs);
+      updateNutritionNoteOnly(savedKcal);
+    } else {
+      restoreManualNutrition(data);
+      updateRecipeNutritionPreview();
+    }
   } else {
     updateRecipeNutritionPreview();
   }
@@ -554,6 +613,8 @@ async function saveRecipeViaServer(payload, editingId, isPublic, imageIsNew) {
 }
 
 async function saveRecipe() {
+  const manualNutrition = RECIPE_NUTRITION_ENABLED ? {} : readManualNutrition();
+  if (manualNutrition === null) return;
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -592,7 +653,7 @@ async function saveRecipe() {
 
   const totals = getTotals();
   const totalWeightVal = parsePositiveNumber(document.getElementById('rm-total-weight')?.value);
-  const displayedNutrition = getDisplayedNutrition(totals, totalWeightVal);
+  const displayedNutrition = RECIPE_NUTRITION_ENABLED ? getDisplayedNutrition(totals, totalWeightVal) : null;
 
   const isPublicSubmission = recipeVisibility === 'public';
   const nameVal = document.getElementById('rm-name')?.value.trim() ?? '';
@@ -615,11 +676,13 @@ async function saveRecipe() {
   // сервер (клієнтські значення все одно ігноруються).
   const payload = {
     name_ua: nameVal,
-    kcal: parseFloat(displayedNutrition.kcal.toFixed(1)) || 0,
-    protein: parseFloat(displayedNutrition.protein.toFixed(1)) || 0,
-    fat: parseFloat(displayedNutrition.fat.toFixed(1)) || 0,
-    carbs: parseFloat(displayedNutrition.carbs.toFixed(1)) || 0,
-    fiber: parseFloat(displayedNutrition.fiber.toFixed(1)) || 0,
+    ...(RECIPE_NUTRITION_ENABLED ? {
+      kcal: parseFloat(displayedNutrition.kcal.toFixed(1)) || 0,
+      protein: parseFloat(displayedNutrition.protein.toFixed(1)) || 0,
+      fat: parseFloat(displayedNutrition.fat.toFixed(1)) || 0,
+      carbs: parseFloat(displayedNutrition.carbs.toFixed(1)) || 0,
+      fiber: parseFloat(displayedNutrition.fiber.toFixed(1)) || 0,
+    } : manualNutrition),
     total_weight: totalWeightVal,
     category: document.getElementById('rm-category')?.value,
     ingredients: getIngredientsText(),
@@ -685,7 +748,7 @@ async function saveRecipe() {
       }
     });
 
-  if (editingRecipeId !== null && data?.id) {
+  if (RECIPE_NUTRITION_ENABLED && editingRecipeId !== null && data?.id) {
     const { error: deleteIngredientsError } = await supabase
       .from('product_recipe')
       .delete()
@@ -696,7 +759,7 @@ async function saveRecipe() {
     }
   }
 
-  if (ingredients.length > 0 && data?.id) {
+  if (RECIPE_NUTRITION_ENABLED && ingredients.length > 0 && data?.id) {
     const ingredientRows = ingredients
       .filter((ingredient) => ingredient.id)
       .map((ingredient) => ({

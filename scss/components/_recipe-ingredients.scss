@@ -54,6 +54,17 @@
   color: var(--color-text-inverse);
 }
 
+.ingredient-builder__actions button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  white-space: normal;
+}
+
+.ingredient-builder__total[hidden] {
+  display: none;
+}
+
 .ingredient-builder__clear-btn {
   color: var(--color-text-secondary);
 }

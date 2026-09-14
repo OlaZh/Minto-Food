@@ -4857,6 +4857,17 @@ svg[viewBox="0 0 24 24"] {
   color: var(--color-text-inverse);
 }
 
+.ingredient-builder__actions button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  white-space: normal;
+}
+
+.ingredient-builder__total[hidden] {
+  display: none;
+}
+
 .ingredient-builder__clear-btn {
   color: var(--color-text-secondary);
 }
@@ -9577,7 +9588,7 @@ input:checked + .settings-toggle__track::after {
   text-decoration: underline;
 }
 .weight-goal-warning a:hover {
-  color: rgb(191.3536585366, 101.3048780488, 21.6463414634);
+  color: rgb(75.0406504065%, 39.7274031564%, 8.4887613582%);
 }
 .weight-goal-warning strong {
   font-weight: 600;
@@ -15956,3 +15967,5 @@ input[type=date].admin-select {
     scroll-behavior: auto !important;
   }
 }
+
+/*# sourceMappingURL=main.css.map */
