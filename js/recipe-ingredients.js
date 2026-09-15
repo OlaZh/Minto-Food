@@ -25,7 +25,6 @@ const i18nIngredients = {
   ua: {
     pasteIngredients: 'Вставте список інгредієнтів...',
     parseBtn: 'Розрахувати КБЖВ',
-    calculationPaused: 'Розрахунок КБЖВ тимчасово недоступний — допрацьовуємо. Рецепт можна зберегти без нього.',
     parsing: 'Розпізнаю...',
     scanBtn: 'Сканувати',
     unitG: 'г',
@@ -50,7 +49,6 @@ const i18nIngredients = {
   en: {
     pasteIngredients: 'Paste ingredient list...',
     parseBtn: 'Calculate nutrition',
-    calculationPaused: 'Nutrition calculation is temporarily unavailable while we improve it. You can save the recipe without it.',
     parsing: 'Parsing...',
     scanBtn: 'Scan',
     unitG: 'g',
@@ -75,7 +73,6 @@ const i18nIngredients = {
   pl: {
     pasteIngredients: 'Wklej listę składników...',
     parseBtn: 'Oblicz wartości odżywcze',
-    calculationPaused: 'Obliczanie wartości odżywczych jest tymczasowo niedostępne — pracujemy nad poprawkami. Możesz zapisać przepis bez obliczeń.',
     parsing: 'Rozpoznaję...',
     scanBtn: 'Skanuj',
     unitG: 'g',
@@ -154,10 +151,10 @@ export function initIngredientBuilder(containerSelector, onChange, lang = 'ua') 
           rows="5"
         ></textarea>
         <div class="ingredient-builder__actions">
-          <button type="button" class="ingredient-builder__parse-btn" id="parseIngredientsBtn" ${RECIPE_NUTRITION_ENABLED ? '' : 'disabled aria-describedby="ingredientCalculationNotice"'}>
+          <button type="button" class="ingredient-builder__parse-btn" id="parseIngredientsBtn" ${RECIPE_NUTRITION_ENABLED ? '' : 'disabled'}>
             ${t('parseBtn')}
           </button>
-          <button type="button" class="ingredient-builder__scan-btn" id="scanIngredientBtn" ${RECIPE_NUTRITION_ENABLED ? '' : 'disabled aria-describedby="ingredientCalculationNotice"'}>
+          <button type="button" class="ingredient-builder__scan-btn" id="scanIngredientBtn" ${RECIPE_NUTRITION_ENABLED ? '' : 'disabled'}>
             ${iconScan} ${t('scanBtn')}
           </button>
           <button type="button" class="ingredient-builder__clear-btn" id="clearIngredientsBtn">
@@ -166,7 +163,6 @@ export function initIngredientBuilder(containerSelector, onChange, lang = 'ua') 
         </div>
       </div>
 
-      <p class="ingredient-builder__check-hint" id="ingredientCalculationNotice" ${RECIPE_NUTRITION_ENABLED ? 'hidden' : ''}>${t('calculationPaused')}</p>
       <p class="ingredient-builder__check-hint" id="ingredientCheckHint" hidden>${t('checkHint')}</p>
 
       <ul class="ingredient-builder__list" id="ingredientList"></ul>
@@ -388,6 +384,12 @@ function renderIngredientsList() {
 
   const hintEl = document.getElementById('ingredientCheckHint');
   if (hintEl) hintEl.hidden = ingredientsList.length === 0;
+
+  listEl.hidden = !RECIPE_NUTRITION_ENABLED;
+  if (!RECIPE_NUTRITION_ENABLED) {
+    listEl.innerHTML = '';
+    return;
+  }
 
   if (ingredientsList.length === 0) {
     listEl.innerHTML = `<li class="ingredient-item ingredient-item--empty">${t('addIngredients')}</li>`;
@@ -652,9 +654,6 @@ export function setLanguage(lang) {
 
   const hintEl = document.getElementById('ingredientCheckHint');
   if (hintEl) hintEl.textContent = t('checkHint');
-
-  const calculationNotice = document.getElementById('ingredientCalculationNotice');
-  if (calculationNotice) calculationNotice.textContent = t('calculationPaused');
 
   const totalLabel = document.querySelector('.ingredient-builder__total-label');
   if (totalLabel) totalLabel.textContent = t('total');

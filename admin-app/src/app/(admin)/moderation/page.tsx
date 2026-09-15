@@ -18,6 +18,7 @@ type ModerationRecipeRow = {
   is_image_flagged: boolean | null
   image_nsfw_score: number | null
   has_pending_update: boolean | null
+  media_revision: string | null
 }
 
 type ProfileRow = {
@@ -64,7 +65,7 @@ export default async function ModerationPage({
   const { data: recipes, count } = await supabase
     .from('recipes')
     .select(
-      'id, slug, name_ua, name_en, image, status, created_at, category, user_id, kcal, steps, is_public, is_image_flagged, image_nsfw_score, has_pending_update',
+      'id, slug, name_ua, name_en, image, status, created_at, category, user_id, kcal, steps, is_public, is_image_flagged, image_nsfw_score, has_pending_update, media_revision',
       { count: 'exact' }
     )
     .or('status.eq.pending,is_image_flagged.eq.true,has_pending_update.eq.true')
@@ -146,10 +147,31 @@ export default async function ModerationPage({
     }
   }
 
-  const enriched = (recipes ?? []).map((recipe: ModerationRecipeRow) => ({
-    ...recipe,
-    author: recipe.user_id ? (profilesMap[recipe.user_id] ?? null) : null,
-    staged_image: stagedImageMap[String(recipe.id)] ?? null,
+  type MediaItem = { section: string; kind: string; filename: string; storage_path: string | null; external_url: string | null }
+  const enriched = await Promise.all((recipes ?? []).map(async (recipe: ModerationRecipeRow) => {
+    let media: (MediaItem & { url: string })[] = []
+    let media_error = false
+    if (recipe.is_public && recipe.media_revision) {
+      try {
+        const { data, error } = await supabase.rpc('get_recipe_media', { p_recipe_id: Number(recipe.id), p_review: true })
+        if (error || data.revision !== recipe.media_revision) throw new Error('media_changed')
+        media = await Promise.all((data.items as MediaItem[]).map(async item => {
+          if (item.kind === 'link') {
+            const url = new URL(item.external_url ?? '')
+            if (!['https:', 'http:'].includes(url.protocol) || url.username || url.password) throw new Error('invalid_url')
+            return { ...item, url: url.href }
+          }
+          const { data: signed, error: signError } = await supabase.storage.from('recipe-attachments').createSignedUrl(item.storage_path!, 300)
+          if (signError || !signed?.signedUrl) throw new Error('media_unavailable')
+          return { ...item, url: signed.signedUrl }
+        }))
+      } catch { media_error = true }
+    }
+    return {
+      ...recipe, media, media_error,
+      author: recipe.user_id ? (profilesMap[recipe.user_id] ?? null) : null,
+      staged_image: stagedImageMap[String(recipe.id)] ?? null,
+    }
   }))
 
   return (

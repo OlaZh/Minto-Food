@@ -6,7 +6,7 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import vm from 'node:vm';
 
-async function harness() {
+async function harness(local = new Map()) {
   const elements = new Map();
   const requests = [];
   const forbiddenCalls = [];
@@ -57,7 +57,7 @@ async function harness() {
   const storage = map => ({ getItem: key => map.get(key) ?? null, setItem: (key, val) => map.set(key, val), removeItem: key => map.delete(key) });
   const context = vm.createContext({
     console, document,
-    localStorage: storage(new Map()), sessionStorage: storage(session),
+    localStorage: storage(local), sessionStorage: storage(session),
     fetch: async (url, options) => {
       assert.equal(url, '/api/save-recipe');
       const body = JSON.parse(options.body);
@@ -71,6 +71,10 @@ async function harness() {
   const blocked = name => () => { forbiddenCalls.push(name); throw new Error(`Unexpected calculation/service call: ${name}`); };
   const empty = () => {};
   const services = {
+    './recipe-media.js': {
+      createRecipeMediaEditor: () => ({ reset: empty, load: async () => {}, save: async () => {}, snapshot: () => [], restore: empty }),
+      saveMediaDraft: async () => {}, loadMediaDraft: async () => [], clearMediaDraft: async () => {}, mediaText: key => key,
+    },
     './supabaseClient.js': { supabase: {
       auth: { getUser: async () => ({ data: { user } }), getSession: async () => ({ data: { session: { access_token: 'qa-only' } } }) },
       from: blocked('supabase.from'), rpc: blocked('supabase.rpc'),
@@ -123,11 +127,17 @@ async function harness() {
 }
 
 test('paused builder restores/preserves raw text and cannot start parsing, scans or product requests', async () => {
-  const h = await harness();
+  const local = new Map();
+  const h = await harness(local);
+  assert.equal(h.elements.get('rm-macros-note').hidden, true);
   await h.form.openRecipeModal();
+  assert.equal(h.elements.get('rm-macros-note').hidden, false);
   const text = 'борошно — 200 г\nперець на смак\nневідомий продукт';
   await h.ingredients.setIngredientsFromText(text);
   assert.equal(h.ingredients.getIngredientsText(), text);
+  assert.equal(h.elements.get('rm-macros-note').hidden, false);
+  assert.equal(h.elements.get('ingredientList').hidden, true);
+  assert.equal(h.elements.get('ingredientList').innerHTML, '');
   assert.equal(h.elements.get('parseIngredientsBtn').disabled, true);
   assert.equal(h.elements.get('scanIngredientBtn').disabled, true);
   assert.equal(h.elements.get('ingredientTotal').hidden, true);
@@ -140,8 +150,15 @@ test('paused builder restores/preserves raw text and cannot start parsing, scans
   for (const lang of ['ua', 'pl', 'en']) {
     h.ingredients.setLanguage(lang);
     assert.equal(h.elements.get('parseIngredientsBtn').disabled, true);
-    assert.ok(h.elements.get('ingredientCalculationNotice').textContent.length > 10);
+    assert.equal(h.elements.has('ingredientCalculationNotice'), false);
   }
+  h.form.closeRecipeModal();
+  await h.form.openRecipeModal();
+  assert.equal(h.elements.get('rm-macros-note').hidden, true);
+  assert.equal(h.elements.get('rm-macros-note').textContent, '');
+  const reloaded = await harness(local);
+  await reloaded.form.openRecipeModal();
+  assert.equal(reloaded.elements.get('rm-macros-note').hidden, true);
 });
 
 test('new recipe submits raw text without calculated zeros or product writes', async () => {
@@ -170,7 +187,7 @@ test('editing text/weight retains stored nutrition and does not delete product a
   await h.elements.get('rm-total-weight').dispatch('input');
   assert.equal(h.elements.get('rm-calories').value, 125);
   assert.equal(h.elements.get('rm-proteins').value, 0);
-  assert.equal(h.elements.get('rm-macros-note').textContent, 'rmNutritionManualExisting');
+  assert.equal(h.elements.get('rm-macros-note').textContent, 'rmNutritionManual');
   await h.elements.get('recipe-modal-form').dispatch('submit');
   assert.equal(h.requests[0].editingRecipeId, 42);
   assert.equal(h.stored.get(42).ingredients, 'Новий довільний текст');

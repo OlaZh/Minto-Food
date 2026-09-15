@@ -7,6 +7,7 @@ import { supabase }                        from './supabaseClient.js';
 import { initAuth, isLoggedIn, openAuthModal } from './auth.js';
 import { iconShare, iconPlate, iconLeaf, iconBookOpen, iconStar } from './icons.js';
 import { safeImageUrl } from './utils.js';
+import { renderRecipeMedia } from './recipe-media.js';
 
 const CATEGORY_LABELS = {
   breakfast: 'Сніданок', lunch: 'Обід',    dinner: 'Вечеря',
@@ -120,7 +121,7 @@ async function init() {
   // Отримуємо рецепт по slug
   const { data: recipe, error } = await supabase
     .from('recipes')
-    .select('id, name_ua, name_en, name_pl, slug, image, kcal, protein, fat, carbs, steps, steps_en, steps_pl, category, user_id, created_at, prep_time_min, cook_time_min, total_time_min, recipe_yield')
+    .select('id, name_ua, name_en, name_pl, slug, image, kcal, protein, fat, carbs, steps, steps_en, steps_pl, category, user_id, created_at, prep_time_min, cook_time_min, total_time_min, recipe_yield, published_media_revision')
     .eq('slug', _slug)
     .eq('status', 'published')
     .is('deleted_at', null)
@@ -258,6 +259,7 @@ function _renderRecipe(recipe, authorName, ingredients) {
       ${macrosHtml}
       ${ingsHtml}
       ${stepsHtml}
+      <div id="rpMedia"></div>
       <div class="rp-cta" id="rpCta">
         <!-- Оновлюється через _updateSaveCTA -->
       </div>
@@ -270,6 +272,7 @@ function _renderRecipe(recipe, authorName, ingredients) {
 
   // Прибираємо скелетон-клас після рендеру
   document.documentElement.classList.remove('no-transition');
+  if (recipe.published_media_revision) renderRecipeMedia(document.getElementById('rpMedia'), recipe.id);
 
   // Share button
   document.getElementById('rpShareBtn')?.addEventListener('click', () => _shareRecipe(recipe));

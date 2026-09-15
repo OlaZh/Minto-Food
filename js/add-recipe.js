@@ -7,6 +7,7 @@ import { getRecipeDisplayName } from './recipe-utils.js';
 import { lockScroll, unlockScroll } from './scroll-lock.js';
 import { showLoading, showConfirmModal } from './ui-components.js';
 import { initRecipeModal, openRecipeModal, openRecipeModalForEdit } from './recipe-modal.js';
+import { renderRecipeMedia } from './recipe-media.js';
 import {
   iconSearch, iconGlobe as iconGlobal, iconMoreVertical, iconChevronDown,
   iconHeart, iconPlus, iconEdit, iconTrash, iconBookmark, iconFlag,
@@ -1001,6 +1002,8 @@ function splitIngredientLine(line) {
 }
 
 export async function openRecipeView(recipeId) {
+  const oldMedia = document.getElementById('view-recipe-media');
+  if (oldMedia) { oldMedia.dataset.mediaRequest = ''; oldMedia.remove(); }
   if (!currentUser) {
     const {
       data: { user },
@@ -1149,6 +1152,13 @@ export async function openRecipeView(recipeId) {
       `;
       stepsContainer.appendChild(stepDiv);
     });
+  }
+
+  if (recipe.media_revision || recipe.published_media_revision) {
+    const media = document.createElement('div');
+    media.id = 'view-recipe-media';
+    stepsContainer?.after(media);
+    renderRecipeMedia(media, recipe.id);
   }
 
   updateRecipeViewActions(recipe, isOwn);

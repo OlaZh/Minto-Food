@@ -61,7 +61,8 @@
   white-space: normal;
 }
 
-.ingredient-builder__total[hidden] {
+.ingredient-builder__total[hidden],
+.ingredient-builder__list[hidden] {
   display: none;
 }
 

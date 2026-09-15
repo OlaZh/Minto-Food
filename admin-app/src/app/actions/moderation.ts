@@ -101,19 +101,24 @@ export async function deleteRecipeFromReport(
 
 // ─── RECIPE MODERATION ────────────────────────────────────────
 
-export async function approveRecipe(recipeId: string) {
+export async function approveRecipe(recipeId: string, mediaRevision: string | null = null) {
   const supabase = await createClient()
   const admin = await assertAdmin(supabase)
   const rid = Number(recipeId)
 
   const { data: recipe, error: fetchErr } = await supabase
     .from('recipes')
-    .select('is_public, has_pending_update')
+    .select('is_public, has_pending_update, media_revision')
     .eq('id', recipeId)
     .single()
   throwIfError(fetchErr, 'Не вдалося прочитати рецепт')
 
-  if (recipe?.has_pending_update) {
+  if ((recipe?.media_revision ?? null) !== mediaRevision) throw new Error('Вкладення змінилися. Оновіть сторінку та перевірте їх ще раз.')
+  if (recipe?.media_revision) {
+    const { error } = await supabase.rpc('review_recipe_media', { p_recipe_id: rid, p_revision: mediaRevision, p_approve: true })
+    throwIfError(error, 'Не вдалося схвалити вкладення')
+    await logAction(supabase, admin.id, 'recipes', recipeId, 'approve', { media_revision: mediaRevision })
+  } else if (recipe?.has_pending_update) {
     // Staged edit: apply ALL staged fields atomically (photo + name + steps).
     // No private-guard needed here — apply_pending_update sets status FROM
     // is_public, so applying an edit to a now-private recipe keeps it draft
@@ -140,19 +145,24 @@ export async function approveRecipe(recipeId: string) {
   return { ok: true as const }
 }
 
-export async function rejectRecipe(recipeId: string, note: string) {
+export async function rejectRecipe(recipeId: string, note: string, mediaRevision: string | null = null) {
   const supabase = await createClient()
   const admin = await assertAdmin(supabase)
   const rid = Number(recipeId)
 
   const { data: recipe, error: fetchErr } = await supabase
     .from('recipes')
-    .select('has_pending_update')
+    .select('has_pending_update, media_revision')
     .eq('id', recipeId)
     .single()
   throwIfError(fetchErr, 'Не вдалося прочитати рецепт')
 
-  if (recipe?.has_pending_update) {
+  if ((recipe?.media_revision ?? null) !== mediaRevision) throw new Error('Вкладення змінилися. Оновіть сторінку та перевірте їх ще раз.')
+  if (recipe?.media_revision) {
+    const { error } = await supabase.rpc('review_recipe_media', { p_recipe_id: rid, p_revision: mediaRevision, p_approve: false, p_note: note })
+    throwIfError(error, 'Не вдалося відхилити вкладення')
+    await logAction(supabase, admin.id, 'recipes', recipeId, 'reject', { media_revision: mediaRevision, note })
+  } else if (recipe?.has_pending_update) {
     // Staged edit: reject the STAGED changes only — the published recipe stays
     // exactly as it was (don't punish the author for a rejected edit).
     // Atomic via discard_pending_update.

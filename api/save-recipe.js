@@ -151,7 +151,7 @@ function pickProvider() {
 // Validate + score a photo. Returns { flagged, score, provider, raw }.
 // Fails OPEN (flagged:false) on provider error — a moderation outage must not
 // block saving — but records the error decision for audit.
-async function scoreImage(image) {
+async function scoreImage(image, moderate = true) {
   if (typeof image !== 'string' || !image.trim()) {
     return { flagged: false, score: null, provider: 'none', raw: null };
   }
@@ -174,6 +174,7 @@ async function scoreImage(image) {
     return { flagged: false, score: null, provider: 'invalid', raw: { note: 'not an image (neither data URI nor URL)' } };
   }
 
+  if (!moderate) return { flagged: false, score: null, provider: 'private', raw: null };
   const provider = pickProvider();
   const result = await provider(image);
   const flagged = typeof result.score === 'number' && result.score >= NSFW_THRESHOLD;
@@ -300,16 +301,24 @@ export default async function handler(req, res) {
     ? newPhoto.length > 0
     : newPhoto !== ((original.image ?? '').trim());
 
-  // Shadow-banned authors always go to the queue.
-  const profile = (await rest('GET', `profiles?id=eq.${uid}&select=is_shadow_banned`))?.[0];
-  const isShadowBanned = profile?.is_shadow_banned === true;
+  // Private photos stay private. Review the photo on first public submission,
+  // including an unchanged image that was previously saved privately.
+  const needsImageReview = isPublicSubmission && newPhoto && (imageIsNew || original?.is_public !== true);
 
   // Moderate the EXACT photo we are about to persist.
   // `reservation` holds an atomically-reserved rate-limit slot (a pre-written
   // log row) that we finalize with the real decision after scoring.
   let moderation = { flagged: false, score: null, provider: 'skip', raw: null };
   let reservation = null;
-  if (imageIsNew && newPhoto) {
+  if (!isPublicSubmission && imageIsNew && newPhoto) {
+    try {
+      moderation = await scoreImage(newPhoto, false);
+      if (moderation.provider === 'invalid') return res.status(400).json({ error: 'invalid_image' });
+    } catch (err) {
+      return res.status(err.tooLarge ? 413 : 400).json({ error: err.tooLarge ? 'image_too_large' : 'invalid_image' });
+    }
+  }
+  if (needsImageReview) {
     reservation = await reserveSlot(uid);
     if (!reservation) {
       // Over the per-user hourly limit — don't call the provider. Queue for
@@ -332,7 +341,9 @@ export default async function handler(req, res) {
     }
   }
 
-  const moderationCols = imageIsNew
+  const moderationCols = !isPublicSubmission
+    ? { is_image_flagged: false, image_nsfw_score: null, image_moderated_at: null }
+    : (imageIsNew || needsImageReview)
     ? {
         is_image_flagged: moderation.flagged,
         image_nsfw_score: moderation.score,
@@ -346,7 +357,7 @@ export default async function handler(req, res) {
 
     if (editingRecipeId === null) {
       // ── Create ── status is decided here, never taken from the client.
-      const status = (isShadowBanned || isPublicSubmission) ? 'pending' : 'draft';
+      const status = isPublicSubmission ? 'pending' : 'draft';
       const row = { ...fields, user_id: uid, status, is_public: isPublicSubmission, ...moderationCols };
       saved = (await rest('POST', 'recipes', row, { Prefer: 'return=representation' }))?.[0];
     } else if (original.status === 'published') {
@@ -380,13 +391,13 @@ export default async function handler(req, res) {
       saved = (await rest('GET', `recipes?id=eq.${editingRecipeId}&select=*`))?.[0];
     } else {
       // ── Edit of a draft/pending recipe: write through, recompute status ──
-      const status = (isShadowBanned || isPublicSubmission) ? 'pending' : 'draft';
+      const status = isPublicSubmission ? 'pending' : 'draft';
       const row = { ...fields, is_public: isPublicSubmission, status, ...moderationCols };
       saved = (await rest('PATCH', `recipes?id=eq.${editingRecipeId}&user_id=eq.${uid}`, row, { Prefer: 'return=representation' }))?.[0];
     }
 
     // Audit the decision (recipe id known now).
-    if (imageIsNew && saved?.id) {
+    if (needsImageReview && saved?.id) {
       const decision = moderation.provider === 'error' ? 'error' : (moderation.flagged ? 'flagged' : 'approved');
       if (reservation) {
         // Rewrite the reserved slot with the final decision.

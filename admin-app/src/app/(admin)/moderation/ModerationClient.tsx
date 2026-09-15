@@ -36,6 +36,9 @@ type ModerationRecipe = {
   is_image_flagged: boolean | null
   image_nsfw_score: number | null
   has_pending_update: boolean | null
+  media_revision: string | null
+  media_error: boolean
+  media: { section: string; kind: string; filename: string; url: string }[]
   staged_image: string | null
   author: ModerationAuthor | null
 }
@@ -94,7 +97,7 @@ export default function ModerationClient({
           // published until an admin explicitly makes it public. This also
           // protects imported rows that are missing ingredients/steps.
           const hasStaged = !!recipe.has_pending_update
-          const canApprove = hasStaged || recipe.is_public === true
+          const canApprove = (hasStaged || recipe.is_public === true) && !recipe.media_error
 
           // The photo the admin must review is the STAGED one if present
           // (edit of a published recipe), otherwise the live photo.
@@ -167,6 +170,15 @@ export default function ModerationClient({
                 </span>
               </div>
 
+              {recipe.media_error && <p role="alert" className="mt-3 text-sm text-red-600">Не вдалося завантажити вкладення. Оновіть сторінку перед схваленням.</p>}
+              {recipe.media.length > 0 && <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                {recipe.media.map((item, index) => <div key={index} className="rounded border p-2 min-w-0">
+                  <p className="text-xs text-gray-500">{{ ingredients: 'Інгредієнти', steps: 'Приготування', video: 'Відеорецепт' }[item.section] ?? item.section}</p>
+                  {item.kind === 'image' && <Image src={item.url} alt={item.filename} width={480} height={320} unoptimized loader={passthroughImageLoader} className="max-h-80 w-full object-contain" />}
+                  {item.kind === 'video' && <video src={item.url} controls preload="none" className="max-h-80 w-full" />}
+                  <a href={item.url} target="_blank" rel="noopener noreferrer" className="text-sm underline break-all">{item.filename || item.url}</a>
+                </div>)}
+              </div>}
               <div className="flex flex-wrap gap-2 mt-3 pl-0 md:pl-17">
                 {/* Only public recipes (or staged edits of an existing public
                     recipe) can be approved. Private/incomplete imports must be
@@ -180,7 +192,7 @@ export default function ModerationClient({
                         : (recipe.is_public ? 'Опублікувати рецепт?' : 'Схвалити?')
                     }
                     variant="default"
-                    action={() => approveRecipe(recipe.id)}
+                    action={() => approveRecipe(recipe.id, recipe.media_revision)}
                     onDone={() => router.refresh()}
                   />
                 )}
@@ -189,7 +201,7 @@ export default function ModerationClient({
                   confirmText={hasStaged ? 'Відхилити staged-зміни? Опублікований рецепт лишиться без змін.' : undefined}
                   variant="outline"
                   useUndo={!hasStaged}
-                  action={() => rejectRecipe(recipe.id, '')}
+                  action={() => rejectRecipe(recipe.id, '', recipe.media_revision)}
                   onDone={() => router.refresh()}
                 />
                 {/* Кнопки для ЖИВОГО flagged-фото (не staged): staged закриває
