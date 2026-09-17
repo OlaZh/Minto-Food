@@ -1,6 +1,9 @@
 {
   "buildCommand": "npm run build",
   "outputDirectory": ".",
+  "functions": {
+    "api/cron/gdpr-hard-delete.js": { "maxDuration": 60 }
+  },
   "rewrites": [
     { "source": "/sitemap.xml",   "destination": "/api/sitemap" },
     { "source": "/recipe/:slug",  "destination": "/recipe.html" }

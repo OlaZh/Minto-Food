@@ -1,4 +1,4 @@
-// Vercel serverless function — save a recipe WITH inseparable image moderation.
+// Vercel serverless function — save recipes; moderate photos on PUBLIC submissions.
 // Route: POST /api/save-recipe
 // Auth:  Bearer token (Supabase JWT) in Authorization header
 //
@@ -360,9 +360,13 @@ export default async function handler(req, res) {
       const status = isPublicSubmission ? 'pending' : 'draft';
       const row = { ...fields, user_id: uid, status, is_public: isPublicSubmission, ...moderationCols };
       saved = (await rest('POST', 'recipes', row, { Prefer: 'return=representation' }))?.[0];
+    } else if (!isPublicSubmission && (original.status === 'published' || original.has_pending_update)) {
+      saved = (await rest('POST', 'rpc/save_private_recipe', {
+        p_recipe_id: editingRecipeId, p_user_id: uid, p_fields: fields,
+      }))?.[0];
     } else if (original.status === 'published') {
       // ── Edit of a published recipe: moderated fields are STAGED ──
-      // The live recipe stays published (unless switched to private, below);
+      // The live recipe stays published;
       // moderated changes go to recipe_pending_updates for review.
       const direct = {};
       const pending = {};
@@ -375,8 +379,6 @@ export default async function handler(req, res) {
         }
       }
       direct.is_public = isPublicSubmission;
-      // Switching a published recipe to private un-publishes it immediately.
-      if (!isPublicSubmission) direct.status = 'draft';
 
       await rest('POST', 'rpc/stage_recipe_update', {
         p_recipe_id: editingRecipeId,

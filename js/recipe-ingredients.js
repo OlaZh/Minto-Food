@@ -115,6 +115,12 @@ function getTextareaValue() {
   return getTextareaEl()?.value?.trim() || '';
 }
 
+function autoResizeTextarea(el = getTextareaEl()) {
+  if (!el) return;
+  el.style.height = 'auto';
+  el.style.height = `${el.scrollHeight}px`;
+}
+
 function keepOnlyScannedIngredients() {
   ingredientsList = ingredientsList.filter((ing) => ing.fromBarcode);
 }
@@ -175,6 +181,7 @@ export function initIngredientBuilder(containerSelector, onChange, lang = 'ua') 
   `;
 
   initEventListeners();
+  autoResizeTextarea();
   if (RECIPE_NUTRITION_ENABLED) loadProductsCache();
   renderIngredientsList();
 }
@@ -242,13 +249,18 @@ function initEventListeners() {
 
   clearBtn?.addEventListener('click', () => {
     ingredientsList = [];
-    if (textarea) textarea.value = '';
+    if (textarea) {
+      textarea.value = '';
+      autoResizeTextarea(textarea);
+    }
     renderIngredientsList();
     updateTotals();
     notifyChange();
   });
 
   textarea?.addEventListener('input', () => {
+    autoResizeTextarea(textarea);
+
     const hadParsedTextIngredients = ingredientsList.some((ing) => !ing.fromBarcode);
     if (!hadParsedTextIngredients) return;
 
@@ -614,7 +626,10 @@ export function getTotals() {
 export function clearIngredients() {
   ingredientsList = [];
   const textarea = getTextareaEl();
-  if (textarea) textarea.value = '';
+  if (textarea) {
+    textarea.value = '';
+    autoResizeTextarea(textarea);
+  }
   renderIngredientsList();
   updateTotals();
 }
@@ -625,7 +640,10 @@ export async function setIngredientsFromText(text) {
   ingredientsList = [];
 
   const textarea = getTextareaEl();
-  if (textarea) textarea.value = normalizedText;
+  if (textarea) {
+    textarea.value = normalizedText;
+    autoResizeTextarea(textarea);
+  }
 
   if (!normalizedText || !RECIPE_NUTRITION_ENABLED) {
     renderIngredientsList();

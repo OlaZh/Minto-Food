@@ -36,6 +36,7 @@ let editingRecipeId = null;
 let editingRecipeOriginal = null;
 let mediaEditor = null;
 let pendingBookSave = false;
+let formGeneration = 0;
 const MANUAL_NUTRITION_HINT_KEY = 'minto:manual-nutrition-hint-seen';
 let manualNutritionHintSeen = false;
 let showManualNutritionHint = false;
@@ -559,6 +560,7 @@ export function closeRecipeModal() {
 }
 
 function resetRecipeForm() {
+  formGeneration++;
   mediaEditor?.reset();
   const form = document.getElementById('recipe-modal-form');
   if (form) form.reset();
@@ -577,16 +579,20 @@ function resetRecipeForm() {
 }
 
 async function showRecipeForm(data = null) {
+  const generation = formGeneration;
   if (!RECIPE_NUTRITION_ENABLED) beginManualNutritionHint();
   bindIngredientBuilder();
 
   await refreshBooks();
+  if (generation !== formGeneration) return;
   const booksSection = document.querySelector('.recipe-books-section');
   if (booksSection) booksSection.hidden = !!data;
 
   const preselectedBookIds = data?.id ? await getRecipeBooks(data.id) : [];
+  if (generation !== formGeneration) return;
   createInlineBookSelector('rm-book-selector', preselectedBookIds);
   if (data) await mediaEditor?.load(data.id, !!data.media_revision);
+  if (generation !== formGeneration) return;
 
   if (data) {
     setInputVal('rm-name', data.name_ua || data.name || data.title);
@@ -652,11 +658,13 @@ async function saveRecipeViaServer(payload, editingId, isPublic, imageIsNew) {
 }
 
 async function saveRecipe() {
+  const generation = formGeneration;
   const manualNutrition = RECIPE_NUTRITION_ENABLED ? {} : readManualNutrition();
   if (manualNutrition === null) return;
   const {
     data: { user },
   } = await supabase.auth.getUser();
+  if (generation !== formGeneration) return;
 
   if (!user) {
     // Не втрачаємо введений рецепт. Логін часто редіректить на іншу сторінку,
@@ -683,6 +691,7 @@ async function saveRecipe() {
 
   if (fileInput?.files?.[0]) {
     finalImage = await toBase64(fileInput.files[0]);
+    if (generation !== formGeneration) return;
     imageIsNew = true;
   } else if (urlInput?.value.trim()) {
     finalImage = urlInput.value.trim();
@@ -736,7 +745,9 @@ async function saveRecipe() {
     const result = await saveRecipeViaServer(payload, editingRecipeId, isPublicSubmission, imageIsNew);
     data = result.recipe || null;
     imageFlagged = result.flagged === true;
+    if (generation !== formGeneration) return;
   } catch (err) {
+    if (generation !== formGeneration) return;
     console.error('Помилка збереження рецепту:', err);
     // Серверні валідаційні коди → зрозумілі повідомлення.
     if (err.code === 'name_required') showToast(t('rmPublishNeedsName'), 'error');
@@ -754,9 +765,12 @@ async function saveRecipe() {
 
   if (editingRecipeId === null) pendingBookSave = true;
   try {
-    await mediaEditor?.save(data.id, user.id);
+    const revision = await mediaEditor?.save(data.id, user.id);
+    if (generation !== formGeneration) return;
+    if (revision) data.media_revision = revision;
     await clearMediaDraft().catch(() => {});
   } catch (error) {
+    if (generation !== formGeneration) return;
     // The row already exists: retry must update it, never create a duplicate.
     editingRecipeId = data.id;
     editingRecipeOriginal = data;
@@ -869,16 +883,18 @@ async function saveRecipe() {
       t(bookSaveFailed ? 'rmImageUnderReviewBookSaveFailed' : 'rmImageUnderReview'),
       bookSaveFailed ? 'error' : 'info',
     );
+    const onSaved = onRecipeSavedCallback;
     closeRecipeModal();
-    if (onRecipeSavedCallback) onRecipeSavedCallback(data);
+    if (onSaved) onSaved(data);
     return;
   }
 
   if (editingRecipeId !== null) {
-    const hasModeratedChanges = editingRecipeOriginal?.status === 'published' && (
+    const hasModeratedChanges = isPublicSubmission && editingRecipeOriginal?.status === 'published' && (
       payload.name_ua !== editingRecipeOriginal?.name_ua ||
       payload.steps !== editingRecipeOriginal?.steps ||
-      payload.image !== editingRecipeOriginal?.image
+      payload.image !== editingRecipeOriginal?.image ||
+      data.media_revision !== editingRecipeOriginal?.media_revision
     );
 
     showToast(hasModeratedChanges ? t('rmChangesSentForReview') : t('rmRecipeUpdated'));
@@ -897,9 +913,7 @@ async function saveRecipe() {
     showToast(t('rmRecipeSaved'));
   }
 
+  const onSaved = onRecipeSavedCallback;
   closeRecipeModal();
-
-  if (onRecipeSavedCallback) {
-    onRecipeSavedCallback(data);
-  }
+  if (onSaved) onSaved(data);
 }

@@ -66,6 +66,9 @@ globalThis.fetch = async (url, opts = {}) => {
     if (scenario.stageFails) return fail(403, { message: 'permission denied for function stage_recipe_update' });
     return json(null);
   }
+  if (u.includes('/rpc/save_private_recipe')) {
+    return json([{ id: 42, ...JSON.parse(opts.body).p_fields, is_public: false, status: 'draft', has_pending_update: false }]);
+  }
 
   // REST: profiles (shadow ban)
   if (u.includes('/rest/v1/profiles')) return json([{ is_shadow_banned: false }]);
@@ -292,6 +295,37 @@ scenario = { score: 0.1, rateLimitRpcFails: true };
   await handler({ method: 'POST', headers: { authorization: 'Bearer x' },
     body: { recipe: { name_ua: 'X', steps: 'boil', image: IMG }, editingRecipeId: null, isPublicSubmission: true } }, res);
   assert('rate-limit RPC fails → create still succeeds (fail-open)', res._status === 200, `status=${res._status}`);
+}
+
+scenario = { score: 0.99, overLimit: true };
+{
+  calls.length = 0;
+  const res = mockRes();
+  await handler({ method: 'POST', headers: { authorization: 'Bearer x' }, body: {
+    recipe: { name_ua: 'Private', image: IMG }, editingRecipeId: null, isPublicSubmission: false,
+  } }, res);
+  assert('private screenshot recipe needs no ingredients/steps', res._status === 200);
+  assert('private photo never sent to moderation or audit', !calls.some(c => /sightengine|reserve_moderation|finalize_moderation|image_moderation_log/.test(c.url)));
+  assert('private photo remains unflagged draft', res._json?.recipe?.status === 'draft' && res._json?.recipe?.is_image_flagged === false);
+}
+scenario = { score: 0.99, original: { id: 42, user_id: 'user-1', status: 'draft', is_public: false, image: IMG } };
+{
+  calls.length = 0;
+  const res = mockRes();
+  await handler({ method: 'POST', headers: { authorization: 'Bearer x' }, body: {
+    recipe: { name_ua: 'Public now', steps: 'Boil', image: IMG }, editingRecipeId: 42, isPublicSubmission: true,
+  } }, res);
+  assert('private to public unchanged photo IS reviewed', calls.some(c => c.url.includes('sightengine.com')) && res._json?.flagged === true);
+}
+scenario = { score: 0.99, original: { id: 42, user_id: 'user-1', status: 'published', is_public: true, image: 'old-photo' } };
+{
+  calls.length = 0;
+  const res = mockRes();
+  await handler({ method: 'POST', headers: { authorization: 'Bearer x' }, body: {
+    recipe: { name_ua: 'Private again', image: IMG }, editingRecipeId: 42, isPublicSubmission: false,
+  } }, res);
+  assert('published to private saves photo immediately', res._json?.recipe?.image === IMG && res._json?.recipe?.status === 'draft');
+  assert('published to private clears queue through atomic RPC', calls.some(c=>c.url.includes('/rpc/save_private_recipe')) && !calls.some(c=>/sightengine|stage_recipe_update/.test(c.url)));
 }
 
 console.log(`\n${passed} passed, ${failed} failed`);

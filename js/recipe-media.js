@@ -109,7 +109,7 @@ export function createRecipeMediaEditor(containers) {
     for (const file of files) {
       try {
         const kind = mediaKind(file.type);
-        if (section === 'ingredients' && kind !== 'image') throw new Error('invalid_media_type');
+        if ((section === 'ingredients' && kind !== 'image') || (section === 'video' && kind !== 'video')) throw new Error('invalid_media_type');
         const previewURL = URL.createObjectURL(file); urls.add(previewURL);
         items.push({ section, kind, filename: file.name, file, previewURL }); dirty = true;
       } catch { status.get(section).textContent = mediaText('type'); }
@@ -121,12 +121,13 @@ export function createRecipeMediaEditor(containers) {
     container.replaceChildren(); container.classList.add('recipe-media'); container.dataset.recipeMedia = 'editor';
     container.appendChild(node('h3', 'recipe-media__title', mediaText(section)));
     const message = node('p', 'recipe-media__status'); message.setAttribute('role', 'status'); status.set(section, message);
-    if (section !== 'video') {
+    {
       const input = node('input'); input.type = 'file'; input.multiple = true; input.hidden = true;
-      input.accept = [...imageTypes, ...(section === 'steps' ? videoTypes : [])].join(',');
+      input.accept = (section === 'video' ? videoTypes : [...imageTypes, ...(section === 'steps' ? videoTypes : [])]).join(',');
       input.addEventListener('change', () => { addFiles(input.files, section); input.value = ''; });
       const add = button(mediaText('add'), () => input.click()); controls.push(input, add);
       container.append(input, add);
+      if (section !== 'video') {
       const paste = node('div', 'recipe-media__paste', mediaText('paste'));
       paste.tabIndex = 0;
       paste.addEventListener('paste', event => {
@@ -134,7 +135,9 @@ export function createRecipeMediaEditor(containers) {
         if (files.length) { event.preventDefault(); addFiles(files, section); }
       });
       container.appendChild(paste);
-    } else {
+      }
+    }
+    if (section === 'video') {
       const input = node('input', 'recipe-media__url'); input.type = 'url'; input.placeholder = mediaText('link'); input.setAttribute('aria-label', mediaText('link'));
       const add = button(mediaText('addLink'), () => {
         if (busy) return;
@@ -181,7 +184,7 @@ export function createRecipeMediaEditor(containers) {
     },
     async save(recipeId, userId) {
       if (loadError || busy) throw new Error('media_not_loaded');
-      if (!dirty) return;
+      if (!dirty) return revision;
       const version = generation;
       setBusy(true);
       try {
@@ -198,6 +201,7 @@ export function createRecipeMediaEditor(containers) {
         if (error) throw error;
         if (version !== generation) return;
         revision = data; dirty = false;
+        return revision;
       } finally { if (version === generation) setBusy(false); }
     },
   };
