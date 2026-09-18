@@ -6,9 +6,9 @@ const editorResets = new Set();
 const imageTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/avif', 'image/heic', 'image/heif'];
 const videoTypes = ['video/mp4', 'video/webm', 'video/quicktime', 'video/ogg'];
 const words = {
-  ua: { ingredients: 'Фото інгредієнтів', steps: 'Фото й відео приготування', video: 'Відеорецепти', add: 'Додати файли', paste: 'Можна вставити скріншот сюди через Ctrl+V', link: 'Посилання на відео', addLink: 'Додати посилання', remove: 'Прибрати', up: 'Вище', down: 'Нижче', open: 'Відкрити', loading: 'Завантаження…', failed: 'Не вдалося завантажити вкладення. Спробуйте ще раз.', type: 'Оберіть фото або відеофайл підтримуваного формату.', url: 'Вставте повне посилання http:// або https://.', saving: 'Зберігаємо вкладення…', savedPart: 'Рецепт збережено, але вкладення ще ні. Вони залишилися у формі. Спробуйте зберегти ще раз.', conflict: 'Вкладення змінені в іншій вкладці. Відкрийте рецепт заново перед редагуванням.', draftError: 'Не вдалося зберегти файли в чернетці. Форма залишилася відкритою.' },
-  en: { ingredients: 'Ingredient photos', steps: 'Preparation photos and videos', video: 'Video recipes', add: 'Add files', paste: 'Paste a screenshot here with Ctrl+V', link: 'Video link', addLink: 'Add link', remove: 'Remove', up: 'Move up', down: 'Move down', open: 'Open', loading: 'Loading…', failed: 'Could not load attachments. Please try again.', type: 'Choose a supported image or video file.', url: 'Paste a complete http:// or https:// link.', saving: 'Saving attachments…', savedPart: 'The recipe was saved, but its attachments were not. They remain in the form. Please save again.', conflict: 'Attachments changed in another tab. Reopen the recipe before editing.', draftError: 'Could not save the files in the draft. The form remains open.' },
-  pl: { ingredients: 'Zdjęcia składników', steps: 'Zdjęcia i filmy przygotowania', video: 'Przepisy wideo', add: 'Dodaj pliki', paste: 'Wklej tutaj zrzut ekranu przez Ctrl+V', link: 'Link do filmu', addLink: 'Dodaj link', remove: 'Usuń', up: 'Wyżej', down: 'Niżej', open: 'Otwórz', loading: 'Ładowanie…', failed: 'Nie udało się wczytać załączników. Spróbuj ponownie.', type: 'Wybierz obsługiwane zdjęcie lub plik wideo.', url: 'Wklej pełny link http:// lub https://.', saving: 'Zapisywanie załączników…', savedPart: 'Przepis zapisano, ale załączniki nie zostały zapisane. Pozostają w formularzu. Spróbuj ponownie.', conflict: 'Załączniki zmieniły się w innej karcie. Otwórz przepis ponownie.', draftError: 'Nie udało się zapisać plików w szkicu. Formularz pozostał otwarty.' },
+  ua: { ingredients: 'Фото інгредієнтів', steps: 'Фото й відео приготування', video: 'Відеорецепти', add: 'Додати файли', paste: 'Можна вставити скріншот сюди через Ctrl+V', link: 'Посилання на відео', addLink: 'Додати посилання', remove: 'Прибрати', up: 'Вище', down: 'Нижче', open: 'Відкрити', failed: 'Не вдалося завантажити вкладення. Спробуйте ще раз.', type: 'Оберіть фото або відеофайл підтримуваного формату.', url: 'Вставте повне посилання http:// або https://.', savedPart: 'Рецепт збережено, але вкладення ще ні. Вони залишилися у формі. Спробуйте зберегти ще раз.', conflict: 'Вкладення змінені в іншій вкладці. Відкрийте рецепт заново перед редагуванням.', draftError: 'Не вдалося зберегти файли в чернетці. Форма залишилася відкритою.' },
+  en: { ingredients: 'Ingredient photos', steps: 'Preparation photos and videos', video: 'Video recipes', add: 'Add files', paste: 'Paste a screenshot here with Ctrl+V', link: 'Video link', addLink: 'Add link', remove: 'Remove', up: 'Move up', down: 'Move down', open: 'Open', failed: 'Could not load attachments. Please try again.', type: 'Choose a supported image or video file.', url: 'Paste a complete http:// or https:// link.', savedPart: 'The recipe was saved, but its attachments were not. They remain in the form. Please save again.', conflict: 'Attachments changed in another tab. Reopen the recipe before editing.', draftError: 'Could not save the files in the draft. The form remains open.' },
+  pl: { ingredients: 'Zdjęcia składników', steps: 'Zdjęcia i filmy przygotowania', video: 'Przepisy wideo', add: 'Dodaj pliki', paste: 'Wklej tutaj zrzut ekranu przez Ctrl+V', link: 'Link do filmu', addLink: 'Dodaj link', remove: 'Usuń', up: 'Wyżej', down: 'Niżej', open: 'Otwórz', failed: 'Nie udało się wczytać załączników. Spróbuj ponownie.', type: 'Wybierz obsługiwane zdjęcie lub plik wideo.', url: 'Wklej pełny link http:// lub https://.', savedPart: 'Przepis zapisano, ale załączniki nie zostały zapisane. Pozostają w formularzu. Spróbuj ponownie.', conflict: 'Załączniki zmieniły się w innej karcie. Otwórz przepis ponownie.', draftError: 'Nie udało się zapisać plików w szkicu. Formularz pozostał otwarty.' },
 };
 export function mediaText(key) { return (words[getLang()] || words.ua)[key] || key; }
 export function normalizeVideoLink(value) {
@@ -41,7 +41,18 @@ async function signedURL(path) {
 async function getMedia(recipeId) {
   const { data, error } = await supabase.rpc('get_recipe_media', { p_recipe_id: Number(recipeId) });
   if (error) throw error;
-  return data;
+  return { ...data, items: await Promise.all(data.items.map(async item => ({
+    ...item, previewURL: item.storage_path ? await signedURL(item.storage_path) : null,
+  }))) };
+}
+function openButton(item, onError) {
+  return button(mediaText('open'), async () => {
+    const popup = window.open('about:blank', '_blank');
+    if (!popup) return;
+    popup.opener = null;
+    try { popup.location.href = item.file ? item.previewURL : await signedURL(item.storage_path); }
+    catch { popup.close(); onError?.(); }
+  });
 }
 function preview(item, url) {
   if (item.kind === 'link') {
@@ -90,14 +101,7 @@ export function createRecipeMediaEditor(containers) {
         });
         remove.disabled = busy; actions.appendChild(remove);
         if (item.kind !== 'link') {
-          const open = button(mediaText('open'), async () => {
-            const popup = window.open('about:blank', '_blank');
-            if (!popup) return;
-            popup.opener = null;
-            try { popup.location.href = item.file ? item.previewURL : await signedURL(item.storage_path); }
-            catch { popup.close(); status.get(section).textContent = mediaText('failed'); }
-          });
-          actions.appendChild(open);
+          actions.appendChild(openButton(item, () => { status.get(section).textContent = mediaText('failed'); }));
         }
         row.appendChild(actions); list.appendChild(row);
       }
@@ -128,13 +132,13 @@ export function createRecipeMediaEditor(containers) {
       const add = button(mediaText('add'), () => input.click()); controls.push(input, add);
       container.append(input, add);
       if (section !== 'video') {
-      const paste = node('div', 'recipe-media__paste', mediaText('paste'));
-      paste.tabIndex = 0;
-      paste.addEventListener('paste', event => {
-        const files = [...(event.clipboardData?.files || [])];
-        if (files.length) { event.preventDefault(); addFiles(files, section); }
-      });
-      container.appendChild(paste);
+        const paste = node('div', 'recipe-media__paste', mediaText('paste'));
+        paste.tabIndex = 0;
+        paste.addEventListener('paste', event => {
+          const files = [...(event.clipboardData?.files || [])];
+          if (files.length) { event.preventDefault(); addFiles(files, section); }
+        });
+        container.appendChild(paste);
       }
     }
     if (section === 'video') {
@@ -173,9 +177,8 @@ export function createRecipeMediaEditor(containers) {
       setBusy(true);
       try {
         const data = await getMedia(recipeId);
-        const loaded = await Promise.all(data.items.map(async item => ({ ...item, previewURL: item.storage_path ? await signedURL(item.storage_path) : null })));
         if (version !== generation) return;
-        revision = data.revision; items = loaded;
+        revision = data.revision; items = data.items;
       } catch {
         if (version !== generation) return;
         loadError = true;
@@ -213,21 +216,15 @@ export async function renderRecipeMedia(container, recipeId) {
   container.dataset.recipeMedia = 'view'; container.dataset.mediaRequest = request;
   container.replaceChildren();
   try {
-    const data = await getMedia(recipeId);
-    const items = await Promise.all(data.items.map(async item => ({ ...item, url: item.storage_path ? await signedURL(item.storage_path) : null })));
+    const { items } = await getMedia(recipeId);
     if (container.dataset.mediaRequest !== request || !container.isConnected) return;
     for (const section of ['ingredients', 'steps', 'video']) {
       const group = items.filter(item => item.section === section);
       if (!group.length) continue;
       const block = node('section', 'recipe-media'); block.appendChild(node('h3', 'recipe-media__title', mediaText(section)));
       for (const item of group) {
-        const row = node('div', 'recipe-media__item'); row.appendChild(preview(item, item.url));
-        if (item.kind !== 'link') {
-          row.appendChild(button(mediaText('open'), async () => {
-            const popup = window.open('about:blank', '_blank'); if (!popup) return; popup.opener = null;
-            try { popup.location.href = await signedURL(item.storage_path); } catch { popup.close(); }
-          }));
-        }
+        const row = node('div', 'recipe-media__item'); row.appendChild(preview(item, item.previewURL));
+        if (item.kind !== 'link') row.appendChild(openButton(item));
         block.appendChild(row);
       }
       container.appendChild(block);

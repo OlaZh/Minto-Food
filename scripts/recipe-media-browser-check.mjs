@@ -4,12 +4,12 @@
 import fs from 'node:fs/promises';
 import http from 'node:http';
 import path from 'node:path';
-import { spawn } from 'node:child_process';
+import { startChrome, delay } from './lib/chrome-cdp.mjs';
 import { fileURLToPath } from 'node:url';
 import assert from 'node:assert/strict';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const output = path.join(root,'node_modules/.cache/recipe-media-browser',new Date().toISOString().replace(/[:.]/g,'-'));
-const profile = path.join(output,'chrome-profile'); await fs.mkdir(profile,{recursive:true});
+const profile = path.join(output,'chrome-profile');
 const stubs = {
   'supabaseClient.js': `export const supabase = window.qa.supabase;`,
   'storage.js': `export const getLang=()=> 'ua';`,
@@ -48,15 +48,10 @@ const server=http.createServer(async(req,res)=>{
 });
 await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
 const origin=`http://127.0.0.1:${server.address().port}`;
-const chrome=spawn(process.env.CHROME_PATH||'C:/Program Files/Google/Chrome/Application/chrome.exe',['--headless=new','--disable-gpu','--no-first-run','--no-default-browser-check','--remote-debugging-port=0',`--user-data-dir=${profile}`,'about:blank'],{stdio:'ignore',windowsHide:true});
-let ws, seq=0, count=0;const pending=new Map();const delay=ms=>new Promise(r=>setTimeout(r,ms));
-function send(method,params={},sessionId){return new Promise((resolve,reject)=>{const id=++seq;const timer=setTimeout(()=>{pending.delete(id);reject(Error('Timeout '+method))},15000);pending.set(id,{resolve,reject,timer});ws.send(JSON.stringify({id,method,params,...(sessionId?{sessionId}:{})}))})}
+let chrome, count=0;
 try{
-  let address;
-  for(let i=0;i<60;i++){try{const [port,p]=(await fs.readFile(path.join(profile,'DevToolsActivePort'),'utf8')).trim().split(/\r?\n/);address=`ws://127.0.0.1:${port}${p}`;break}catch{await delay(250)}}
-  if(!address)throw Error('Chrome startup failed');
-  ws=new WebSocket(address);await new Promise((resolve,reject)=>{ws.onopen=resolve;ws.onerror=reject});
-  ws.onmessage=({data})=>{const message=JSON.parse(data),p=pending.get(message.id);if(p){clearTimeout(p.timer);pending.delete(message.id);message.error?p.reject(Error(JSON.stringify(message.error))):p.resolve(message.result)}};
+  chrome=await startChrome(profile);
+  const {send}=chrome;
   for(const width of [1440,390]){
     const {targetId}=await send('Target.createTarget',{url:'about:blank'});
     const {sessionId}=await send('Target.attachToTarget',{targetId,flatten:true});const command=(m,p={})=>send(m,p,sessionId);
@@ -105,4 +100,4 @@ try{
   await fs.writeFile(path.join(output,'result.json'),JSON.stringify({passed:count,mode:'real browser, mocked API/Storage, synthetic clipboard',viewports:[1440,390]},null,2));
   console.log(`${count} browser checks passed. Artifacts: ${output}`);
 }catch(error){console.error(error);process.exitCode=1}
-finally{for(const p of pending.values())clearTimeout(p.timer);ws?.close();chrome.kill();server.closeAllConnections();server.close()}
+finally{chrome?.close();server.closeAllConnections();server.close()}

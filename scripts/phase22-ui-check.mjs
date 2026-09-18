@@ -4,13 +4,12 @@
 import fs from 'node:fs/promises';
 import http from 'node:http';
 import path from 'node:path';
-import { spawn } from 'node:child_process';
+import { startChrome, delay } from './lib/chrome-cdp.mjs';
 import { fileURLToPath } from 'node:url';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const output = path.join(root, 'node_modules/.cache/phase22-ui', new Date().toISOString().replace(/[:.]/g, '-'));
 const profile = path.join(output, 'chrome-profile');
-await fs.mkdir(profile, { recursive: true });
 const config = JSON.parse(await fs.readFile(path.join(root, 'vercel.json'), 'utf8'));
 const pagesArg = process.argv.find(arg => arg.startsWith('--pages='));
 const pages = pagesArg ? pagesArg.slice(8).split(',') : [
@@ -21,7 +20,6 @@ const pages = pagesArg ? pagesArg.slice(8).split(',') : [
 if (pages.some(name => !/^[a-z0-9-]+$/.test(name))) throw new Error('Invalid page name');
 const widths = process.argv.includes('--breakpoints') ? [1200, 1024, 768, 480] : [1440, 390];
 const mime = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.svg': 'image/svg+xml', '.png': 'image/png', '.jpg': 'image/jpeg', '.webp': 'image/webp', '.woff2': 'font/woff2', '.ico': 'image/x-icon' };
-const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 const server = http.createServer(async (req, res) => {
   try {
     if (!['GET', 'HEAD'].includes(req.method)) { res.writeHead(405).end(); return; }
@@ -42,54 +40,11 @@ const server = http.createServer(async (req, res) => {
 });
 await new Promise((resolve, reject) => { server.once('error', reject); server.listen(0, '127.0.0.1', resolve); });
 const origin = `http://127.0.0.1:${server.address().port}`;
-const chrome = spawn(process.env.CHROME_PATH || 'C:/Program Files/Google/Chrome/Application/chrome.exe', [
-  '--headless=new', '--disable-gpu', '--no-first-run', '--no-default-browser-check',
-  '--remote-debugging-port=0', '--remote-debugging-address=127.0.0.1',
-  `--user-data-dir=${profile}`, 'about:blank',
-], { stdio: 'ignore', windowsHide: true });
-let launchError;
-chrome.on('error', error => { launchError = error; });
-let ws;
-let nextId = 0;
-const pending = new Map();
-const events = new Map();
+let chrome;
 const report = { startedAt: new Date().toISOString(), origin, mode: 'guest; static files with Vercel CSP; real external GETs; no authenticated workflows', results: [] };
-function send(method, params = {}, sessionId) {
-  return new Promise((resolve, reject) => {
-    const id = ++nextId;
-    const timer = setTimeout(() => { pending.delete(id); reject(new Error(`CDP timeout: ${method}`)); }, 15000);
-    pending.set(id, { resolve, reject, timer });
-    ws.send(JSON.stringify({ id, method, params, ...(sessionId ? { sessionId } : {}) }));
-  });
-}
 try {
-  let endpoint;
-  for (let attempt = 0; attempt < 60; attempt++) {
-    if (launchError) throw launchError;
-    if (chrome.exitCode !== null) throw new Error(`Chrome exited: ${chrome.exitCode}`);
-    try {
-      const [port, wsPath] = (await fs.readFile(path.join(profile, 'DevToolsActivePort'), 'utf8')).trim().split(/\r?\n/);
-      endpoint = `ws://127.0.0.1:${port}${wsPath}`;
-      break;
-    } catch { await delay(250); }
-  }
-  if (!endpoint) throw new Error('Chrome did not expose DevTools within 15s; check sandbox restrictions.');
-  ws = new WebSocket(endpoint);
-  await new Promise((resolve, reject) => {
-    const timer = setTimeout(() => reject(new Error('WebSocket startup timeout')), 5000);
-    ws.onopen = () => { clearTimeout(timer); resolve(); };
-    ws.onerror = () => { clearTimeout(timer); reject(new Error('WebSocket startup failed')); };
-  });
-  ws.onmessage = event => {
-    const message = JSON.parse(event.data);
-    if (message.id && pending.has(message.id)) {
-      const waiter = pending.get(message.id);
-      pending.delete(message.id);
-      clearTimeout(waiter.timer);
-      if (message.error) waiter.reject(new Error(JSON.stringify(message.error)));
-      else waiter.resolve(message.result);
-    } else events.get(message.sessionId)?.(message);
-  };
+  chrome = await startChrome(profile);
+  const { send, events } = chrome;
   report.browser = await send('Browser.getVersion');
   console.log(`QA artifacts: ${output}`);
   for (const name of pages) for (const theme of ['light', 'dark']) for (const width of widths) {
@@ -276,9 +231,7 @@ try {
   process.exitCode = report.summary.failedCases ? 1 : report.summary.blockedCases ? 2 : 0;
 } catch (error) { console.error(error.message); process.exitCode = 1; }
 finally {
-  for (const waiter of pending.values()) { clearTimeout(waiter.timer); waiter.reject(new Error('QA session closed')); }
-  ws?.close();
-  chrome.kill();
+  chrome?.close();
   server.closeAllConnections();
   server.close();
 }
