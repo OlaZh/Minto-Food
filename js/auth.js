@@ -906,6 +906,14 @@ function switchAuthTab(tabName) {
   const modal = document.getElementById('auth-modal');
   if (!modal) return;
 
+  const titleKey = {
+    login: 'authTabLogin',
+    register: 'authTabRegister',
+    reset: 'authResetTitle',
+    'new-password': 'authNewPasswordTitle',
+  }[tabName] || 'authTabLogin';
+  modal.querySelector('.auth-modal__window')?.setAttribute('aria-label', t(titleKey));
+
   // Вкладки "Вхід/Реєстрація" ховаємо на службових екранах
   // (відновлення пароля, новий пароль)
   const tabsRow = modal.querySelector('.auth-modal__tabs');
@@ -943,8 +951,10 @@ function focusFirstAuthField() {
 export function openAuthModal(tab = 'login') {
   const modal = document.getElementById('auth-modal');
   if (modal) {
-    // Запам'ятовуємо, звідки відкрили, щоб повернути фокус при закритті (QA22-01).
-    _lastFocusedBeforeModal = document.activeElement;
+    // Повторне відкриття не повинно замінювати початковий елемент полем модалки.
+    if (!modal.classList.contains('is-open')) {
+      _lastFocusedBeforeModal = document.activeElement;
+    }
     modal.classList.add('is-open');
     switchAuthTab(tab);
     lockScroll('auth-modal');
