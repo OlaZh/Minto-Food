@@ -25,6 +25,9 @@ let _isAdminCache = null;
 // post-login логіку — спершу юзер має задати новий пароль.
 let _recoveryFlow = false;
 
+// Елемент, що мав фокус до відкриття модалки авторизації (QA22-01).
+let _lastFocusedBeforeModal = null;
+
 // Recovery-маркери в URL (Supabase додає їх у hash після кліку в листі).
 // Best-effort: detectSessionInUrl може встигнути почистити hash, тому
 // основний сигнал — подія PASSWORD_RECOVERY в onAuthStateChange.
@@ -548,8 +551,8 @@ function createAuthModalHTML() {
   div.innerHTML = `
     <div id="auth-modal" class="auth-modal">
       <div class="auth-modal__overlay"></div>
-      <div class="auth-modal__window">
-        <button class="auth-modal__close" id="authModalClose">&times;</button>
+      <div class="auth-modal__window" role="dialog" aria-modal="true" aria-label="${t('authTabLogin')}">
+        <button class="auth-modal__close" id="authModalClose" aria-label="${t('close')}">&times;</button>
 
         <!-- ВКЛАДКИ -->
         <div class="auth-modal__tabs">
@@ -718,10 +721,45 @@ function initAuthModal() {
   document.getElementById('authModalClose')?.addEventListener('click', closeAuthModal);
   modal.querySelector('.auth-modal__overlay')?.addEventListener('click', closeAuthModal);
 
+  // Клавіатура (QA22-01): Esc закриває, Tab не випускає фокус із модалки.
+  // Слухач на самій модалці, а не на document: авторизація може відкриватись
+  // ПОВЕРХ модалки рецепта (див. --z-auth), і Esc має закрити лише верхню.
+  modal.addEventListener('keydown', (e) => {
+    if (!modal.classList.contains('is-open')) return;
+
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      // Зупиняємо сплиття, щоб Esc не закрив заразом і модалку під нами.
+      e.stopPropagation();
+      closeAuthModal();
+      return;
+    }
+
+    if (e.key !== 'Tab') return;
+
+    const focusables = getAuthFocusables();
+    if (!focusables.length) return;
+
+    const first = focusables[0];
+    const last = focusables[focusables.length - 1];
+    const active = document.activeElement;
+
+    if (e.shiftKey && (active === first || !modal.contains(active))) {
+      e.preventDefault();
+      last.focus();
+    } else if (!e.shiftKey && active === last) {
+      e.preventDefault();
+      first.focus();
+    }
+  });
+
   // Перемикання вкладок
   modal.querySelectorAll('[data-auth-tab]').forEach((btn) => {
     btn.addEventListener('click', () => {
       switchAuthTab(btn.dataset.authTab);
+      // Після зміни вкладки фокус лишався б на кнопці попередньої форми,
+      // тому переводимо його в перше поле нової (QA22-01).
+      focusFirstAuthField();
     });
   });
 
@@ -882,20 +920,50 @@ function switchAuthTab(tabName) {
   });
 }
 
+// Видимі фокусовані елементи активної вкладки модалки. Приховані вкладки
+// (content[hidden]) до обходу не потрапляють, тому Tab не «провалюється»
+// у форму реєстрації, коли відкрито логін.
+function getAuthFocusables() {
+  const modal = document.getElementById('auth-modal');
+  if (!modal) return [];
+  const selector =
+    'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+  return [...modal.querySelectorAll(selector)].filter(
+    (el) => !el.closest('[hidden]') && el.offsetParent !== null
+  );
+}
+
+// Початковий фокус — на перше поле активної вкладки, інакше на кнопку закриття.
+function focusFirstAuthField() {
+  const focusables = getAuthFocusables();
+  const firstField = focusables.find((el) => el.tagName === 'INPUT');
+  (firstField || focusables[0])?.focus();
+}
+
 export function openAuthModal(tab = 'login') {
   const modal = document.getElementById('auth-modal');
   if (modal) {
+    // Запам'ятовуємо, звідки відкрили, щоб повернути фокус при закритті (QA22-01).
+    _lastFocusedBeforeModal = document.activeElement;
     modal.classList.add('is-open');
     switchAuthTab(tab);
     lockScroll('auth-modal');
+    focusFirstAuthField();
   }
 }
 
 export function closeAuthModal() {
   const modal = document.getElementById('auth-modal');
   if (modal) {
+    const hadFocusInside = modal.contains(document.activeElement);
     modal.classList.remove('is-open');
     unlockScroll('auth-modal');
+    // Повертаємо фокус лише якщо він лишався всередині модалки — інакше
+    // не відбираємо фокус у того, куди користувач уже перейшов.
+    if (hadFocusInside && _lastFocusedBeforeModal?.isConnected) {
+      _lastFocusedBeforeModal.focus();
+    }
+    _lastFocusedBeforeModal = null;
   }
   // Якщо юзер закрив модалку, не зберігши новий пароль — recovery-сесія
   // лишається чинною (він залогінений), але флоу вважаємо завершеним,

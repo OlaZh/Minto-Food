@@ -2,6 +2,7 @@
 // Логіка сторінки "Книга рецептів"
 import { initAuth, openAuthModal } from './auth.js';
 import { supabase } from './supabaseClient.js';
+import { attachPrivateCovers } from './recipe-sources.js';
 import { showToast, escapeHTML, pluralUA, safeImageUrl } from './utils.js';
 import { BOOK_ICONS as _BOOK_ICONS, iconClose, iconCheck, iconEdit, iconChevronRight, iconPlate } from './icons.js';
 import { showConfirmModal } from './ui-components.js';
@@ -649,6 +650,7 @@ async function loadBookRecipes() {
           name_ua,
           name_en,
           name_pl,
+          entry_type,
           image,
           kcal,
           notes
@@ -660,6 +662,8 @@ async function loadBookRecipes() {
     if (version !== _bookLoadVersion || currentUser?.id !== userId || currentBookId !== bookId) return;
     if (error) throw error;
 
+    await attachPrivateCovers((data || []).map(item => item.recipes).filter(Boolean));
+    if (version !== _bookLoadVersion || currentUser?.id !== userId || currentBookId !== bookId) return;
     renderBookRecipes(data || []);
   } catch (err) {
     if (version !== _bookLoadVersion) return;
@@ -687,9 +691,9 @@ function renderBookRecipes(recipes) {
         ? `<span class="cookbook-recipe-card__kcal">${Math.round(recipe.kcal)} ${t('kcalShort')}</span>`
         : '';
 
-      const imageSrc = safeImageUrl(recipe.image);
+      const imageSrc = safeImageUrl(recipe.entry_type === 'saved' ? recipe.privateCover : recipe.image);
       const imageHtml = imageSrc
-        ? `<img src="${imageSrc}" alt="${escapeHTML(recipeName)}" loading="lazy">`
+        ? `<img ${recipe.entry_type === 'saved' ? 'data-private-cover' : ''} src="${imageSrc}" alt="${escapeHTML(recipeName)}" loading="lazy">`
         : `<div class="cookbook-recipe-card__placeholder">${iconPlate}</div>`;
 
       const stickyNote = recipe.notes?.trim()
@@ -804,7 +808,7 @@ async function loadRecentRecipes() {
 
     const { data, error } = await supabase
       .from('cookbook_recipes')
-      .select('recipe_id, recipes ( id, name_ua, name_en, name_pl, image, kcal )')
+      .select('recipe_id, recipes ( id, name_ua, name_en, name_pl, entry_type, image, kcal )')
       .in('cookbook_id', bookIds)
       .limit(20);
 
@@ -825,13 +829,15 @@ async function loadRecentRecipes() {
       return;
     }
 
+    await attachPrivateCovers(unique.map(item => item.recipes));
+    if (version !== _recentLoadVersion || currentUser?.id !== userId) return;
     container.innerHTML = unique
       .map((item) => {
         const r = item.recipes;
         const recipeName = getRecipeName(r);
-        const imageSrc = safeImageUrl(r.image);
+        const imageSrc = safeImageUrl(r.entry_type === 'saved' ? r.privateCover : r.image);
         const imgHtml = imageSrc
-          ? `<img src="${imageSrc}" alt="${escapeHTML(recipeName)}" loading="lazy">`
+          ? `<img ${r.entry_type === 'saved' ? 'data-private-cover' : ''} src="${imageSrc}" alt="${escapeHTML(recipeName)}" loading="lazy">`
           : `<div class="cookbook-recent-item__placeholder">${iconPlate}</div>`;
         return `
         <a class="cookbook-recent-item" href="recipes.html?recipe=${r.id}&from=cookbook">

@@ -13,3 +13,10 @@ These rules apply repo-wide unless a deeper `AGENTS.md` adds more specific instr
 
 - Safe local fixes that do not change the intended behavior may be implemented directly.
 - If you are not sure whether a change is behavior-preserving, ask before editing.
+
+## Verification Code
+
+- Do not retain unnecessary verification code in the repository. After completing verification, remove one-off diagnostic scripts, temporary QA/browser harnesses, and their unused helpers created for the task.
+- Keep a small set of reusable regression tests that protect important behavior, such as privacy, access control, data integrity, and prevention of duplicate records. Do not remove useful tests solely to reduce the line count.
+- Reuse existing checks where possible. Do not add duplicate tests, tests that merely mirror the implementation, or tests for reversible, low-impact changes.
+- When removing temporary checks, also remove obsolete commands and references from documentation. Keep this cleanup separate from changes to application behavior.

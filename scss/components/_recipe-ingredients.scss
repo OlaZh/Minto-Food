@@ -54,18 +54,6 @@
   color: var(--color-text-inverse);
 }
 
-.ingredient-builder__actions button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-  transform: none;
-  white-space: normal;
-}
-
-.ingredient-builder__total[hidden],
-.ingredient-builder__list[hidden] {
-  display: none;
-}
-
 .ingredient-builder__clear-btn {
   color: var(--color-text-secondary);
 }
@@ -73,15 +61,12 @@
 .ingredient-builder__textarea {
   width: 100%;
   min-height: 160px;
-  /* grows with content via autoResizeTextarea(); caps so the form stays usable */
-  max-height: 60vh;
   padding: 16px;
   border-radius: 18px;
   border: 1px solid var(--color-border);
   background: var(--color-surface);
   color: var(--color-text-primary);
   resize: vertical;
-  overflow-y: auto;
   line-height: 1.55;
 
   &::placeholder {

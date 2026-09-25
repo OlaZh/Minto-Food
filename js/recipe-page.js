@@ -7,7 +7,7 @@ import { supabase }                        from './supabaseClient.js';
 import { initAuth, isLoggedIn, openAuthModal } from './auth.js';
 import { iconShare, iconPlate, iconLeaf, iconBookOpen, iconStar } from './icons.js';
 import { safeImageUrl } from './utils.js';
-import { renderRecipeMedia } from './recipe-media.js';
+import { getRecipeSource, renderSourcePanel } from './recipe-sources.js';
 
 const CATEGORY_LABELS = {
   breakfast: 'Сніданок', lunch: 'Обід',    dinner: 'Вечеря',
@@ -104,6 +104,7 @@ const _slug = window.location.pathname.match(/\/recipe\/([^/]+)/)?.[1] ?? null;
 const _root = document.getElementById('recipeRoot');
 
 let _recipe = null;
+let _sourceGeneration = 0;
 
 // ── Init ─────────────────────────────────────────────────────
 
@@ -113,7 +114,7 @@ async function init() {
   // Авторизація потрібна лише для CTA «Зберегти» — вона оновлюється через
   // колбек. НЕ чекаємо на неї: getSession()/onboarding інколи зависають, а це
   // блокувало б показ самого рецепта (вічний скелетон). Тому запускаємо паралельно.
-  initAuth((_event, user) => _updateSaveCTA(!!user))
+  initAuth((_event, user) => { _updateSaveCTA(!!user); _updateOwnerSource(user); })
     .catch((err) => console.error('[recipe-page] initAuth failed:', err));
 
   if (!_slug) { _show404(); return; }
@@ -121,7 +122,7 @@ async function init() {
   // Отримуємо рецепт по slug
   const { data: recipe, error } = await supabase
     .from('recipes')
-    .select('id, name_ua, name_en, name_pl, slug, image, kcal, protein, fat, carbs, steps, steps_en, steps_pl, category, user_id, created_at, prep_time_min, cook_time_min, total_time_min, recipe_yield, published_media_revision')
+    .select('id, name_ua, name_en, name_pl, slug, image, kcal, protein, fat, carbs, steps, steps_en, steps_pl, category, user_id, created_at, prep_time_min, cook_time_min, total_time_min, recipe_yield')
     .eq('slug', _slug)
     .eq('status', 'published')
     .is('deleted_at', null)
@@ -158,6 +159,21 @@ async function init() {
   _updateMeta(recipe, authorName);
   _injectSchemaOrg(recipe, authorName, ingredients);
   _updateSaveCTA(isLoggedIn());
+  supabase.auth.getUser().then(({ data: { user } }) => _updateOwnerSource(user)).catch(() => {});
+}
+
+// The public recipe/SEO payload contains no originals. Fetch them only for its signed-in owner.
+async function _updateOwnerSource(user) {
+  const generation = ++_sourceGeneration;
+  document.getElementById('rpPrivateSource')?.remove();
+  if (!user || !_recipe || user.id !== _recipe.user_id) return;
+  try {
+    const source = await getRecipeSource(_recipe.id);
+    if (!source || generation !== _sourceGeneration) return;
+    const host = document.createElement('div'); host.id = 'rpPrivateSource';
+    document.getElementById('rpCta')?.before(host);
+    await renderSourcePanel(host, source);
+  } catch { /* Public recipe remains usable when the private source cannot load. */ }
 }
 
 // ── Render recipe ─────────────────────────────────────────────
@@ -259,7 +275,6 @@ function _renderRecipe(recipe, authorName, ingredients) {
       ${macrosHtml}
       ${ingsHtml}
       ${stepsHtml}
-      <div id="rpMedia"></div>
       <div class="rp-cta" id="rpCta">
         <!-- Оновлюється через _updateSaveCTA -->
       </div>
@@ -272,7 +287,6 @@ function _renderRecipe(recipe, authorName, ingredients) {
 
   // Прибираємо скелетон-клас після рендеру
   document.documentElement.classList.remove('no-transition');
-  if (recipe.published_media_revision) renderRecipeMedia(document.getElementById('rpMedia'), recipe.id);
 
   // Share button
   document.getElementById('rpShareBtn')?.addEventListener('click', () => _shareRecipe(recipe));

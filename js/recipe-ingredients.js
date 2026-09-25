@@ -17,14 +17,10 @@ let currentLang = 'ua';
 let productUnitsCache = [];
 let productMeasureCache = [];
 
-// Temporarily paused while recipe parsing/nutrition is being corrected.
-// Keep this independent of meal entry and barcode scanning elsewhere in the app.
-export const RECIPE_NUTRITION_ENABLED = false;
-
 const i18nIngredients = {
   ua: {
     pasteIngredients: 'Вставте список інгредієнтів...',
-    parseBtn: 'Розрахувати КБЖВ',
+    parseBtn: 'Розпізнати',
     parsing: 'Розпізнаю...',
     scanBtn: 'Сканувати',
     unitG: 'г',
@@ -35,7 +31,7 @@ const i18nIngredients = {
     carbsShort: 'В',
     notFound: 'Не розпізнано',
     found: 'Розпізнано',
-    addIngredients: 'Введіть або вставте інгредієнти та збережіть рецепт.',
+    addIngredients: 'Вставте інгредієнти та натисніть "Розпізнати"',
     clearAll: 'Очистити',
     searchProduct: 'Пошук продукту...',
     productNotFound: 'Продукт не знайдено в базі',
@@ -48,7 +44,7 @@ const i18nIngredients = {
   },
   en: {
     pasteIngredients: 'Paste ingredient list...',
-    parseBtn: 'Calculate nutrition',
+    parseBtn: 'Parse',
     parsing: 'Parsing...',
     scanBtn: 'Scan',
     unitG: 'g',
@@ -59,7 +55,7 @@ const i18nIngredients = {
     carbsShort: 'C',
     notFound: 'Not recognized',
     found: 'Recognized',
-    addIngredients: 'Type or paste ingredients and save the recipe.',
+    addIngredients: 'Paste ingredients and click "Parse"',
     clearAll: 'Clear',
     searchProduct: 'Search product...',
     productNotFound: 'Product not found in database',
@@ -72,7 +68,7 @@ const i18nIngredients = {
   },
   pl: {
     pasteIngredients: 'Wklej listę składników...',
-    parseBtn: 'Oblicz wartości odżywcze',
+    parseBtn: 'Rozpoznaj',
     parsing: 'Rozpoznaję...',
     scanBtn: 'Skanuj',
     unitG: 'g',
@@ -83,7 +79,7 @@ const i18nIngredients = {
     carbsShort: 'W',
     notFound: 'Nie rozpoznano',
     found: 'Rozpoznano',
-    addIngredients: 'Wpisz lub wklej składniki i zapisz przepis.',
+    addIngredients: 'Wklej składniki i kliknij "Rozpoznaj"',
     clearAll: 'Wyczyść',
     searchProduct: 'Szukaj produktu...',
     productNotFound: 'Produktu nie znaleziono w bazie',
@@ -113,12 +109,6 @@ function getTextareaEl() {
 
 function getTextareaValue() {
   return getTextareaEl()?.value?.trim() || '';
-}
-
-function autoResizeTextarea(el = getTextareaEl()) {
-  if (!el) return;
-  el.style.height = 'auto';
-  el.style.height = `${el.scrollHeight}px`;
 }
 
 function keepOnlyScannedIngredients() {
@@ -157,10 +147,10 @@ export function initIngredientBuilder(containerSelector, onChange, lang = 'ua') 
           rows="5"
         ></textarea>
         <div class="ingredient-builder__actions">
-          <button type="button" class="ingredient-builder__parse-btn" id="parseIngredientsBtn" ${RECIPE_NUTRITION_ENABLED ? '' : 'disabled'}>
+          <button type="button" class="ingredient-builder__parse-btn" id="parseIngredientsBtn">
             ${t('parseBtn')}
           </button>
-          <button type="button" class="ingredient-builder__scan-btn" id="scanIngredientBtn" ${RECIPE_NUTRITION_ENABLED ? '' : 'disabled'}>
+          <button type="button" class="ingredient-builder__scan-btn" id="scanIngredientBtn">
             ${iconScan} ${t('scanBtn')}
           </button>
           <button type="button" class="ingredient-builder__clear-btn" id="clearIngredientsBtn">
@@ -173,7 +163,7 @@ export function initIngredientBuilder(containerSelector, onChange, lang = 'ua') 
 
       <ul class="ingredient-builder__list" id="ingredientList"></ul>
 
-      <div class="ingredient-builder__total" id="ingredientTotal" ${RECIPE_NUTRITION_ENABLED ? '' : 'hidden'}>
+      <div class="ingredient-builder__total" id="ingredientTotal">
         <span class="ingredient-builder__total-label">${t('total')}</span>
         <span class="ingredient-builder__total-values">0 ${t('kcal')}</span>
       </div>
@@ -181,8 +171,7 @@ export function initIngredientBuilder(containerSelector, onChange, lang = 'ua') 
   `;
 
   initEventListeners();
-  autoResizeTextarea();
-  if (RECIPE_NUTRITION_ENABLED) loadProductsCache();
+  loadProductsCache();
   renderIngredientsList();
 }
 
@@ -243,24 +232,18 @@ function initEventListeners() {
   });
 
   scanBtn?.addEventListener('click', () => {
-    if (!RECIPE_NUTRITION_ENABLED) return;
     scanBarcode(addScannedIngredient, { askWeight: true });
   });
 
   clearBtn?.addEventListener('click', () => {
     ingredientsList = [];
-    if (textarea) {
-      textarea.value = '';
-      autoResizeTextarea(textarea);
-    }
+    if (textarea) textarea.value = '';
     renderIngredientsList();
     updateTotals();
     notifyChange();
   });
 
   textarea?.addEventListener('input', () => {
-    autoResizeTextarea(textarea);
-
     const hadParsedTextIngredients = ingredientsList.some((ing) => !ing.fromBarcode);
     if (!hadParsedTextIngredients) return;
 
@@ -279,7 +262,6 @@ function initEventListeners() {
 }
 
 async function parseAndAddIngredients(text) {
-  if (!RECIPE_NUTRITION_ENABLED) return;
   if (!text.trim()) return;
 
   const parseBtn = document.getElementById('parseIngredientsBtn');
@@ -349,7 +331,6 @@ async function parseAndAddIngredients(text) {
 }
 
 function addScannedIngredient(product, grams) {
-  if (!RECIPE_NUTRITION_ENABLED) return;
   if (!product || !grams || grams <= 0) return;
 
   const factor = grams / 100;
@@ -396,12 +377,6 @@ function renderIngredientsList() {
 
   const hintEl = document.getElementById('ingredientCheckHint');
   if (hintEl) hintEl.hidden = ingredientsList.length === 0;
-
-  listEl.hidden = !RECIPE_NUTRITION_ENABLED;
-  if (!RECIPE_NUTRITION_ENABLED) {
-    listEl.innerHTML = '';
-    return;
-  }
 
   if (ingredientsList.length === 0) {
     listEl.innerHTML = `<li class="ingredient-item ingredient-item--empty">${t('addIngredients')}</li>`;
@@ -626,10 +601,7 @@ export function getTotals() {
 export function clearIngredients() {
   ingredientsList = [];
   const textarea = getTextareaEl();
-  if (textarea) {
-    textarea.value = '';
-    autoResizeTextarea(textarea);
-  }
+  if (textarea) textarea.value = '';
   renderIngredientsList();
   updateTotals();
 }
@@ -640,12 +612,9 @@ export async function setIngredientsFromText(text) {
   ingredientsList = [];
 
   const textarea = getTextareaEl();
-  if (textarea) {
-    textarea.value = normalizedText;
-    autoResizeTextarea(textarea);
-  }
+  if (textarea) textarea.value = normalizedText;
 
-  if (!normalizedText || !RECIPE_NUTRITION_ENABLED) {
+  if (!normalizedText) {
     renderIngredientsList();
     updateTotals();
     notifyChange();

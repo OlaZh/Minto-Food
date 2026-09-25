@@ -7,7 +7,7 @@ import { getRecipeDisplayName } from './recipe-utils.js';
 import { lockScroll, unlockScroll } from './scroll-lock.js';
 import { showLoading, showConfirmModal } from './ui-components.js';
 import { initRecipeModal, openRecipeModal, openRecipeModalForEdit } from './recipe-modal.js';
-import { renderRecipeMedia } from './recipe-media.js';
+import { sourceText, attachPrivateCovers, getRecipeSource, renderSourcePanel } from './recipe-sources.js';
 import {
   iconSearch, iconGlobe as iconGlobal, iconMoreVertical, iconChevronDown,
   iconHeart, iconPlus, iconEdit, iconTrash, iconBookmark, iconFlag,
@@ -44,6 +44,7 @@ const saveNotesBtn = document.getElementById('save-notes-btn');
 // =============================================================
 
 let currentViewingId = null;
+let sourceViewGeneration = 0;
 let currentUser = null;
 
 // Фільтр власних рецептів (browsing): 'all' | 'private' | 'public' | 'pending'
@@ -729,7 +730,8 @@ function buildRecipeCard(recipe, savedRecipeIds) {
   const ratingCount = Number(recipe.rating_count) || 0;
   const name = getRecipeName(recipe);
   const fallbackImage = 'https://images.unsplash.com/photo-1495521821757-a1efb6729352?q=80&w=500';
-  const cardImage = safeImageUrl(recipe.image) || fallbackImage;
+  const isSavedEntry = recipe.entry_type === 'saved';
+  const cardImage = isSavedEntry ? safeImageUrl(recipe.privateCover) : (safeImageUrl(recipe.image) || fallbackImage);
   const displayCategory = recipe.category ? getCategoryLabel(recipe.category) : '';
   const isSaved = savedRecipeIds.includes(recipe.id);
   const isOwn = isOwnRecipe(recipe);
@@ -754,8 +756,8 @@ function buildRecipeCard(recipe, savedRecipeIds) {
 
   card.innerHTML = `
   <div class="recipe-card__image-box">
-    <img src="${cardImage}" alt="${safeName}" class="recipe-card__img" loading="lazy">
-    <div class="recipe-card__rating-badge">
+    ${cardImage ? `<img ${isSavedEntry ? 'data-private-cover' : ''} src="${cardImage}" alt="${safeName}" class="recipe-card__img" loading="lazy">` : `<div class="source-placeholder">${iconPlate}</div>`}
+    <div class="recipe-card__rating-badge" ${isSavedEntry ? 'hidden' : ''}>
       <span class="recipe-card__rating-star">${iconStarFilled}</span>
       <span>${ratingCount > 0 ? `${Number(rating).toFixed(1)} (${ratingCount})` : '—'}</span>
     </div>
@@ -777,11 +779,11 @@ function buildRecipeCard(recipe, savedRecipeIds) {
       ? `<div class="recipe-card__mod-note">${safeModerationNote}</div>`
       : ''}
     ${metaRow}
-    ${isOwn && !recipe.is_public && recipe.status !== 'pending'
+    ${isOwn && !isSavedEntry && !recipe.is_public && recipe.status !== 'pending'
       ? `<button class="recipe-card__make-public js-make-public">${iconGlobal}${t('makePublic')}</button>`
       : ''}
     <div class="recipe-card__footer">
-      <span class="recipe-card__kcal">${recipe.kcal || 0} ${t('kcalShort')}</span>
+      <span class="recipe-card__kcal">${isSavedEntry ? sourceText('source') : `${recipe.kcal || 0} ${t('kcalShort')}`}</span>
       <button class="recipe-card__btn js-view-recipe">${t('viewRecipe')}</button>
     </div>
   </div>
@@ -820,7 +822,11 @@ function buildRecipeCard(recipe, savedRecipeIds) {
 // =============================================================
 
 async function displayRecipes(recipes, isSearch = false) {
+  const sourceUserId = currentUser?.id;
+  await attachPrivateCovers(recipes);
+  if (sourceUserId !== currentUser?.id) return;
   await attachRatingSummaries(recipes);
+  if (sourceUserId !== currentUser?.id) return;
 
   // --- Завантажити збережені рецепти ---
   let savedRecipeIds = [];
@@ -831,6 +837,7 @@ async function displayRecipes(recipes, isSearch = false) {
       .eq('cookbooks.user_id', currentUser.id);
     if (savedData) savedRecipeIds = savedData.map((d) => d.recipe_id);
   }
+  if (sourceUserId !== currentUser?.id) return;
 
   // --- Показати/сховати секції залежно від режиму ---
   const sectionOwn = document.getElementById('section-own');
@@ -1002,8 +1009,9 @@ function splitIngredientLine(line) {
 }
 
 export async function openRecipeView(recipeId) {
-  const oldMedia = document.getElementById('view-recipe-media');
-  if (oldMedia) { oldMedia.dataset.mediaRequest = ''; oldMedia.remove(); }
+  const generation = ++sourceViewGeneration;
+  document.getElementById('view-source')?.remove();
+  document.querySelector('.source-convert')?.remove();
   if (!currentUser) {
     const {
       data: { user },
@@ -1022,14 +1030,37 @@ export async function openRecipeView(recipeId) {
     return;
   }
 
+  if (generation !== sourceViewGeneration) return;
   currentViewingId = recipeId;
 
   const name = getRecipeName(recipe);
   const isOwn = isOwnRecipe(recipe);
+  const savedEntry = recipe.entry_type === 'saved';
+  viewModal?.querySelectorAll('.recipe-rating, .nutrition-summary, .nutrition-summary-meta, .recipe-detail__tags').forEach(el => { el.hidden = savedEntry; });
+  for (const id of ['view-ingredients-list', 'view-steps']) {
+    const section = document.getElementById(id)?.closest('.recipe-section');
+    if (section) section.hidden = savedEntry;
+  }
+  const sourceHost = document.createElement('div'); sourceHost.id = 'view-source';
+  viewModal?.querySelector('.recipe-detail__body')?.prepend(sourceHost);
+  if (isOwn) {
+    try {
+      const source = await getRecipeSource(recipe.id);
+      if (generation !== sourceViewGeneration) return;
+      await renderSourcePanel(sourceHost, source, { open: savedEntry });
+    } catch { if (generation === sourceViewGeneration) sourceHost.textContent = sourceText('loadError'); }
+  }
+  if (generation !== sourceViewGeneration) return;
+  if (savedEntry && isOwn) {
+    const button = document.createElement('button'); button.type = 'button'; button.className = 'btn-save source-convert';
+    button.textContent = sourceText('convert');
+    button.addEventListener('click', () => editRecipe(recipe, true)); sourceHost.after(button);
+  }
   const [ratingSummaries, ownRating] = await Promise.all([
     getRecipeRatingSummaries([recipe.id]),
     getOwnRecipeRating(recipe.id),
   ]);
+  if (generation !== sourceViewGeneration) return;
   const ratingSummary = ratingSummaries.get(Number(recipe.id));
   recipe.rating = ratingSummary?.rating ?? 0;
   recipe.rating_count = ratingSummary?.ratingCount ?? 0;
@@ -1115,6 +1146,7 @@ export async function openRecipeView(recipeId) {
         .eq('recipe_id', recipeId);
 
       if (productRecipes && productRecipes.length > 0) {
+        if (generation !== sourceViewGeneration) return;
         const lang = getLang();
         productRecipes.forEach((pr) => {
           const productName =
@@ -1154,13 +1186,7 @@ export async function openRecipeView(recipeId) {
     });
   }
 
-  if (recipe.media_revision || recipe.published_media_revision) {
-    const media = document.createElement('div');
-    media.id = 'view-recipe-media';
-    stepsContainer?.after(media);
-    renderRecipeMedia(media, recipe.id);
-  }
-
+  if (generation !== sourceViewGeneration) return;
   updateRecipeViewActions(recipe, isOwn);
 
   if (viewModal) {
@@ -1266,7 +1292,7 @@ function updateRecipeViewActions(recipe, isOwn) {
 // 5.2 РЕДАГУВАННЯ РЕЦЕПТУ
 // =============================================================
 
-function editRecipe(recipe) {
+function editRecipe(recipe, convert = false) {
   if (!isOwnRecipe(recipe)) {
     showToast(t('editOnlyOwn'), 'error');
     return;
@@ -1279,7 +1305,7 @@ function editRecipe(recipe) {
 
   openRecipeModalForEdit(recipe, async () => {
     await loadAndDisplayRecipes(true);
-  });
+  }, { convert });
 }
 
 // =============================================================
@@ -1311,6 +1337,7 @@ function openDeleteConfirm(recipeId) {
 // Зробити приватний рецепт публічним → відправити на модерацію.
 // Дзеркалить валідацію публікації з recipe-modal.js (назва + інгредієнти/кроки).
 function openMakePublicConfirm(recipe) {
+  if (recipe.entry_type === 'saved') return;
   const hasIngredients = !!(recipe.ingredients && recipe.ingredients.trim());
   const hasSteps = !!(recipe.steps && recipe.steps.trim());
 
@@ -1350,6 +1377,8 @@ function openMakePublicConfirm(recipe) {
 // =============================================================
 
 const closeViewModal = () => {
+  sourceViewGeneration++;
+  document.getElementById('view-source')?.remove();
   if (viewModal) {
     viewModal.classList.remove('is-active');
     unlockScroll('recipe-view-modal');
@@ -1575,7 +1604,18 @@ function closeNewRecipesDrawer() {
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
-  await initAuth(async (event) => {
+  await initAuth(async (event, user) => {
+    if (event === 'SIGNED_OUT' || (event === 'SIGNED_IN' && currentUser?.id !== user?.id)) {
+      sourceViewGeneration++;
+      currentViewingId = null;
+      document.getElementById('view-source')?.remove();
+      document.querySelector('.source-convert')?.remove();
+      if (viewModal) { viewModal.classList.remove('is-active'); unlockScroll('recipe-view-modal'); }
+      ownRecipesCache = [];
+      savedRecipeIdsCache = [];
+      document.querySelectorAll('#own-row, #search-own-grid').forEach(el => el.replaceChildren());
+    }
+    currentUser = user || null;
     // Після логіну перебудовуємо фільтри та рецепти з контекстом юзера
     if (event === 'SIGNED_IN') {
       buildFilterPanel();

@@ -8,7 +8,6 @@ import {
   clearIngredients,
   setIngredientsFromText,
   setLanguage,
-  RECIPE_NUTRITION_ENABLED,
 } from './recipe-ingredients.js';
 import { showToast, toBase64, setInputVal, withButtonLoading } from './utils.js';
 import { getLang } from './storage.js';
@@ -27,64 +26,19 @@ import {
   refreshBooks,
 } from './book-selector.js';
 import { initCustomSelect, setSelectValue, initSelectsGlobalListener } from './ui-components.js';
-import { createRecipeMediaEditor, saveMediaDraft, loadMediaDraft, clearMediaDraft, mediaText } from './recipe-media.js';
+import { sourceText, getRecipeSource, renderSourcePanel } from './recipe-sources.js';
+import { mountSavedRecipeForm } from './saved-recipe-form.js';
 
 let recipeVisibility = 'private';
 let recipeModalInstance = null;
 let onRecipeSavedCallback = null;
 let editingRecipeId = null;
 let editingRecipeOriginal = null;
-let mediaEditor = null;
-let pendingBookSave = false;
-let formGeneration = 0;
-const MANUAL_NUTRITION_HINT_KEY = 'minto:manual-nutrition-hint-seen';
-let manualNutritionHintSeen = false;
-let showManualNutritionHint = false;
-
-function beginManualNutritionHint() {
-  try {
-    manualNutritionHintSeen ||= localStorage.getItem(MANUAL_NUTRITION_HINT_KEY) === '1';
-  } catch { /* Fall back to once per page session when storage is unavailable. */ }
-  showManualNutritionHint = !manualNutritionHintSeen;
-  if (showManualNutritionHint) {
-    manualNutritionHintSeen = true;
-    try { localStorage.setItem(MANUAL_NUTRITION_HINT_KEY, '1'); } catch { /* Optional hint. */ }
-  }
-}
-
-const MANUAL_NUTRITION_FIELDS = [
-  ['rm-calories', 'kcal'], ['rm-proteins', 'protein'],
-  ['rm-fats', 'fat'], ['rm-carbs', 'carbs'],
-];
-
-function restoreManualNutrition(values = {}) {
-  for (const [id, key] of MANUAL_NUTRITION_FIELDS) {
-    const input = document.getElementById(id);
-    if (input) {
-      input.value = values[key] ?? '';
-      input.setCustomValidity('');
-    }
-  }
-}
-
-function readManualNutrition() {
-  const values = {};
-  for (const [id, key] of MANUAL_NUTRITION_FIELDS) {
-    const input = document.getElementById(id);
-    const text = String(input?.value ?? '').trim().replace(',', '.');
-    input?.setCustomValidity('');
-    // Optional blanks do not overwrite previously saved values with zero.
-    if (!text) continue;
-    const value = Number(text);
-    if (!/^(?:\d+(?:\.\d*)?|\.\d+)$/.test(text) || !Number.isFinite(value)) {
-      input?.setCustomValidity(t('rmNutritionInvalid'));
-      input?.reportValidity();
-      return null;
-    }
-    values[key] = value;
-  }
-  return values;
-}
+let disposeSavedForm = null;
+let modalBusy = false;
+let modalGeneration = 0;
+let convertingSaved = false;
+let modalAuthUserId;
 
 function parsePositiveNumber(value) {
   const normalized = String(value ?? '').replace(',', '.').trim();
@@ -132,11 +86,6 @@ function getDisplayedNutrition(totals, totalWeight) {
 }
 
 function updateRecipeNutritionPreview(totals = getTotals()) {
-  if (!RECIPE_NUTRITION_ENABLED) {
-    // Ingredient/weight changes must never reset or scale manual values.
-    updateNutritionNoteOnly();
-    return;
-  }
   const totalWeight = parsePositiveNumber(document.getElementById('rm-total-weight')?.value);
   const displayed = getDisplayedNutrition(totals, totalWeight);
 
@@ -152,7 +101,6 @@ function updateRecipeNutritionPreview(totals = getTotals()) {
   if (carbsEl) carbsEl.value = macroInputValue(displayed.carbs, 1);
 
   if (noteEl) {
-    noteEl.hidden = false;
     noteEl.textContent = displayed.mode === 'cooked'
       ? formatText('rmCookedNote', { n: formatMacroValue(displayed.kcal, 0) })
       : t('rmRawNote');
@@ -165,20 +113,7 @@ function updateNutritionNoteOnly(kcalForNote) {
   const noteEl = document.getElementById('rm-macros-note');
   if (!noteEl) return;
 
-  if (!RECIPE_NUTRITION_ENABLED) {
-    noteEl.hidden = !showManualNutritionHint;
-    if (showManualNutritionHint) {
-      noteEl.dataset.i18n = 'rmNutritionManual';
-      noteEl.textContent = t('rmNutritionManual');
-    } else {
-      delete noteEl.dataset.i18n;
-      noteEl.textContent = '';
-    }
-    return;
-  }
-
   const totalWeight = parsePositiveNumber(document.getElementById('rm-total-weight')?.value);
-  noteEl.hidden = false;
   noteEl.textContent = totalWeight
     ? formatText('rmCookedNote', { n: formatMacroValue(kcalForNote, 0) })
     : t('rmRawNote');
@@ -191,13 +126,23 @@ function createRecipeModalHTML() {
       <div class="modal-card">
         <button class="modal-card__close" id="recipe-modal-close">&times;</button>
 
-        <div id="recipe-modal-preview-form" class="modal-form-wrapper">
+        <div id="recipe-create-choice">
+          <div class="modal-card__header"><h2>${t('addRecipe')}</h2></div>
+          <div class="modal-card__options">
+            <button type="button" class="option-card" id="rm-choose-manual"><span class="option-card__icon">${iconBookOpen}</span><span class="option-card__info"><h3>${sourceText('manual')}</h3><p>${sourceText('manualHint')}</p></span></button>
+            <button type="button" class="option-card" id="rm-choose-saved"><span class="option-card__icon">${iconCamera}</span><span class="option-card__info"><h3>${sourceText('saved')}</h3><p>${sourceText('savedHint')}</p></span></button>
+          </div>
+        </div>
+        <div id="recipe-saved-form" hidden></div>
+
+        <div id="recipe-modal-preview-form" class="modal-form-wrapper" hidden>
           <div class="modal-card__header">
             <h2 data-i18n="addRecipe">Додати рецепт</h2>
             <p data-i18n="checkBeforeSave">Перевір дані перед збереженням</p>
           </div>
 
           <form class="preview-form" id="recipe-modal-form">
+            <div id="rm-original"></div>
             <div class="preview-form__content">
               <div class="form-group">
                 <label data-i18n="dishName">Назва страви</label>
@@ -212,24 +157,26 @@ function createRecipeModalHTML() {
 
               <div class="recipe-macros-grid">
                 <div class="form-group">
-                  <label for="rm-calories" data-i18n="calories">Ккал</label>
-                  <input type="text" inputmode="decimal" id="rm-calories" placeholder="—" aria-describedby="rm-macros-note" ${RECIPE_NUTRITION_ENABLED ? 'readonly' : ''} />
+                  <label data-i18n="calories">Ккал</label>
+                  <input type="number" id="rm-calories" placeholder="0" readonly />
                 </div>
                 <div class="form-group">
-                  <label for="rm-proteins" data-i18n="proteins">Б</label>
-                  <input type="text" inputmode="decimal" id="rm-proteins" placeholder="—" aria-describedby="rm-macros-note" ${RECIPE_NUTRITION_ENABLED ? 'readonly' : ''} />
+                  <label data-i18n="proteins">Б</label>
+                  <input type="number" id="rm-proteins" placeholder="0" readonly />
                 </div>
                 <div class="form-group">
-                  <label for="rm-fats" data-i18n="fats">Ж</label>
-                  <input type="text" inputmode="decimal" id="rm-fats" placeholder="—" aria-describedby="rm-macros-note" ${RECIPE_NUTRITION_ENABLED ? 'readonly' : ''} />
+                  <label data-i18n="fats">Ж</label>
+                  <input type="number" id="rm-fats" placeholder="0" readonly />
                 </div>
                 <div class="form-group">
-                  <label for="rm-carbs" data-i18n="carbs">В</label>
-                  <input type="text" inputmode="decimal" id="rm-carbs" placeholder="—" aria-describedby="rm-macros-note" ${RECIPE_NUTRITION_ENABLED ? 'readonly' : ''} />
+                  <label data-i18n="carbs">В</label>
+                  <input type="number" id="rm-carbs" placeholder="0" readonly />
                 </div>
               </div>
 
-              <p class="recipe-macros-note" id="rm-macros-note" hidden></p>
+              <p class="recipe-macros-note" id="rm-macros-note" data-i18n="rmRawNote">
+                Сума сирих інгредієнтів. Вкажіть вагу готової страви, щоб побачити КБЖУ на 100 г.
+              </p>
 
               <div class="form-group">
                 <label for="rm-total-weight" data-i18n="rmTotalWeightLabel">Вага готової страви (г)</label>
@@ -261,16 +208,12 @@ function createRecipeModalHTML() {
               <div class="form-group">
                 <label data-i18n="ingredientsHint">Інгредієнти</label>
                 <div id="rm-ingredients-builder"></div>
-                <div id="rm-ingredient-media"></div>
               </div>
 
               <div class="form-group">
                 <label data-i18n="stepsHint">Спосіб приготування</label>
                 <textarea id="rm-steps" placeholder="1. Закип'ятити воду..." data-i18n-placeholder="stepsPlaceholder"></textarea>
-                <div id="rm-step-media"></div>
               </div>
-
-              <div id="rm-video-media"></div>
 
               <div class="form-media-box">
                 <label data-i18n="dishPhoto">Фото страви</label>
@@ -381,11 +324,6 @@ export async function initRecipeModal() {
   }
 
   recipeModalInstance = document.getElementById('recipe-create-modal');
-  mediaEditor = createRecipeMediaEditor({
-    ingredients: document.getElementById('rm-ingredient-media'),
-    steps: document.getElementById('rm-step-media'),
-    video: document.getElementById('rm-video-media'),
-  });
 
   const closeBtn = document.getElementById('recipe-modal-close');
   const cancelBtn = document.getElementById('rm-cancel');
@@ -394,6 +332,21 @@ export async function initRecipeModal() {
 
   closeBtn?.addEventListener('click', closeRecipeModal);
   cancelBtn?.addEventListener('click', closeRecipeModal);
+  document.getElementById('rm-choose-manual')?.addEventListener('click', () => showRecipeForm());
+  document.getElementById('rm-choose-saved')?.addEventListener('click', async () => {
+    const generation = modalGeneration;
+    const { data: { user } } = await supabase.auth.getUser();
+    if (generation !== modalGeneration) return;
+    if (!user) { closeRecipeModal(); requireAuth(); return; }
+    showSavedForm();
+  });
+  supabase.auth.onAuthStateChange((event, session) => {
+    const userId = session?.user?.id ?? null;
+    if (event === 'SIGNED_OUT' || (event === 'SIGNED_IN' && modalAuthUserId !== undefined && modalAuthUserId !== userId)) {
+      modalBusy = false; closeRecipeModal();
+    }
+    modalAuthUserId = userId;
+  });
 
   // Кнопка "Завантажити фото" → відкриває file input (без inline onclick, CSP)
   document.getElementById('rm-image-upload-btn')?.addEventListener('click', () => {
@@ -413,17 +366,16 @@ export async function initRecipeModal() {
     // Спінер + захист від подвійного submit на час збереження
     // (base64-конвертація фото + кілька запитів до Supabase).
     const saveBtn = form.querySelector('.btn-save');
-    await withButtonLoading(saveBtn, () => saveRecipe());
+    if (modalBusy) return;
+    const generation = modalGeneration;
+    modalBusy = true;
+    try { await withButtonLoading(saveBtn, () => saveRecipe()); }
+    finally { if (generation === modalGeneration) modalBusy = false; }
   });
 
   totalWeightInput?.addEventListener('input', () => {
     updateRecipeNutritionPreview();
   });
-
-  for (const [id] of MANUAL_NUTRITION_FIELDS) {
-    const input = document.getElementById(id);
-    input?.addEventListener('input', () => input.setCustomValidity(''));
-  }
 
   initVisibilityToggle();
   bindIngredientBuilder();
@@ -439,8 +391,7 @@ export async function initRecipeModal() {
 const PENDING_RECIPE_KEY = 'mintofood:pending-recipe';
 
 // Збирає поточні поля форми у чернетку й кладе в sessionStorage.
-async function savePendingRecipeDraft() {
-  await saveMediaDraft(mediaEditor?.snapshot() || []);
+function savePendingRecipeDraft() {
   const draft = {
     name_ua: document.getElementById('rm-name')?.value ?? '',
     steps: document.getElementById('rm-steps')?.value ?? '',
@@ -449,7 +400,6 @@ async function savePendingRecipeDraft() {
     image: document.getElementById('rm-image-url')?.value ?? '',
     ingredients: getIngredientsText(),
     visibility: recipeVisibility,
-    manualNutrition: Object.fromEntries(MANUAL_NUTRITION_FIELDS.map(([id, key]) => [key, document.getElementById(id)?.value ?? ''])),
   };
   try {
     sessionStorage.setItem(PENDING_RECIPE_KEY, JSON.stringify(draft));
@@ -492,8 +442,6 @@ async function restorePendingRecipeDraft() {
   }
 
   await showRecipeForm();
-  try { mediaEditor?.restore(await loadMediaDraft()); }
-  catch { showToast(mediaText('draftError'), 'error'); }
 
   setInputVal('rm-name', draft.name_ua);
   setInputVal('rm-steps', draft.steps);
@@ -501,7 +449,6 @@ async function restorePendingRecipeDraft() {
   setSelectValue('rm-category-select', 'rm-category', draft.category || 'lunch');
   setInputVal('rm-image-url', draft.image);
   await setIngredientsFromText(draft.ingredients || '');
-  if (!RECIPE_NUTRITION_ENABLED) restoreManualNutrition(draft.manualNutrition);
   if (draft.visibility) setVisibilityToggle(draft.visibility);
   updateRecipeNutritionPreview();
 
@@ -509,7 +456,7 @@ async function restorePendingRecipeDraft() {
 }
 
 export async function openRecipeModal(onSaved = null) {
-  pendingBookSave = false;
+  if (modalBusy) return;
   onRecipeSavedCallback = onSaved;
   editingRecipeId = null;
   editingRecipeOriginal = null;
@@ -520,11 +467,11 @@ export async function openRecipeModal(onSaved = null) {
     lockScroll('recipe-create-modal');
   }
 
-  await showRecipeForm();
+  showModalSection('recipe-create-choice');
 }
 
-export async function openRecipeModalForEdit(recipe, onSaved = null) {
-  pendingBookSave = false;
+export async function openRecipeModalForEdit(recipe, onSaved = null, { convert = false } = {}) {
+  if (modalBusy) return;
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -538,16 +485,19 @@ export async function openRecipeModalForEdit(recipe, onSaved = null) {
   editingRecipeId = recipe.id ?? null;
   editingRecipeOriginal = recipe || null;
   resetRecipeForm();
+  convertingSaved = convert && recipe.entry_type === 'saved';
 
   if (recipeModalInstance) {
     recipeModalInstance.classList.add('is-active');
     lockScroll('recipe-create-modal');
   }
 
-  await showRecipeForm(recipe);
+  if (recipe.entry_type === 'saved' && !convert) showSavedForm(recipe);
+  else await showRecipeForm(recipe);
 }
 
 export function closeRecipeModal() {
+  if (modalBusy) return;
   if (recipeModalInstance) {
     recipeModalInstance.classList.remove('is-active');
     unlockScroll('recipe-create-modal');
@@ -560,11 +510,13 @@ export function closeRecipeModal() {
 }
 
 function resetRecipeForm() {
-  formGeneration++;
-  mediaEditor?.reset();
+  modalGeneration++;
+  convertingSaved = false;
+  disposeSavedForm?.();
+  disposeSavedForm = null;
+  document.getElementById('rm-original')?.replaceChildren();
   const form = document.getElementById('recipe-modal-form');
   if (form) form.reset();
-  if (!RECIPE_NUTRITION_ENABLED) restoreManualNutrition();
 
   clearIngredients();
   resetVisibilityToggle();
@@ -579,20 +531,18 @@ function resetRecipeForm() {
 }
 
 async function showRecipeForm(data = null) {
-  const generation = formGeneration;
-  if (!RECIPE_NUTRITION_ENABLED) beginManualNutritionHint();
+  const generation = modalGeneration;
+  showModalSection('recipe-modal-preview-form');
   bindIngredientBuilder();
 
   await refreshBooks();
-  if (generation !== formGeneration) return;
+  if (generation !== modalGeneration) return;
   const booksSection = document.querySelector('.recipe-books-section');
   if (booksSection) booksSection.hidden = !!data;
 
   const preselectedBookIds = data?.id ? await getRecipeBooks(data.id) : [];
-  if (generation !== formGeneration) return;
+  if (generation !== modalGeneration) return;
   createInlineBookSelector('rm-book-selector', preselectedBookIds);
-  if (data) await mediaEditor?.load(data.id, !!data.media_revision);
-  if (generation !== formGeneration) return;
 
   if (data) {
     setInputVal('rm-name', data.name_ua || data.name || data.title);
@@ -602,37 +552,63 @@ async function showRecipeForm(data = null) {
     setInputVal('rm-image-url', data.image);
     setVisibilityToggle(data.is_public ? 'public' : 'private');
 
-    // While calculation is paused this only restores text, with no product lookups.
+    // Парсинг інгредієнтів тригерить перерахунок КБЖ (через notifyChange).
+    // Робимо це ДО відновлення збережених значень, щоб вони не затирались.
     await setIngredientsFromText(data.ingredients || '');
+    if (generation !== modalGeneration) return;
 
     // При редагуванні показуємо вже збережені КБЖ, а не перерахунок з нуля:
     // повторний парсинг може не розпізнати частину інгредієнтів і дати 0.
-    // Manual inputs start with saved values; ingredient/weight changes do not scale them.
-    if (RECIPE_NUTRITION_ENABLED) {
-      const savedKcal = data.kcal ?? data.calories ?? 0;
-      setInputVal('rm-calories', savedKcal);
-      setInputVal('rm-proteins', data.protein ?? data.proteins);
-      setInputVal('rm-fats', data.fat ?? data.fats);
-      setInputVal('rm-carbs', data.carbs);
-      updateNutritionNoteOnly(savedKcal);
-    } else {
-      restoreManualNutrition(data);
-      updateRecipeNutritionPreview();
-    }
+    // Реальний перерахунок відбудеться, лише якщо людина змінить інгредієнти.
+    const savedKcal = data.kcal || data.calories || 0;
+    setInputVal('rm-calories', savedKcal);
+    setInputVal('rm-proteins', data.proteins || data.protein);
+    setInputVal('rm-fats', data.fats || data.fat);
+    setInputVal('rm-carbs', data.carbs);
+    updateNutritionNoteOnly(savedKcal);
   } else {
     updateRecipeNutritionPreview();
   }
+  if (data?.id) {
+    try {
+      const source = await getRecipeSource(data.id);
+      if (generation !== modalGeneration) return;
+      await renderSourcePanel(document.getElementById('rm-original'), source, { original: convertingSaved, open: convertingSaved });
+    } catch { if (generation === modalGeneration) showToast(sourceText('loadError'), 'error'); }
+  }
+}
+
+function showModalSection(id) {
+  if (id === 'recipe-create-choice') {
+    for (const type of ['manual', 'saved']) {
+      const choice = document.getElementById(`rm-choose-${type}`);
+      if (choice) { choice.querySelector('h3').textContent = sourceText(type); choice.querySelector('p').textContent = sourceText(`${type}Hint`); }
+    }
+  }
+  for (const name of ['recipe-create-choice', 'recipe-saved-form', 'recipe-modal-preview-form']) {
+    const element = document.getElementById(name);
+    if (element) element.hidden = name !== id;
+  }
+}
+
+function showSavedForm(recipe = null) {
+  showModalSection('recipe-saved-form');
+  disposeSavedForm?.();
+  disposeSavedForm = mountSavedRecipeForm(document.getElementById('recipe-saved-form'), recipe, {
+    onBusy: value => { modalBusy = value; }, onCancel: closeRecipeModal,
+    onSaved: data => { const callback = onRecipeSavedCallback; closeRecipeModal(); callback?.(data); },
+  });
 }
 
 // Phase 18 — записуємо рецепт через сервер, який модерує САМЕ те фото, що
 // зберігає (score нерозривний із записом — клієнт не може підмінити фото між
 // скорингом і записом). Сервер також робить серверну валідацію public і
 // перевірку власника. Повертає { recipe, flagged } або кидає при помилці.
-async function saveRecipeViaServer(payload, editingId, isPublic, imageIsNew) {
+async function saveRecipeViaServer(payload, editingId, isPublic, imageIsNew, expectedUserId) {
   const {
     data: { session },
   } = await supabase.auth.getSession();
-  if (!session?.access_token) throw new Error('no session');
+  if (!session?.access_token || session.user?.id !== expectedUserId) throw new Error('no session');
 
   const res = await fetch('/api/save-recipe', {
     method: 'POST',
@@ -645,6 +621,7 @@ async function saveRecipeViaServer(payload, editingId, isPublic, imageIsNew) {
       editingRecipeId: editingId,
       isPublicSubmission: isPublic,
       imageIsNew,
+      convertSaved: convertingSaved,
     }),
   });
 
@@ -658,21 +635,18 @@ async function saveRecipeViaServer(payload, editingId, isPublic, imageIsNew) {
 }
 
 async function saveRecipe() {
-  const generation = formGeneration;
-  const manualNutrition = RECIPE_NUTRITION_ENABLED ? {} : readManualNutrition();
-  if (manualNutrition === null) return;
+  const generation = modalGeneration;
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (generation !== formGeneration) return;
+  if (generation !== modalGeneration) return;
 
   if (!user) {
     // Не втрачаємо введений рецепт. Логін часто редіректить на іншу сторінку,
     // тож дію в пам'яті не зберегти — пишемо чернетку у sessionStorage.
     // Після входу restorePendingRecipeDraft() (на recipes.html) відновить
     // форму. requireAuth відкриває вікно логіну.
-    try { await savePendingRecipeDraft(); }
-    catch { showToast(mediaText('draftError'), 'error'); return; }
+    savePendingRecipeDraft();
     requireAuth();
     return;
   }
@@ -691,7 +665,7 @@ async function saveRecipe() {
 
   if (fileInput?.files?.[0]) {
     finalImage = await toBase64(fileInput.files[0]);
-    if (generation !== formGeneration) return;
+    if (generation !== modalGeneration) return;
     imageIsNew = true;
   } else if (urlInput?.value.trim()) {
     finalImage = urlInput.value.trim();
@@ -702,7 +676,7 @@ async function saveRecipe() {
 
   const totals = getTotals();
   const totalWeightVal = parsePositiveNumber(document.getElementById('rm-total-weight')?.value);
-  const displayedNutrition = RECIPE_NUTRITION_ENABLED ? getDisplayedNutrition(totals, totalWeightVal) : null;
+  const displayedNutrition = getDisplayedNutrition(totals, totalWeightVal);
 
   const isPublicSubmission = recipeVisibility === 'public';
   const nameVal = document.getElementById('rm-name')?.value.trim() ?? '';
@@ -725,13 +699,11 @@ async function saveRecipe() {
   // сервер (клієнтські значення все одно ігноруються).
   const payload = {
     name_ua: nameVal,
-    ...(RECIPE_NUTRITION_ENABLED ? {
-      kcal: parseFloat(displayedNutrition.kcal.toFixed(1)) || 0,
-      protein: parseFloat(displayedNutrition.protein.toFixed(1)) || 0,
-      fat: parseFloat(displayedNutrition.fat.toFixed(1)) || 0,
-      carbs: parseFloat(displayedNutrition.carbs.toFixed(1)) || 0,
-      fiber: parseFloat(displayedNutrition.fiber.toFixed(1)) || 0,
-    } : manualNutrition),
+    kcal: parseFloat(displayedNutrition.kcal.toFixed(1)) || 0,
+    protein: parseFloat(displayedNutrition.protein.toFixed(1)) || 0,
+    fat: parseFloat(displayedNutrition.fat.toFixed(1)) || 0,
+    carbs: parseFloat(displayedNutrition.carbs.toFixed(1)) || 0,
+    fiber: parseFloat(displayedNutrition.fiber.toFixed(1)) || 0,
     total_weight: totalWeightVal,
     category: document.getElementById('rm-category')?.value,
     ingredients: getIngredientsText(),
@@ -742,12 +714,12 @@ async function saveRecipe() {
   let data = null;
   let imageFlagged = false;
   try {
-    const result = await saveRecipeViaServer(payload, editingRecipeId, isPublicSubmission, imageIsNew);
+    const result = await saveRecipeViaServer(payload, editingRecipeId, isPublicSubmission, imageIsNew, user.id);
+    if (generation !== modalGeneration) return;
     data = result.recipe || null;
     imageFlagged = result.flagged === true;
-    if (generation !== formGeneration) return;
   } catch (err) {
-    if (generation !== formGeneration) return;
+    if (generation !== modalGeneration) return;
     console.error('Помилка збереження рецепту:', err);
     // Серверні валідаційні коди → зрозумілі повідомлення.
     if (err.code === 'name_required') showToast(t('rmPublishNeedsName'), 'error');
@@ -760,21 +732,6 @@ async function saveRecipe() {
 
   if (!data?.id) {
     showToast(t('rmSaveError'), 'error');
-    return;
-  }
-
-  if (editingRecipeId === null) pendingBookSave = true;
-  try {
-    const revision = await mediaEditor?.save(data.id, user.id);
-    if (generation !== formGeneration) return;
-    if (revision) data.media_revision = revision;
-    await clearMediaDraft().catch(() => {});
-  } catch (error) {
-    if (generation !== formGeneration) return;
-    // The row already exists: retry must update it, never create a duplicate.
-    editingRecipeId = data.id;
-    editingRecipeOriginal = data;
-    showToast(String(error?.message).includes('media_conflict') ? mediaText('conflict') : mediaText('savedPart'), 'error');
     return;
   }
 
@@ -814,18 +771,19 @@ async function saveRecipe() {
       }
     });
 
-  if (RECIPE_NUTRITION_ENABLED && editingRecipeId !== null && data?.id) {
+  if (editingRecipeId !== null && data?.id) {
     const { error: deleteIngredientsError } = await supabase
       .from('product_recipe')
       .delete()
       .eq('recipe_id', data.id);
+    if (generation !== modalGeneration) return;
 
     if (deleteIngredientsError) {
       console.error('Error replacing recipe ingredients:', deleteIngredientsError);
     }
   }
 
-  if (RECIPE_NUTRITION_ENABLED && ingredients.length > 0 && data?.id) {
+  if (ingredients.length > 0 && data?.id) {
     const ingredientRows = ingredients
       .filter((ingredient) => ingredient.id)
       .map((ingredient) => ({
@@ -837,6 +795,7 @@ async function saveRecipe() {
 
     if (ingredientRows.length > 0) {
       const { error: ingredientError } = await supabase.from('product_recipe').insert(ingredientRows);
+      if (generation !== modalGeneration) return;
       if (ingredientError) {
         console.error('Помилка збереження інгредієнтів:', ingredientError);
       }
@@ -851,7 +810,7 @@ async function saveRecipe() {
   let bookSaveSucceeded = false;
   let savedBookNames = [];
   const selectedBookIds = getSelectedBooksFromContainer('rm-book-selector');
-  if ((editingRecipeId === null || pendingBookSave) && data?.id) {
+  if (editingRecipeId === null && data?.id) {
     bookSaveAttempted = true;
 
     try {
@@ -864,6 +823,7 @@ async function saveRecipe() {
         }
       } else {
         const book = await ensureDefaultBook();
+        if (generation !== modalGeneration) return;
         if (book) {
           bookSaveSucceeded = await saveRecipeToBook(data.id, book.id, book.name, true);
           if (bookSaveSucceeded) savedBookNames = [book.name];
@@ -875,7 +835,7 @@ async function saveRecipe() {
   }
 
   const bookSaveFailed = bookSaveAttempted && !bookSaveSucceeded;
-  pendingBookSave = bookSaveFailed;
+  if (generation !== modalGeneration) return;
 
   // Phase 18 — фото модерував сервер разом із записом (imageFlagged з відповіді).
   if (imageFlagged) {
@@ -883,18 +843,18 @@ async function saveRecipe() {
       t(bookSaveFailed ? 'rmImageUnderReviewBookSaveFailed' : 'rmImageUnderReview'),
       bookSaveFailed ? 'error' : 'info',
     );
-    const onSaved = onRecipeSavedCallback;
+    const callback = onRecipeSavedCallback;
+    modalBusy = false;
     closeRecipeModal();
-    if (onSaved) onSaved(data);
+    callback?.(data);
     return;
   }
 
   if (editingRecipeId !== null) {
-    const hasModeratedChanges = isPublicSubmission && editingRecipeOriginal?.status === 'published' && (
+    const hasModeratedChanges = editingRecipeOriginal?.status === 'published' && (
       payload.name_ua !== editingRecipeOriginal?.name_ua ||
       payload.steps !== editingRecipeOriginal?.steps ||
-      payload.image !== editingRecipeOriginal?.image ||
-      data.media_revision !== editingRecipeOriginal?.media_revision
+      payload.image !== editingRecipeOriginal?.image
     );
 
     showToast(hasModeratedChanges ? t('rmChangesSentForReview') : t('rmRecipeUpdated'));
@@ -913,7 +873,8 @@ async function saveRecipe() {
     showToast(t('rmRecipeSaved'));
   }
 
-  const onSaved = onRecipeSavedCallback;
+  const callback = onRecipeSavedCallback;
+  modalBusy = false;
   closeRecipeModal();
-  if (onSaved) onSaved(data);
+  callback?.(data);
 }

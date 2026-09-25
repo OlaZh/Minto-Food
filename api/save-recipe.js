@@ -1,4 +1,4 @@
-// Vercel serverless function — save recipes; moderate photos on PUBLIC submissions.
+// Vercel serverless function — save a recipe WITH inseparable image moderation.
 // Route: POST /api/save-recipe
 // Auth:  Bearer token (Supabase JWT) in Authorization header
 //
@@ -8,10 +8,10 @@
 // safe score. Here the score and the write happen together, server-side, so
 // they cannot be decoupled.
 //
-// This endpoint owns ONLY the recipe row + moderation. Ingredients, cookbooks
-// and the unmatched-terms queue stay on the client (they don't touch the photo
-// or the score, and their RLS already works). The client calls this first, then
-// wires up ingredients/books against the returned recipe id.
+// Manual recipes keep the existing row + moderation path; their ingredient/book
+// writes remain on the client. Saved entries use a separate atomic RPC to save
+// the same recipe row, its private source and book memberships. Their source
+// files never enter the image-moderation path or the public recipe payload.
 //
 // Body:
 //   {
@@ -26,6 +26,8 @@
 // SECURITY: the service role bypasses RLS, so THIS function re-implements the
 // ownership checks RLS used to enforce — user_id is forced to the JWT subject,
 // and edits are constrained to rows the caller owns.
+
+import { normalizeSourceUrl } from '../js/recipe-source-rules.js';
 
 const SUPABASE_URL = process.env.SUPABASE_URL || 'https://xpaibteyntflrixmigfx.supabase.co';
 const SERVICE_KEY  = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -151,7 +153,7 @@ function pickProvider() {
 // Validate + score a photo. Returns { flagged, score, provider, raw }.
 // Fails OPEN (flagged:false) on provider error — a moderation outage must not
 // block saving — but records the error decision for audit.
-async function scoreImage(image, moderate = true) {
+async function scoreImage(image) {
   if (typeof image !== 'string' || !image.trim()) {
     return { flagged: false, score: null, provider: 'none', raw: null };
   }
@@ -174,7 +176,6 @@ async function scoreImage(image, moderate = true) {
     return { flagged: false, score: null, provider: 'invalid', raw: { note: 'not an image (neither data URI nor URL)' } };
   }
 
-  if (!moderate) return { flagged: false, score: null, provider: 'private', raw: null };
   const provider = pickProvider();
   const result = await provider(image);
   const flagged = typeof result.score === 'number' && result.score >= NSFW_THRESHOLD;
@@ -271,6 +272,29 @@ export default async function handler(req, res) {
     if (!admitted) return res.status(429).json({ error: 'rate_limited' });
   }
 
+  if (req.body?.entryType === 'saved') {
+    if (isPublicSubmission) return res.status(400).json({ error: 'saved_recipe_private' });
+    const source = req.body?.source;
+    if (!source || !Array.isArray(source.files) || !Array.isArray(req.body.bookIds)) {
+      return res.status(400).json({ error: 'invalid_source_files' });
+    }
+    try {
+      const saved = await rest('POST', 'rpc/save_saved_recipe', {
+        p_user_id: uid, p_source_id: source.id, p_recipe_id: editingRecipeId,
+        p_name: inRecipe.name_ua, p_url: normalizeSourceUrl(source.source_url), p_files: source.files,
+        p_cover: source.cover_path || null, p_books: req.body.bookIds.map(String),
+        p_version: source.version,
+      });
+      res.setHeader('Cache-Control', 'no-store');
+      return res.status(200).json({ recipe: Array.isArray(saved) ? saved[0] : saved, flagged: false });
+    } catch (err) {
+      const code = ['name_required', 'invalid_source_url', 'invalid_source_files', 'invalid_source_cover',
+        'invalid_source_books', 'image_too_large', 'video_too_large', 'source_conflict',
+        'source_unavailable', 'already_converted'].find(value => err.message.includes(value));
+      return res.status(code ? 400 : 500).json({ error: code || 'save_failed' });
+    }
+  }
+
   // Whitelist fields; never trust client-sent user_id/status/moderation columns.
   const fields = {};
   for (const k of ALLOWED_FIELDS) if (k in inRecipe) fields[k] = inRecipe[k];
@@ -293,6 +317,12 @@ export default async function handler(req, res) {
     if (original.user_id !== uid) return res.status(403).json({ error: 'forbidden' });
   }
 
+  if (original?.entry_type === 'saved') {
+    if (req.body?.convertSaved !== true) return res.status(400).json({ error: 'conversion_required' });
+    // Conversion happens in the same row write as the manual form. Originals stay private.
+    fields.entry_type = 'manual';
+  }
+
   // The SERVER decides whether the photo is new — never trust the client. A
   // create with a photo is new; an edit is new iff the photo differs from the
   // stored one. This closes the "imageIsNew:false" bypass.
@@ -301,24 +331,16 @@ export default async function handler(req, res) {
     ? newPhoto.length > 0
     : newPhoto !== ((original.image ?? '').trim());
 
-  // Private photos stay private. Review the photo on first public submission,
-  // including an unchanged image that was previously saved privately.
-  const needsImageReview = isPublicSubmission && newPhoto && (imageIsNew || original?.is_public !== true);
+  // Shadow-banned authors always go to the queue.
+  const profile = (await rest('GET', `profiles?id=eq.${uid}&select=is_shadow_banned`))?.[0];
+  const isShadowBanned = profile?.is_shadow_banned === true;
 
   // Moderate the EXACT photo we are about to persist.
   // `reservation` holds an atomically-reserved rate-limit slot (a pre-written
   // log row) that we finalize with the real decision after scoring.
   let moderation = { flagged: false, score: null, provider: 'skip', raw: null };
   let reservation = null;
-  if (!isPublicSubmission && imageIsNew && newPhoto) {
-    try {
-      moderation = await scoreImage(newPhoto, false);
-      if (moderation.provider === 'invalid') return res.status(400).json({ error: 'invalid_image' });
-    } catch (err) {
-      return res.status(err.tooLarge ? 413 : 400).json({ error: err.tooLarge ? 'image_too_large' : 'invalid_image' });
-    }
-  }
-  if (needsImageReview) {
+  if (imageIsNew && newPhoto) {
     reservation = await reserveSlot(uid);
     if (!reservation) {
       // Over the per-user hourly limit — don't call the provider. Queue for
@@ -341,9 +363,7 @@ export default async function handler(req, res) {
     }
   }
 
-  const moderationCols = !isPublicSubmission
-    ? { is_image_flagged: false, image_nsfw_score: null, image_moderated_at: null }
-    : (imageIsNew || needsImageReview)
+  const moderationCols = imageIsNew
     ? {
         is_image_flagged: moderation.flagged,
         image_nsfw_score: moderation.score,
@@ -357,16 +377,12 @@ export default async function handler(req, res) {
 
     if (editingRecipeId === null) {
       // ── Create ── status is decided here, never taken from the client.
-      const status = isPublicSubmission ? 'pending' : 'draft';
+      const status = (isShadowBanned || isPublicSubmission) ? 'pending' : 'draft';
       const row = { ...fields, user_id: uid, status, is_public: isPublicSubmission, ...moderationCols };
       saved = (await rest('POST', 'recipes', row, { Prefer: 'return=representation' }))?.[0];
-    } else if (!isPublicSubmission && (original.status === 'published' || original.has_pending_update)) {
-      saved = (await rest('POST', 'rpc/save_private_recipe', {
-        p_recipe_id: editingRecipeId, p_user_id: uid, p_fields: fields,
-      }))?.[0];
     } else if (original.status === 'published') {
       // ── Edit of a published recipe: moderated fields are STAGED ──
-      // The live recipe stays published;
+      // The live recipe stays published (unless switched to private, below);
       // moderated changes go to recipe_pending_updates for review.
       const direct = {};
       const pending = {};
@@ -379,6 +395,8 @@ export default async function handler(req, res) {
         }
       }
       direct.is_public = isPublicSubmission;
+      // Switching a published recipe to private un-publishes it immediately.
+      if (!isPublicSubmission) direct.status = 'draft';
 
       await rest('POST', 'rpc/stage_recipe_update', {
         p_recipe_id: editingRecipeId,
@@ -393,13 +411,13 @@ export default async function handler(req, res) {
       saved = (await rest('GET', `recipes?id=eq.${editingRecipeId}&select=*`))?.[0];
     } else {
       // ── Edit of a draft/pending recipe: write through, recompute status ──
-      const status = isPublicSubmission ? 'pending' : 'draft';
+      const status = (isShadowBanned || isPublicSubmission) ? 'pending' : 'draft';
       const row = { ...fields, is_public: isPublicSubmission, status, ...moderationCols };
       saved = (await rest('PATCH', `recipes?id=eq.${editingRecipeId}&user_id=eq.${uid}`, row, { Prefer: 'return=representation' }))?.[0];
     }
 
     // Audit the decision (recipe id known now).
-    if (needsImageReview && saved?.id) {
+    if (imageIsNew && saved?.id) {
       const decision = moderation.provider === 'error' ? 'error' : (moderation.flagged ? 'flagged' : 'approved');
       if (reservation) {
         // Rewrite the reserved slot with the final decision.

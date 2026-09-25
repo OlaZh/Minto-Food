@@ -18,6 +18,7 @@ let cachedBooks = [];
 let selectorModal = null;
 let onSelectCallback = null;
 let previouslySavedBookIds = [];
+const inlineBookSelections = new WeakMap();
 
 // =============================================================
 // ІНІЦІАЛІЗАЦІЯ
@@ -418,6 +419,7 @@ export function createInlineBookSelector(containerId, preselectedBookIds = []) {
   const defaultBook = getDefaultBook();
   const defaultSelected =
     preselectedBookIds.length > 0 ? preselectedBookIds : defaultBook ? [defaultBook.id] : [];
+  inlineBookSelections.set(container, new Set(defaultSelected));
 
   const booksToShow = cachedBooks.slice(0, 3);
   const hasMore = cachedBooks.length > 3;
@@ -454,7 +456,7 @@ export function createInlineBookSelector(containerId, preselectedBookIds = []) {
   const moreBtn = document.getElementById(`${containerId}-more`);
   if (moreBtn) {
     moreBtn.addEventListener('click', () => {
-      showFullBookSelector(containerId, defaultSelected);
+      showFullBookSelector(containerId, getSelectedBooksFromContainer(containerId));
     });
   }
 }
@@ -462,6 +464,7 @@ export function createInlineBookSelector(containerId, preselectedBookIds = []) {
 function showFullBookSelector(containerId, currentSelection) {
   const container = document.getElementById(containerId);
   if (!container) return;
+  inlineBookSelections.set(container, new Set(currentSelection));
 
   container.innerHTML = `
     <div class="inline-book-selector inline-book-selector--expanded">
@@ -496,8 +499,14 @@ export function getSelectedBooksFromContainer(containerId) {
   const container = document.getElementById(containerId);
   if (!container) return [];
 
-  const checkboxes = container.querySelectorAll('input[name="recipe_books"]:checked');
-  return Array.from(checkboxes).map((cb) => parseInt(cb.value));
+  // Keep selections outside the three visible books when the list is collapsed.
+  const selected = new Set(inlineBookSelections.get(container) || []);
+  container.querySelectorAll('input[name="recipe_books"]').forEach(cb => {
+    const id = parseInt(cb.value);
+    if (cb.checked) selected.add(id); else selected.delete(id);
+  });
+  inlineBookSelections.set(container, selected);
+  return [...selected];
 }
 
 // =============================================================
