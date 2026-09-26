@@ -77,6 +77,10 @@
 
 /* ================= OPTION CARDS ================= */
 
+#recipe-create-modal:has(#recipe-create-choice:not([hidden])) > .modal-card {
+  margin: auto;
+}
+
 .modal-card__options {
   display: flex;
   flex-direction: column;
