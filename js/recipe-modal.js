@@ -9,7 +9,7 @@ import {
   setIngredientsFromText,
   setLanguage,
 } from './recipe-ingredients.js';
-import { showToast, toBase64, setInputVal, withButtonLoading, autoResizeTextarea, initAutoResizeTextareas } from './utils.js';
+import { showToast, toBase64, setInputVal, withButtonLoading, autoResizeTextarea, initAutoResizeTextareas, safeImageUrl } from './utils.js';
 import { getLang } from './storage.js';
 import { t, formatText } from './i18n-apply.js';
 import { lockScroll, unlockScroll } from './scroll-lock.js';
@@ -39,6 +39,30 @@ let modalBusy = false;
 let modalGeneration = 0;
 let convertingSaved = false;
 let modalAuthUserId;
+let imagePreviewUrl = null;
+
+function clearImagePreview() {
+  if (imagePreviewUrl) URL.revokeObjectURL(imagePreviewUrl);
+  imagePreviewUrl = null;
+  const image = document.getElementById('rm-image-preview');
+  if (image) { image.removeAttribute('src'); image.hidden = true; }
+  const error = document.getElementById('rm-image-preview-error');
+  if (error) error.hidden = true;
+}
+
+function updateImagePreview() {
+  clearImagePreview();
+  const image = document.getElementById('rm-image-preview');
+  if (!image) return;
+  const file = document.getElementById('rm-image-file')?.files?.[0];
+  const url = document.getElementById('rm-image-url')?.value.trim();
+  if (file) imagePreviewUrl = URL.createObjectURL(file);
+  const src = imagePreviewUrl || safeImageUrl(url || editingRecipeOriginal?.image);
+  if (!src) return;
+  image.alt = file?.name || t('rmImagePreview');
+  image.src = src;
+  image.hidden = false;
+}
 
 function parsePositiveNumber(value) {
   const normalized = String(value ?? '').replace(',', '.').trim();
@@ -247,6 +271,8 @@ function createRecipeModalHTML() {
                     data-i18n="uploadPhoto">
                     ${iconCamera} Завантажити фото
                   </button>
+                  <img id="rm-image-preview" class="recipe-image-preview" alt="" hidden />
+                  <p id="rm-image-preview-error" class="source-hint" role="status" hidden>${t('rmImagePreviewError')}</p>
                   <div class="form-separator"><span data-i18n="orSeparator">— або —</span></div>
                   <div class="form-group">
                     <input type="text" id="rm-image-url" placeholder="Вставте URL фото..." data-i18n-placeholder="rmImageUrlPlaceholder" />
@@ -373,6 +399,18 @@ export async function initRecipeModal() {
   document.getElementById('rm-image-upload-btn')?.addEventListener('click', () => {
     document.getElementById('rm-image-file')?.click();
   });
+  document.getElementById('rm-image-file')?.addEventListener('change', updateImagePreview);
+  document.getElementById('rm-image-url')?.addEventListener('change', updateImagePreview);
+  document.getElementById('rm-image-preview')?.addEventListener('load', (event) => {
+    if (!event.target.hasAttribute('src')) return;
+    event.target.hidden = false;
+    document.getElementById('rm-image-preview-error').hidden = true;
+  });
+  document.getElementById('rm-image-preview')?.addEventListener('error', (event) => {
+    if (!event.target.hasAttribute('src')) return;
+    event.target.hidden = true;
+    document.getElementById('rm-image-preview-error').hidden = false;
+  });
 
   initAutoResizeTextareas('#rm-steps');
   let formWidth = 0;
@@ -472,6 +510,7 @@ async function restorePendingRecipeDraft() {
   setInputVal('rm-total-weight', draft.total_weight);
   setSelectValue('rm-category-select', 'rm-category', draft.category || 'lunch');
   setInputVal('rm-image-url', draft.image);
+  updateImagePreview();
   await setIngredientsFromText(draft.ingredients || '');
   if (draft.visibility) setVisibilityToggle(draft.visibility);
   updateRecipeNutritionPreview();
@@ -535,6 +574,7 @@ export function closeRecipeModal() {
 
 function resetRecipeForm() {
   modalGeneration++;
+  clearImagePreview();
   convertingSaved = false;
   disposeSavedForm?.();
   disposeSavedForm = null;
@@ -576,6 +616,7 @@ async function showRecipeForm(data = null) {
     setInputVal('rm-total-weight', data.total_weight);
     setSelectValue('rm-category-select', 'rm-category', data.category || 'lunch');
     setInputVal('rm-image-url', data.image);
+    updateImagePreview();
     setVisibilityToggle(data.is_public ? 'public' : 'private');
 
     // Відкриваємо текст без автоматичного розпізнавання та червоних позначок.
