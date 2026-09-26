@@ -9,7 +9,7 @@ import {
   setIngredientsFromText,
   setLanguage,
 } from './recipe-ingredients.js';
-import { showToast, toBase64, setInputVal, withButtonLoading } from './utils.js';
+import { showToast, toBase64, setInputVal, withButtonLoading, autoResizeTextarea, initAutoResizeTextareas } from './utils.js';
 import { getLang } from './storage.js';
 import { t, formatText } from './i18n-apply.js';
 import { lockScroll, unlockScroll } from './scroll-lock.js';
@@ -353,13 +353,15 @@ export async function initRecipeModal() {
     document.getElementById('rm-image-file')?.click();
   });
 
-  recipeModalInstance?.querySelectorAll('textarea').forEach((textarea) => {
-    textarea.style.overflow = 'hidden';
-    textarea.addEventListener('input', () => {
-      textarea.style.height = 'auto';
-      textarea.style.height = `${textarea.scrollHeight}px`;
-    });
+  initAutoResizeTextareas('#rm-steps');
+  let formWidth = 0;
+  const formResizeObserver = new ResizeObserver(([entry]) => {
+    const width = entry.contentRect.width;
+    if (!width || width === formWidth) return;
+    formWidth = width;
+    recipeModalInstance?.querySelectorAll('#rm-steps, #ingredientTextarea').forEach(autoResizeTextarea);
   });
+  if (form) formResizeObserver.observe(form);
 
   form?.addEventListener('submit', async (event) => {
     event.preventDefault();
@@ -445,6 +447,7 @@ async function restorePendingRecipeDraft() {
 
   setInputVal('rm-name', draft.name_ua);
   setInputVal('rm-steps', draft.steps);
+  autoResizeTextarea(document.getElementById('rm-steps'));
   setInputVal('rm-total-weight', draft.total_weight);
   setSelectValue('rm-category-select', 'rm-category', draft.category || 'lunch');
   setInputVal('rm-image-url', draft.image);
@@ -535,6 +538,7 @@ async function showRecipeForm(data = null) {
   showModalSection('recipe-modal-preview-form');
   bindIngredientBuilder();
 
+  autoResizeTextarea(document.getElementById('rm-steps'));
   await refreshBooks();
   if (generation !== modalGeneration) return;
   const booksSection = document.querySelector('.recipe-books-section');
@@ -547,6 +551,7 @@ async function showRecipeForm(data = null) {
   if (data) {
     setInputVal('rm-name', data.name_ua || data.name || data.title);
     setInputVal('rm-steps', data.steps);
+    autoResizeTextarea(document.getElementById('rm-steps'));
     setInputVal('rm-total-weight', data.total_weight);
     setSelectValue('rm-category-select', 'rm-category', data.category || 'lunch');
     setInputVal('rm-image-url', data.image);

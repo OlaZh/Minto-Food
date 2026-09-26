@@ -38,6 +38,27 @@ const viewModal = document.getElementById('view-recipe-modal');
 const closeViewModalBtn = document.getElementById('close-view-modal');
 const closeViewBtn = document.getElementById('close-view-btn');
 const saveNotesBtn = document.getElementById('save-notes-btn');
+const recipeParams = new URLSearchParams(window.location.search);
+const recipeParam = recipeParams.get('recipe');
+const fromCookbook = recipeParams.get('from') === 'cookbook';
+const sourceBookId = recipeParams.get('book');
+const cookbookReturnUrl = sourceBookId ? `cookbook.html?book=${encodeURIComponent(sourceBookId)}` : 'cookbook.html';
+const recipeLoadStatus = document.getElementById('recipeLoadStatus');
+let recipeModalReady;
+
+if (recipeParam) {
+  const entry = document.getElementById('recipeEntry');
+  entry.hidden = false;
+  entry.appendChild(viewModal);
+  viewModal.classList.add('recipe-direct-view');
+  const back = document.getElementById('recipeBack');
+  back.href = fromCookbook ? cookbookReturnUrl : 'recipes.html';
+  back.textContent = t(fromCookbook ? (sourceBookId ? 'backToBook' : 'backToBooks') : 'navRecipes');
+  const title = document.getElementById('view-title');
+  const heading = document.createElement('h1');
+  heading.id = title.id;
+  title.replaceWith(heading);
+}
 
 // =============================================================
 // 2. ДАНІ ТА СТАН
@@ -221,22 +242,10 @@ function initOwnFilter() {
 // 4. ЗАВАНТАЖЕННЯ ТА ВІДОБРАЖЕННЯ РЕЦЕПТІВ З SUPABASE
 // =============================================================
 
-function showRecipeSkeletons(count = 10) {
+function showRecipesLoading() {
   const grid = document.getElementById('community-grid');
   if (!grid) return;
-  grid.innerHTML = Array.from({ length: count }, () => `
-    <div class="skeleton-card">
-      <div class="skeleton-card__image"></div>
-      <div class="skeleton-card__content">
-        <div class="skeleton-card__title"></div>
-        <div class="skeleton-card__subtitle"></div>
-        <div class="skeleton-card__footer">
-          <div class="skeleton-card__badge"></div>
-          <div class="skeleton-card__btn"></div>
-        </div>
-      </div>
-    </div>
-  `).join('');
+  grid.innerHTML = `<p class="recipe-loading" role="status">${t('loading')}</p>`;
 }
 
 function showRecipesWelcomeState() {
@@ -266,6 +275,7 @@ function showRecipesWelcomeState() {
 }
 
 async function loadAndDisplayRecipes(force = false) {
+  if (recipeParam) return;
   const searchQuery = document.getElementById('recipe-search-input')?.value?.trim() || '';
 
   if (!force && !searchQuery && !hasActiveFilters()) {
@@ -277,7 +287,7 @@ async function loadAndDisplayRecipes(force = false) {
     return;
   }
 
-  showRecipeSkeletons();
+  showRecipesLoading();
 
   const {
     data: { user },
@@ -1016,6 +1026,7 @@ export async function openRecipeView(recipeId) {
     const {
       data: { user },
     } = await supabase.auth.getUser();
+    if (generation !== sourceViewGeneration) return;
     currentUser = user;
   }
 
@@ -1025,12 +1036,17 @@ export async function openRecipeView(recipeId) {
     .eq('id', recipeId)
     .single();
 
+  if (generation !== sourceViewGeneration) return;
   if (error || !recipe) {
     console.error('Помилка завантаження рецепту:', error);
+    if (recipeParam) {
+      recipeLoadStatus.removeAttribute('data-i18n');
+      recipeLoadStatus.textContent = t('recipeUnavailable');
+      recipeLoadStatus.hidden = false;
+    }
     return;
   }
 
-  if (generation !== sourceViewGeneration) return;
   currentViewingId = recipeId;
 
   const name = getRecipeName(recipe);
@@ -1043,6 +1059,10 @@ export async function openRecipeView(recipeId) {
   }
   const sourceHost = document.createElement('div'); sourceHost.id = 'view-source';
   viewModal?.querySelector('.recipe-detail__body')?.prepend(sourceHost);
+  const ratingsPromise = savedEntry ? Promise.resolve([new Map(), 0]) : Promise.all([
+    getRecipeRatingSummaries([recipe.id]),
+    getOwnRecipeRating(recipe.id),
+  ]);
   if (isOwn) {
     try {
       const source = await getRecipeSource(recipe.id);
@@ -1056,10 +1076,7 @@ export async function openRecipeView(recipeId) {
     button.textContent = sourceText('convert');
     button.addEventListener('click', () => editRecipe(recipe, true)); sourceHost.after(button);
   }
-  const [ratingSummaries, ownRating] = await Promise.all([
-    getRecipeRatingSummaries([recipe.id]),
-    getOwnRecipeRating(recipe.id),
-  ]);
+  const [ratingSummaries, ownRating] = await ratingsPromise;
   if (generation !== sourceViewGeneration) return;
   const ratingSummary = ratingSummaries.get(Number(recipe.id));
   recipe.rating = ratingSummary?.rating ?? 0;
@@ -1133,7 +1150,7 @@ export async function openRecipeView(recipeId) {
           : `<span>• ${escapeHTML(name)}</span>`;
         list.appendChild(li);
       });
-    } else {
+    } else if (!savedEntry) {
       // Fallback: product_recipe (для старих рецептів без текстового поля)
       const { data: productRecipes } = await supabase
         .from('product_recipe')
@@ -1191,7 +1208,8 @@ export async function openRecipeView(recipeId) {
 
   if (viewModal) {
     viewModal.classList.add('is-active');
-    lockScroll('recipe-view-modal');
+    if (recipeParam) recipeLoadStatus.hidden = true;
+    else lockScroll('recipe-view-modal');
   }
 }
 
@@ -1292,19 +1310,23 @@ function updateRecipeViewActions(recipe, isOwn) {
 // 5.2 РЕДАГУВАННЯ РЕЦЕПТУ
 // =============================================================
 
-function editRecipe(recipe, convert = false) {
+async function editRecipe(recipe, convert = false) {
   if (!isOwnRecipe(recipe)) {
     showToast(t('editOnlyOwn'), 'error');
     return;
   }
 
-  if (viewModal) {
+  try { await recipeModalReady; }
+  catch { showToast(t('loadError'), 'error'); return; }
+  if (viewModal && !recipeParam) {
     viewModal.classList.remove('is-active');
     unlockScroll('recipe-view-modal');
   }
 
   openRecipeModalForEdit(recipe, async () => {
-    await loadAndDisplayRecipes(true);
+    if (fromCookbook) window.location.replace(cookbookReturnUrl);
+    else if (recipeParam) await openRecipeView(recipe.id);
+    else await loadAndDisplayRecipes(true);
   }, { convert });
 }
 
@@ -1328,7 +1350,8 @@ function openDeleteConfirm(recipeId) {
           viewModal.classList.remove('is-active');
           unlockScroll('recipe-view-modal');
         }
-        loadAndDisplayRecipes(true);
+        if (recipeParam) window.location.replace(fromCookbook ? cookbookReturnUrl : 'recipes.html');
+        else loadAndDisplayRecipes(true);
       }
     },
   });
@@ -1366,7 +1389,8 @@ function openMakePublicConfirm(recipe) {
         showToast(t('publishError'), 'error');
       } else {
         showToast(t('recipeSentModeration'), 'info');
-        loadAndDisplayRecipes(true);
+        if (recipeParam) await openRecipeView(recipe.id);
+        else loadAndDisplayRecipes(true);
       }
     },
   });
@@ -1384,8 +1408,11 @@ const closeViewModal = () => {
     unlockScroll('recipe-view-modal');
     currentViewingId = null;
 
-    const from = new URLSearchParams(window.location.search).get('from');
-    if (from) {
+    if (fromCookbook) {
+      window.location.replace(cookbookReturnUrl);
+    } else if (recipeParam) {
+      window.location.replace('recipes.html');
+    } else if (recipeParams.get('from')) {
       history.back();
     }
   }
@@ -1618,21 +1645,41 @@ document.addEventListener('DOMContentLoaded', async () => {
     currentUser = user || null;
     // Після логіну перебудовуємо фільтри та рецепти з контекстом юзера
     if (event === 'SIGNED_IN') {
+      if (recipeParam) { if (recipeModalReady) openRecipeView(recipeParam); return; }
       buildFilterPanel();
       loadAndDisplayRecipes();
     }
     // Після логауту також оновлюємо
     if (event === 'SIGNED_OUT') {
+      if (recipeParam) {
+        recipeLoadStatus.removeAttribute('data-i18n');
+        recipeLoadStatus.textContent = t('recipeUnavailable');
+        recipeLoadStatus.hidden = false;
+        return;
+      }
       buildFilterPanel();
       loadAndDisplayRecipes();
     }
   });
   // initRecipeModal() сам викликає initBookSelector() всередині — окремий
   // виклик тут був дублем (book-selector ініціалізувався двічі).
-  await initRecipeModal();
-  buildFilterPanel();
-  initOwnFilter();
-  loadAndDisplayRecipes();
+  recipeModalReady = initRecipeModal();
+  if (recipeParam) {
+    recipeModalReady.catch(error => console.error('Recipe form unavailable:', error));
+    try { await openRecipeView(recipeParam); }
+    catch {
+      recipeLoadStatus.removeAttribute('data-i18n');
+      recipeLoadStatus.textContent = t('recipeUnavailable');
+      recipeLoadStatus.hidden = false;
+    }
+  } else {
+    await recipeModalReady;
+    document.getElementById('recipesCatalog').hidden = false;
+    recipeLoadStatus.hidden = true;
+    buildFilterPanel();
+    initOwnFilter();
+    loadAndDisplayRecipes();
+  }
 
   // Закриваємо підфільтри при кліку поза панеллю
   document.addEventListener('click', (e) => {
@@ -1647,11 +1694,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('btn-new-recipes')?.addEventListener('click', openNewRecipesDrawer);
   document.getElementById('new-recipes-close')?.addEventListener('click', closeNewRecipesDrawer);
   document.getElementById('new-recipes-backdrop')?.addEventListener('click', closeNewRecipesDrawer);
-
-  const recipeParam = new URLSearchParams(window.location.search).get('recipe');
-  if (recipeParam) {
-    await openRecipeView(recipeParam);
-  }
 
   const ratingContainer = document.querySelector('.recipe-rating');
   if (ratingContainer) {
@@ -1701,7 +1743,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 if (addBtn) {
-  addBtn.addEventListener('click', () => {
+  addBtn.addEventListener('click', async () => {
+    await recipeModalReady;
     openRecipeModal(async () => {
       await loadAndDisplayRecipes(true);
     });
@@ -1727,5 +1770,5 @@ if (saveNotesBtn) {
 
 
 window.addEventListener('click', (e) => {
-  if (e.target === viewModal) closeViewModal();
+  if (!recipeParam && e.target === viewModal) closeViewModal();
 });

@@ -9,7 +9,7 @@ import {
 } from './parse-food.js';
 import { iconCheck, iconClose, iconScan, iconBarcode } from './icons.js';
 import { scanBarcode } from './barcode-scanner.js';
-import { escapeHTML } from './utils.js';
+import { escapeHTML, autoResizeTextarea } from './utils.js';
 
 let ingredientsList = [];
 let onIngredientsChange = null;
@@ -227,6 +227,8 @@ function initEventListeners() {
   const scanBtn = document.getElementById('scanIngredientBtn');
   const textarea = getTextareaEl();
 
+  autoResizeTextarea(textarea);
+
   parseBtn?.addEventListener('click', () => {
     parseAndAddIngredients(textarea?.value || '');
   });
@@ -238,12 +240,14 @@ function initEventListeners() {
   clearBtn?.addEventListener('click', () => {
     ingredientsList = [];
     if (textarea) textarea.value = '';
+    autoResizeTextarea(textarea);
     renderIngredientsList();
     updateTotals();
     notifyChange();
   });
 
   textarea?.addEventListener('input', () => {
+    autoResizeTextarea(textarea);
     const hadParsedTextIngredients = ingredientsList.some((ing) => !ing.fromBarcode);
     if (!hadParsedTextIngredients) return;
 
@@ -602,6 +606,7 @@ export function clearIngredients() {
   ingredientsList = [];
   const textarea = getTextareaEl();
   if (textarea) textarea.value = '';
+  autoResizeTextarea(textarea);
   renderIngredientsList();
   updateTotals();
 }
@@ -613,6 +618,7 @@ export async function setIngredientsFromText(text) {
 
   const textarea = getTextareaEl();
   if (textarea) textarea.value = normalizedText;
+  autoResizeTextarea(textarea);
 
   if (!normalizedText) {
     renderIngredientsList();

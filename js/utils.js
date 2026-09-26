@@ -550,9 +550,11 @@ export function generateId() {
  * @param {HTMLTextAreaElement} textarea - Елемент textarea
  */
 export function autoResizeTextarea(textarea) {
-  if (!textarea) return;
+  if (!textarea?.getClientRects().length) return;
+  textarea.style.overflowY = 'hidden';
   textarea.style.height = 'auto';
-  textarea.style.height = textarea.scrollHeight + 'px';
+  const borderHeight = textarea.offsetHeight - textarea.clientHeight;
+  textarea.style.height = `${textarea.scrollHeight + borderHeight}px`;
 }
 
 /**

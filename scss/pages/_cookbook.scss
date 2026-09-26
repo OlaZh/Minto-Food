@@ -588,11 +588,6 @@ html:not(.auth-state-ready) .page--cookbook .header__right {
     border-color: var(--color-accent);
     box-shadow: 0 16px 32px rgba(86, 126, 99, 0.18);
 
-    .cookbook-recipe-card__remove {
-      opacity: 1;
-      transform: scale(1);
-    }
-
     .cookbook-recipe-card__image img {
       transform: scale(1.06);
     }
@@ -641,31 +636,21 @@ html:not(.auth-state-ready) .page--cookbook .header__right {
   }
 
   &__remove {
-    position: absolute;
-    top: 8px;
-    right: 8px;
-    width: 30px;
-    height: 30px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: rgba(0, 0, 0, 0.55);
-    backdrop-filter: blur(6px);
-    border: none;
-    border-radius: 50%;
-    color: var(--color-text-inverse);
+    display: inline-flex;
+    margin-top: 12px;
+    padding: 8px 12px;
+    min-height: 40px;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    color: var(--color-text-primary);
+    font: inherit;
+    font-size: 13px;
     cursor: pointer;
-    opacity: 0;
-    transform: scale(0.8);
-    transition: background var(--duration-hover) ease,
-      transform var(--duration-hover) ease,
-      opacity var(--duration-hover) ease;
-    z-index: 2;
-
     &:hover {
-      background: #ef4444;
-      transform: scale(1.1) !important;
+      background: var(--color-accent-soft);
     }
+    &:disabled { opacity: 0.6; cursor: wait; }
   }
 
   &__body {
@@ -922,6 +907,8 @@ html:not(.auth-state-ready) .page--cookbook .header__right {
     opacity: 1;
   }
 }
+
+.cookbook-books__grid[hidden] { display: none; }
 
 /* ================= COVER IMAGE ================= */
 

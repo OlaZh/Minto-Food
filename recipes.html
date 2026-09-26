@@ -113,7 +113,11 @@
     </header>
 
     <main class="main recipe-page">
-          <div class="container">
+      <div class="container"><p class="recipe-loading" id="recipeLoadStatus" role="status" data-i18n="loading">Завантаження...</p></div>
+      <section class="container recipe-entry" id="recipeEntry" hidden>
+        <a class="cookbook-back" id="recipeBack" href="cookbook.html"></a>
+      </section>
+          <div class="container" id="recipesCatalog" hidden>
             <div class="page-header">
               <div class="page-header__actions page-header__actions--left">
                 <button class="btn-new-recipes" id="btn-new-recipes">

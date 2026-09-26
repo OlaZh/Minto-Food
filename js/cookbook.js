@@ -78,18 +78,18 @@ let _loadVersion = 0;
 let _recentLoadVersion = 0;
 let _bookLoadVersion = 0;
 let _initialLoadDone = false;
+let booksCache = [];
 
 // =====================================
 // DOM ЕЛЕМЕНТИ
 // =====================================
 
 const booksGrid = document.getElementById('booksGrid');
-const addBookBtn = document.getElementById('addBookBtn');
 
-// Модалка книги
-const bookModal = document.getElementById('bookModal');
-const closeBookModal = document.getElementById('closeBookModal');
-const bookModalTitle = document.getElementById('bookModalTitle');
+const bookView = document.getElementById('bookView');
+const cookbookTitle = document.getElementById('cookbookTitle');
+const booksStatus = document.getElementById('booksStatus');
+const bookStatus = document.getElementById('bookStatus');
 const bookRecipes = document.getElementById('bookRecipes');
 
 // Модалка нової книги
@@ -106,8 +106,21 @@ const iconPicker = document.getElementById('iconPicker');
 document.addEventListener('DOMContentLoaded', init);
 
 async function init() {
+  document.getElementById('backToBooks')?.addEventListener('click', (event) => {
+    event.preventDefault();
+    history.pushState(null, '', 'cookbook.html');
+    showBookRoute();
+  });
+  window.addEventListener('popstate', showBookRoute);
+  window.addEventListener('pageshow', (event) => {
+    if (event.persisted && currentUser) loadBooks();
+  });
   const user = await initAuth((event, u) => {
     if (event === 'SIGNED_IN' && u) {
+      if (currentUser && currentUser.id !== u.id) {
+        clearCookbookUserUI();
+        _initialLoadDone = false;
+      }
       currentUser = u;
       _onUserReady();
     }
@@ -119,6 +132,7 @@ async function init() {
   });
 
   if (!user) {
+    clearCookbookUserUI();
     openAuthModal('login');
     return;
   }
@@ -133,7 +147,6 @@ function _onUserReady() {
   if (!_initialLoadDone) {
     _initialLoadDone = true;
     loadBooks();
-    loadRecentRecipes();
   }
 
   if (!_setupDone) {
@@ -151,6 +164,7 @@ function clearCookbookUserUI() {
   _bookLoadVersion += 1;
 
   currentBookId = null;
+  booksCache = [];
   editSelectedCover = null;
   selectedIcon = 'book';
 
@@ -162,9 +176,11 @@ function clearCookbookUserUI() {
   recentRecipes?.setAttribute('aria-busy', 'false');
 
   bookRecipes?.replaceChildren();
-  if (bookModalTitle) bookModalTitle.textContent = '';
-
-  closeModal(bookModal);
+  bookView.hidden = true;
+  booksGrid.hidden = false;
+  cookbookTitle.textContent = t('navCookbook');
+  setStatus(booksStatus, '');
+  setStatus(bookStatus, '');
   closeModal(newBookModal);
   newBookForm?.reset();
   initIconPicker();
@@ -191,13 +207,9 @@ function setupEventListeners() {
   });
 
   // Закрити модалки
-  closeBookModal?.addEventListener('click', () => closeModal(bookModal));
   closeNewBookModal?.addEventListener('click', () => closeModal(newBookModal));
 
   // Закрити по кліку на overlay
-  bookModal?.addEventListener('click', (e) => {
-    if (e.target === bookModal) closeModal(bookModal);
-  });
   newBookModal?.addEventListener('click', (e) => {
     if (e.target === newBookModal) closeModal(newBookModal);
   });
@@ -235,22 +247,10 @@ function closeModal(modal) {
 // КНИГИ
 // =====================================
 
-function showBookSkeletons(count = 4) {
-  if (!booksGrid) return;
-  booksGrid.setAttribute('aria-busy', 'true');
-  const fragment = document.createDocumentFragment();
-  Array.from({ length: count }, () => {
-    const el = document.createElement('div');
-    el.className = 'skeleton-book';
-    el.setAttribute('aria-hidden', 'true');
-    el.innerHTML = `
-      <div class="skeleton-book__cover"></div>
-      <div class="skeleton-book__title"></div>
-      <div class="skeleton-book__sub"></div>
-    `;
-    fragment.appendChild(el);
-  });
-  booksGrid.replaceChildren(fragment);
+function setStatus(element, message) {
+  element.removeAttribute('data-i18n');
+  element.textContent = message;
+  element.hidden = !message;
 }
 
 async function loadBooks() {
@@ -263,12 +263,13 @@ async function loadBooks() {
     return;
   }
 
-  showBookSkeletons();
+  booksGrid.setAttribute('aria-busy', 'true');
+  setStatus(booksStatus, t('loading'));
 
   try {
     const { data: books, error } = await supabase
       .from('cookbooks')
-      .select('*')
+      .select('*, cookbook_recipes(count)')
       .eq('user_id', userId)
       .order('is_default', { ascending: false })
       .order('created_at', { ascending: true });
@@ -276,16 +277,23 @@ async function loadBooks() {
     if (version !== _loadVersion || currentUser?.id !== userId) return;
     if (error) throw error;
 
-    await renderBooks(books || [], version);
+    booksCache = books || [];
+    renderBooks(booksCache);
+    setStatus(booksStatus, '');
+    showBookRoute();
+    loadRecentRecipes(booksCache);
   } catch (err) {
     if (version !== _loadVersion) return;
     console.error('Error loading books:', err);
-    booksGrid?.querySelectorAll('.skeleton-book').forEach((el) => el.remove());
+    setStatus(booksStatus, t('loadError'));
     booksGrid?.setAttribute('aria-busy', 'false');
+    const recent = document.getElementById('recentRecipes');
+    recent.replaceChildren();
+    recent.setAttribute('aria-busy', 'false');
   }
 }
 
-async function renderBooks(books, version) {
+function renderBooks(books) {
   if (books.length === 0) {
     const empty = document.createElement('div');
     empty.className = 'cookbook-empty';
@@ -300,24 +308,14 @@ async function renderBooks(books, version) {
 
   const fragment = document.createDocumentFragment();
   for (const book of books) {
-    if (version !== _loadVersion) return;
-    const bookEl = await createBookElement(book);
-    if (version !== _loadVersion) return;
-    fragment.appendChild(bookEl);
+    fragment.appendChild(createBookElement(book));
   }
   booksGrid.replaceChildren(fragment);
   booksGrid.setAttribute('aria-busy', 'false');
 }
 
-// Замінити функцію createBookElement в cookbook.js
-
-async function createBookElement(book) {
-  const { count } = await supabase
-    .from('cookbook_recipes')
-    .select('*', { count: 'exact', head: true })
-    .eq('cookbook_id', book.id);
-
-  const recipeCount = count || 0;
+function createBookElement(book) {
+  const recipeCount = Number(book.cookbook_recipes?.[0]?.count) || 0;
   const isDefault = book.is_default;
 
   const article = document.createElement('article');
@@ -416,9 +414,8 @@ async function handleCreateBook(e) {
     if (currentUser?.id !== userId) return;
 
     // Додаємо в DOM
-    const bookEl = await createBookElement(data);
-    if (currentUser?.id !== userId) return;
-    booksGrid.appendChild(bookEl);
+    booksCache.push(data);
+    renderBooks(booksCache);
 
     // Закриваємо і очищаємо
     closeModal(newBookModal);
@@ -461,6 +458,7 @@ async function deleteBook(bookId) {
 
         const bookEl = booksGrid.querySelector(`[data-book-id="${bookId}"]`);
         bookEl?.remove();
+        booksCache = booksCache.filter(item => String(item.id) !== String(bookId));
         showToast(t('bookDeleted'));
       } catch (err) {
         console.error('Error deleting book:', err);
@@ -614,19 +612,34 @@ function openEditBookModal(book) {
 // ВІДКРИТА КНИГА
 // =====================================
 
-async function openBook(book) {
+function showBookRoute() {
+  const bookId = new URLSearchParams(window.location.search).get('book');
+  _bookLoadVersion++;
+  currentBookId = null;
+  bookRecipes.replaceChildren();
+  bookRecipes.setAttribute('aria-busy', 'false');
+  bookView.hidden = !bookId;
+  booksGrid.hidden = !!bookId;
+  cookbookTitle.removeAttribute('data-i18n');
+  cookbookTitle.textContent = t('navCookbook');
+  setStatus(bookStatus, '');
+  if (!bookId || !currentUser) return;
+  const book = booksCache.find(item => String(item.id) === bookId);
+  if (!book) { setStatus(bookStatus, t('bookUnavailable')); return; }
+  currentBookId = book.id;
+  cookbookTitle.textContent = book.name;
+  loadBookRecipes();
+}
+
+function openBook(book) {
   if (!currentUser) {
     openAuthModal('login');
     return;
   }
 
-  currentBookId = book.id;
-  bookModalTitle.textContent = book.name;
-
-  await loadBookRecipes();
-
-  if (!currentUser || currentBookId !== book.id) return;
-  openModal(bookModal);
+  history.pushState(null, '', `cookbook.html?book=${encodeURIComponent(book.id)}`);
+  showBookRoute();
+  window.scrollTo({ top: 0 });
 }
 
 async function loadBookRecipes() {
@@ -639,6 +652,8 @@ async function loadBookRecipes() {
     return;
   }
 
+  bookRecipes.setAttribute('aria-busy', 'true');
+  setStatus(bookStatus, t('loading'));
   try {
     const { data, error } = await supabase
       .from('cookbook_recipes')
@@ -668,7 +683,12 @@ async function loadBookRecipes() {
   } catch (err) {
     if (version !== _bookLoadVersion) return;
     console.error('Error loading recipes:', err);
+    setStatus(bookStatus, t('loadError'));
+    return;
+  } finally {
+    if (version === _bookLoadVersion) bookRecipes.setAttribute('aria-busy', 'false');
   }
+  if (version === _bookLoadVersion) setStatus(bookStatus, '');
 }
 
 function renderBookRecipes(recipes) {
@@ -711,12 +731,10 @@ function renderBookRecipes(recipes) {
           <div class="cookbook-recipe-card__image">
             ${imageHtml}
             ${kcalBadge}
-            <button class="cookbook-recipe-card__remove" data-recipe-id="${recipe.id}" aria-label="${t('removeFromBook')}" title="${t('removeFromBook')}">
-              ${iconClose.replace('<svg ', '<svg width="16" height="16" ')}
-            </button>
           </div>
           <div class="cookbook-recipe-card__body">
             <h3 class="cookbook-recipe-card__title">${escapeHTML(recipeName)}</h3>
+            <button type="button" class="cookbook-recipe-card__remove" data-recipe-id="${recipe.id}">${t('removeFromBook')}</button>
           </div>
         </article>
       `;
@@ -740,33 +758,43 @@ function renderBookRecipes(recipes) {
       if (e.target.closest('.cookbook-recipe-card__remove')) return;
       if (e.target.closest('.recipe-sticky-note')) return;
       const id = card.dataset.recipeId;
-      window.location.href = `recipes.html?recipe=${id}&from=cookbook`;
+      window.location.href = `recipes.html?recipe=${encodeURIComponent(id)}&from=cookbook&book=${encodeURIComponent(currentBookId)}`;
     });
   });
 
   bookRecipes.querySelectorAll('.cookbook-recipe-card__remove').forEach((btn) => {
     btn.addEventListener('click', async (e) => {
       e.stopPropagation();
+      btn.disabled = true;
       const recipeId = btn.dataset.recipeId;
-      await removeRecipeFromBook(recipeId);
+      try { await removeRecipeFromBook(recipeId); }
+      finally { btn.disabled = false; }
     });
   });
 }
 
 async function removeRecipeFromBook(recipeId) {
   if (!currentBookId) return;
+  const bookId = currentBookId;
+  const userId = currentUser?.id;
   try {
     const { error } = await supabase
       .from('cookbook_recipes')
       .delete()
-      .eq('cookbook_id', currentBookId)
+      .eq('cookbook_id', bookId)
       .eq('recipe_id', recipeId);
 
     if (error) throw error;
+    if (currentUser?.id !== userId) return;
+    const book = booksCache.find(item => item.id === bookId);
+    if (book) book.cookbook_recipes = [{ count: Math.max(0, (book.cookbook_recipes?.[0]?.count || 0) - 1) }];
+    renderBooks(booksCache);
 
     showToast(t('removedFromBook'), 'success');
-    await loadBookRecipes();
+    if (currentBookId === bookId) await loadBookRecipes();
+    loadRecentRecipes(booksCache);
   } catch (err) {
+    if (currentUser?.id !== userId) return;
     console.error('Error removing recipe:', err);
     showToast(t('deleteError'), 'error');
   }
@@ -776,7 +804,7 @@ async function removeRecipeFromBook(recipeId) {
 // НЕЩОДАВНО ПЕРЕГЛЯНУТІ
 // =====================================
 
-async function loadRecentRecipes() {
+async function loadRecentRecipes(books) {
   const container = document.getElementById('recentRecipes');
   if (!container) return;
 
@@ -792,13 +820,6 @@ async function loadRecentRecipes() {
   container.setAttribute('aria-busy', 'true');
 
   try {
-    const { data: books } = await supabase
-      .from('cookbooks')
-      .select('id')
-      .eq('user_id', userId);
-
-    if (version !== _recentLoadVersion || currentUser?.id !== userId) return;
-
     if (!books?.length) {
       container.replaceChildren();
       return;
@@ -808,7 +829,7 @@ async function loadRecentRecipes() {
 
     const { data, error } = await supabase
       .from('cookbook_recipes')
-      .select('recipe_id, recipes ( id, name_ua, name_en, name_pl, entry_type, image, kcal )')
+      .select('cookbook_id, recipe_id, recipes ( id, name_ua, name_en, name_pl, entry_type, image, kcal )')
       .in('cookbook_id', bookIds)
       .limit(20);
 
@@ -840,7 +861,7 @@ async function loadRecentRecipes() {
           ? `<img ${r.entry_type === 'saved' ? 'data-private-cover' : ''} src="${imageSrc}" alt="${escapeHTML(recipeName)}" loading="lazy">`
           : `<div class="cookbook-recent-item__placeholder">${iconPlate}</div>`;
         return `
-        <a class="cookbook-recent-item" href="recipes.html?recipe=${r.id}&from=cookbook">
+        <a class="cookbook-recent-item" href="recipes.html?recipe=${r.id}&from=cookbook&book=${encodeURIComponent(item.cookbook_id)}">
           <div class="cookbook-recent-item__img">${imgHtml}</div>
           <div class="cookbook-recent-item__info">
             <span class="cookbook-recent-item__name">${escapeHTML(recipeName)}</span>

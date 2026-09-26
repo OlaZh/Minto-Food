@@ -116,7 +116,7 @@
       <div class="container">
         <div class="cookbook-page">
           <div class="page-header">
-            <h1 class="page-header__title" data-i18n="navCookbook">Книга рецептів</h1>
+            <h1 class="page-header__title" id="cookbookTitle" data-i18n="navCookbook">Книга рецептів</h1>
             <div class="page-header__actions page-header__actions--right">
               <button class="cookbook-page__add-btn cookbook-page__add-btn--mobile js-add-book-btn">
                 <svg
@@ -139,28 +139,13 @@
 
           <div class="cookbook-layout">
             <section class="cookbook-main">
-              <div class="cookbook-books__grid" id="booksGrid" aria-busy="true">
-                <div class="skeleton-book" aria-hidden="true">
-                  <div class="skeleton-book__cover"></div>
-                  <div class="skeleton-book__title"></div>
-                  <div class="skeleton-book__sub"></div>
-                </div>
-                <div class="skeleton-book" aria-hidden="true">
-                  <div class="skeleton-book__cover"></div>
-                  <div class="skeleton-book__title"></div>
-                  <div class="skeleton-book__sub"></div>
-                </div>
-                <div class="skeleton-book" aria-hidden="true">
-                  <div class="skeleton-book__cover"></div>
-                  <div class="skeleton-book__title"></div>
-                  <div class="skeleton-book__sub"></div>
-                </div>
-                <div class="skeleton-book" aria-hidden="true">
-                  <div class="skeleton-book__cover"></div>
-                  <div class="skeleton-book__title"></div>
-                  <div class="skeleton-book__sub"></div>
-                </div>
-              </div>
+              <p class="recipe-loading" id="booksStatus" role="status" data-i18n="loading">Завантаження...</p>
+              <section id="bookView" hidden>
+                <a class="cookbook-back" href="cookbook.html" id="backToBooks" data-i18n="backToBooks">← До всіх книг</a>
+                <p class="recipe-loading" id="bookStatus" role="status" hidden></p>
+                <div class="cookbook-recipes" id="bookRecipes"></div>
+              </section>
+              <div class="cookbook-books__grid" id="booksGrid" aria-busy="true"></div>
             </section>
 
             <aside class="cookbook-sidebar">
@@ -183,60 +168,12 @@
                 <span data-i18n="newBook">Нова книга</span>
               </button>
               <h2 class="cookbook-sidebar__title" data-i18n="recentViewed">Нещодавно переглянуті</h2>
-              <div class="cookbook-recent" id="recentRecipes" aria-busy="true">
-                <div class="skeleton-list-item" aria-hidden="true">
-                  <div class="skeleton-list-item__icon"></div>
-                  <div class="skeleton-list-item__text">
-                    <div class="skeleton-list-item__name"></div>
-                    <div class="skeleton-list-item__sub"></div>
-                  </div>
-                </div>
-                <div class="skeleton-list-item" aria-hidden="true">
-                  <div class="skeleton-list-item__icon"></div>
-                  <div class="skeleton-list-item__text">
-                    <div class="skeleton-list-item__name"></div>
-                    <div class="skeleton-list-item__sub"></div>
-                  </div>
-                </div>
-              </div>
+              <div class="cookbook-recent" id="recentRecipes" aria-busy="true"><p class="recipe-loading" role="status" data-i18n="loading">Завантаження...</p></div>
             </aside>
           </div>
         </div>
       </div>
     </main>
-
-    <!-- Модалка: Відкрита книга -->
-    <div class="modal-overlay" id="bookModal">
-      <div class="cookbook-modal">
-        <button class="modal__close" id="closeBookModal" data-i18n-aria="close" aria-label="Закрити">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round">
-            <line x1="18" y1="6" x2="6" y2="18"></line>
-            <line x1="6" y1="6" x2="18" y2="18"></line>
-          </svg>
-        </button>
-
-        <div class="cookbook-modal__header">
-          <h2 class="cookbook-modal__title" id="bookModalTitle" data-i18n="bookNameLabel">Назва книги</h2>
-        </div>
-
-        <div class="cookbook-modal__content cookbook-modal__content--active">
-          <div class="cookbook-recipes" id="bookRecipes">
-            <p class="cookbook-recipes__empty" data-i18n="bookEmptyRecipesPlain">
-              Тут поки немає рецептів. Додай їх зі сторінки "Рецепти"!
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
 
     <!-- Модалка: Створити нову книгу -->
     <div class="modal-overlay" id="newBookModal">
