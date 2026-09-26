@@ -31,7 +31,7 @@ const i18nIngredients = {
     carbsShort: 'В',
     notFound: 'Не розпізнано',
     found: 'Розпізнано',
-    addIngredients: 'Вставте інгредієнти та натисніть "Розпізнати"',
+    addIngredients: 'Розпізнавання необов’язкове. Натисніть «Розпізнати», якщо хочете розрахувати КБЖУ.',
     clearAll: 'Очистити',
     searchProduct: 'Пошук продукту...',
     productNotFound: 'Продукт не знайдено в базі',
@@ -55,7 +55,7 @@ const i18nIngredients = {
     carbsShort: 'C',
     notFound: 'Not recognized',
     found: 'Recognized',
-    addIngredients: 'Paste ingredients and click "Parse"',
+    addIngredients: 'Recognition is optional. Click "Parse" to calculate calories and macros.',
     clearAll: 'Clear',
     searchProduct: 'Search product...',
     productNotFound: 'Product not found in database',
@@ -79,7 +79,7 @@ const i18nIngredients = {
     carbsShort: 'W',
     notFound: 'Nie rozpoznano',
     found: 'Rozpoznano',
-    addIngredients: 'Wklej składniki i kliknij "Rozpoznaj"',
+    addIngredients: 'Rozpoznawanie jest opcjonalne. Kliknij „Rozpoznaj”, aby obliczyć kalorie i makroskładniki.',
     clearAll: 'Wyczyść',
     searchProduct: 'Szukaj produktu...',
     productNotFound: 'Produktu nie znaleziono w bazie',
@@ -249,11 +249,11 @@ function initEventListeners() {
   textarea?.addEventListener('input', () => {
     autoResizeTextarea(textarea);
     const hadParsedTextIngredients = ingredientsList.some((ing) => !ing.fromBarcode);
-    if (!hadParsedTextIngredients) return;
-
-    keepOnlyScannedIngredients();
-    renderIngredientsList();
-    updateTotals();
+    if (hadParsedTextIngredients) {
+      keepOnlyScannedIngredients();
+      renderIngredientsList();
+      updateTotals();
+    }
     notifyChange();
   });
 
@@ -567,11 +567,7 @@ export function getIngredients() {
 }
 
 export function getIngredientsText() {
-  if (ingredientsList.length === 0) {
-    return getTextareaValue();
-  }
-
-  return ingredientsList
+  const lines = ingredientsList
     .map((ingredient) => {
       if (ingredient.fromBarcode) {
         const brand = ingredient.brand ? ` ${ingredient.brand}` : '';
@@ -584,8 +580,13 @@ export function getIngredientsText() {
       const name = getProductName(ingredient) || ingredient.name_ua || '';
       return ingredient.weight ? `${name} — ${ingredient.weight} ${t('unitG')}` : name;
     })
-    .filter(Boolean)
-    .join('\n');
+    .filter(Boolean);
+
+  // Текст без розпізнавання зберігаємо також поряд із доданими скануванням продуктами.
+  if (ingredientsList.every(ingredient => ingredient.fromBarcode)) {
+    lines.unshift(getTextareaValue());
+  }
+  return lines.filter(Boolean).join('\n');
 }
 
 export function getTotals() {
@@ -620,14 +621,9 @@ export async function setIngredientsFromText(text) {
   if (textarea) textarea.value = normalizedText;
   autoResizeTextarea(textarea);
 
-  if (!normalizedText) {
-    renderIngredientsList();
-    updateTotals();
-    notifyChange();
-    return;
-  }
-
-  await parseAndAddIngredients(normalizedText);
+  renderIngredientsList();
+  updateTotals();
+  notifyChange();
 }
 
 export function setLanguage(lang) {

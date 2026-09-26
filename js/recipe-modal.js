@@ -85,9 +85,30 @@ function getDisplayedNutrition(totals, totalWeight) {
   };
 }
 
+function hasUnchangedUnparsedIngredients() {
+  return editingRecipeOriginal != null && getIngredients().length === 0 &&
+    getIngredientsText() === String(editingRecipeOriginal.ingredients || '').trim();
+}
+
+function getRecipeNutritionTotals(totals = getTotals()) {
+  if (!hasUnchangedUnparsedIngredients()) return totals;
+  const recipe = editingRecipeOriginal;
+  // Збережені КБЖУ можуть бути на 100 г готової страви. Відновлюємо суму
+  // перед застосуванням поточної ваги, не запускаючи розпізнавання повторно.
+  const weight = parsePositiveNumber(recipe.total_weight);
+  const factor = weight ? weight / 100 : 1;
+  return Object.fromEntries(Object.entries({
+    kcal: recipe.kcal ?? recipe.calories,
+    protein: recipe.protein ?? recipe.proteins,
+    fat: recipe.fat ?? recipe.fats,
+    carbs: recipe.carbs,
+    fiber: recipe.fiber,
+  }).map(([key, value]) => [key, (Number(value) || 0) * factor]));
+}
+
 function updateRecipeNutritionPreview(totals = getTotals()) {
   const totalWeight = parsePositiveNumber(document.getElementById('rm-total-weight')?.value);
-  const displayed = getDisplayedNutrition(totals, totalWeight);
+  const displayed = getDisplayedNutrition(getRecipeNutritionTotals(totals), totalWeight);
 
   const kcalEl = document.getElementById('rm-calories');
   const proteinEl = document.getElementById('rm-proteins');
@@ -557,14 +578,11 @@ async function showRecipeForm(data = null) {
     setInputVal('rm-image-url', data.image);
     setVisibilityToggle(data.is_public ? 'public' : 'private');
 
-    // Парсинг інгредієнтів тригерить перерахунок КБЖ (через notifyChange).
-    // Робимо це ДО відновлення збережених значень, щоб вони не затирались.
+    // Відкриваємо текст без автоматичного розпізнавання та червоних позначок.
     await setIngredientsFromText(data.ingredients || '');
     if (generation !== modalGeneration) return;
 
-    // При редагуванні показуємо вже збережені КБЖ, а не перерахунок з нуля:
-    // повторний парсинг може не розпізнати частину інгредієнтів і дати 0.
-    // Реальний перерахунок відбудеться, лише якщо людина змінить інгредієнти.
+    // При редагуванні показуємо збережені КБЖУ. Розпізнавання — за кнопкою.
     const savedKcal = data.kcal || data.calories || 0;
     setInputVal('rm-calories', savedKcal);
     setInputVal('rm-proteins', data.proteins || data.protein);
@@ -679,7 +697,7 @@ async function saveRecipe() {
     finalImage = editingRecipeOriginal.image;
   }
 
-  const totals = getTotals();
+  const totals = getRecipeNutritionTotals();
   const totalWeightVal = parsePositiveNumber(document.getElementById('rm-total-weight')?.value);
   const displayedNutrition = getDisplayedNutrition(totals, totalWeightVal);
 
@@ -776,7 +794,7 @@ async function saveRecipe() {
       }
     });
 
-  if (editingRecipeId !== null && data?.id) {
+  if (editingRecipeId !== null && data?.id && !hasUnchangedUnparsedIngredients()) {
     const { error: deleteIngredientsError } = await supabase
       .from('product_recipe')
       .delete()
