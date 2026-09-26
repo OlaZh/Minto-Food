@@ -734,7 +734,6 @@ function renderBookRecipes(recipes) {
           </div>
           <div class="cookbook-recipe-card__body">
             <h3 class="cookbook-recipe-card__title">${escapeHTML(recipeName)}</h3>
-            <button type="button" class="cookbook-recipe-card__remove" data-recipe-id="${recipe.id}">${t('removeFromBook')}</button>
           </div>
         </article>
       `;
@@ -755,49 +754,12 @@ function renderBookRecipes(recipes) {
 
   bookRecipes.querySelectorAll('.cookbook-recipe-card').forEach((card) => {
     card.addEventListener('click', (e) => {
-      if (e.target.closest('.cookbook-recipe-card__remove')) return;
       if (e.target.closest('.recipe-sticky-note')) return;
       const id = card.dataset.recipeId;
       window.location.href = `recipes.html?recipe=${encodeURIComponent(id)}&from=cookbook&book=${encodeURIComponent(currentBookId)}`;
     });
   });
 
-  bookRecipes.querySelectorAll('.cookbook-recipe-card__remove').forEach((btn) => {
-    btn.addEventListener('click', async (e) => {
-      e.stopPropagation();
-      btn.disabled = true;
-      const recipeId = btn.dataset.recipeId;
-      try { await removeRecipeFromBook(recipeId); }
-      finally { btn.disabled = false; }
-    });
-  });
-}
-
-async function removeRecipeFromBook(recipeId) {
-  if (!currentBookId) return;
-  const bookId = currentBookId;
-  const userId = currentUser?.id;
-  try {
-    const { error } = await supabase
-      .from('cookbook_recipes')
-      .delete()
-      .eq('cookbook_id', bookId)
-      .eq('recipe_id', recipeId);
-
-    if (error) throw error;
-    if (currentUser?.id !== userId) return;
-    const book = booksCache.find(item => item.id === bookId);
-    if (book) book.cookbook_recipes = [{ count: Math.max(0, (book.cookbook_recipes?.[0]?.count || 0) - 1) }];
-    renderBooks(booksCache);
-
-    showToast(t('removedFromBook'), 'success');
-    if (currentBookId === bookId) await loadBookRecipes();
-    loadRecentRecipes(booksCache);
-  } catch (err) {
-    if (currentUser?.id !== userId) return;
-    console.error('Error removing recipe:', err);
-    showToast(t('deleteError'), 'error');
-  }
 }
 
 // =====================================
