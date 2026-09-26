@@ -33,10 +33,7 @@
   z-index: auto;
   &.is-active { display: block; }
   > .modal-card {
-    width: 100%;
-    max-width: none;
     max-height: none;
-    margin: 0;
     overflow: visible;
   }
   #close-view-modal { display: none; }
