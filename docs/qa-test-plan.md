@@ -47,7 +47,7 @@
 | QA22-AUTO (AUTO-01…08, SEC-01) | PASS | 08.09.2026, Codex; local Windows; `0218bb5` + local fixes | 68/68 наявних тестів, API/admin lint, root/admin build; CSP/theme 10/10. Sass та root lockfile вже встановлені. Admin build має warning про inferred workspace root | [Повний звіт](qa/phase22-2026-09-08/report.md) | Нові залежності не встановлювались |
 | UI-01/02/06/08 (guest subset) | PASS — scoped | 08.09.2026, Codex; local HTTP; Chrome 152; `0218bb5` + local fixes | 17 сторінок × 2 теми × 6 ширин: 204/204 автоматичних початкових станів. Геометрія/тема/console/resources чисті; це не підтвердження всіх авторизованих станів чи повної accessibility | [JSON-докази](qa/phase22-2026-09-08/evidence.json), runs.matrix/breakpoints | Локальні сервери/Chrome завершено |
 | QA22-FIX-01 (profile hidden) | FIXED — LOCAL | 08.09.2026, Codex; `0218bb5` + local CSS | До: 5 видимих секцій, 4 з hidden. Після CSS-фіксу видима 1, 4 приховані на всіх 12 комбінаціях теми/ширини | evidence.json: profileBefore → matrix/breakpoints | Deployment не виконувався |
-| QA22-FIX-02 (UI-04 active header) | FIXED — LOCAL | 08.09.2026, Codex; `0218bb5` + local JS | href `/index.html` більше не порівнюється з `index.html` без нормалізації; активні пункти всіх 6 відповідних сторінок підтверджено браузером | [Скриншот](qa/phase22-2026-09-08/index-dark-desktop.png), final matrix/breakpoints | Deployment не виконувався |
+| QA22-FIX-02 (UI-04 active header) | FIXED — LOCAL | 08.09.2026, Codex; `0218bb5` + local JS | href `/index.html` більше не порівнюється з `index.html` без нормалізації; активні пункти всіх 6 відповідних сторінок підтверджено браузером | [Історичний звіт](qa/phase22-2026-09-08/report.md), final matrix/breakpoints | Deployment не виконувався |
 | UI-04/05/14 (interactions subset) | PASS — scoped | 08.09.2026, Codex; guest; Chrome 152; 1440/390; light/dark | Theme toggle, header login/close, burger/More Escape, footer accordion, terms back-to-top, offline/online banners працюють | evidence.json: runs.interactions; перелік перевірених дій у звіті | Серверних записів немає |
 | UI-09 / QA22-01 | FAIL | 08.09.2026, Codex; index/terms × light/dark × 1440/390 | Модалка входу лишає фокус за собою, Esc її не закриває; відтворено 8/8 | [QA22-01 у звіті](qa/phase22-2026-09-08/report.md#qa22-01--клавіатура-в-модалці-входу-ui-09), evidence.json | Очікує рішення щодо keyboard behavior |
 | QA22-01 (focus/Esc subset) | FIXED — LOCAL; PASS scoped | Локальні артефакти 22.09.2026, перевірені 27.09; commit у JSON не записаний | 8/8: `authFocusInside=true`, `authEscape=true`; виправлення є в поточному `js/auth.js`. Історичний FAIL вище закритий для цього підсценарію; повний UI-09 лишається відкритим | [Локальні джерела й межі доказу](#qa22-local-20260922) | Нового браузерного запуску немає |
@@ -122,10 +122,10 @@
 
 ### QA22-LOCAL-20260922
 
-27.09.2026 переглянуто наявні локальні артефакти в `node_modules/.cache/phase22-ui/`; нового браузерного прогону не виконували. Файли не копіюються в документацію.
+27.09.2026 переглянуто наявні локальні артефакти в `node_modules/.cache/phase22-ui/`; нового браузерного прогону не виконували. 28.09.2026 за вказівкою власниці скриншоти перевірок і тимчасові профілі Chrome видалено; початкові JSON-звіти збережено.
 
 - `2026-09-22T10-53-38-274Z/report.json`: 8/8 focus/Esc cases, `authFocusInside=true`, `authEscape=true`. Це не перевірка всіх Tab/Shift+Tab, повернення фокусу чи вкладених модалок.
-- `2026-09-22T10-55-19-743Z/report.json`: 4/4 recipe-route cases без failures; на чотирьох наявних скриншотах текст має окрему поверхню у двох темах на desktop/mobile. Контраст чисельно не виміряний.
+- `2026-09-22T10-55-19-743Z/report.json`: 4/4 recipe-route cases без failures; під час перегляду 27.09 на чотирьох скриншотах текст мав окрему поверхню у двох темах на desktop/mobile. Контраст чисельно не виміряний.
 - `2026-09-22T10-55-42-954Z/report.json`: 68 початкових гостьових станів, 0 failed/blocked cases.
 
 Виправлення є в `js/auth.js` та `.rp-404` у `scss/pages/_recipe.scss`. Початкові звіти не містять Git commit/deployment, тому це історичні локальні підтвердження, а не PASS поточного live-сайту. QA22-02 та повний UI-09 лишаються відкритими. Кеш може бути очищений; повторний прогін тоді потребуватиме нових доказів.
