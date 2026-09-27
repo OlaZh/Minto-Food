@@ -1058,7 +1058,7 @@ export async function openRecipeView(recipeId) {
     if (section) section.hidden = savedEntry;
   }
   const sourceHost = document.createElement('div'); sourceHost.id = 'view-source';
-  viewModal?.querySelector('.recipe-detail__body')?.prepend(sourceHost);
+  viewModal?.querySelector('.recipe-detail__overview')?.append(sourceHost);
   const ratingsPromise = savedEntry ? Promise.resolve([new Map(), 0]) : Promise.all([
     getRecipeRatingSummaries([recipe.id]),
     getOwnRecipeRating(recipe.id),

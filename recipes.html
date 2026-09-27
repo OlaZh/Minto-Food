@@ -267,79 +267,90 @@
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
 
-        <div class="recipe-detail__header">
-          <h2 id="view-title" data-i18n="viewRecipeTitle">Назва рецепта</h2>
-          <div class="recipe-detail__tags" id="view-tags"></div>
-        </div>
-
-        <div class="recipe-view__actions">
-          <button class="btn-primary" id="edit-recipe-btn" data-i18n="editRecipe">
-            <svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-            Редагувати рецепт
-          </button>
-        </div>
-
-        <div class="recipe-rating">
-          <span class="star" data-value="1"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" fill="currentColor"></polygon></svg></span>
-          <span class="star" data-value="2"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" fill="currentColor"></polygon></svg></span>
-          <span class="star" data-value="3"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" fill="currentColor"></polygon></svg></span>
-          <span class="star" data-value="4"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg></span>
-          <span class="star" data-value="5"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg></span>
-          <span class="rating-value">—</span>
-        </div>
-
-        <div class="nutrition-summary">
-          <div class="nutrition-item">
-            <span class="nutrition-val" id="view-calories">0</span>
-            <span class="nutrition-label" data-i18n="nutrCalories">ккал</span>
+        <div class="recipe-detail__topbar">
+          <div class="recipe-detail__header">
+            <h2 id="view-title" data-i18n="viewRecipeTitle">Назва рецепта</h2>
+            <div class="recipe-detail__tags" id="view-tags"></div>
           </div>
-          <div class="nutrition-divider"></div>
-          <div class="nutrition-item">
-            <span class="nutrition-val" id="view-proteins">0</span>
-            <span class="nutrition-label" data-i18n="nutrProteins">Білки</span>
-          </div>
-          <div class="nutrition-item">
-            <span class="nutrition-val" id="view-carbs">0</span>
-            <span class="nutrition-label" data-i18n="nutrCarbs">Вугл.</span>
-          </div>
-          <div class="nutrition-item">
-            <span class="nutrition-val" id="view-fats">0</span>
-            <span class="nutrition-label" data-i18n="nutrFats">Жири</span>
-          </div>
-        </div>
 
-        <div class="nutrition-summary-meta">
-          <p class="nutrition-summary-weight" id="view-total-weight" data-i18n="weightMissing">Вага готової страви не вказана</p>
-          <p class="nutrition-summary-note" id="view-nutrition-note" data-i18n="nutritionRaw">
-            Сума сирих інгредієнтів. Вкажіть вагу готової страви, щоб побачити КБЖУ на 100 г.
-          </p>
+          <div class="recipe-view__actions">
+            <button class="btn-primary" id="edit-recipe-btn" data-i18n="editRecipe">
+              <svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+              Редагувати рецепт
+            </button>
+          </div>
+
         </div>
 
         <div class="recipe-detail__body">
-          <section class="recipe-section">
-            <h3>
-              <span class="icon"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21v-9"></path><path d="M12 13c-2-1-5 0-6-2 1-2 5-2 6 1"></path><path d="M12 11c2-1 5 0 6-2-1-2-5-2-6 1"></path></svg></span> <span data-i18n="ingredientsTitle">Інгредієнти</span>
-            </h3>
-            <ul id="view-ingredients-list" class="ingredients-list"></ul>
-          </section>
+          <div class="recipe-detail__ingredients-column">
+            <div class="recipe-detail__overview">
+              <div class="recipe-rating">
+                <span class="star" data-value="1"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" fill="currentColor"></polygon></svg></span>
+                <span class="star" data-value="2"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" fill="currentColor"></polygon></svg></span>
+                <span class="star" data-value="3"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" fill="currentColor"></polygon></svg></span>
+                <span class="star" data-value="4"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg></span>
+                <span class="star" data-value="5"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg></span>
+                <span class="rating-value">—</span>
+              </div>
 
-          <section class="recipe-section">
-            <h3>
-              <span class="icon"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"></path><path d="M7 2v20"></path><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3zm0 0v7"></path></svg></span> <span data-i18n="stepsTitle">Спосіб приготування</span>
-            </h3>
-            <div id="view-steps" class="steps-content"></div>
-          </section>
+              <div class="nutrition-summary">
+                <div class="nutrition-item">
+                  <span class="nutrition-val" id="view-calories">0</span>
+                  <span class="nutrition-label" data-i18n="nutrCalories">ккал</span>
+                </div>
+                <div class="nutrition-divider"></div>
+                <div class="nutrition-item">
+                  <span class="nutrition-val" id="view-proteins">0</span>
+                  <span class="nutrition-label" data-i18n="nutrProteins">Білки</span>
+                </div>
+                <div class="nutrition-item">
+                  <span class="nutrition-val" id="view-carbs">0</span>
+                  <span class="nutrition-label" data-i18n="nutrCarbs">Вугл.</span>
+                </div>
+                <div class="nutrition-item">
+                  <span class="nutrition-val" id="view-fats">0</span>
+                  <span class="nutrition-label" data-i18n="nutrFats">Жири</span>
+                </div>
+              </div>
 
-          <section class="recipe-section recipe-section--notes">
-            <h3><span class="icon"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></span> <span data-i18n="notesTitle">Мої нотатки</span></h3>
-            <textarea
-              id="view-notes"
-              placeholder="Додай свої зауваження до рецепта..."
-              data-i18n-placeholder="notesPlaceholder"></textarea>
-            <button id="save-notes-btn" class="btn-save-mini" data-i18n="saveNote">
-              Зберегти нотатку
-            </button>
-          </section>
+              <div class="nutrition-summary-meta">
+                <p class="nutrition-summary-weight" id="view-total-weight" data-i18n="weightMissing">Вага готової страви не вказана</p>
+                <p class="nutrition-summary-note" id="view-nutrition-note" data-i18n="nutritionRaw">
+                  Сума сирих інгредієнтів. Вкажіть вагу готової страви, щоб побачити КБЖУ на 100 г.
+                </p>
+              </div>
+
+            </div>
+
+            <section class="recipe-section recipe-detail__ingredients">
+              <h3>
+                <span class="icon"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21v-9"></path><path d="M12 13c-2-1-5 0-6-2 1-2 5-2 6 1"></path><path d="M12 11c2-1 5 0 6-2-1-2-5-2-6 1"></path></svg></span> <span data-i18n="ingredientsTitle">Інгредієнти</span>
+              </h3>
+              <ul id="view-ingredients-list" class="ingredients-list"></ul>
+            </section>
+
+          </div>
+
+          <div class="recipe-detail__preparation-column">
+            <section class="recipe-section recipe-detail__preparation">
+              <h3>
+                <span class="icon"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"></path><path d="M7 2v20"></path><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3zm0 0v7"></path></svg></span> <span data-i18n="stepsTitle">Спосіб приготування</span>
+              </h3>
+              <div id="view-steps" class="steps-content"></div>
+            </section>
+
+            <section class="recipe-section recipe-section--notes">
+              <h3><span class="icon"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></span> <span data-i18n="notesTitle">Мої нотатки</span></h3>
+              <textarea
+                id="view-notes"
+                placeholder="Додай свої зауваження до рецепта..."
+                data-i18n-placeholder="notesPlaceholder"></textarea>
+              <button id="save-notes-btn" class="btn-save-mini" data-i18n="saveNote">
+                Зберегти нотатку
+              </button>
+            </section>
+          </div>
         </div>
       </div>
     </div>
