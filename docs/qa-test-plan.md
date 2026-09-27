@@ -50,6 +50,9 @@
 | QA22-FIX-02 (UI-04 active header) | FIXED — LOCAL | 08.09.2026, Codex; `0218bb5` + local JS | href `/index.html` більше не порівнюється з `index.html` без нормалізації; активні пункти всіх 6 відповідних сторінок підтверджено браузером | [Скриншот](qa/phase22-2026-09-08/index-dark-desktop.png), final matrix/breakpoints | Deployment не виконувався |
 | UI-04/05/14 (interactions subset) | PASS — scoped | 08.09.2026, Codex; guest; Chrome 152; 1440/390; light/dark | Theme toggle, header login/close, burger/More Escape, footer accordion, terms back-to-top, offline/online banners працюють | evidence.json: runs.interactions; перелік перевірених дій у звіті | Серверних записів немає |
 | UI-09 / QA22-01 | FAIL | 08.09.2026, Codex; index/terms × light/dark × 1440/390 | Модалка входу лишає фокус за собою, Esc її не закриває; відтворено 8/8 | [QA22-01 у звіті](qa/phase22-2026-09-08/report.md#qa22-01--клавіатура-в-модалці-входу-ui-09), evidence.json | Очікує рішення щодо keyboard behavior |
+| QA22-01 (focus/Esc subset) | FIXED — LOCAL; PASS scoped | Локальні артефакти 22.09.2026, перевірені 27.09; commit у JSON не записаний | 8/8: `authFocusInside=true`, `authEscape=true`; виправлення є в поточному `js/auth.js`. Історичний FAIL вище закритий для цього підсценарію; повний UI-09 лишається відкритим | [Локальні джерела й межі доказу](#qa22-local-20260922) | Нового браузерного запуску немає |
+| QA22-03 (recipe-not-found surface) | FIXED — LOCAL; visual review | Скриншоти й route report 22.09.2026, переглянуті 27.09; commit у JSON не записаний | 4/4 route cases без failures; в обох темах на desktop/mobile є окрема поверхня під текстом. `.rp-404` використовує `%glass-surface`; WCAG contrast не виміряний | [Перегляд локальних артефактів](#qa22-local-20260922) | Нового браузерного запуску немає |
+| QA22-UI (guest matrix repeat) | PASS — scoped | Локальний JSON 22.09.2026, перевірений 27.09; commit у JSON не записаний | 68 початкових гостьових станів, 0 failed cases, 0 blocked cases; не прирівнювати до повного functional QA чи поточного deployment | [Локальний matrix report](#qa22-local-20260922) | Нового браузерного запуску немає |
 | PROD-01/03/04 / QA22-02 | PARTIAL / FAIL resources | 08.09.2026, Codex; guest; Chrome 152; 1440/390; light/dark | Після завантаження products пошук `яблу` дав 5 карток; modal open/close працює. Три фото Storage повертають HTTP 400 + `Object not found` | [Звіт](qa/phase22-2026-09-08/report.md), runs.products, QA22-02 | Файли/дані Storage не змінювались |
 | UI-15 (recipe rewrite subset) | PASS | 08.09.2026, Codex; local HTTP; `0218bb5`; Chrome 152 | `/recipe/nonexistent-slug`: 4/4 стани, 0 failed resources/CSP errors, правильна not-found сторінка | evidence.json: runs.recipeRoute | N/A |
 | DEP-02 (repeat) | PASS | 08.09.2026, Codex; `https://minto-food-xv5f.vercel.app`; guest | `/dashboard` і `/moderation` без сесії → `307`, `Location: /login`; non-admin workflow цим не перевірявся | Read-only GET з redirect:manual | N/A |
@@ -114,6 +117,18 @@
 | DEP-10 | PASS | 09.08.2026, Codex; `https://minto-food.vercel.app/`; deployment `dpl_CY67rPbPUFdzr9FHzGEgooUG7UiL` | `CRON_SECRET` додано у Vercel Production як Sensitive env var. Запит без Bearer тепер повертає очікуваний `401` замість `500` | live `GET /api/cron/gdpr-hard-delete` без Authorization → `401` | N/A |
 | DEP-11 | PASS | 09.08.2026, Codex; `https://minto-food.vercel.app/`; deployment `dpl_CY67rPbPUFdzr9FHzGEgooUG7UiL` | Запит із неправильним Bearer повертає очікуваний `401`; handler не переходить до Supabase-операцій | live GET з `Bearer wrong-secret-qa-test` → `401` | N/A |
 | DEP-12 | READY — NOT RUN | 09.08.2026, Codex; production | Блокер відсутнього `CRON_SECRET` усунуто. Авторизований запуск навмисно не виконано без preflight кількості акаунтів із простроченим `deletion_scheduled_for`, оскільки endpoint виконує незворотне hard-delete | потрібен read-only Supabase preflight перед запуском | N/A |
+
+---
+
+### QA22-LOCAL-20260922
+
+27.09.2026 переглянуто наявні локальні артефакти в `node_modules/.cache/phase22-ui/`; нового браузерного прогону не виконували. Файли не копіюються в документацію.
+
+- `2026-09-22T10-53-38-274Z/report.json`: 8/8 focus/Esc cases, `authFocusInside=true`, `authEscape=true`. Це не перевірка всіх Tab/Shift+Tab, повернення фокусу чи вкладених модалок.
+- `2026-09-22T10-55-19-743Z/report.json`: 4/4 recipe-route cases без failures; на чотирьох наявних скриншотах текст має окрему поверхню у двох темах на desktop/mobile. Контраст чисельно не виміряний.
+- `2026-09-22T10-55-42-954Z/report.json`: 68 початкових гостьових станів, 0 failed/blocked cases.
+
+Виправлення є в `js/auth.js` та `.rp-404` у `scss/pages/_recipe.scss`. Початкові звіти не містять Git commit/deployment, тому це історичні локальні підтвердження, а не PASS поточного live-сайту. QA22-02 та повний UI-09 лишаються відкритими. Кеш може бути очищений; повторний прогін тоді потребуватиме нових доказів.
 
 ---
 
@@ -437,7 +452,7 @@
 
 Перевірити 17 page-файлів: `index`, `week-menu`, `recipes`, `recipe`, `product-guide`, `shopping-list`, `shared-list`, `cookbook`, `profile`, `privacy`, `terms`, `cookies`, `imprint`, `dmca`, `404`, `500`, `maintenance`.
 
-> **08.09.2026:** локальний гостьовий subset пройдено на 6 ширинах у двох темах (204 стани). Повні UI-чекбокси нижче лишаються відкритими через непокриті auth/device/interaction сценарії та QA22-01/02. [Звіт фази 22](qa/phase22-2026-09-08/report.md).
+> **Наявні результати:** 08.09.2026 локальний гостьовий subset пройдено на 6 ширинах у двох темах (204 стани, [звіт](qa/phase22-2026-09-08/report.md)); 22.09 повторено 68 початкових станів, локально закрито focus/Esc-дефект QA22-01 та поверхню QA22-03 ([перевірені артефакти](#qa22-local-20260922)). Повні UI-чекбокси нижче лишаються відкритими через непокриті auth/device/interaction сценарії та QA22-02.
 
 - [ ] **UI-01:** кожна сторінка — light/dark × 1440×900/390×844; 0 horizontal overflow, content не перекритий.
 - [ ] **UI-02:** breakpoints 1200/1024/768/480; окремо tablet portrait/landscape.
