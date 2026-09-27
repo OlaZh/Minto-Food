@@ -1018,6 +1018,35 @@ function splitIngredientLine(line) {
   };
 }
 
+function renderRecipePhoto(recipe) {
+  const host = document.getElementById('view-photo');
+  if (!host) return;
+  host.replaceChildren();
+  // Saved entries already show their private images in the source panel.
+  host.hidden = recipe.entry_type === 'saved';
+  if (host.hidden) return;
+
+  const placeholder = document.createElement('div');
+  placeholder.className = 'recipe-detail__photo-placeholder';
+  placeholder.innerHTML = `${iconPlate}<span>${escapeHTML(t('noPhoto'))}</span>`;
+  host.append(placeholder);
+
+  const imageUrl = safeImageUrl(recipe.image);
+  if (!imageUrl) return;
+
+  const image = document.createElement('img');
+  image.alt = getRecipeName(recipe);
+  image.decoding = 'async';
+  image.hidden = true;
+  image.addEventListener('load', () => {
+    placeholder.hidden = true;
+    image.hidden = false;
+  }, { once: true });
+  image.addEventListener('error', () => image.remove(), { once: true });
+  host.append(image);
+  image.src = imageUrl;
+}
+
 export async function openRecipeView(recipeId) {
   const generation = ++sourceViewGeneration;
   document.getElementById('view-source')?.remove();
@@ -1052,6 +1081,7 @@ export async function openRecipeView(recipeId) {
   const name = getRecipeName(recipe);
   const isOwn = isOwnRecipe(recipe);
   const savedEntry = recipe.entry_type === 'saved';
+  renderRecipePhoto(recipe);
   viewModal?.querySelectorAll('.recipe-rating, .nutrition-summary, .nutrition-summary-meta, .recipe-detail__tags').forEach(el => { el.hidden = savedEntry; });
   for (const id of ['view-ingredients-list', 'view-steps']) {
     const section = document.getElementById(id)?.closest('.recipe-section');
