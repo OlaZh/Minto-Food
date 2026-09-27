@@ -1,6 +1,6 @@
 # 🌿 MintoFood — Roadmap v2 (після аудиту)
 
-> **Статус:** травень 2026
+> **Звірено з кодом і наявними QA-звітами:** 27.09.2026. Реалізована основа; pre-launch QA відкритий.
 > **Палітра:** Соковита м'ята (`#a6d6b8` / `#b8e0c5` / `#4ab584` / `#82bf99` / `#0f2818`)
 > **Принцип:** No MVP thinking, але правильне sequencing. Робимо фундаментально, але в правильному порядку — щоб не потонути в інфраструктурі до того, як продукт зустріне юзерів.
 > **НЕ чіпаємо:** шрифти (Fraunces/Rubik/Mulish), лого, існуючі кольори світлої та темної тем.
@@ -9,14 +9,34 @@
 
 ## 🧭 Структура roadmap
 
-Документ розбито на 3 TIER-и за пріоритетністю:
+Документ розбито на 4 TIER-и (0–3) за пріоритетністю:
 
-- **TIER 0 — Зроблено** (Фази 0-10.8): редизайн + адмінка + 10.9 структурний рефакторинг
+- **TIER 0 — Реалізована основа** (Фази 0–10.9): редизайн, адмінка, футер і структурний рефакторинг; непідтверджений QA позначений окремо
 - **TIER 1 — MUST до публічного launch**: без цього не запускаємось
 - **TIER 2 — Перші 3 місяці після launch**: growth, retention, мобайл
 - **TIER 3 — Scale stage**: коли є revenue + traction
 
 > Цей порядок не означає "TIER 2 = не важливо". Він означає: спершу довести продукт до юзерів, побачити що працює, а потім полірувати. Інакше ризик 6+ місяців без feedback loop.
+
+### Як читати статуси
+
+- `[x]` у переліку реалізації означає наявний код або документ. Це не автоматичне підтвердження deploy чи повного QA.
+- `[x]` у QA означає перевірений результат у вказаному середовищі й на вказану дату; джерело — [QA-план і журнал](qa-test-plan.md).
+- `[ ]` лишається для невиконаного, часткового, заблокованого або непідтвердженого пункту. Рішення «не робимо» позначається `N/A` з причиною.
+- Звірка 27.09.2026 є перевіркою документації та коду, а не новим браузерним тестом чи перевіркою дашбордів. Історичний PASS не засвідчує поточний deployment.
+
+### Підтверджений стан і відкритий залишок
+
+| Напрям | Що підтверджено | Що залишається |
+|---|---|---|
+| Дизайн-система | Токени й компоненти в SCSS, див. Фазу 0 | Наскрізне дотримання правил і governance — Фаза 29 |
+| Гостьовий UI | 204 початкові стани, lint/build і наявні тести — [QA 08.09](qa/phase22-2026-09-08/report.md) | Auth/device/workflow QA; QA22-01/02/03 |
+| Авторизація | Частина сценаріїв пройдена; фікси мають окремі результати | AUTH-01/04/05/06/07/10/11/16 та повторення на релізному deployment — [QA-план](qa-test-plan.md) |
+| Адмінка й RLS | Гостьовий redirect перевірено 08.09; RLS-01…10 мають серпневі результати | Адмін-сесія, non-admin UI, повні ADM/MOD workflow; admin CSP |
+| GDPR | Export/delete/cron реалізовані, захист cron перевірено | Неповний export (`BLOCKED-GDPR-01`, `DECISION-GDPR-01`), ручні GDPR/DEL сценарії |
+| Збережені рецепти | Код і локальні SQL/API-перевірки описані в [release-документі](saved-recipes-release.md) | Застосування нової міграції, deploy і live QA не підтверджені |
+| Середовища | Є staging-sync скрипт; поточне середовище визначене як pre-production | Новий чистий prod, перетворення поточного на staging, env/seed — Фаза 17 |
+| Дослідження й оплата | Persona та скрипт інтерв'ю готові | Результатів інтерв'ю немає в журналі; рішення про провайдера не зафіксоване — Фази 11/19 |
 
 ---
 
@@ -29,9 +49,9 @@
 
 ---
 
-# ✅ TIER 0 — Зроблено
+# ✅ TIER 0 — Реалізована основа
 
-> Усе, що вже завершено в рамках сайтового редизайну та адмінки. Збережено як reference і для closure відкритих хвостів.
+> Нижче зафіксовано реалізацію редизайну та адмінки. Відкриті перевірки не закриті загальним статусом розділу; див. Фазу 22 та QA-план.
 
 ---
 
@@ -39,34 +59,36 @@
 
 **Форм-система:**
 
-- [ ] Визначити стандарти rounded rectangles (r=12/16/20)
-- [ ] Правило "одне кільце на сторінку"
+- [x] Визначити стандарти rounded rectangles — `--radius-md/lg/xl` = 12/16/20 у [токенах](../scss/utils/_design-system.scss); там також визначені xs/sm/2xl/pill для інших елементів
+- [x] Правило "одне кільце на сторінку" записане в секції «Форм-система проєкту»; наскрізна перевірка застосування — Фаза 29
 
 **SCSS компоненти (mixins/placeholders):**
 
-- [ ] `%card-premium` — стандарт картки з hover
-- [ ] `%button-primary` — основна кнопка
-- [ ] `%button-secondary` — вторинна кнопка
-- [ ] `%button-ghost` — прозора / утилітарна кнопка
-- [ ] `%chip-filter` (категорії "Рецепти", "Путівник")
-- [ ] `%chip-day` — дні тижня
-- [ ] `%pill-badge` — streak, статуси
-- [ ] `%progress-bar` — горизонтальний бар для макро
-- [ ] `%ring-hero` — велике кільце калорій
-- [ ] `%water-capsule` — вертикальна капсула води
+- [x] `%premium-card` — стандарт картки з hover (фактична назва; у старому плані помилково `%card-premium`)
+- [x] `%button-primary` — основна кнопка
+- [x] `%button-secondary` — вторинна кнопка
+- [x] `%button-ghost` — прозора / утилітарна кнопка
+- [x] `%chip-filter` (категорії "Рецепти", "Путівник")
+- [x] `%chip-day` — дні тижня
+- [x] `%pill-badge` — streak, статуси
+- [x] `%progress-bar` — горизонтальний бар для макро
+- [x] `%ring-hero` — велике кільце калорій
+- [x] `%water-capsule` — вертикальна капсула води
+
+> Усі перелічені placeholders оголошені в [`scss/utils/_design-system.scss`](../scss/utils/_design-system.scss), звірено 27.09.2026. Це підтвердження реалізації; єдине використання токенів усюди ще не підтверджене.
 
 **Spacing system:**
 
-- [ ] Зафіксувати шкалу: 4, 8, 12, 16, 20, 24, 32, 40, 56 px
-- [ ] Усі компоненти використовують тільки ці значення
+- [x] Зафіксувати шкалу: 4, 8, 12, 16, 20, 24, 32, 40, 56 px — `--space-xxs`…`--space-4xl` у `_design-system.scss`
+- [ ] Усі компоненти використовують тільки ці значення — наскрізний аудит у Фазі 29; наявність токенів не закриває цей пункт
 
 **Shadow/elevation system:**
 
-- [ ] Level 1 — картки (ледь піднято)
-- [ ] Level 2 — hover state
-- [ ] Level 3 — модалки, dropdowns
+- [x] Level 1 — картки: `--shadow-1`
+- [x] Level 2 — hover state: `--shadow-2`
+- [x] Level 3 — модалки, dropdowns: `--shadow-3`; усі три рівні мають dark overrides у `_design-system.scss`
 
-> 💬 _Цю фазу формально не закривали, але вона де-факто реалізована через Фази 1-9. Винесено в Tier 2 як "Design governance" (фаза 22) — щоб формалізувати те, що вже існує._
+> **Статус:** токени й компоненти реалізовані. Формалізація та перевірка застосування правил лишаються в TIER 2 → **Фаза 29, Design governance**. QA-покриття основи: AUTO-09 та UI-01…UI-13 у [QA-плані](qa-test-plan.md).
 
 ---
 
@@ -82,7 +104,7 @@
 
 ---
 
-## 🏠 ФАЗА 2: "Меню на день" — ✅ повністю готова
+## 🏠 ФАЗА 2: "Меню на день" — ✅ реалізовано; QA — Фаза 22
 
 - [x] ✅ Таблиця `user_streaks`, `get_current_streak()`, автотригер на `meals`, бекфіл
 - [x] ✅ Дні тижня pills, кільце калорій + streak, аккордеони meals, вода, макро-бари
@@ -92,7 +114,7 @@
 
 ---
 
-## 📅 ФАЗА 3: "Меню на тиждень" — ✅ повністю готова
+## 📅 ФАЗА 3: "Меню на тиждень" — ✅ реалізовано; QA — Фаза 22
 
 - [x] ✅ Матриця "дні × прийоми", pills днів тижня, "Разом" колонка
 - [x] ✅ Копіювати/вставити тиждень
@@ -101,7 +123,7 @@
 
 ---
 
-## 🍳 ФАЗА 4: "Рецепти" — ✅ повністю готова
+## 🍳 ФАЗА 4: "Рецепти" — ✅ реалізовано; QA — Фаза 22
 
 - [x] ✅ Картки, пошук + чіпи-фільтри, рейтинги, empty state
 - [x] ✅ Мобільна версія (2 колонки)
@@ -113,7 +135,7 @@
 
 ---
 
-## 🥦 ФАЗА 5: "Путівник по продуктах" — ✅ повністю готова
+## 🥦 ФАЗА 5: "Путівник по продуктах" — ✅ реалізовано; QA — Фаза 22
 
 - [x] ✅ Картки продуктів, пошук + фільтри, розширені фільтри, модалка деталей
 - [x] ✅ Мобільна версія (2 колонки)
@@ -121,7 +143,7 @@
 
 ---
 
-## 🛒 ФАЗА 6: "Список покупок" — ✅ повністю готова
+## 🛒 ФАЗА 6: "Список покупок" — ✅ реалізовано; QA — Фаза 22
 
 - [x] ✅ Групування по категоріях, чекбокси, прогрес, дії (поділитися/очистити/друк)
 - [x] ✅ Швидке додавання продукту
@@ -130,15 +152,24 @@
 
 ---
 
-## 📚 ФАЗА 7: "Книга рецептів" — ✅ повністю готова
+## 📚 ФАЗА 7: "Книга рецептів" — ✅ реалізовано; QA — Фаза 22
 
 - [x] ✅ Картки книг, "Нещодавно переглянуті", модалка книги, нотатки/стікери
 - [x] ✅ Мобільна версія
 - [x] ✅ Тест світлої + темної теми
 
+### Збережені рецепти зі скріншотів, відео й посилань (24–25.09.2026)
+
+- [x] Реалізовано погоджений [сценарій](saved-recipe-plan.md): окрема коротка форма, приватні джерела, вибір книг, перетворення того самого запису на ручний рецепт
+- [x] Підготовлено SQL/API/Storage-код і регресійні скрипти; [обсяг локальних перевірок та інструкція запуску](saved-recipes-release.md)
+- [x] Відкат попередньої системи `recipe_attachments` у БД підтверджений наданим користувачкою результатом 17/17 — [історія відкату](recipe-rollback.md); повторно старий SQL не запускати
+- [ ] Застосування `20260924_1200_saved_recipes.sql`, postflight, deployment сумісного клієнта/API та live QA — підтвердження в репозиторії відсутнє
+
+> Наявний код не закриває BOOK-06/07 чи нові live-перевірки приватності та очищення джерел. Попередні результати QA стосуються версій до цієї функції.
+
 ---
 
-## 👤 ФАЗА 8: Профіль + підсторінки — ✅ повністю готова
+## 👤 ФАЗА 8: Профіль + підсторінки — ✅ реалізовано; QA — Фаза 22
 
 - [x] ✅ Layout + Sidebar (на мобільному — горизонтальний таб-бар)
 - [x] ✅ Мої дані / Контроль ваги / Активність / Статистика / Налаштування
@@ -148,7 +179,7 @@
 
 ---
 
-## 🧭 ФАЗА 9: Навігація та авторизація — ✅ повністю готова
+## 🧭 ФАЗА 9: Навігація та авторизація — ✅ реалізовано; є відкриті AUTH-дефекти
 
 - [x] ✅ Хедер з аватаркою / login
 - [x] ✅ Модалка логіну/реєстрації
@@ -161,16 +192,16 @@
 - [x] ✅ Повний огляд усіх сторінок у світлій темі (18.07.2026, автоматизований прохід + вибірковий візуальний огляд — див. Фазу 22)
 - [x] ✅ Повний огляд усіх сторінок у темній темі (18.07.2026, там само)
 - [x] ✅ Skeleton-loaders (рецепти, путівник, книга)
-- [x] ✅ Empty states (всі сторінки)
+- [x] ✅ Базові empty states реалізовані; повний аудит станів і релевантних CTA лишається UI-07 / Фаза 16
 - [x] ✅ Error states (рецепти, путівник)
 - [x] ✅ Анімації переходів (fade-in)
-- [x] ✅ Accessibility audit (:focus-visible глобально)
-- [x] ✅ Performance audit (lazy-load)
+- [x] ✅ Глобальний `:focus-visible` реалізовано; повний accessibility audit відкритий у UI-09, зокрема QA22-01
+- [x] ✅ Lazy-load реалізовано; повний performance audit відкритий у PERF-сценаріях QA-плану
 - [ ] Мобільний QA на реальних пристроях (iOS Safari, Android Chrome) — **перенесено в TIER 1 → "Pre-launch QA"**
 
 ---
 
-## 🛡 ФАЗА 10.5: Адмінка — Центр модерації — ✅ повністю готова
+## 🛡 ФАЗА 10.5: Адмінка — Центр модерації — ✅ реалізовано; runtime QA відкритий
 
 > Next.js `admin-app/`, Server Actions + Supabase SSR, доступ через `profiles.is_admin = true`.
 
@@ -181,7 +212,7 @@
 - [x] ✅ Routing & Auth (middleware, login, OAuth callback, transfer, unauthorized)
 - [x] ✅ Layout: sidebar + mobile block
 - [x] ✅ Секція "Скарги" (з bulk actions, drawer, групування, фільтри)
-- [x] ✅ Секція "Нові рецепти" (spam detection >10/день, inline edit)
+- [x] ✅ Секція "Нові рецепти" (черга pending/flagged/staged, редагування, прапорці тексту/посилань/фото й історія автора). Денний поріг кількості рецептів у поточному коді відсутній — `admin-app/src/lib/autoFlag.ts`, `app/(admin)/moderation/`
 - [x] ✅ Секція "Юзерські продукти" (pg_trgm дублі, merge, схвалити)
 - [x] ✅ Секція "Користувачі" (пошук, бан/розбан, toggle admin)
 - [x] ✅ Top stats bar (4 pills з кешем 5 хв)
@@ -197,13 +228,14 @@
 **Відкритий хвіст (закрити в TIER 1):**
 
 - [x] ✅ Тест penetration по коду (18.07.2026): proxy.ts редіректить без сесії → /login, не-admin → /unauthorized; всі admin-таблиці під RLS `is_admin`, RPC мають внутрішню перевірку; додано `assertAdmin()` у server actions catalog/recipes/authors (defense-in-depth); 22 security-тести проходять. Лишився runtime-тест на deployed URL
-- [ ] Тест: anon ключ → 403 (runtime, на deployed URL)
+- [x] ✅ Гостьовий доступ до `/dashboard` і `/moderation` → `307 /login` (DEP-02, повтор 08.09.2026); прямі anon write/admin-RPC перевірки RLS-10 — PASS 10.08.2026. Код відповіді залежить від маршруту/прав, універсальний `403` не є контрактом
+- [ ] Повний runtime-контроль доступу на релізному deployment: admin/non-admin UI та всі admin tables/RPC — ADM-01/15
 - [ ] QA-тести (workflow, каскади, бан, bulk, empty)
 - [ ] Тест світлої + темної теми
 
 ---
 
-## 🛡 ФАЗА 10.6: Адмінка — Розширені інструменти модерації — ✅ повністю готова
+## 🛡 ФАЗА 10.6: Адмінка — Розширені інструменти модерації — ✅ реалізовано; MOD QA відкритий
 
 - [x] ✅ Shadow ban (`is_shadow_banned`, нові рецепти → draft)
 - [x] ✅ Архів порушень (soft delete: `deleted_at`, `app/(admin)/archive/`)
@@ -217,7 +249,7 @@
 
 ## ✅ ФАЗА 10.7: PRIVATE vs PUBLIC архітектура рецептів
 
-> **Статус:** ✅ Повністю реалізовано (червень 2026) — ядро + UX-полірування (бейдж, кнопка "Зробити публічним", фільтр) + серверна валідація. Лишилось: застосувати міграцію `20260608_1300` у Supabase + візуальна QA.
+> **Статус:** ядро, UI та серверна валідація реалізовані. RLS-01…10 мають live evidence за 08–10.08.2026; повні REC/FLOW/MOD сценарії відкриті. Застосування окремих міграцій перевіряти за PRE-03…05, а не повторювати їх за старою приміткою. Нові приватні джерела — [«Збережені рецепти»](saved-recipes-release.md), їхній deploy окремо не підтверджений.
 > **Принцип:** PRIVATE = особиста кулінарна книга (будь-який контент), PUBLIC = спільнота (проходить модерацію).
 
 ### Правила
@@ -227,7 +259,7 @@
 - незавершений контент, відсутні кроки/інгредієнти, короткі назви
 - зовнішні посилання (TikTok, Instagram, YouTube, Telegram, Notion, блоги)
 - масовий імпорт / quick save
-- NO auto-flagging, NO бани за кількість
+- Без банів за кількість. Приватні фото можуть потрапити в ручну чергу за результатом image moderation (Фаза 18); масове збереження саме собою не є денним spam-сигналом
 
 **PUBLIC рецепти** — тільки для "Поділитися зі спільнотою":
 
@@ -241,8 +273,10 @@
 - [x] ✅ **DB default** — `is_public DEFAULT false` (нові рецепти приватні) + backfill (`supabase/private_public_recipes.sql`)
 - [x] ✅ **`is_public` у payload** — `recipe-modal.js` передає `is_public: isPublicSubmission` при збереженні
 - [x] ✅ **Валідація публікації** — перед submit як PUBLIC: перевірка назви + (інгредієнти або кроки)
-- [x] ✅ **Auto-flagging scope** — `detectFlags()` викликається тільки в moderation queue і reports (тільки PUBLIC контент)
+- [x] ✅ **Auto-flagging scope** — `detectFlags()` викликається в moderation queue і reports. Черга також містить приватні flagged-фото; твердження «тільки PUBLIC контент» не відповідає поточному коду
 - [x] ✅ **Bot activity detection видалено** — масовий import приватних рецептів є нормальною поведінкою
+
+> Окремо в `/api/save-recipe` діє ліміт **спроб створення за хвилину** (за замовчуванням 10, Фаза 17), включно з приватними та saved-записами. Це наявна поведінка API; денного правила «забагато рецептів = спам» немає. Звірка документів не змінює цей ліміт.
 
 ### 🔮 Наступна черга
 
@@ -255,7 +289,7 @@
 
 ## 🏗 ФАЗА 10.9: Структурний рефакторинг HTML/SCSS — уніфікація layout
 
-> **Статус:** ✅ HTML-рефакторинг зроблено (травень 2026) — залишилася тільки фінальна QA (теми/мобайл).
+> **Статус:** HTML/SCSS-рефакторинг зроблено. Локальна перевірка структури, тем і геометрії гостьових сторінок повторена 08.09.2026 (204 стани, [звіт](qa/phase22-2026-09-08/report.md)); авторизовані стани й реальні пристрої лишаються у Фазі 22.
 > **Проблема (вирішена):** кожна сторінка мала різну структуру між `<header>` і `<footer>` — деякі мали зайві обгортки `div.app-bg > div.app-shell`, деякі не мали `<main>` взагалі, деякі мали `<main>` всередині grid-колонки. Це спричиняло різні відступи, нестабільний sticky-footer і невалідний HTML.
 > **Принцип:** одна канонічна структура на всіх сторінках, нуль зайвих обгорток.
 > **Перевірено по коду (червень 2026):** 0 збігів `app-bg`/`app-shell` у всіх HTML; кожна сторінка має `<main class="main">`; вкладені/відсутні `<main>` усунено.
@@ -529,7 +563,7 @@ footer
 
 ## 🦶 ФАЗА 10.8: Глобальний футер
 
-> **Статус:** ядро зроблено (травень 2026) — залишився тільки тест тем.
+> **Статус:** ядро футера реалізоване; локальні теми/layout перевірені 18.07 та повторно 08.09.2026, mobile accordion — 08.09.2026. Повний UI-05/06 і відкладені інтеграції лишаються відкритими.
 > **Tagline:** "Харчові звички набувають форми"
 > **Принцип:** мінімалістичний, без зайвого — тільки те що реально існує зараз.
 
@@ -544,13 +578,13 @@ footer
 | Підтримка | Help Center / Feedback / Report issue |
 | Юридичне | Privacy / Terms / Cookies / GDPR / Company Info |
 
-**Bottom row:** `© 2026 MintoFood · Харчові звички набувають форми`
+**Bottom row:** `© 2026 MintoFood` + перемикач UA/EN/PL; tagline розміщений у Brand-колонці (`partials/footer.html`).
 
 ### ✅ Зроблено
 
 - [x] ✅ HTML-компонент `partials/footer.html`
 - [x] ✅ SCSS `scss/layout/_footer.scss` — десктоп 4 колонки, tablet 2×2, mobile акордеон
-- [x] ✅ Підключено до 15 сторінок (усі public + юридичні: `index.html`, `recipes.html`, `recipe.html`, `week-menu.html`, `product-guide.html`, `shopping-list.html`, `shared-list.html`, `cookbook.html`, `profile.html`, `privacy.html`, `terms.html`, `cookies.html`, `imprint.html`, `dmca.html`)
+- [x] ✅ Спільний футер підключено до public/legal сторінок, включно з `recipe.html` для `/recipe/{slug}`; актуальна матриця 17 сторінок — у [QA-звіті 08.09](qa/phase22-2026-09-08/report.md)
 - [x] ✅ Тест світлої + темної теми (18.07.2026, автоматизований QA-прохід Фази 22 — обидві теми, desktop+mobile)
 
 ### 🔮 Відкладено (залежності або TIER 2/3)
@@ -558,7 +592,7 @@ footer
 - [ ] **Newsletter signup** → залежить від Resend (Фаза 14)
 - [ ] **Pricing посилання** → коли з'явиться сторінка (Фаза 19)
 - [ ] **Соцмережі** (IG / TikTok / Pinterest / YouTube) → коли з'являться акаунти
-- [ ] **Перемикач мови** → якщо не буде в хедері (Фаза 21)
+- [x] ✅ **Перемикач мови UA/EN/PL** є в `partials/footer.html`; повний runtime-тест перемикання — UI-05
 - [ ] **Blog / Press / Affiliate** → TIER 2/3
 - [ ] **Status page** → TIER 3
 
@@ -573,19 +607,19 @@ footer
 
 ## 🎯 ФАЗА 11: Customer validation (НОВА, критична)
 
-> **Чому це перше:** перш ніж писати paywall, налаштовувати Stripe і генерувати pricing page — треба переконатись, що те, що ти будеш продавати, реально хочуть купити. 10 інтерв'ю врятують 3 місяці хибної роботи.
+> **Чому це перше:** перш ніж писати paywall, інтегрувати платежі і генерувати pricing page — треба перевірити попит. Persona й скрипт готові в [customer-research.md](customer-research.md); журнал інтерв'ю та висновки не заповнені. Це відсутність задокументованих результатів, а не доказ кількості фактично проведених розмов.
 
 ### 📞 Customer interviews
 
 - [x] Сформулювати target persona: жінки 25-45, ЄС + Україна, цікавляться харчуванням, користувались MyFitnessPal/Yazio/Lifesum
 - [ ] Знайти 15 респондентів: соцмережі, ком'юніті, знайомі, Reddit r/MealPrep / r/loseit, українські Telegram-групи
 - [x] Підготувати скрипт інтерв'ю (30-45 хв):
-  - [ ] Що зараз використовуєш для трекінгу харчування? Чому саме це?
-  - [ ] Що в цьому додатку бісить? Що б змінила?
-  - [ ] Чи платиш за щось у цій сфері? Скільки? За що саме?
-  - [ ] Якби була магічна фіча для харчового додатку — що б це було?
-  - [ ] Показ MintoFood (3 хв demo) → чесна реакція
-  - [ ] За що в MintoFood ти б заплатила $5/міс? А за що точно не заплатила б?
+  - [x] Що зараз використовуєш для трекінгу харчування? Чому саме це?
+  - [x] Що в цьому додатку бісить? Що б змінила?
+  - [x] Чи платиш за щось у цій сфері? Скільки? За що саме?
+  - [x] Якби була магічна фіча для харчового додатку — що б це було?
+  - [x] Показ MintoFood (5–8 хв demo у готовому скрипті) → чесна реакція
+  - [x] За що в MintoFood ти б заплатила $5/міс? А за що точно не заплатила б?
 - [ ] Провести 10-15 інтерв'ю (1 на день, 2 тижні)
 - [ ] Транскрибувати + позначити паттерни (Notion/Miro)
 
@@ -595,15 +629,16 @@ footer
 - [ ] **Top 3 фічі**, за які люди готові платити → це і є основа Premium (а НЕ "10 рецептів max")
 - [ ] Скласти **value proposition** одним реченням: "MintoFood — це [що] для [кого], тому що [unique value]"
 - [ ] Зафіксувати: ціна (стрес-тест на $3 / $5 / $7 / $10) — за що готові, за що ні
-- [x] Документувати все у `docs/customer-research.md` — оновлювати кожні 3 міс
+- [x] Створити `docs/customer-research.md`: persona, скрипт, шаблони журналу й висновків
+- [ ] Заповнити журнал і висновки фактичними результатами; оновлювати дослідження кожні 3 міс
 
 ### 💡 Outcome
 
-- [ ] Переписана Фаза 16 (монетизація) на основі реальних insights
+- [ ] Переписана Фаза 19 (монетизація) на основі реальних insights
 - [ ] Реалістична Free vs Premium розбивка
 - [ ] Перший draft messaging для pricing page
 
-> ⚡ _Якщо інтерв'ю покажуть, що ніхто не платить за recipe app — це теж результат. Краще дізнатись зараз, ніж після 3 міс на Stripe._
+> ⚡ _Якщо інтерв'ю покажуть, що ніхто не платить за recipe app — це теж результат. Краще дізнатись до реалізації платної підписки._
 
 ---
 
@@ -616,15 +651,15 @@ footer
 - [x] `profiles` vs `user_profiles` — різні ролі, обидві активні (profiles = auth/admin, user_profiles = health data)
 - [x] Видалити `old_products` — замінена новою таблицею products
 - [x] Видалити `recipetest`, `cookbook_notes`, `cookbook_notebooks`, `shopping_list`, `meals_backup_before_streaks`, `product_similar`
-- [x] Аудит RLS — всі public таблиці захищені ✅
+- [x] Проведено аудит RLS; live evidence RLS-01…10 за 08–10.08.2026 — у [QA-плані](qa-test-plan.md). Це покриття перелічених таблиць/операцій на дату прогону, а не підтвердження всіх наступних міграцій
 
 ### 🧬 Migration safety (НОВЕ — критичне для solo founder)
 
 - [x] **Naming convention:** `YYYYMMDD_HHMM_description.sql` — зафіксовано у `supabase/migrations/README.md`
 - [x] Тримати всі міграції у `supabase/migrations/` + у git
 - [x] **Migration policy документ** `docs/migrations.md` — checklist, типи операцій, алгоритм NOT NULL
-- [x] **Rollback стратегія:** для кожної міграції — окремий `_rollback.sql`
-- [x] **Staging DB sync:** скрипт, що клонує prod schema на staging (без даних або з анонімізованими)
+- [x] **Rollback стратегія:** правило про окремий `_rollback.sql` задокументоване; перевірка повноти всіх активних міграцій лишається AUTO-10
+- [x] **Staging DB sync:** є `supabase/staging-sync.ps1` для schema-only sync і опційного seed; це не підтверджує створення staging-проєкту чи успішну репетицію — див. [інструкцію](staging-db-sync.md) і Фазу 17
 
 ### 🚩 Feature flags (НОВЕ — критичне!)
 
@@ -651,7 +686,7 @@ footer
 - [x] Terms of Service — `terms.html` ✅ v1.0 (липень 2026, private/public рецепти, право Польщі)
 - [x] Cookie Policy — `cookies.html` ✅ v1.0 (липень 2026, реальні localStorage-ключі)
 - [x] Disclaimer "Не є медичною порадою" — на сторінках профілю, контролю ваги, активності, статистики
-- [x] Imprint / Impressum — `imprint.html` (шаблон, заповнити реальними даними)
+- [x] Imprint / Impressum — шаблон `imprint.html` створено; заповнення даними оператора лишається відкритим у QA-13.6
 - [x] DMCA / copyright complaint procedure — `dmca.html`, посилання у футері всіх сторінок
 
 ### 🍪 Cookie consent banner
@@ -665,19 +700,19 @@ footer
 
 ### 🔐 GDPR — права юзера
 
-- [x] **Data Export** — `api/gdpr-export.js` → JSON (`SUPABASE_SERVICE_ROLE_KEY` додано у Vercel ✅)
+- [x] **Data Export endpoint** — `api/gdpr-export.js` → JSON; повнота експорту не закрита (`BLOCKED-GDPR-01`, `DECISION-GDPR-01` у QA-плані)
 - [x] **Right to be Forgotten:** soft-delete + 30-денний grace period через `soft_delete_user()`
-  - [x] Hard-delete CRON job після grace period
+  - [x] Hard-delete CRON handler і розклад після grace period; захист endpoint перевірено DEP-10/11, повний запуск DEP-12/DEL ще не підтверджений
   - [ ] Анонімізація платіжних записів (TIER 1 → після Фази 19)
 - [x] **Data Rectification** — через профіль (вже працює)
-- [x] **Data Portability** — JSON export через `/api/gdpr-export`
+- [x] **Формат Data Portability** — JSON export через `/api/gdpr-export`; повнота даних та E2E — QA-13.1
 - [x] Логування GDPR-запитів у таблицю `gdpr_requests` — `20260518_1300_gdpr.sql`
 
 ### 📑 DPA з усіма sub-processors
 
 - [ ] Supabase (з їх dashboard)
 - [ ] Vercel (з settings)
-- [ ] Провайдер платежів (Stripe/Paddle/LS)
+- [ ] Провайдер платежів — після зафіксованого вибору у Фазі 19
 - [ ] Resend
 - [ ] PostHog (EU hosting!)
 - [ ] Sentry
@@ -685,7 +720,8 @@ footer
 
 ### 🧒 Edge cases
 
-- [x] Age gate at signup: "Тобі є 16+?" (ЄС default; деякі країни — 13-15)
+- [x] Клієнтський age/terms checkbox при signup реалізовано (`js/auth.js`)
+- [ ] Серверне забезпечення та збереження signup consent — AUTH-01 має FAIL; перевірка лише в браузері не закриває цей пункт
 - [x] Disclaimer для weight goals: якщо BMI < 18.5 або ціль <17 → попередження + посилання на лікаря
 - [ ] Disclaimer для пенсіонерів/вагітних — частково: згадано в медичному disclaimer terms.html v1.0 (усі 3 мови); контекстне попередження в UI профілю ще не зроблено
 
@@ -705,14 +741,14 @@ footer
 
 #### QA-13.1 — GDPR export
 
-**Статус:** готово до ручного E2E-тесту.
+**Статус:** endpoint реалізований; повнота експорту заблокована. `recipe_ratings` та `api_rate_limits` не входять у JSON (`BLOCKED-GDPR-01`). Export/retention для інших пов'язаних даних потребує рішення (`DECISION-GDPR-01`). Див. [QA-план](qa-test-plan.md); до закриття цих пунктів не позначати експорт повним.
 
 Передумови: реальний тестовий акаунт із заповненим профілем, хоча б однією книгою і рецептом; користувач залогінений.
 
 - [ ] Відкрити `profile.html` → Settings → `GDPR і приватність`.
 - [ ] Натиснути `Завантажити мої дані` та дочекатися завантаження без падіння сторінки.
 - [ ] Перевірити ім'я файлу виду `mintofood-export-XXXXXXXX.json`.
-- [ ] Перевірити, що JSON містить усі персональні дані:
+- [ ] Перевірити поточні секції JSON (цей перелік ще не є повним експортом):
   - `exported_at`, `user_id`, `email`, `profile`;
   - `health_profile` (`user_profiles`: age, height, weight, goals, norms);
   - `recipes`, `cookbooks`, `meals`, `water`, `week_meals`;
@@ -733,7 +769,7 @@ order by requested_at desc;
 
 #### QA-13.2 — GDPR delete request
 
-**Статус:** готово до ручного тесту запиту; hard-delete потребує застосування виправної міграції.
+**Статус:** код запиту й hard-delete реалізований. Застосування v2/v3 задокументовано нижче та у Фазі 17; повторно застосовувати їх за старою приміткою не потрібно. Ручний delete-flow і авторизований cron залишаються відкритими (DEP-12/DEL); нове очищення приватних джерел має окремий [порядок запуску](saved-recipes-release.md).
 
 Передумови: disposable test account, залогінений і ще не запланований на видалення.
 
@@ -789,7 +825,7 @@ where id = '<USER_ID>';
 
 #### QA-13.5 — Signup age gate
 
-**Статус:** логіка підтверджена по коду, потрібен короткий ручний smoke test.
+**Статус:** клієнтська перевірка реалізована. AUTH-01 має FAIL через відсутність серверного забезпечення та збереження consent; лише UI smoke test не закриває цей дефект.
 
 - [ ] Відкрити auth modal → Register, лишити checkbox порожнім і перевірити disabled submit.
 - [ ] Увімкнути checkbox → submit стає активним; вимкнути → знову disabled.
@@ -922,9 +958,9 @@ where id = '<USER_ID>';
 
 ### 🖼 Open Graph + Twitter Cards
 
-- [x] ✅ OG tags + Twitter Card tags
+- [x] ✅ OG tags + Twitter Card tags реалізовані; у `recipe.html` початкові значення порожні, `js/recipe-page.js` заповнює їх після завантаження рецепта. Це не підтверджує preview у сервісах поширення
 - [ ] **Динамічна OG image** для рецептів — `vercel/og` (recipe.image + бренд оверлей)
-- [ ] Тест через opengraph.xyz / Twitter Card validator
+- [ ] Тест через opengraph.xyz / Twitter Card validator: перевірити отримані метадані й фото конкретного рецепта; SEO-06/09. Спосіб усунення можливого дефекту потребує окремого рішення
 
 ### 🔘 Шерінг
 
@@ -933,7 +969,7 @@ where id = '<USER_ID>';
 
 ### 📈 Search Console + Bing Webmaster
 
-> ⏳ Блокер: реальний домен → див. Фазу 18
+> ⏳ Блокер: реальний домен → див. Фазу 17
 
 - [ ] Зареєструвати в Google Search Console після підключення домену
 - [ ] Submit sitemap.xml
@@ -996,7 +1032,7 @@ where id = '<USER_ID>';
 
 - [x] ✅ **Welcome screen** після signup (18.07.2026) — перший екран онбординг-оверлею (`onbValueView` в `js/onboarding.js`): 3 цінності (меню з КБЖУ / книга рецептів / список покупок) → "Почати" → нікнейм. Той самий прапор `welcome_intro_seen`, без нової міграції
 - [x] ✅ **Goal setup wizard** — `js/onboarding-wizard.js`: 3 кроки (ціль → параметри тіла → активність), живий розрахунок норми через спільний health-core, збереження в `user_profiles`, skip-прапор `goal_wizard_skipped`
-- [x] ✅ **Sample data seed** (18.07.2026) — після завершення wizard сіється 1 сніданок "Вівсянка з ягодами (приклад)" у `meals` (тільки якщо meals порожній); подія `minto:meals-seeded` перемальовує "Меню на день" без reload
+- [x] **Sample data seed — N/A, прибрано за рішенням власниці 07.08.2026.** Новий акаунт починає без прикладового сніданку; див. AUTH-14 у [QA-плані](qa-test-plan.md). Це закрите рішення про видалення функції
 - [ ] **Empty states з CTA** (вже частково ✅) — аудит на всіх сторінках
 - [x] ✅ **Progress checklist** у sidebar профілю (18.07.2026) — `initOnboardingChecklist()` в `profile.js`: Налаштувати ціль / Додати meal / Створити рецепт / Вода 5 днів (з лічильником N/5). Стан виводиться з реальних даних (нуль нових колонок); коли все виконано — блок зникає
 - [x] ✅ **Activation milestones** (18.07.2026) — тост "Ти тримаєш серію {n} днів! 🌿" на 3/7/14/30/100 днів у `streak.js`; спрацьовує лише при рості серії в сесії (після логування їжі), без прапорів у localStorage. Бонус-фікс: картка streak тепер оновлюється одразу після додавання meal
@@ -1077,20 +1113,21 @@ where id = '<USER_ID>';
 
 ### 🔒 Безпека — basic
 
-- [ ] **2FA на ВСІХ критичних акаунтах:** Vercel, Supabase, Cloudflare, Domain registrar, Stripe/LS, Resend, Sentry, GitHub
+- [ ] **2FA на ВСІХ критичних акаунтах:** Vercel, Supabase, Cloudflare, Domain registrar, обраний платіжний провайдер (Фаза 19), Resend, Sentry, GitHub
 - [ ] Recovery codes зберегти в password manager
-- [x] ✅ **Security headers** базові (24.07.2026, коміт `e8671f9`) — закомічені й запушені в `origin/main`, деплоються автоматично при push. admin-app окремим деплоєм отримав HSTS/nosniff/DENY/Referrer-Policy + `X-Robots-Tag: noindex` через `next.config.ts` (адмінський CSP поки не додано: строгий CSP потребує окремої nonce/hash-конфігурації Next.js 16 і не входить у цей підпункт). Перевірка на живому URL — після деплою, разом з рештою QA
+- [x] ✅ **Security headers** базові — реалізовано 24.07.2026 (`e8671f9`); public/admin headers підтверджено live у DEP-03/04/05 від 05.08.2026. Admin CSP у цей PASS не входить: його немає в `admin-app/next.config.ts` та `src/proxy.ts`
+  - [ ] **Admin CSP:** конфігурація та runtime-перевірка лишаються відкритими; спосіб інтеграції потребує окремого погодження
   - [x] ✅ HSTS (`max-age=63072000; includeSubDomains`) — public + admin
   - [x] ✅ `X-Content-Type-Options: nosniff` — public + admin
   - [x] ✅ `X-Frame-Options: DENY` (+ `frame-ancestors 'none'` у public CSP) — public + admin
   - [x] ✅ `Referrer-Policy: strict-origin-when-cross-origin` — public + admin
-  - [x] ✅ **Базовий CSP** (public сайт) — строгі `script-src`/`connect-src`/`style-src`/`font-src` + `object-src 'none'`, `base-uri 'self'`, `form-action 'self'`, `upgrade-insecure-requests`. `connect-src` включає `wss://*.supabase.co` (Realtime). `img-src https:` — свідомо широкий, бо продукт дозволяє довільні URL фото рецептів + Google OAuth аватарки (`lh3.googleusercontent.com`)
+  - [x] ✅ **Базовий CSP** (public сайт) — `script-src`/`connect-src`/`style-src`/`font-src` + `object-src 'none'`, `base-uri 'self'`, `upgrade-insecure-requests`. `form-action` дозволяє `'self'` і точний admin-origin (DEP-09a, live 09.08.2026). `connect-src` включає `wss://*.supabase.co` (Realtime). `img-src https:` — свідомо широкий для URL фото й аватарок; повне чинне значення — `vercel.json`
   - [x] ✅ **`script-src` БЕЗ `'unsafe-inline'`** (24.07.2026) — виконано вимогу roadmap. Рефакторинг: inline anti-FOUC theme-скрипт → спільний `js/theme-init.js` (синхронно в `<head>`, без FOUC); inline module scripts (cookies/404) → `js/cookies-page.js`, `js/not-found-page.js`; `onclick` у `500.html` → `js/error-page.js`; inline `onsubmit` у 4 auth-формах прибрано (дублювали наявний `addEventListener('submit')`+preventDefault); inline-handlери з JS-шаблонів (`product-guide.js` onerror → `.onerror=`, `recipe-modal.js` upload onclick → `addEventListener`, `profile.js` delete onclick → делегування на контейнер). `style-src` свідомо лишає `'unsafe-inline'` (сайт активно юзає inline/dynamic styles; roadmap вимагав прибрати саме для скриптів)
     - [x] ✅ `js/theme-init.js` та інжектовані `offline-indicator`/`back-to-top` підключено АБСОЛЮТНИМИ шляхами (`/js/…`) — інакше на rewrite-маршруті `/recipe/:slug` відносний `js/…` резолвиться у `/recipe/js/…` (404) і anti-FOUC/скрипти мовчки не працюють. `build.js` теж інжектить абсолютно + dedup за іменем файла
     - [x] ✅ `theme-init.js` знімає `no-transition` після першого рендеру (double rAF) — інакше колірні transitions лишались би вимкненими назавжди (регресія на profile/cookbook/recipes/shopping-list, які раніше цей клас не отримували; раніше знімав лише `recipe-page.js`)
     - [x] ✅ Повторюваний тест `scripts/csp-theme-check.mjs` (headless Chrome + CSP-заголовок з vercel.json; rewrite-маршрути емулюються з конфігу, не хардкод): на 10 сторінках, включно з `/recipe/test-slug` — **0 CSP violations**; три глобальні виправлені скрипти (theme-init/offline-indicator/back-to-top) не дають 404 на маршруті рецепта; `data-theme=dark` присутнє після завантаження (правильний anti-FOUC порядок гарантує синхронний `theme-init.js` у `<head>` перед CSS — тест не фіксує буквально перший paint); `no-transition` знято після завантаження — усе PASS. Плюс 0 inline `<script>`/handler-атрибутів (grep-sweep); функціональні DOM-тести auth-submit / activity-delete-делегування / recipe-upload / product-onerror — PASS
-    - [ ] ⚠️ Ручна перевірка на живому деплої після коміту: login/register/reset, 500 retry, 404 random recipe, cookies reopen, recipe image picker, profile activity delete, product image fallback, shopping-list realtime (локально Supabase-дані недоступні)
-- [ ] **Rate limiting** через Vercel Edge Middleware — ⚠️ **аудит (29.07.2026): Login/Signup/Recipe reports НЕ проходять через наш Vercel-домен**, тому Middleware їх фізично не бачить і не може лімітувати:
+    - [ ] ⚠️ Повний ручний регрес на релізному деплої: login/register/reset, 500 retry, 404 random recipe, cookies reopen, recipe image picker, profile activity delete, product image fallback, shopping-list realtime. Часткові результати вже є в AUTH/DEP/UI-журналі; локальне завантаження продуктів підтверджено 08.09.2026
+- [ ] **Rate limiting — частково реалізовано на відповідних рівнях**. **Аудит (29.07.2026): Login/Signup/Recipe reports НЕ проходять через наш Vercel-домен**, тому Vercel Middleware їх не бачить:
   - [ ] ~~Login (5/хв) / Signup (3/хв з IP)~~ → `supabase.auth.signInWithPassword`/`signUp` ідуть напряму з браузера в Supabase Auth, не через наш домен. Лімітується в Supabase Dashboard → Auth → Rate Limits, АЛЕ два окремі числа "5/хв login" і "3/хв signup" там неможливо виставити буквально: sign-in і sign-up діляться одним per-IP bucket на 5-хвилинне вікно (Supabase docs, `sign_in_sign_ups`). Перевірити фактичні ліміти в дашборді перед launch, а не покладатись на цифри з цього roadmap
   - [ ] Webhook endpoints → ще не існують (з'являться у Фазі 19, лімітувати разом з ними)
   - [ ] AI scan (за тарифом) → ще не реалізовано (TIER 3, Фаза 36)
@@ -1102,10 +1139,13 @@ where id = '<USER_ID>';
 - [ ] ⚠️ **Частково — Secret management**: аудит `.gitignore` (24.07.2026)
   - [x] ✅ `.env`/`*.env`/`.env.*` ігноруються (додано `.env.*` + `!.env.example`), 0 `.env` у git/history
   - [x] ✅ 0 `service_role`/SERVICE_ROLE_KEY у клієнтському коді (лише `process.env` у server API)
-  - [ ] Розділити preview/production env у Vercel dashboard (ручне)
-- [ ] Supabase: аудит RLS, service_role тільки на сервері
+  - [ ] Перевірити й за потреби розділити preview/production env у Vercel dashboard; актуальний стан дашборда не підтверджено цією звіркою
+- [x] ✅ Виконані RLS-01…10 (08–10.08.2026) та перевірка відсутності service-role у клієнті DEP-08 (08.08.2026); [докази й межі покриття](qa-test-plan.md)
+- [ ] Перевірити нові таблиці/операції та grants на deployment, що піде в soft launch; нові `recipe_sources`/Storage мають окремий [release-check](saved-recipes-release.md)
 
 ### 🌳 Environment management
+
+> Погоджений план середовищ за [QA-планом](qa-test-plan.md): нинішнє середовище — **pre-production**; перед soft launch створюється новий чистий production, а поточне стає staging. Назва Vercel target `Production` в історичних звітах не означає, що цей перехід уже виконано. Стан дашбордів і перенесення не підтверджено звіркою 27.09.2026.
 
 - [ ] **Production:** `mintofood.com` (main branch, prod Supabase)
 - [ ] **Staging:** `staging.mintofood.com` (staging branch, окремий Supabase project)
@@ -1115,9 +1155,10 @@ where id = '<USER_ID>';
 
 ### 🚀 CI/CD
 
-- [ ] Vercel deploy з git push ✅ за замовчуванням
+- [x] ✅ Vercel deploy з git push використовувався — зафіксовано у Фазі 17 для `e8671f9`; успішні deployment є в DEP-журналі. Це не підтверджує deploy останніх локальних змін
 - [ ] **Branch protection** на GitHub: main вимагає PR review (від себе самої — заради дисципліни)
 - [ ] Lint + format на pre-commit (Husky + Prettier)
+- [ ] Уточнити workspace root адмінки: build від 08.09.2026 успішний, але попереджає про inferred workspace root; явні `turbopack.root` / `outputFileTracingRoot` у поточному конфігу відсутні. [QA-звіт](qa/phase22-2026-09-08/report.md)
 - [ ] Rollback одним кліком через Vercel
 
 ### 📊 Performance моніторинг
@@ -1140,7 +1181,7 @@ where id = '<USER_ID>';
 ## 🖼 ФАЗА 18: Image moderation (НОВА) — ✅ ядро зроблено (24.07.2026)
 
 > UGC платформа без image moderation = NSFW спам у перший тиждень. Це не "after traction".
-> **Статус:** провайдер-агностичний пайплайн реалізовано. Після аудиту (25.07.2026) архітектуру **переписано** — три критичні діри закрито (див. нижче). Лишилось: зареєструвати провайдера (env-ключ) + ручний E2E на deployed URL + застосувати міграцію.
+> **Статус:** провайдер-агностичний пайплайн реалізовано; виправлення описані нижче. Live RLS-07/08 за 08.08.2026 вже перевіряли moderation fields/log/RPC. Повноту схеми й grants звірити за PRE-03…05; не повторювати міграцію лише через старий незакритий текст. Конфігурація реального provider та ручний IMG/FLOW/MOD E2E на релізному deployment залишаються непідтвердженими.
 > **Архітектура (v2):** запис рецепта + модерація — **разом на сервері** (`/api/save-recipe`), в одному кроці. Скоринг оцінює САМЕ те фото, що записується → клієнт не може підмінити фото між скорингом і записом. service_role пише moderation-колонки; DB-тригер стирає їх з будь-якого клієнтського запису (виняток — service_role і admin). Оскільки сервер обходить RLS, endpoint сам форсує `user_id=JWT` і перевіряє власника при edit.
 
 - [ ] **Cloudflare Images** має built-in moderation (легко вмикається при upload)
@@ -1228,6 +1269,8 @@ where id = '<USER_ID>';
 > 3. Free має бути **повністю usable** (як Spotify Free), Premium = надбудова.
 
 ### 🤔 Перед стартом — рішення про провайдера
+
+> Вибір провайдера в репозиторії не зафіксовано. LemonSqueezy нижче — рекомендація, Stripe/Paddle — варіанти. Назви provider-specific файлів далі є чернеткою до рішення, а не реалізованою інтеграцією.
 
 - [ ] **Вибрати:** Stripe vs Paddle/LemonSqueezy (MoR)
 - [ ] **Рекомендація з memory:** LemonSqueezy для solo founder у Польщі — вони беруть VAT MOSS на себе
@@ -1357,6 +1400,8 @@ where id = '<USER_ID>';
 
 ## 🦶 ФАЗА 20: Футер + глобальні UI
 
+> Базовий футер уже реалізований у Фазі 10.8; нижче відмічені його наявні частини. Відкриті пункти описують розширення або QA, а не потребу створити футер заново. Реальний склад посилань — `partials/footer.html`; залежні інтеграції не вважаються готовими.
+
 ### 📋 Структура футера
 
 Класичний 4-колонковий layout, акордеон на мобайлі.
@@ -1368,7 +1413,7 @@ where id = '<USER_ID>';
 
 ### 🔻 Нижня лінійка
 
-- [ ] © 2026 MintoFood
+- [x] © 2026 MintoFood — `partials/footer.html`
 - [ ] Made with 🌿 + Made in Poland & Ukraine
 - [ ] Версія / build hash (для дебагу)
 - [ ] Компанія / NIP (EU compliance)
@@ -1377,7 +1422,7 @@ where id = '<USER_ID>';
 
 - [ ] Іконки IG / TikTok / YouTube / Pinterest
 - [ ] `target="_blank"` + `rel="noopener noreferrer"`
-- [ ] Перемикач мови (якщо не в хедері)
+- [x] Перемикач мови UA/EN/PL у футері — `partials/footer.html`; runtime-покриття — UI-05
 - [ ] (Опційно) перемикач теми
 
 ### 📨 Newsletter signup
@@ -1389,16 +1434,16 @@ where id = '<USER_ID>';
 
 ### 📐 Версти
 
-- [ ] Desktop: 4 колонки + bottom row
-- [ ] Tablet: 2x2
-- [ ] Mobile: акордеон
-- [ ] Padding 60-80px, border-top, var(--color-bg-secondary)
-- [ ] Тест на світлій + темній теміi
+- [x] Desktop: 4 колонки + bottom row — `scss/layout/_footer.scss`
+- [x] Tablet: 2x2 — breakpoint 1024px
+- [x] Mobile: акордеон — `partials/footer.html`; взаємодію перевірено 08.09.2026
+- [ ] Звірити стару вимогу «padding 60–80px, var(--color-bg-secondary)» із чинним дизайном: код має padding `20px 24px 16px` / `16px 20px 0`, gradient і border-top. Автоматично під старий опис не змінювати; рішення про дизайн лишається відкритим
+- [x] Локальний гостьовий тест світлої + темної теми — 08.09.2026; повні UI-05/06 і реальні пристрої лишаються відкритими
 
 ### 🎯 Розмістити
 
-- [ ] На всіх public сторінках включно з `/recipe/{slug}` (важливо для SEO + trust)
-- [ ] НЕ в адмінці / login modals / onboarding
+- [x] На public/legal сторінках включно з `recipe.html` для `/recipe/{slug}` — спільний partial та `build.js`, матриця QA 08.09.2026
+- [x] Public-футер не вбудований у `admin-app`, login modal чи onboarding overlay
 
 ---
 
@@ -1428,18 +1473,21 @@ where id = '<USER_ID>';
 - [x] ✅ **Локальна автоматизована візуальна QA (18.07.2026)** — headless Chrome (playwright-core + системний Chrome): 17 сторінок × 2 теми × 2 в'юпорти (1440×900, 390×844). Результат: 0 горизонтальних overflow, 0 помилок консолі (після фіксу нижче), футер притиснутий на всіх сторінках/в'юпортах, теми застосовуються коректно. Вибірковий візуальний огляд скриншотів: index/recipes/product-guide/profile у обох темах — чисто
   - [x] ✅ Знайдено й виправлено: `img/placeholder.jpg` не існував (404 на кожному завантаженні product-guide + битий onerror-фолбек карток) — згенеровано з затвердженого icon-512 (градієнт бренду + іконка по центру), у стилі "скло+пульс-М"
   - [x] ✅ Виправлено локально 08.09.2026: profile.html без логіну більше не рендерить секції табів стосом. CSS `[data-profile-section][hidden]` відновлює приховування до auth/initProfileTabs; 12 комбінацій теми/ширини пройшли. Після deployment потрібен live-регрес.
-  - [ ] Примітка: дані з Supabase локально не завантажились (0 рецептів/продуктів) — empty states при цьому виглядають правильно; перевірити завантаження даних на deployed URL
+  - Історична примітка 18.07: у тому прогоні рецепти/продукти не завантажились. Її не використовувати як поточний висновок про доступність даних; новіші результати наведено нижче
 - [x] ✅ **Повторний локальний гостьовий QA (08.09.2026)** — 17 сторінок × 2 теми × 6 ширин, 204/204 початкових станів пройшли перевірки геометрії, теми, ресурсів і консолі. 68 наявних тестів, обидві збірки та lint пройшли; CSP/theme smoke — 10/10. Виправлено підсвічування активного пункту хедера. [Звіт і докази](qa/phase22-2026-09-08/report.md). Це не закриває авторизовані workflow та реальні пристрої.
-  - [ ] **QA22-01:** модалка входу не приймає фокус і не закривається через Esc — погодити поведінку клавіатури.
+  - [x] ✅ **Путівник із даними:** після завантаження `products` пошук `яблу` дав 5 карток; відкриття/закриття модалки — PASS у двох темах на desktop/mobile. Відсутні фото лишаються QA22-02
+  - [ ] Авторизовані завантаження та зміни рецептів/книг/меню на релізному deployment — REC/BOOK/DAY/FLOW; старі й часткові PASS не закривають весь сценарій
+  - [x] ✅ **QA22-01 (22.09.2026):** модалка входу приймає фокус і закривається через Esc — `js/auth.js`. Початковий фокус у перше поле активної вкладки, фокус-пастка на Tab/Shift+Tab (приховані вкладки виключено), повернення фокусу на елемент-ініціатор лише якщо він лишався всередині модалки, `role="dialog"`+`aria-modal`. Слухач на самій модалці, не на `document`: вхід може відкриватись поверх модалки рецепта, і Esc закриває лише верхню. Перевірено `phase22-ui-check --interactions`: `authFocusInside`/`authEscape` = `true` у 8/8 кейсах (було `false` 8/8); повний прогін 68/68 PASS.
   - [ ] **QA22-02:** три фото продуктів відсутні у Storage (`Object not found`); пошук і модалка працюють, відновлення фото/посилань потребує рішення щодо даних.
-  - [ ] **QA22-03:** візуально перевірити/погодити читабельність recipe-not-found у світлій темі на текстурному фоні.
+  - [x] ✅ **QA22-03 (22.09.2026):** стан recipe-not-found отримав власну поверхню — `.rp-404` тепер `@extend %glass-surface` (`scss/pages/_recipe.scss`), той самий приклад, що вже використовує `.status-page` у `404.html`. Раніше блок лежав прямо на темному ботанічному фоні `.page`, тож у світлій темі виходив темний текст на темному фото. Перевірено скриншотами в обох темах (desktop+mobile). Це усунення причини, а не виміряний WCAG contrast score — сам контраст не міряли.
 - [ ] **BOOK-06 / BOOK-07 — PARTIAL (перегляд 14.09.2026):** попередні 18/18 і 13/13 стосуються спрощеної CSS-модалки та штучного DOM/regex. Повний регрес реальної модалки, вибору обкладинки, body lock, logout, пізніх відповідей і зміни акаунта залишається відкритим; повторний браузерний результат не отримано. Залишок чотирьох фіксів включає BOOK-06/07 разом з ADM-08 і MOD-01. [Межі покриття](qa/book-06-07-review-2026-09-14.md).
 - [ ] **Мобільний QA на реальних пристроях:**
   - [ ] iOS Safari (BrowserStack або реальний iPhone)
   - [ ] Android Chrome
   - [ ] iPad Safari
 - [ ] Тест workflow адмінки (закрити хвости з Фази 10.5)
-- [ ] Тест penetration адмінки (не-admin → redirect, anon → 403)
+- [x] ✅ Гостьові admin redirects і вибрані прямі anon/RLS-перевірки мають evidence: DEP-02, RLS-08/10
+- [ ] Повний runtime-тест доступу до адмінки: non-admin → `/unauthorized`, admin → потрібні розділи; прямі table/RPC-перевірки за ADM-01/15. Не вимагати універсального `403`
 - [ ] **Soft launch для 20-50 ранніх юзерів** перед публічним:
   - [ ] Запросити з customer interviews
   - [ ] Збирати bug reports через support@
@@ -1610,12 +1658,14 @@ where id = '<USER_ID>';
 
 ## 🎨 ФАЗА 29: Design governance (НОВА)
 
+> Токени й placeholders уже є у Фазі 0. Тут лишається формалізація правил і наскрізна перевірка їх застосування; готовий `_design-system.scss` не закриває ці задачі.
+
 > Без цього через 8 міс UI почне "плисти" — різні кнопки, різні spacing, regression повзе.
 
 - [ ] **Component inventory** — Storybook або просто `/dev/components.html` сторінка з усіма компонентами в дії
 - [ ] **Forbidden patterns** список (`docs/design-rules.md`):
   - [ ] No custom spacing outside scale (4/8/12/16/20/24/32/40/56)
-  - [ ] No arbitrary border-radius (тільки 12/16/20)
+  - [ ] Погодити правило border-radius з чинними токенами: md/lg/xl = 12/16/20, також є xs/sm/2xl/pill. Старе «тільки 12/16/20» не описує поточну реалізацію
   - [ ] No custom shadows (тільки Level 1/2/3)
 - [ ] **Token linting** — stylelint rule, що бере токени з CSS variables
 - [ ] **Visual regression testing** — Percy / Chromatic / Playwright screenshots (опційно)
@@ -1727,7 +1777,7 @@ where id = '<USER_ID>';
 
 | TIER   | Фази   | Орієнтовний час        | Стан               |
 | ------ | ------ | ---------------------- | ------------------ |
-| TIER 0 | 0-10.7 | вже зроблено           | ✅ 95% done        |
+| TIER 0 | 0–10.9 | основа реалізована     | QA і governance відкриті |
 | TIER 1 | 11-22  | 8-12 тижнів            | Pre-launch         |
 | TIER 2 | 23-30  | 12-16 тижнів (3-4 міс) | Post-launch growth |
 | TIER 3 | 31-37  | 6-12 місяців           | Scale stage        |
@@ -1738,7 +1788,7 @@ where id = '<USER_ID>';
 
 ## 🎯 Ключові принципи v2
 
-1. **Customer validation first.** 10 інтерв'ю перед Stripe — це не "втрачений час", це найкраще ROI з усього roadmap.
+1. **Customer validation first.** Інтерв'ю та висновки про попит перед реалізацією платної підписки (Фази 11/19).
 2. **GDPR і moderation — це launch blockers**, не "later". В ЄС + UGC платформа.
 3. **Paywall продає AI/intelligence**, а не storage. Free має бути usable, Premium — надбудова, що економить час.
 4. **Growth layer (social, referral, content) — це не "nice to have"**. Це різниця між life і death для consumer-продукту в конкурентному ринку.
@@ -1757,4 +1807,4 @@ where id = '<USER_ID>';
 
 ---
 
-_Останнє оновлення: травень 2026 (v2 після аудиту)_
+_Остання звірка документації з кодом і наявними доказами: 27.09.2026. Дати окремих QA-прогонів збережені; нового live QA під час цієї звірки не виконували._

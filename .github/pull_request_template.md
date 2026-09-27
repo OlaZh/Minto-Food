@@ -8,6 +8,8 @@
 
 ## Як перевірити
 
+<!-- Це шаблон конкретного PR. Відмічайте лише виконані перевірки з доказами; FAIL/BLOCKED/PARTIAL залишаються відкритими. Загальні історичні PASS — у docs/qa-test-plan.md. -->
+
 - [ ] Локально перевірено
 - [ ] Якщо зміни критичні або ризикові, перевірено на staging
 
@@ -24,6 +26,7 @@
 - [ ] Є відповідний `_rollback.sql`
 - [ ] Зміни протестовані на staging перед prod
 - [ ] Для risky/destructive зміни заплановано backup
+- [ ] Вказано порядок SQL / postflight / deploy / rollback згідно з release-документом зміни
 
 Деталі: `docs/migrations.md`, `docs/staging-db-sync.md`
 

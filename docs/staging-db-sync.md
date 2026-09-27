@@ -2,6 +2,8 @@
 
 Скрипт `supabase/staging-sync.ps1` синхронізує `public` schema з production у staging без копіювання бойових даних.
 
+Стан звірено 27.09.2026: скрипт є в репозиторії. Окремий staging-проєкт, готовий seed і успішний live-sync цим документом не підтверджені. За [QA-планом](qa-test-plan.md) нинішній pre-production має стати staging після створення нового чистого production; цей скрипт сам по собі не виконує весь такий перехід.
+
 ## Що потрібно
 
 - `pg_dump` і `psql` у `PATH`
@@ -34,6 +36,8 @@ powershell -ExecutionPolicy Bypass -File .\supabase\staging-sync.ps1 -WhatIf
 ```
 
 ## З анонімізованим seed
+
+Нижче приклад параметра; `supabase/staging.seed.sql` у репозиторії відсутній. Потрібно підготувати власний seed-файл до запуску цієї команди.
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\supabase\staging-sync.ps1 -SeedFile .\supabase\staging.seed.sql

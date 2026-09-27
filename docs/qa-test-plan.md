@@ -1,14 +1,16 @@
 # MintoFood — повний QA test plan перед наступним кроком roadmap
 
-> **Версія:** 2.3
+> **Версія:** 2.4
 >
-> **Оновлено:** 14.09.2026
+> **Оновлено:** 27.09.2026 — звірка статусів із кодом та наявними звітами; нових runtime/live-прогонів у цю дату не виконували.
 >
 > **Середовище:** поточні Supabase і Vercel використовуються як **pre-production**, оскільки реальних користувачів ще немає. Новий чистий production створюється перед soft launch; поточне середовище після цього стає staging.
 >
 > **Мета:** перевірити все, що вже позначено зробленим у Roadmap v2, і окремо зафіксувати блокери, які неможливо чесно закрити без зовнішніх акаунтів, рішень або виправлення коду.
 >
 > **Не входить у цей раунд:** опитування 10–15 осіб, покупка домену та реалізація ще не зроблених фаз.
+
+> **Межі доказів:** дати й commits у журналі є частиною результату. PASS старого прогону не засвідчує останню версію чи нові міграції. Для «Збережених рецептів» від 24–25.09 є окремий [порядок запуску та перевірки](saved-recipes-release.md); підтвердження live rollout у документах немає. Позначення `production` в історичних записах може означати Vercel target поточного pre-production.
 
 ---
 
@@ -22,8 +24,9 @@
 - `BLOCKED` — тест неможливо виконати через відсутній сервіс, ключ, конфігурацію або відоме виправлення;
 - `NOT RUN` — тест ще не запускався;
 - `N/A` — пункт свідомо не застосовується, причина записана.
+- `FIXED — LOCAL` / `FIXED — AWAITING RETEST` — виправлення є в коді; чекбокс тесту відкритий до потрібного повторного прогону. Історичне `FIXED` закриває пункт лише там, де в журналі є підтвердження повного результату.
 
-Чекбокс закривається лише після підтвердження повного очікуваного результату й запису в журналі; успіх спрощеного тестового сценарію не закриває весь пункт. Для кожного запуску фіксувати:
+Чекбокс закривається лише після підтвердження повного очікуваного результату й запису в журналі або погодженого `N/A`. `FAIL`, `BLOCKED` і `PARTIAL` залишаються відкритими, навіть якщо тест уже запускали; успіх спрощеного сценарію не закриває весь пункт. Для кожного запуску фіксувати:
 
 - ID тесту;
 - дату й тестувальника;
@@ -141,7 +144,7 @@
 
 ## 3. Автоматичні й статичні gates
 
-### Уже підтверджено 01.08.2026
+### Автоматичні gates з наявними результатами (останній спільний прогін — 08.09.2026)
 
 - [x] **AUTO-01:** `npm run lint:api` — API ESLint gate чистий (`no-undef`; warnings `no-unused-vars` не є повним lint усього репозиторію).
 - [x] **AUTO-02:** `npm run test:save-recipe` — 30/30 mock-тестів.
@@ -150,7 +153,7 @@
 - [x] **AUTO-05:** `admin-app: npm run lint` — чисто.
 - [x] **AUTO-06:** `admin-app: npm run build` — production build успішний.
 
-### Потрібно повторити або розблокувати
+### Додаткові gates: підтверджені результати та відкриті перевірки
 
 - [x] **AUTO-07:** PASS 08.09.2026 — root `npm run build` успішний, HTML `0 updated`; зміна expanded CSS на compressed відповідає команді build, інших неочікуваних змін немає.
 
@@ -193,22 +196,22 @@
 
 ## 5. Round B — Auth, onboarding і сесія
 
-- [x] **AUTH-01:** FAIL — signup submit disabled без age/terms checkbox (client-side OK), але примусовий submit (напряму до Supabase Auth API) НЕ відхиляється сервером; consent взагалі не зберігається.
+- [ ] **AUTH-01:** FAIL — signup submit disabled без age/terms checkbox (client-side OK), але примусовий submit (напряму до Supabase Auth API) НЕ відхиляється сервером; signup consent не зберігається. Це окремо від cookie consent у `profiles.consent_*`.
 - [x] **AUTH-02:** consent text веде на `terms.html` і `privacy.html`.
 - [x] **AUTH-03:** signup із валідними даними; зайнятий email не створює другий акаунт і не розкриває зайвих даних.
-- [x] **AUTH-04:** FAIL — пароль "111111111" (9 цифр) пройшов без жодного попередження; ефективна Supabase password policy мінімальна/відсутня.
-- [x] **AUTH-05:** BLOCKED — лист підтвердження не прийшов на реальну пошту при реєстрації; confirmation provider схоже не налаштований.
-- [x] **AUTH-06:** PARTIAL FAIL — reset-флоу працює (лист/лінк/новий пароль/старий інвалідовано), але password policy слабка (той самий дефект, що AUTH-04).
-- [x] **AUTH-07:** FAIL — Google OAuth login/callback/logout працює, але акаунти Google і email/password з однаковим email не зв'язані (identity linking відсутній) — вхід "не тим" методом дає хибну помилку "невірний email/пароль".
+- [ ] **AUTH-04:** FAIL за прогоном 06.08 — пароль "111111111" (9 цифр) пройшов без попередження. Поточну policy в Supabase та повторний результат ще не підтверджено.
+- [ ] **AUTH-05:** BLOCKED — у прогоні 06.08 лист підтвердження не прийшов; поточну конфігурацію й доставку потрібно перевірити, причина не доведена лише відсутністю листа.
+- [ ] **AUTH-06:** PARTIAL FAIL — reset-флоу працює (лист/лінк/новий пароль/старий інвалідовано), але password policy не пройшла тодішній сценарій (AUTH-04); потрібен повторний результат.
+- [ ] **AUTH-07:** FAIL за прогоном 06.08 — Google OAuth працював, але вхід іншим методом для того самого email давав помилку. Перевірити поточну поведінку identities; причину та потрібне виправлення не вважати встановленими лише за UI-помилкою.
 - [x] **AUTH-08:** невірний пароль показує локалізовану помилку без завислого loading state.
 - [x] **AUTH-09:** FIXED — logout очищає session UI, захищена дія знову відкриває login modal. Був CRITICAL bug (esm.sh 404 на плаваючій версії `@2`), виправлено пінінгом `@supabase/supabase-js@2.105.4`.
-- [x] **AUTH-10:** FIXED — welcome screen показувався ДВІЧІ через race condition двох паралельних SIGNED_IN подій; виправлено `_inFlight` lock у `checkOnboarding()`. Потребує live-регресу.
-- [x] **AUTH-11:** FIXED (was CRITICAL) — завислі кнопки були симптомом того самого race condition, що AUTH-10; виправлено тим самим `_inFlight` lock-ом. Потребує live-регресу.
+- [ ] **AUTH-10:** FIXED — AWAITING RETEST — welcome screen показувався ДВІЧІ через race condition двох паралельних SIGNED_IN подій; виправлено `_inFlight` lock у `checkOnboarding()`. Потребує live-регресу.
+- [ ] **AUTH-11:** FIXED — AWAITING RETEST (was CRITICAL) — завислі кнопки були симптомом того самого race condition, що AUTH-10; виправлено тим самим `_inFlight` lock-ом. Потребує live-регресу.
 - [x] **AUTH-12:** FIXED (was CRITICAL) — goal wizard коректно зберігає дані й перераховує норму в `user_profiles`; підтверджено live-регресом з новим акаунтом.
 - [x] **AUTH-13:** skip wizard записує `goal_wizard_skipped`; повторний reload не запускає wizard безумовно.
 - [x] **AUTH-14:** REMOVED BY DESIGN — sample breakfast функціонально сіявся коректно (лише для порожнього meals), але власниця продукту визнала UX недоречним (новий юзер бачить чужі "готові" дані одразу при вході) і прибрала фічу з коду. Більше не застосовується.
 - [x] **AUTH-15:** onboarding checklist показує фактичні milestones (перевірено 1/4 прогрес коректно відображає реальний стан акаунта).
-- [x] **AUTH-16:** BLOCKED — жоден тестовий акаунт ще не має кількаденного streak, поріг фізично недосяжний за один день тестування.
+- [ ] **AUTH-16:** BLOCKED у прогоні 07.08 — тестові акаунти не мали кількаденного streak. Нового результату з потрібними передумовами немає.
 
 ---
 
@@ -216,7 +219,7 @@
 
 Перевіряти не лише відсутність UI-кнопки, а й прямий Supabase REST/RPC/mutation під відповідним JWT.
 
-> **Live-прогін 08.08.2026:** виконано 9/9 тестів — **8 PASS, 1 CRITICAL FAIL (`RLS-06`)**. Round C протестований повністю, але не може пройти exit criteria до закриття витоку anon recipe SELECT.
+> **Історія:** 08.08.2026 виконано 9/9 тодішніх тестів — 8 PASS, 1 CRITICAL FAIL (`RLS-06`). **Регрес 10.08.2026 закрив RLS-06 та доданий RLS-10** у межах прямих anon REST/RPC-перевірок; RLS-01…10 мають PASS у журналі. Це не покриває наступні міграції, зокрема приватні джерела saved-рецептів.
 
 - [x] **RLS-01 — PASS:** User B не бачить private/draft/pending recipe User A.
 - [x] **RLS-02 — PASS:** User B не може update/delete recipe User A навіть прямим запитом.
@@ -295,6 +298,8 @@
 
 ### Product guide
 
+> **Частково підтверджено 08.09.2026:** дані `products` завантажились, пошук `яблу` дав 5 карток, модалка відкривалась/закривалась у двох темах на desktop/mobile. Три фото відсутні у Storage (QA22-02). Це замінює липневу примітку про нуль завантажених продуктів, але не закриває всі сценарії нижче. [Докази](qa/phase22-2026-09-08/report.md).
+
 - [ ] **PROD-01:** cards, basic search і filters повертають правильні результати.
 - [ ] **PROD-02:** advanced filters комбінуються і коректно очищаються.
 - [ ] **PROD-03:** product details modal показує правильні nutrition/details; image fallback не дає 404.
@@ -351,7 +356,7 @@
 
 - [ ] **ADM-06:** top stats pills відповідають даним; “Активних (7д)” рахує unique users, не meal rows.
 - [ ] **ADM-07:** reports: grouping, drawer, filters, bulk actions і resolution reasons.
-- [ ] **ADM-08:** moderation queue: new/public/pending/flagged/staged items, spam detection `>10/day`, inline edit, auto-flag badges і author mini-history. Пагінація по 100, загальний count і guard некоректного `?page=` підтверджені в задеплоєному коді 08.09.2026; live regression на черзі понад 100 потребує адмін-сесії.
+- [ ] **ADM-08:** moderation queue: new/public/pending/flagged/staged items, inline edit, auto-flag badges тексту/посилань/фото і author mini-history. Денний поріг кількості рецептів не є чинною логікою; кількість в історії автора не створює auto-flag. Пагінація по 100, загальний count і guard некоректного `?page=` підтверджені в задеплоєному коді 08.09.2026; live regression на черзі понад 100 потребує адмін-сесії.
 - [ ] **ADM-09:** recipes search знаходить `name_ua`, `name_en`, `name_pl`; status/search state не губиться між tabs.
 - [ ] **ADM-10:** products: approve, duplicate detection/merge, pagination після filtering, clear search.
 - [ ] **ADM-11:** users: local/global search, pagination, admin toggle, ban/unban, shadow ban.
@@ -461,7 +466,7 @@
 - [ ] **SEO-03:** JSON-LD Recipe має name/image/author/nutrition/ingredients/instructions/timings/yield і truthful aggregate rating.
 - [ ] **SEO-04:** Google Rich Results Test пройти на поточному Vercel URL; повторити після власного домену.
 - [ ] **SEO-05:** canonical і `?lang=` узгоджені; hreflang `uk/en/pl/x-default` взаємні.
-- [ ] **SEO-06:** title/description/OG/Twitter metadata локалізовані; default OG image доступне абсолютним URL.
+- [ ] **SEO-06:** title/description/OG/Twitter metadata локалізовані; default OG image доступне абсолютним URL. Окремо перевірити початкову HTTP-відповідь й отримані сервісом preview дані рецепта: зараз OG-поля `recipe.html` порожні до виконання `js/recipe-page.js`; наявність клієнтських tags не доводить коректний preview.
 - [ ] **SEO-07:** sitemap — valid XML, static + published recipe URLs + hreflang; немає private/profile/admin/product-modal URLs.
 - [ ] **SEO-08:** robots дозволяє public та забороняє admin/profile/api згідно з планом.
 - [ ] **SEO-09:** Web Share API і copy-link; Telegram/Messenger/iOS Messages preview/link після доступності відповідного середовища.
@@ -551,7 +556,7 @@
 
 | Roadmap phase | Що покриває цей документ |
 |---|---|
-| 0 Design foundation | AUTO-09, UI-01…UI-13; формальна governance лишається TIER 2 |
+| 0 Design foundation | Токени/placeholders статично звірено 27.09 з `scss/utils/_design-system.scss`; AUTO-09, UI-01…UI-13; наскрізний аудит і governance — Фаза 29 |
 | 1 Layout | UI-01…UI-06, UI-09 |
 | 2 Day menu | DAY-01…DAY-08 |
 | 3 Week menu | WEEK-01…WEEK-03 |
@@ -559,6 +564,7 @@
 | 5 Product guide | PROD-01…PROD-04 |
 | 6 Shopping list | SHOP-01…SHOP-05 |
 | 7 Cookbook | BOOK-01…BOOK-07 |
+| 4/7/10.7 Saved recipes (24–25.09) | Окремі [release-перевірки](saved-recipes-release.md): SQL/API-скрипти є, rollout та live UI/Storage/privacy/cleanup не підтверджені; попередні BOOK/RLS PASS цей обсяг не покривають |
 | 8 Profile | PROFILE-01…PROFILE-08, GDPR/DEL rounds |
 | 9 Navigation/Auth | AUTH round, ADM-01…ADM-04, UI-04 |
 | 10 Polish | UI/PERF page matrix, states, focus, lazy load |
