@@ -250,14 +250,16 @@ function createRecipeModalHTML() {
                 <input type="hidden" id="rm-category" value="lunch" />
               </div>
 
-              <div class="form-group">
-                <label data-i18n="ingredientsHint">Інгредієнти</label>
-                <div id="rm-ingredients-builder"></div>
-              </div>
+              <div class="preview-form__recipe-body">
+                <div class="form-group">
+                  <label data-i18n="ingredientsHint">Інгредієнти</label>
+                  <div id="rm-ingredients-builder"></div>
+                </div>
 
-              <div class="form-group">
-                <label data-i18n="stepsHint">Спосіб приготування</label>
-                <textarea id="rm-steps" placeholder="1. Закип'ятити воду..." data-i18n-placeholder="stepsPlaceholder"></textarea>
+                <div class="form-group">
+                  <label data-i18n="stepsHint">Спосіб приготування</label>
+                  <textarea id="rm-steps" placeholder="1. Закип'ятити воду..." data-i18n-placeholder="stepsPlaceholder"></textarea>
+                </div>
               </div>
 
               <div class="form-media-box">

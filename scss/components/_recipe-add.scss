@@ -61,6 +61,15 @@
     font-style: italic;
   }
 
+  // Інгредієнти + спосіб приготування: на мобільному — частина загального стеку,
+  // на десктопі — окрема колонка (див. медіа-запити нижче).
+  .preview-form__recipe-body {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    min-width: 0;
+  }
+
   // Внутрішній стек блоку фото (кнопка / роздільник / URL)
   .form-media-inner {
     display: flex;
@@ -72,6 +81,57 @@
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 16px;
+  }
+}
+
+/* Desktop recipe form spread — mirrors #view-recipe-modal (2 cols ≥1024, 3 cols ≥1200).
+   The choice / saved-source screens keep the narrow card. */
+@media (min-width: 1024px) {
+  #recipe-create-modal:has(#recipe-modal-preview-form:not([hidden])) {
+    padding: 20px;
+
+    > .modal-card {
+      width: 100%;
+      max-width: none;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    .preview-form__content {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+      // Ліва колонка — до 8 блоків метаданих; останній 1fr-трек поглинає висоту
+      // правої колонки, щоб auto-рядки зліва не розтягувались.
+      grid-template-rows: repeat(8, auto) 1fr;
+      column-gap: 24px;
+      row-gap: 16px;
+      align-items: start;
+
+      > * {
+        grid-column: 1;
+        min-width: 0;
+      }
+    }
+
+    .preview-form__recipe-body {
+      grid-column: 2;
+      grid-row: 1 / -1;
+    }
+  }
+}
+
+@media (min-width: 1200px) {
+  #recipe-create-modal:has(#recipe-modal-preview-form:not([hidden])) {
+    .preview-form__content {
+      grid-template-columns: minmax(0, 0.85fr) minmax(0, 2.25fr);
+    }
+
+    .preview-form__recipe-body {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr);
+      gap: 24px;
+      align-items: start;
+    }
   }
 }
 
