@@ -31,18 +31,6 @@ export interface Product {
   carbs: number | null
 }
 
-export interface RecipeIngredientRaw {
-  id?: number
-  recipe_id: string
-  product_id: number
-  quantity: number
-  unit: string
-  normalized_unit: string | null
-  input_text: string
-  parsed_success: boolean
-  product?: Product
-}
-
 export interface Recipe {
   id: string
   name_ua: string | null

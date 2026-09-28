@@ -13,8 +13,3 @@ export function unlockScroll(key = 'default') {
   activeScrollLocks.delete(key);
   syncScrollState();
 }
-
-export function clearScrollLocks() {
-  activeScrollLocks.clear();
-  syncScrollState();
-}

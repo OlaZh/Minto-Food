@@ -127,17 +127,6 @@ export function startProgress() {
 }
 
 /**
- * Перевести progress bar у визначений режим і виставити відсоток.
- * @param {number} percent - 0..100
- */
-export function setProgress(percent) {
-  if (!_progressEl) startProgress();
-  _progressEl.classList.remove('app-progress--indeterminate');
-  const bar = _progressEl.querySelector('.app-progress__bar');
-  if (bar) bar.style.width = `${Math.min(100, Math.max(0, percent))}%`;
-}
-
-/**
  * Завершити progress bar: доливає до 100% і плавно ховає.
  */
 export function doneProgress() {
@@ -197,17 +186,6 @@ export function parseNumber(value) {
   return parseFloat(str.replace(',', '.')) || 0;
 }
 
-/**
- * Форматувати число з фіксованою кількістю десяткових
- * @param {number} value - Число
- * @param {number} decimals - Кількість десяткових знаків
- * @returns {string} - Відформатоване число
- */
-export function formatNumber(value, decimals = 1) {
-  const num = parseNumber(value);
-  return num.toFixed(decimals);
-}
-
 // =============================================================
 // DATE HELPERS
 // =============================================================
@@ -222,29 +200,6 @@ export function getLocalDateString(date = new Date()) {
   const month = String(date.getMonth() + 1).padStart(2, '0');
   const day = String(date.getDate()).padStart(2, '0');
   return `${year}-${month}-${day}`;
-}
-
-/**
- * Отримати дату у форматі DD.MM
- * @param {Date} date - Дата
- * @returns {string} - Дата у форматі DD.MM
- */
-export function formatDateShort(date) {
-  const day = String(date.getDate()).padStart(2, '0');
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  return `${day}.${month}`;
-}
-
-/**
- * Отримати дату у форматі DD.MM.YYYY
- * @param {Date} date - Дата
- * @returns {string} - Дата у форматі DD.MM.YYYY
- */
-export function formatDateFull(date) {
-  const day = String(date.getDate()).padStart(2, '0');
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const year = date.getFullYear();
-  return `${day}.${month}.${year}`;
 }
 
 // =============================================================
@@ -337,18 +292,6 @@ export function setInputVal(id, val) {
   if (el) el.value = val || '';
 }
 
-/**
- * Обрізати текст до максимальної довжини
- * @param {string} text - Текст
- * @param {number} maxLength - Максимальна довжина
- * @param {string} suffix - Суфікс (за замовчуванням '...')
- * @returns {string} - Обрізаний текст
- */
-export function truncateText(text, maxLength, suffix = '...') {
-  if (!text || text.length <= maxLength) return text || '';
-  return text.substring(0, maxLength - suffix.length) + suffix;
-}
-
 // =============================================================
 // UNIT CONVERSION (для списку покупок)
 // =============================================================
@@ -382,45 +325,6 @@ export function convertToBaseUnit(amount, unit) {
 // і видалена в межах F.
 
 // =============================================================
-// DEBOUNCE / THROTTLE
-// =============================================================
-
-/**
- * Debounce функція — затримує виклик до завершення серії викликів
- * @param {Function} func - Функція для debounce
- * @param {number} wait - Час очікування в мс
- * @returns {Function} - Debounced функція
- */
-export function debounce(func, wait = 300) {
-  let timeout;
-  return function executedFunction(...args) {
-    const later = () => {
-      clearTimeout(timeout);
-      func(...args);
-    };
-    clearTimeout(timeout);
-    timeout = setTimeout(later, wait);
-  };
-}
-
-/**
- * Throttle функція — обмежує частоту викликів
- * @param {Function} func - Функція для throttle
- * @param {number} limit - Мінімальний інтервал в мс
- * @returns {Function} - Throttled функція
- */
-export function throttle(func, limit = 100) {
-  let inThrottle;
-  return function executedFunction(...args) {
-    if (!inThrottle) {
-      func(...args);
-      inThrottle = true;
-      setTimeout(() => (inThrottle = false), limit);
-    }
-  };
-}
-
-// =============================================================
 // DOM HELPERS
 // =============================================================
 
@@ -431,51 +335,6 @@ export function throttle(func, limit = 100) {
  */
 export function $(selector) {
   return document.querySelector(selector);
-}
-
-/**
- * Безпечно отримати всі елементи
- * @param {string} selector - CSS селектор
- * @returns {NodeList} - Список елементів
- */
-export function $$(selector) {
-  return document.querySelectorAll(selector);
-}
-
-/**
- * Отримати елемент по ID
- * @param {string} id - ID елемента
- * @returns {Element|null} - Елемент або null
- */
-export function $id(id) {
-  return document.getElementById(id);
-}
-
-// =============================================================
-// VALIDATION
-// =============================================================
-
-/**
- * Перевірити чи email валідний
- * @param {string} email - Email для перевірки
- * @returns {boolean} - true якщо валідний
- */
-export function isValidEmail(email) {
-  const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return re.test(email);
-}
-
-/**
- * Перевірити чи значення не порожнє
- * @param {*} value - Значення для перевірки
- * @returns {boolean} - true якщо не порожнє
- */
-export function isNotEmpty(value) {
-  if (value === null || value === undefined) return false;
-  if (typeof value === 'string') return value.trim().length > 0;
-  if (Array.isArray(value)) return value.length > 0;
-  if (typeof value === 'object') return Object.keys(value).length > 0;
-  return true;
 }
 
 // =============================================================
@@ -524,22 +383,6 @@ export function plural(n, [one, few, many], lang = getLang()) {
 // (recipe-utils.js — споживачі: add-recipe, week-menu). Дубль-копія
 // getLocalizedName тут була мертвим експортом (0 імпортів) і видалена в
 // межах F. getCurrentLang лишено (тонка обгортка над getLang, E тримає).
-
-// =============================================================
-// UUID GENERATOR
-// =============================================================
-
-/**
- * Генерувати унікальний ID
- * @returns {string} - UUID
- */
-export function generateId() {
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-    const r = (Math.random() * 16) | 0;
-    const v = c === 'x' ? r : (r & 0x3) | 0x8;
-    return v.toString(16);
-  });
-}
 
 // =============================================================
 // AUTO-RESIZE TEXTAREA

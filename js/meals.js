@@ -3,7 +3,7 @@ import { iconTrash, iconPlus, iconBarcode } from './icons.js';
 import { i18n } from './i18n.js';
 import { supabase } from './supabaseClient.js';
 import { initAuth, requireAuth } from './auth.js';
-import { initBarcodeScanner, closeScanner } from './barcode-scanner.js';
+import { initBarcodeScanner } from './barcode-scanner.js';
 import { decodeHTMLEntities, escapeHTML, getLocalDateString, showToast, setButtonLoading } from './utils.js';
 import { getDailyCaloriesNorm, getLang, setLang, getItem, setItem } from './storage.js';
 import { showConfirmModal } from './ui-components.js';

@@ -3,7 +3,7 @@
 // ============================================================
 
 import { supabase } from './supabaseClient.js';
-import { iconVeg, iconCheck } from './icons.js';
+import { iconVeg } from './icons.js';
 import { t, formatText } from './i18n-apply.js';
 import { saveProfileFields } from './profile-flags.js';
 

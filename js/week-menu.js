@@ -1,7 +1,7 @@
 ﻿import { supabase } from './supabaseClient.js';
 import { i18n } from './i18n.js';
 import { initRecipeModal, openRecipeModal } from './recipe-modal.js';
-import { initAuth, requireAuth } from './auth.js';
+import { initAuth } from './auth.js';
 import { showToast, getLocalDateString, pluralUA, convertToBaseUnit } from './utils.js';
 import { showLoading, showEmpty, showConfirmModal } from './ui-components.js';
 import { getLang, setLang, saveWeekShoppingList, setItem, getItem } from './storage.js';

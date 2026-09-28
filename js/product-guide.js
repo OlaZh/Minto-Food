@@ -6,7 +6,7 @@ import { supabase } from './supabaseClient.js';
 import { initAuth } from './auth.js';
 import { escapeHTML } from './utils.js';
 import { getLang } from './storage.js';
-import { t, formatText } from './i18n-apply.js';
+import { t } from './i18n-apply.js';
 import { iconVeg, iconLeaf, iconAlert, iconClose, iconXCircle, iconCheckCircle } from './icons.js';
 
 let products = [];
@@ -34,15 +34,6 @@ function nameForLang(row) {
 /* ============================================================
    ДОПОМІЖНІ ФУНКЦІЇ
    ============================================================ */
-
-function normalizeIdArray(value) {
-  if (!value) return [];
-  if (Array.isArray(value)) return value.map(Number);
-  if (typeof value === 'string' && value.startsWith('{')) {
-    return value.replace('{', '').replace('}', '').split(',').map(Number).filter((n) => !isNaN(n));
-  }
-  return [];
-}
 
 function normalizeList(value) {
   if (!value) return [];

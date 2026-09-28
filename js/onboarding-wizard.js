@@ -16,7 +16,7 @@
 //   gender: female | male
 
 import { supabase } from './supabaseClient.js';
-import { t, formatText } from './i18n-apply.js';
+import { t } from './i18n-apply.js';
 import { calcDailyNorm } from './health-core.js';
 import { saveProfileFields } from './profile-flags.js';
 import { setButtonLoading, showToast } from './utils.js';

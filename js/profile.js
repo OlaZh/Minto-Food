@@ -7,10 +7,10 @@ import {
   iconWalk, iconRun, iconBike, iconSwim, iconYoga, iconGym, iconDance,
   iconHike, iconTennis, iconBall, iconStretch, iconGarden, iconElliptical,
   iconPlus, iconBarChart, iconCheckCircle, iconAlert, iconXCircle,
-  iconSalad, iconScale, iconCalendar, iconTarget, iconFlame, iconSprout,
+  iconSalad, iconScale, iconCalendar, iconTarget, iconFlame,
   iconUser, iconSettings,
 } from './icons.js';
-import { initAuth, requireAuth, getCurrentUser, openAuthModal, signOut } from './auth.js';
+import { initAuth, getCurrentUser, openAuthModal, signOut } from './auth.js';
 import { showToast, pluralUA, setButtonLoading, startProgress, doneProgress } from './utils.js';
 import { t, formatText } from './i18n-apply.js';
 import {

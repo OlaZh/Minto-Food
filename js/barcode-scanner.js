@@ -148,10 +148,8 @@ async function openScanner() {
 
   // Вибір стратегії: native BarcodeDetector → fallback html5-qrcode
   if (await canUseNativeDetector()) {
-    console.log('[Scanner] Using native BarcodeDetector');
     await startNativeScanner();
   } else {
-    console.log('[Scanner] Using html5-qrcode fallback');
     await loadHtml5QrCodeLibrary();
     await startFallbackScanner();
   }
@@ -593,7 +591,6 @@ async function handleBarcodeScan(barcode) {
 
     if (localProduct) {
       if (hasNutritionData(localProduct)) {
-        console.log('Знайдено локально:', localProduct);
         onProductFoundHandler(await applyUserCorrections(localProduct));
       } else {
         // Кешований "порожній" запис (лишок зі старих сканувань) → даємо виправити
@@ -610,7 +607,6 @@ async function handleBarcodeScan(barcode) {
 
     if (offProduct) {
       if (hasNutritionData(offProduct)) {
-        console.log('Знайдено в Open Food Facts:', offProduct);
         await saveToLocalDatabase(offProduct);
         onProductFoundHandler(await applyUserCorrections(offProduct));
       } else {

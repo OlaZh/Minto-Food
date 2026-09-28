@@ -9,7 +9,7 @@ import { showLoading, showConfirmModal } from './ui-components.js';
 import { initRecipeModal, openRecipeModal, openRecipeModalForEdit } from './recipe-modal.js';
 import { sourceText, attachPrivateCovers, getRecipeSource, renderSourcePanel } from './recipe-sources.js';
 import {
-  iconSearch, iconGlobe as iconGlobal, iconMoreVertical, iconChevronDown,
+  iconSearch, iconGlobe as iconGlobal, iconMoreVertical,
   iconHeart, iconPlus, iconEdit, iconTrash, iconBookmark, iconFlag,
   iconSunrise, iconSun, iconMoon, iconApple, iconCakeSlice, iconMug,
   iconBread, iconPorridge, iconSoup, iconSalad, iconSideDish, iconPlate,
