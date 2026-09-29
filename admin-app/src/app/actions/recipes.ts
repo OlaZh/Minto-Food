@@ -15,9 +15,10 @@ export interface RecipePayload {
   steps?: string
   steps_en?: string
   steps_pl?: string
-  type?: string
-  category?: string
-  cooking_method?: string
+  type?: string | null
+  category?: string | null
+  cuisine?: string | null
+  cooking_method?: string | null
   difficulty?: string
   prep_time_min?: number
   cook_time_min?: number
@@ -39,7 +40,7 @@ export interface RecipePayload {
 export async function createRecipe(
   payload: RecipePayload,
   ingredients: IngredientRow[],
-  selectedTagSlugs: string[]
+  selectedTagCodes: string[]
 ): Promise<{ id: string } | { error: string }> {
   const supabase = await createClient()
   await assertAdmin(supabase)
@@ -53,7 +54,7 @@ export async function createRecipe(
   if (error || !recipe) return { error: error?.message ?? 'Insert failed' }
 
   await syncIngredients(recipe.id, ingredients)
-  await syncTags(recipe.id, selectedTagSlugs)
+  await syncTags(recipe.id, selectedTagCodes)
 
   revalidatePath('/recipes')
   return { id: recipe.id }
@@ -63,7 +64,7 @@ export async function updateRecipe(
   id: string,
   payload: Partial<RecipePayload>,
   ingredients: IngredientRow[],
-  selectedTagSlugs: string[]
+  selectedTagCodes: string[]
 ): Promise<{ ok: true } | { error: string }> {
   const supabase = await createClient()
   await assertAdmin(supabase)
@@ -76,7 +77,7 @@ export async function updateRecipe(
   if (error) return { error: error.message }
 
   await syncIngredients(id, ingredients)
-  await syncTags(id, selectedTagSlugs)
+  await syncTags(id, selectedTagCodes)
 
   revalidatePath('/recipes')
   revalidatePath(`/recipes/${id}/edit`)
@@ -104,20 +105,20 @@ async function syncIngredients(recipeId: string, ingredients: IngredientRow[]) {
 
 async function syncTags(
   recipeId: string,
-  selectedTagSlugs: string[]
+  selectedTagCodes: string[]
 ) {
   const supabase = await createClient()
-  const slugs = [...new Set(selectedTagSlugs.filter(Boolean))]
+  const codes = [...new Set(selectedTagCodes.filter(Boolean))]
 
-  if (!slugs.length) {
+  if (!codes.length) {
     await supabase.from('recipe_tags').delete().eq('recipe_id', recipeId)
     return
   }
 
   const { data: tags } = await supabase
     .from('tags')
-    .select('id, slug')
-    .in('slug', slugs)
+    .select('id, code')
+    .in('code', codes)
 
   if (!tags?.length) {
     await supabase.from('recipe_tags').delete().eq('recipe_id', recipeId)

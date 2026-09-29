@@ -16,7 +16,7 @@
 // Body:
 //   {
 //     recipe: { name_ua, kcal, protein, fat, carbs, fiber, total_weight,
-//               category, ingredients, steps, image },
+//               category, type, cooking_method, ingredients, steps, image },
 //     editingRecipeId: string | null,
 //     isPublicSubmission: boolean,
 //     imageIsNew: boolean            // moderate only a freshly chosen photo
@@ -59,7 +59,7 @@ const RECIPE_CREATE_WINDOW_SECONDS = 60;
 // (user_id, status, moderation columns) is decided here.
 const ALLOWED_FIELDS = [
   'name_ua', 'kcal', 'protein', 'fat', 'carbs', 'fiber',
-  'total_weight', 'category', 'ingredients', 'steps', 'image',
+  'total_weight', 'category', 'type', 'cooking_method', 'ingredients', 'steps', 'image',
 ];
 
 // Fields that require re-moderation when an already-published recipe is edited

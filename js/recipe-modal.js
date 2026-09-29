@@ -1,4 +1,5 @@
 import { supabase } from './supabaseClient.js';
+import { RECIPE_FILTER_GROUPS } from './recipe-classification.js';
 import { requireAuth } from './auth.js';
 import {
   initIngredientBuilder,
@@ -164,6 +165,39 @@ function updateNutritionNoteOnly(kcalForNote) {
     : t('rmRawNote');
 }
 
+function createOptionalClassificationSelect(groupId, inputId) {
+  const group = RECIPE_FILTER_GROUPS.find(group => group.id === groupId);
+  const lang = getLang();
+  const labelField = lang === 'en' ? 'en' : lang === 'pl' ? 'pl' : 'ua';
+  return `<div class="form-group">
+    <label>${t(group.labelKey)} (${t('rmOptional')})</label>
+    <div class="custom-select" id="${inputId}-select">
+      <div class="custom-select__trigger"><span>${t('rmNotSelected')}</span><div class="arrow"></div></div>
+      <div class="custom-select__options">
+        <span class="custom-select__option selected" data-value="">${t('rmNotSelected')}</span>
+        ${group.options.map(option => `<span class="custom-select__option" data-value="${option.value}">${option[labelField]}</span>`).join('')}
+      </div>
+    </div>
+    <input type="hidden" id="${inputId}" value="" />
+  </div>`;
+}
+
+// Preserve old/unclassified values when editing instead of displaying a different choice.
+function setRecipeSelectValue(selectId, inputId, value) {
+  const select = document.getElementById(selectId);
+  const input = document.getElementById(inputId);
+  if (!select || !input) return;
+  const options = [...select.querySelectorAll('.custom-select__option')];
+  if (options.some(option => option.dataset.value === value)) {
+    setSelectValue(selectId, inputId, value);
+    return;
+  }
+  input.value = value;
+  options.forEach(option => option.classList.remove('selected'));
+  const label = select.querySelector('.custom-select__trigger span');
+  if (label) label.textContent = value || t('rmNotSelected');
+}
+
 function createRecipeModalHTML() {
   const div = document.createElement('div');
   div.innerHTML = `
@@ -240,7 +274,6 @@ function createRecipeModalHTML() {
                     <span class="custom-select__option selected" data-value="lunch" data-i18n="filterLunch">Обід</span>
                     <span class="custom-select__option" data-value="dinner" data-i18n="filterDinner">Вечеря</span>
                     <span class="custom-select__option" data-value="snack" data-i18n="filterSnack">Перекус</span>
-                    <span class="custom-select__option" data-value="salad" data-i18n="filterSalad">Салат</span>
                     <span class="custom-select__option" data-value="dessert" data-i18n="filterDessert">Десерт</span>
                     <span class="custom-select__option" data-value="drinks" data-i18n="filterDrinks">Напої</span>
                     <span class="custom-select__option" data-value="bakery" data-i18n="filterBakery">Випічка</span>
@@ -250,6 +283,9 @@ function createRecipeModalHTML() {
                 </div>
                 <input type="hidden" id="rm-category" value="lunch" />
               </div>
+
+              ${createOptionalClassificationSelect('dish_type', 'rm-type')}
+              ${createOptionalClassificationSelect('cooking_method', 'rm-cooking-method')}
 
               <div class="preview-form__recipe-body">
                 <div class="form-group">
@@ -444,6 +480,8 @@ export async function initRecipeModal() {
   initVisibilityToggle();
   bindIngredientBuilder();
   initCustomSelect('rm-category-select', 'rm-category');
+  initCustomSelect('rm-type-select', 'rm-type');
+  initCustomSelect('rm-cooking-method-select', 'rm-cooking-method');
   initSelectsGlobalListener();
 
   // Відновлюємо чернетку рецепта, якщо користувач почав створювати рецепт
@@ -461,6 +499,8 @@ function savePendingRecipeDraft() {
     steps: document.getElementById('rm-steps')?.value ?? '',
     total_weight: document.getElementById('rm-total-weight')?.value ?? '',
     category: document.getElementById('rm-category')?.value ?? '',
+    type: document.getElementById('rm-type')?.value ?? '',
+    cooking_method: document.getElementById('rm-cooking-method')?.value ?? '',
     image: document.getElementById('rm-image-url')?.value ?? '',
     ingredients: getIngredientsText(),
     visibility: recipeVisibility,
@@ -511,7 +551,9 @@ async function restorePendingRecipeDraft() {
   setInputVal('rm-steps', draft.steps);
   autoResizeTextarea(document.getElementById('rm-steps'));
   setInputVal('rm-total-weight', draft.total_weight);
-  setSelectValue('rm-category-select', 'rm-category', draft.category || 'lunch');
+  setRecipeSelectValue('rm-category-select', 'rm-category', draft.category ?? 'lunch');
+  setRecipeSelectValue('rm-type-select', 'rm-type', draft.type || '');
+  setRecipeSelectValue('rm-cooking-method-select', 'rm-cooking-method', draft.cooking_method || '');
   setInputVal('rm-image-url', draft.image);
   updateImagePreview();
   await setIngredientsFromText(draft.ingredients || '');
@@ -584,6 +626,9 @@ function resetRecipeForm() {
   document.getElementById('rm-original')?.replaceChildren();
   const form = document.getElementById('recipe-modal-form');
   if (form) form.reset();
+  setSelectValue('rm-category-select', 'rm-category', 'lunch');
+  setSelectValue('rm-type-select', 'rm-type', '');
+  setSelectValue('rm-cooking-method-select', 'rm-cooking-method', '');
 
   clearIngredients();
   resetVisibilityToggle();
@@ -617,7 +662,9 @@ async function showRecipeForm(data = null) {
     setInputVal('rm-steps', data.steps);
     autoResizeTextarea(document.getElementById('rm-steps'));
     setInputVal('rm-total-weight', data.total_weight);
-    setSelectValue('rm-category-select', 'rm-category', data.category || 'lunch');
+    setRecipeSelectValue('rm-category-select', 'rm-category', data.category || '');
+    setRecipeSelectValue('rm-type-select', 'rm-type', data.type || '');
+    setRecipeSelectValue('rm-cooking-method-select', 'rm-cooking-method', data.cooking_method || '');
     setInputVal('rm-image-url', data.image);
     updateImagePreview();
     setVisibilityToggle(data.is_public ? 'public' : 'private');
@@ -773,6 +820,8 @@ async function saveRecipe() {
     fiber: parseFloat(displayedNutrition.fiber.toFixed(1)) || 0,
     total_weight: totalWeightVal,
     category: document.getElementById('rm-category')?.value,
+    type: document.getElementById('rm-type')?.value || null,
+    cooking_method: document.getElementById('rm-cooking-method')?.value || null,
     ingredients: getIngredientsText(),
     steps: stepsVal,
     image: finalImage,

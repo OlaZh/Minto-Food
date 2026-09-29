@@ -24,7 +24,7 @@ const calls = [];
 // Programmable fetch mock. `scenario` controls provider score + reservation.
 globalThis.fetch = async (url, opts = {}) => {
   const u = String(url);
-  calls.push({ url: u, method: opts.method || 'GET' });
+  calls.push({ url: u, method: opts.method || 'GET', body: opts.body });
   const json = (o, headers = {}) => ({
     ok: true, status: 200,
     json: async () => o, text: async () => JSON.stringify(o),
@@ -292,6 +292,38 @@ scenario = { score: 0.1, rateLimitRpcFails: true };
   await handler({ method: 'POST', headers: { authorization: 'Bearer x' },
     body: { recipe: { name_ua: 'X', steps: 'boil', image: IMG }, editingRecipeId: null, isPublicSubmission: true } }, res);
   assert('rate-limit RPC fails → create still succeeds (fail-open)', res._status === 200, `status=${res._status}`);
+}
+
+// Classification stays distinct, nullable, and restricted to user-editable fields.
+scenario = {};
+{
+  const res = mockRes();
+  await handler({ method: 'POST', headers: { authorization: 'Bearer x' },
+    body: { recipe: { name_ua: 'Salad', category: 'lunch', type: 'salad', cooking_method: 'fresh', cuisine: 'ukrainian' }, isPublicSubmission: false } }, res);
+  const recipe = res._json?.recipe;
+  assert('create preserves category, dish type and method independently', res._status === 200 && recipe.category === 'lunch' && recipe.type === 'salad' && recipe.cooking_method === 'fresh');
+  assert('user save cannot set admin-only cuisine', !('cuisine' in recipe));
+}
+scenario = { original: { id: 42, user_id: 'user-1', status: 'draft', image: null } };
+{
+  const res = mockRes();
+  await handler({ method: 'POST', headers: { authorization: 'Bearer x' },
+    body: { recipe: { name_ua: 'Salad', type: null, cooking_method: null }, editingRecipeId: 42 } }, res);
+  assert('draft edit can clear optional classification', res._status === 200 && res._json.recipe.type === null && res._json.recipe.cooking_method === null);
+}
+scenario = { original: { id: 42, user_id: 'user-1', status: 'published', name_ua: 'Salad', image: null } };
+{
+  calls.length = 0;
+  const res = mockRes();
+  await handler({ method: 'POST', headers: { authorization: 'Bearer x' },
+    body: { recipe: { name_ua: 'Salad', steps: 'Mix', type: 'salad', cooking_method: null }, editingRecipeId: 42, isPublicSubmission: true } }, res);
+  const rpc = JSON.parse(calls.find(call => call.url.includes('/rpc/stage_recipe_update'))?.body || '{}');
+  assert('published edit sends nullable classification through the atomic RPC', res._status === 200 && rpc.p_direct.type === 'salad' && rpc.p_direct.cooking_method === null);
+  calls.length = 0;
+  await handler({ method: 'POST', headers: { authorization: 'Bearer x' },
+    body: { recipe: { name_ua: 'Salad', steps: 'Mix' }, editingRecipeId: 42, isPublicSubmission: true } }, mockRes());
+  const omitted = JSON.parse(calls.find(call => call.url.includes('/rpc/stage_recipe_update'))?.body || '{}');
+  assert('older clients leave existing classification untouched', !('type' in omitted.p_direct) && !('cooking_method' in omitted.p_direct));
 }
 
 console.log(`\n${passed} passed, ${failed} failed`);

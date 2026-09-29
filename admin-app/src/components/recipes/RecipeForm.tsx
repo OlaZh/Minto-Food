@@ -28,7 +28,7 @@ import type {
   RecipeStatus,
 } from '@/lib/types'
 import {
-  RECIPE_TYPES, RECIPE_CATEGORIES, COOKING_METHODS,
+  RECIPE_TYPES, RECIPE_CATEGORIES, RECIPE_CUISINES, COOKING_METHODS,
   DIFFICULTY_OPTIONS, LOCALES,
 } from '@/lib/types'
 
@@ -50,6 +50,7 @@ interface FormValues {
   steps_pl: string
   type: string
   category: string
+  cuisine: string
   cooking_method: string
   difficulty: string
   prep_time_min: string
@@ -73,13 +74,13 @@ function toNum(v: string) { return v ? parseFloat(v) : undefined }
 export default function RecipeForm({ recipe, initialIngredients = [] }: RecipeFormProps) {
   const router = useRouter()
   const isEdit = !!recipe
-  const recipeTagSlugs = recipe?.tags?.map(tag => tag.slug) ?? []
+  const recipeTagCodes = recipe?.tags?.map(tag => tag.code) ?? []
 
   const [ingredients, setIngredients] = useState<IngredientRow[]>(initialIngredients)
   const [authors, setAuthors] = useState<RecipeAuthorProfile[]>([])
   const [allTags, setAllTags] = useState<Tag[]>([])
-  const [manualSelectedTagSlugs, setManualSelectedTagSlugs] = useState<string[] | null>(
-    isEdit ? recipeTagSlugs : null
+  const [manualSelectedTagCodes, setManualSelectedTagCodes] = useState<string[] | null>(
+    isEdit ? recipeTagCodes : null
   )
   const [saving, setSaving] = useState(false)
 
@@ -97,6 +98,7 @@ export default function RecipeForm({ recipe, initialIngredients = [] }: RecipeFo
       steps_pl: recipe?.steps_pl ?? '',
       type: recipe?.type ?? '',
       category: recipe?.category ?? '',
+      cuisine: recipe?.cuisine ?? '',
       cooking_method: recipe?.cooking_method ?? '',
       difficulty: recipe?.difficulty ?? '',
       prep_time_min: recipe?.prep_time_min?.toString() ?? '',
@@ -133,8 +135,10 @@ export default function RecipeForm({ recipe, initialIngredients = [] }: RecipeFo
           .order('display_name'),
         supabase
           .from('tags')
-          .select('id, slug, name_ua, name_en, name_pl')
-          .order('slug'),
+          .select('id, code, name_ua, name_en, name_pl')
+          .eq('is_active', true)
+          .in('type', ['dietary', 'lifestyle'])
+          .order('code'),
       ])
       setAuthors(authorRows ?? [])
       setAllTags(tagRows ?? [])
@@ -142,33 +146,33 @@ export default function RecipeForm({ recipe, initialIngredients = [] }: RecipeFo
     load()
   }, [])
 
-  const suggestedTagSlugs = generateRecipeTags(
+  const suggestedTagCodes = generateRecipeTags(
     ingredients,
     watchedCategory,
     watchedType,
     watchedCookingMethod
-  )
-  const selectedTagSlugs = manualSelectedTagSlugs ?? suggestedTagSlugs
+  ).filter(code => allTags.some(tag => tag.code === code))
+  const selectedTagCodes = manualSelectedTagCodes ?? suggestedTagCodes
 
-  function toggleTag(slug: string) {
-    setManualSelectedTagSlugs(
-      selectedTagSlugs.includes(slug)
-        ? selectedTagSlugs.filter(currentSlug => currentSlug !== slug)
-        : [...selectedTagSlugs, slug]
+  function toggleTag(code: string) {
+    setManualSelectedTagCodes(
+      selectedTagCodes.includes(code)
+        ? selectedTagCodes.filter(currentCode => currentCode !== code)
+        : [...selectedTagCodes, code]
     )
   }
 
   function applySuggestedTags() {
-    setManualSelectedTagSlugs(suggestedTagSlugs)
+    setManualSelectedTagCodes(suggestedTagCodes)
   }
 
   function clearSelectedTags() {
-    setManualSelectedTagSlugs([])
+    setManualSelectedTagCodes([])
   }
 
-  function getTagLabel(slug: string) {
-    const tag = allTags.find(currentTag => currentTag.slug === slug)
-    return tag?.name_ua || tag?.name_en || slug
+  function getTagLabel(code: string) {
+    const tag = allTags.find(currentTag => currentTag.code === code)
+    return tag?.name_ua || tag?.name_en || code
   }
 
   async function autoCalculate() {
@@ -229,9 +233,10 @@ export default function RecipeForm({ recipe, initialIngredients = [] }: RecipeFo
         steps: data.steps || undefined,
         steps_en: data.steps_en || undefined,
         steps_pl: data.steps_pl || undefined,
-        type: data.type || undefined,
-        category: data.category || undefined,
-        cooking_method: data.cooking_method || undefined,
+        type: data.type || null,
+        category: data.category || null,
+        cuisine: data.cuisine || null,
+        cooking_method: data.cooking_method || null,
         difficulty: data.difficulty || undefined,
         prep_time_min: toNum(data.prep_time_min),
         cook_time_min: toNum(data.cook_time_min),
@@ -251,8 +256,8 @@ export default function RecipeForm({ recipe, initialIngredients = [] }: RecipeFo
       }
 
       const result = isEdit
-        ? await updateRecipe(recipe.id, payload, ingredients, selectedTagSlugs)
-        : await createRecipe(payload, ingredients, selectedTagSlugs)
+        ? await updateRecipe(recipe.id, payload, ingredients, selectedTagCodes)
+        : await createRecipe(payload, ingredients, selectedTagCodes)
 
       if ('error' in result) {
         toast.error(result.error)
@@ -308,24 +313,34 @@ export default function RecipeForm({ recipe, initialIngredients = [] }: RecipeFo
 
             <div className="grid grid-cols-3 gap-3">
               <SelectField
-                label="Тип"
+                label="Тип страви"
                 id="type"
                 options={RECIPE_TYPES}
+                currentValue={watchedType}
                 {...register('type')}
               />
               <SelectField
                 label="Категорія"
                 id="category"
                 options={RECIPE_CATEGORIES}
+                currentValue={watchedCategory}
                 {...register('category')}
               />
               <SelectField
-                label="Спосіб приготування"
+                label="Метод приготування"
                 id="cooking_method"
                 options={COOKING_METHODS}
+                currentValue={watchedCookingMethod}
                 {...register('cooking_method')}
               />
             </div>
+
+            <SelectField
+              label="Кухня"
+              id="cuisine"
+              options={RECIPE_CUISINES}
+              {...register('cuisine')}
+            />
 
             <div className="grid grid-cols-3 gap-3">
               <SelectField
@@ -584,12 +599,12 @@ export default function RecipeForm({ recipe, initialIngredients = [] }: RecipeFo
                 <div className="flex items-center justify-between gap-2">
                   <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Обрані</p>
                   <div className="flex items-center gap-2">
-                    {suggestedTagSlugs.length > 0 && (
+                    {suggestedTagCodes.length > 0 && (
                       <Button type="button" variant="ghost" size="xs" onClick={applySuggestedTags}>
                         Прийняти авто
                       </Button>
                     )}
-                    {selectedTagSlugs.length > 0 && (
+                    {selectedTagCodes.length > 0 && (
                       <Button type="button" variant="ghost" size="xs" onClick={clearSelectedTags}>
                         Очистити
                       </Button>
@@ -597,16 +612,16 @@ export default function RecipeForm({ recipe, initialIngredients = [] }: RecipeFo
                   </div>
                 </div>
 
-                {selectedTagSlugs.length ? (
+                {selectedTagCodes.length ? (
                   <div className="flex flex-wrap gap-1.5">
-                    {selectedTagSlugs.map(slug => (
+                    {selectedTagCodes.map(code => (
                       <button
-                        key={slug}
+                        key={code}
                         type="button"
-                        onClick={() => toggleTag(slug)}
+                        onClick={() => toggleTag(code)}
                         className="inline-flex items-center rounded-full border border-gray-300 bg-white px-2.5 py-1 text-xs font-medium text-gray-700 hover:border-gray-500"
                       >
-                        {getTagLabel(slug)} · {slug}
+                        {getTagLabel(code)} · {code}
                       </button>
                     ))}
                   </div>
@@ -617,23 +632,23 @@ export default function RecipeForm({ recipe, initialIngredients = [] }: RecipeFo
 
               <div className="space-y-2">
                 <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Авто-підказки</p>
-                {suggestedTagSlugs.length ? (
+                {suggestedTagCodes.length ? (
                   <div className="flex flex-wrap gap-1.5">
-                    {suggestedTagSlugs.map(slug => {
-                      const isSelected = selectedTagSlugs.includes(slug)
+                    {suggestedTagCodes.map(code => {
+                      const isSelected = selectedTagCodes.includes(code)
 
                       return (
                         <button
-                          key={slug}
+                          key={code}
                           type="button"
-                          onClick={() => toggleTag(slug)}
+                          onClick={() => toggleTag(code)}
                           className={`inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-medium transition-colors ${
                             isSelected
                               ? 'border-emerald-500 bg-emerald-50 text-emerald-700'
                               : 'border-amber-300 bg-amber-50 text-amber-700 hover:border-amber-400'
                           }`}
                         >
-                          {getTagLabel(slug)}
+                          {getTagLabel(code)}
                         </button>
                       )
                     })}
@@ -647,20 +662,20 @@ export default function RecipeForm({ recipe, initialIngredients = [] }: RecipeFo
                 <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Усі теги</p>
                 <div className="flex flex-wrap gap-1.5">
                   {allTags.map(tag => {
-                    const isSelected = selectedTagSlugs.includes(tag.slug)
+                    const isSelected = selectedTagCodes.includes(tag.code)
 
                     return (
                       <button
                         key={tag.id}
                         type="button"
-                        onClick={() => toggleTag(tag.slug)}
+                        onClick={() => toggleTag(tag.code)}
                         className={`inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-medium transition-colors ${
                           isSelected
                             ? 'border-gray-900 bg-gray-900 text-white'
                             : 'border-gray-200 bg-white text-gray-600 hover:border-gray-400'
                         }`}
                       >
-                        {tag.name_ua || tag.name_en || tag.slug}
+                        {tag.name_ua || tag.name_en || tag.code}
                       </button>
                     )
                   })}
@@ -675,10 +690,10 @@ export default function RecipeForm({ recipe, initialIngredients = [] }: RecipeFo
               <h2 className="text-sm font-semibold text-gray-900 uppercase tracking-wide">Теги (авто)</h2>
             </div>
             <div className="flex flex-wrap gap-1.5">
-              {suggestedTagSlugs.length ? (
-                suggestedTagSlugs.map(slug => (
-                  <Badge key={slug} variant="secondary" className="text-xs font-normal">
-                    {slug}
+              {suggestedTagCodes.length ? (
+                suggestedTagCodes.map(code => (
+                  <Badge key={code} variant="secondary" className="text-xs font-normal">
+                    {code}
                   </Badge>
                 ))
               ) : (
@@ -697,10 +712,11 @@ interface SelectFieldProps extends React.SelectHTMLAttributes<HTMLSelectElement>
   label: string
   id: string
   options: { value: string; label: string }[]
+  currentValue?: string
 }
 
 const SelectField = forwardRef<HTMLSelectElement, SelectFieldProps>(
-  ({ label, id, options, ...props }, ref) => (
+  ({ label, id, options, currentValue, ...props }, ref) => (
     <div className="space-y-1.5">
       <Label htmlFor={id} className="text-xs">{label}</Label>
       <select
@@ -710,6 +726,9 @@ const SelectField = forwardRef<HTMLSelectElement, SelectFieldProps>(
         className="w-full h-9 text-sm border border-gray-200 rounded-md px-2 bg-white focus:outline-none focus:ring-2 focus:ring-ring"
       >
         <option value="">— Не вибрано —</option>
+        {currentValue && !options.some(option => option.value === currentValue) && (
+          <option value={currentValue}>Збережене значення: {currentValue}</option>
+        )}
         {options.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
       </select>
     </div>

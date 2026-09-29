@@ -6,13 +6,15 @@ export default async function TagsPage() {
   const { data: tags } = await supabase
     .from('tags')
     .select('*')
-    .order('slug')
+    .eq('is_active', true)
+    .in('type', ['dietary', 'lifestyle'])
+    .order('code')
 
   return (
     <div>
       <div className="sticky top-0 z-10 bg-white border-b border-gray-200 px-4 md:px-8 py-4">
         <h1 className="text-lg font-semibold">Теги</h1>
-        <p className="text-xs text-gray-400 mt-0.5">Теги генеруються автоматично при збереженні рецепта</p>
+        <p className="text-xs text-gray-400 mt-0.5">Дієтичні й побутові позначки: обирайте у формі рецепта вручну або за автопідказками.</p>
       </div>
 
       <div className="px-4 md:px-8 py-6">
@@ -24,7 +26,7 @@ export default async function TagsPage() {
             >
               <span className="font-medium text-gray-700">{tag.name_ua}</span>
               <span className="text-gray-400 text-xs">/ {tag.name_en}</span>
-              <span className="text-[10px] font-mono text-gray-300 ml-1">{tag.slug}</span>
+              <span className="text-[10px] font-mono text-gray-300 ml-1">{tag.code}</span>
             </div>
           ))}
         </div>

@@ -86,6 +86,15 @@
 
 /* Desktop recipe form spread — mirrors #view-recipe-modal (2 cols ≥1024, 3 cols ≥1200).
    The choice / saved-source screens keep the narrow card. */
+#rm-type-select,
+#rm-cooking-method-select {
+  .custom-select__options {
+    max-height: min(320px, 45dvh);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+}
+
 @media (min-width: 1024px) {
   #recipe-create-modal:has(#recipe-modal-preview-form:not([hidden])) {
     padding: 20px;
@@ -100,9 +109,9 @@
     .preview-form__content {
       display: grid;
       grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
-      // Ліва колонка — до 8 блоків метаданих; останній 1fr-трек поглинає висоту
+      // Ліва колонка — до 10 блоків метаданих; останній 1fr-трек поглинає висоту
       // правої колонки, щоб auto-рядки зліва не розтягувались.
-      grid-template-rows: repeat(8, auto) 1fr;
+      grid-template-rows: repeat(10, auto) 1fr;
       column-gap: 24px;
       row-gap: 16px;
       align-items: start;

@@ -14,7 +14,7 @@ export interface RecipeAuthorProfile {
 
 export interface Tag {
   id: number
-  slug: string
+  code: string
   name_ua: string
   name_en: string | null
   name_pl: string | null
@@ -51,6 +51,7 @@ export interface Recipe {
   recipe_yield: number | null
   type: string | null
   category: string | null
+  cuisine: string | null
   cooking_method: string | null
   difficulty: string | null
   prep_time_min: number | null
@@ -80,38 +81,50 @@ export const UNITS = [
 ]
 
 export const RECIPE_TYPES = [
+  { value: 'porridge', label: 'Каша' },
+  { value: 'soup', label: 'Суп' },
+  { value: 'salad', label: 'Салат' },
+  { value: 'side_dish', label: 'Гарнір' },
+  { value: 'main_course', label: 'Основна страва' },
+  { value: 'pasta', label: 'Паста' },
+  { value: 'sauce', label: 'Соус' },
+  { value: 'sandwich', label: 'Сендвіч' },
+  { value: 'casserole', label: 'Запіканка' },
+  { value: 'pancakes', label: 'Млинці' },
+  { value: 'omelet', label: 'Омлет' },
+  { value: 'smoothie', label: 'Смузі' },
+]
+
+export const RECIPE_CATEGORIES = [
   { value: 'breakfast', label: 'Сніданок' },
   { value: 'lunch', label: 'Обід' },
   { value: 'dinner', label: 'Вечеря' },
   { value: 'snack', label: 'Перекус' },
   { value: 'dessert', label: 'Десерт' },
-  { value: 'soup', label: 'Суп' },
-  { value: 'salad', label: 'Салат' },
-  { value: 'drink', label: 'Напій' },
-  { value: 'sauce', label: 'Соус' },
-  { value: 'baking', label: 'Випічка' },
+  { value: 'drinks', label: 'Напої' },
+  { value: 'bakery', label: 'Випічка' },
+  { value: 'fast', label: 'Швидкий' },
+  { value: 'no_power', label: 'Без світла' },
 ]
 
-export const RECIPE_CATEGORIES = [
+export const RECIPE_CUISINES = [
   { value: 'european', label: 'Європейська' },
   { value: 'ukrainian', label: 'Українська' },
   { value: 'asian', label: 'Азійська' },
   { value: 'mediterranean', label: 'Середземноморська' },
   { value: 'american', label: 'Американська' },
   { value: 'middle_eastern', label: 'Близькосхідна' },
-  { value: 'fit', label: 'Фітнес / ПП' },
-  { value: 'vegan', label: 'Веганське' },
 ]
 
 export const COOKING_METHODS = [
-  { value: 'baked', label: 'Запечено' },
-  { value: 'fried', label: 'Смажено' },
-  { value: 'steamed', label: 'На парі' },
-  { value: 'boiled', label: 'Варено' },
-  { value: 'grilled', label: 'Гриль' },
-  { value: 'raw', label: 'Без термообробки' },
-  { value: 'stewed', label: 'Тушковано' },
-  { value: 'slow_cooked', label: 'Повільне приготування' },
+  { value: 'boiling', label: 'Варіння' },
+  { value: 'frying', label: 'Смаження' },
+  { value: 'baking', label: 'Запікання' },
+  { value: 'steaming', label: 'На парі' },
+  { value: 'grilling', label: 'Гриль' },
+  { value: 'stewing', label: 'Тушкування' },
+  { value: 'soaking', label: 'Замочування' },
+  { value: 'fresh', label: 'Без термообробки' },
 ]
 
 export const DIFFICULTY_OPTIONS = [

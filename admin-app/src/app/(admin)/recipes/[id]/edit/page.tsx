@@ -66,7 +66,7 @@ export default async function EditRecipePage({ params }: EditRecipePageProps) {
   const { data: rawTags } = await supabase
     .from('recipe_tags')
     .select(`
-      tag:tags(id, slug, name_ua, name_en, name_pl)
+      tag:tags(id, code, name_ua, name_en, name_pl)
     `)
     .eq('recipe_id', id)
 

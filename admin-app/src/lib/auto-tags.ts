@@ -1,7 +1,7 @@
 import type { IngredientRow } from './types'
 
 interface TagRule {
-  slug: string
+  code: string
   test: (ctx: TagContext) => boolean
 }
 
@@ -35,28 +35,28 @@ const MEAT_KEYWORDS = [
 
 const RULES: TagRule[] = [
   // Protein sources
-  { slug: 'chicken',    test: c => hasIngredient(c.ingredientNames, ['chicken','курка','куряч','kurcak','kurczak','broiler']) },
-  { slug: 'beef',       test: c => hasIngredient(c.ingredientNames, ['beef','яловичина','wołowina','фарш яловичий']) },
-  { slug: 'pork',       test: c => hasIngredient(c.ingredientNames, ['pork','свинина','wieprzowina','бекон','шинка']) },
-  { slug: 'turkey',     test: c => hasIngredient(c.ingredientNames, ['turkey','індичка','indyk']) },
-  { slug: 'lamb',       test: c => hasIngredient(c.ingredientNames, ['lamb','баранина','jagnięcina']) },
-  { slug: 'fish',       test: c => hasIngredient(c.ingredientNames, ['fish','риба','лосось','тунець','тріска','salmon','tuna','cod','ryba','łosoś']) },
-  { slug: 'seafood',    test: c => hasIngredient(c.ingredientNames, ['shrimp','креветк','кальмар','мідія','squid','mussel','морепродукт','owoce morza']) },
-  { slug: 'egg',        test: c => hasIngredient(c.ingredientNames, ['egg','яйц','яйк','jajk','jajco']) },
-  { slug: 'dairy',      test: c => hasIngredient(c.ingredientNames, ['milk','молоко','сир','йогурт','сметана','вершки','cheese','yogurt','cream','mleko','ser']) },
-  { slug: 'legumes',    test: c => hasIngredient(c.ingredientNames, ['chickpea','нут','lentil','сочевиця','bean','квасоля','pea','горох','soy','соя','бобов','soczewica','fasola','ciecierzyca']) },
-  { slug: 'mushroom',   test: c => hasIngredient(c.ingredientNames, ['mushroom','гриб','печериця','шампіньон','pieczarka','grzyb']) },
-  { slug: 'pasta',      test: c => hasIngredient(c.ingredientNames, ['pasta','макарон','penne','spaghetti','fusilli','fettuccine','макарони','noodle','локшина']) },
+  { code: 'chicken',    test: c => hasIngredient(c.ingredientNames, ['chicken','курка','куряч','kurcak','kurczak','broiler']) },
+  { code: 'beef',       test: c => hasIngredient(c.ingredientNames, ['beef','яловичина','wołowina','фарш яловичий']) },
+  { code: 'pork',       test: c => hasIngredient(c.ingredientNames, ['pork','свинина','wieprzowina','бекон','шинка']) },
+  { code: 'turkey',     test: c => hasIngredient(c.ingredientNames, ['turkey','індичка','indyk']) },
+  { code: 'lamb',       test: c => hasIngredient(c.ingredientNames, ['lamb','баранина','jagnięcina']) },
+  { code: 'fish',       test: c => hasIngredient(c.ingredientNames, ['fish','риба','лосось','тунець','тріска','salmon','tuna','cod','ryba','łosoś']) },
+  { code: 'seafood',    test: c => hasIngredient(c.ingredientNames, ['shrimp','креветк','кальмар','мідія','squid','mussel','морепродукт','owoce morza']) },
+  { code: 'egg',        test: c => hasIngredient(c.ingredientNames, ['egg','яйц','яйк','jajk','jajco']) },
+  { code: 'dairy',      test: c => hasIngredient(c.ingredientNames, ['milk','молоко','сир','йогурт','сметана','вершки','cheese','yogurt','cream','mleko','ser']) },
+  { code: 'legumes',    test: c => hasIngredient(c.ingredientNames, ['chickpea','нут','lentil','сочевиця','bean','квасоля','pea','горох','soy','соя','бобов','soczewica','fasola','ciecierzyca']) },
+  { code: 'mushroom',   test: c => hasIngredient(c.ingredientNames, ['mushroom','гриб','печериця','шампіньон','pieczarka','grzyb']) },
+  { code: 'pasta',      test: c => hasIngredient(c.ingredientNames, ['pasta','макарон','penne','spaghetti','fusilli','fettuccine','макарони','noodle','локшина']) },
 
   // Diet flags
   {
-    slug: 'vegetarian',
+    code: 'vegetarian',
     test: c => c.hasIngredients &&
                !hasIngredient(c.ingredientNames, MEAT_KEYWORDS) &&
                !hasIngredient(c.ingredientNames, ['fish','риба','salmon','тунець','seafood','морепродукт']),
   },
   {
-    slug: 'vegan',
+    code: 'vegan',
     test: c => c.hasIngredients &&
                !hasIngredient(c.ingredientNames, MEAT_KEYWORDS) &&
                !hasIngredient(c.ingredientNames, ['fish','риба','salmon']) &&
@@ -64,24 +64,24 @@ const RULES: TagRule[] = [
   },
 
   // Cooking method
-  { slug: 'baked',    test: c => c.cookingMethod === 'baked' },
-  { slug: 'fried',    test: c => c.cookingMethod === 'fried' },
-  { slug: 'steamed',  test: c => c.cookingMethod === 'steamed' },
-  { slug: 'raw',      test: c => c.cookingMethod === 'raw' },
+  { code: 'baked',    test: c => c.cookingMethod === 'baking' },
+  { code: 'fried',    test: c => c.cookingMethod === 'frying' },
+  { code: 'steamed',  test: c => c.cookingMethod === 'steaming' },
+  { code: 'raw',      test: c => c.cookingMethod === 'fresh' },
 
   // Meal type
-  { slug: 'breakfast', test: c => ['breakfast'].includes(c.type) || hasIngredient(c.ingredientNames, ['pancake','млинц','oatmeal','вівсянка','вівсян','granola','гранол','waffle','вафл']) },
-  { slug: 'soup',      test: c => c.type === 'soup' },
-  { slug: 'salad',     test: c => c.type === 'salad' },
-  { slug: 'dessert',   test: c => c.type === 'dessert' || hasIngredient(c.ingredientNames, ['chocolate','шоколад','cacao','какао','sugar','цукор','vanilla','ваніль']) },
+  { code: 'breakfast', test: c => c.category === 'breakfast' || hasIngredient(c.ingredientNames, ['pancake','млинц','oatmeal','вівсянка','вівсян','granola','гранол','waffle','вафл']) },
+  { code: 'soup',      test: c => c.type === 'soup' },
+  { code: 'salad',     test: c => c.type === 'salad' },
+  { code: 'dessert',   test: c => c.category === 'dessert' || hasIngredient(c.ingredientNames, ['chocolate','шоколад','cacao','какао','sugar','цукор','vanilla','ваніль']) },
 
   // Nutrition flags (decided by ingredient types — simple heuristics)
-  { slug: 'high-protein', test: c => hasIngredient(c.ingredientNames, ['chicken','курка','beef','яловичина','turkey','індичка','tuna','тунець','protein','протеїн','whey','яйц','egg','сир кисломолочний','cottage']) },
-  { slug: 'low-carb',     test: c => c.hasIngredients && !hasIngredient(c.ingredientNames, ['rice','рис','bread','хліб','pasta','макарон','potato','картопл','flour','борошн','oats','вівс','corn','кукурудз']) },
-  { slug: 'gluten-free',  test: c => c.hasIngredients && !hasIngredient(c.ingredientNames, ['flour','борошн','wheat','пшениц','bread','хліб','pasta','макарон','barley','ячмінь','rye','жито','oat','вівс']) },
+  { code: 'high_protein', test: c => hasIngredient(c.ingredientNames, ['chicken','курка','beef','яловичина','turkey','індичка','tuna','тунець','protein','протеїн','whey','яйц','egg','сир кисломолочний','cottage']) },
+  { code: 'low_carb',     test: c => c.hasIngredients && !hasIngredient(c.ingredientNames, ['rice','рис','bread','хліб','pasta','макарон','potato','картопл','flour','борошн','oats','вівс','corn','кукурудз']) },
+  { code: 'gluten_free',  test: c => c.hasIngredients && !hasIngredient(c.ingredientNames, ['flour','борошн','wheat','пшениц','bread','хліб','pasta','макарон','barley','ячмінь','rye','жито','oat','вівс']) },
 
   // Quick meals
-  { slug: 'quick', test: c => hasIngredient(c.ingredientNames, ['egg','яйц','tuna','тунець','cottage','сир кисломолочний']) && !hasIngredient(c.ingredientNames, ['beef','яловичина','pork','свинина','chicken leg','куряча нога']) },
+  { code: 'quick', test: c => hasIngredient(c.ingredientNames, ['egg','яйц','tuna','тунець','cottage','сир кисломолочний']) && !hasIngredient(c.ingredientNames, ['beef','яловичина','pork','свинина','chicken leg','куряча нога']) },
 ]
 
 export function generateRecipeTags(
@@ -98,5 +98,5 @@ export function generateRecipeTags(
     cookingMethod,
     hasIngredients: ingredientNames.length > 0,
   }
-  return RULES.filter(r => r.test(ctx)).map(r => r.slug)
+  return RULES.filter(r => r.test(ctx)).map(r => r.code)
 }
