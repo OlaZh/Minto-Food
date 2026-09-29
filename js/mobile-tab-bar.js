@@ -15,7 +15,7 @@ import {
     { match: 'recipes', tab: 'recipes' },
     { match: 'shopping-list', tab: 'shopping' },
     { match: 'product-guide', tab: 'more' },
-    { match: 'cookbook', tab: 'more' },
+    { match: 'cookbook', tab: 'cookbook' },
     { match: 'profile', tab: 'more' },
     { match: 'index', tab: 'day' },
   ];
@@ -37,6 +37,7 @@ import {
     week:     tabIcon(iconGrid),
     recipes:  tabIcon(iconUtensils),
     shopping: tabIcon(iconListChecks),
+    cookbook: tabIcon(iconBookOpen),
     more:     tabIcon(iconMoreVertical),
   };
 
@@ -45,11 +46,11 @@ import {
     { tab: 'week', href: 'week-menu.html', label: t('navWeek') },
     { tab: 'recipes', href: 'recipes.html', label: t('navRecipes') },
     { tab: 'shopping', href: 'shopping-list.html', label: t('navShopping') },
+    { tab: 'cookbook', href: 'cookbook.html', label: t('navCookbook') },
     { tab: 'more', href: null, label: t('navMore') },
   ];
 
   const SHEET_LINKS = [
-    { href: 'cookbook.html',     label: t('navCookbook'), icon: iconBookOpen },
     { href: 'product-guide.html',label: t('navGuide'),    icon: iconLeaf    },
     { href: 'profile.html',      label: t('navProfile'),  icon: iconUser    },
     { href: '#', label: t('navAdmin'), icon: iconShield, adminOnly: true },

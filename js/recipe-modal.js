@@ -240,6 +240,7 @@ function createRecipeModalHTML() {
                     <span class="custom-select__option selected" data-value="lunch" data-i18n="filterLunch">Обід</span>
                     <span class="custom-select__option" data-value="dinner" data-i18n="filterDinner">Вечеря</span>
                     <span class="custom-select__option" data-value="snack" data-i18n="filterSnack">Перекус</span>
+                    <span class="custom-select__option" data-value="salad" data-i18n="filterSalad">Салат</span>
                     <span class="custom-select__option" data-value="dessert" data-i18n="filterDessert">Десерт</span>
                     <span class="custom-select__option" data-value="drinks" data-i18n="filterDrinks">Напої</span>
                     <span class="custom-select__option" data-value="bakery" data-i18n="filterBakery">Випічка</span>

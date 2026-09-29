@@ -12,18 +12,21 @@ import { getRecipeSource, renderSourcePanel } from './recipe-sources.js';
 const CATEGORY_LABELS = {
   breakfast: 'Сніданок', lunch: 'Обід',    dinner: 'Вечеря',
   snack:     'Перекус',  dessert: 'Десерт', drinks: 'Напої',
+  salad:     'Салат',
   bakery:    'Випічка',  fast: 'Швидкий',   no_power: 'Без світла',
 };
 
 const CATEGORY_LABELS_EN = {
   breakfast: 'Breakfast', lunch: 'Lunch', dinner: 'Dinner',
   snack:     'Snack',     dessert: 'Dessert', drinks: 'Drinks',
+  salad:     'Salad',
   bakery:    'Bakery',    fast:    'Quick',   no_power: 'No-power',
 };
 
 const CATEGORY_LABELS_PL = {
   breakfast: 'Śniadanie', lunch: 'Obiad', dinner: 'Kolacja',
   snack:     'Przekąska', dessert: 'Deser', drinks: 'Napoje',
+  salad:     'Sałatka',
   bakery:    'Pieczywo',  fast:   'Szybki', no_power: 'Bez prądu',
 };
 

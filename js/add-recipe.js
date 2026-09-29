@@ -378,6 +378,7 @@ const COLUMN_GROUPS = [
       { value: 'lunch',      ua: 'Обід',        en: 'Lunch',     pl: 'Obiad',      icon: iconSun },
       { value: 'dinner',     ua: 'Вечеря',      en: 'Dinner',    pl: 'Kolacja',    icon: iconMoon },
       { value: 'snack',      ua: 'Перекус',     en: 'Snack',     pl: 'Przekąska',  icon: iconApple },
+      { value: 'salad',      ua: 'Салат',       en: 'Salad',     pl: 'Sałatka',    icon: iconSalad },
       { value: 'dessert',    ua: 'Десерт',      en: 'Dessert',   pl: 'Deser',      icon: iconCakeSlice },
       { value: 'drinks',     ua: 'Напої',       en: 'Drinks',    pl: 'Napoje',     icon: iconMug },
       { value: 'bakery',     ua: 'Випічка',     en: 'Bakery',    pl: 'Pieczywo',   icon: iconBread },
