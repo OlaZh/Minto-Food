@@ -319,7 +319,6 @@ export function parseFoodInput(input) {
     ? [removeStopWords(parentheticalSearchName)]
         .filter((candidate) => candidate.length >= 2 && candidate !== searchName)
     : [];
-  const finalUnit = unit || 'шт';
 
   return {
     raw: input,
@@ -327,9 +326,9 @@ export function parseFoodInput(input) {
     name: name,
     searchName: searchName,
     searchAlternatives: searchAlternatives,
-    amount: amount || 1,
-    unit: finalUnit,            // СИРА одиниця для показу "як написала" ("л", "дрібка")
-    unitType: UNIT_TO_TYPE[finalUnit] ?? finalUnit, // канон для lookup у product_units
+    amount: amount,             // null, якщо кількість не вказана
+    unit: unit,                 // СИРА одиниця для показу "як написала" ("л", "дрібка")
+    unitType: UNIT_TO_TYPE[unit] ?? unit, // канон для lookup у product_units
     grams: grams,
   };
 }

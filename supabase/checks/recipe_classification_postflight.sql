@@ -12,7 +12,8 @@ SELECT
 
 -- Remaining ambiguous/legacy classifications require a human decision.
 -- For example fit/vegan in category, conflicting meal types, or slow_cooked.
-SELECT id, category, type, cooking_method, cuisine
+-- Include recipe context so replacements can be reviewed without guessing from codes.
+SELECT id, name_ua, category, type, cooking_method, cuisine, ingredients, steps
 FROM public.recipes
 WHERE deleted_at IS NULL AND (
   (NULLIF(category,'') IS NOT NULL AND category NOT IN

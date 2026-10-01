@@ -937,6 +937,10 @@ async function handleFavoriteClick(btn, recipeId) {
 // 5. ПЕРЕГЛЯД РЕЦЕПТУ
 // =============================================================
 
+function cleanIngredientLine(line) {
+  return line.replace(/^[^\p{L}\p{N}]+/u, '').trim();
+}
+
 // Розкладає рядок інгредієнта (як написала людина) на назву + міру для
 // показу "назва зліва / міра справа". Міру визначає парсер (надійно ловить
 // число+одиницю за будь-якого розділювача), але назву беремо з оригіналу,
@@ -944,9 +948,14 @@ async function handleFavoriteClick(btn, recipeId) {
 // Якщо парсер не знайшов кількості ("сіль за смаком") — міри немає, весь
 // рядок іде зліва.
 function splitIngredientLine(line) {
+  line = cleanIngredientLine(line);
+  if (!line || line.endsWith(':')) {
+    return { name: line, measure: '' };
+  }
+
   const parsed = parseFoodInput(line) || {};
   const parsedName = (parsed.name || '').trim();
-  const hasMeasure = parsedName && parsedName.length < line.length;
+  const hasMeasure = parsedName && parsed.amount != null && parsed.unit != null;
 
   if (!hasMeasure) {
     return { name: line, measure: '' };
@@ -1117,12 +1126,13 @@ export async function openRecipeView(recipeId) {
       const ingLines = recipe.ingredients.split('\n').filter((l) => l.trim().length > 0);
       ingLines.forEach((line) => {
         const { name, measure } = splitIngredientLine(line.trim());
+        if (!name) return;
 
         const li = document.createElement('li');
         li.className = 'ingredient-item-row';
         li.innerHTML = measure
-          ? `<span>• ${escapeHTML(name)}</span> <span class="ing-count">${escapeHTML(measure)}</span>`
-          : `<span>• ${escapeHTML(name)}</span>`;
+          ? `<span>${escapeHTML(name)}</span> <span class="ing-count">${escapeHTML(measure)}</span>`
+          : `<span>${escapeHTML(name)}</span>`;
         list.appendChild(li);
       });
     } else if (!savedEntry) {
@@ -1149,7 +1159,7 @@ export async function openRecipeView(recipeId) {
                 : pr.products?.name_ua;
           const li = document.createElement('li');
           li.className = 'ingredient-item-row';
-          li.innerHTML = `<span>• ${escapeHTML(productName || '')}</span> <span class="ing-count">${escapeHTML(pr.amount || '')} ${escapeHTML(pr.unit || '')}</span>`;
+          li.innerHTML = `<span>${escapeHTML(cleanIngredientLine(productName || ''))}</span> <span class="ing-count">${escapeHTML(pr.amount || '')} ${escapeHTML(pr.unit || '')}</span>`;
           list.appendChild(li);
         });
       }
