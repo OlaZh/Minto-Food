@@ -4567,6 +4567,10 @@ svg[viewBox="0 0 24 24"] {
     grid-column: 2;
     grid-row: 1/-1;
   }
+  #recipe-create-modal:has(#recipe-modal-preview-form:not([hidden])) .preview-form__footer {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 @media (min-width: 1200px) {
   #recipe-create-modal:has(#recipe-modal-preview-form:not([hidden])) .preview-form__content {
