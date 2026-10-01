@@ -253,9 +253,12 @@ function createRecipeModalHTML() {
                 </div>
               </div>
 
-              <p class="recipe-macros-note" id="rm-macros-note" data-i18n="rmRawNote">
-                Сума сирих інгредієнтів. Вкажіть вагу готової страви, щоб побачити КБЖУ на 100 г.
-              </p>
+              <div class="nutrition-hint">
+                <button type="button" class="nutrition-hint__trigger" aria-label="${t('nutritionHint')}" data-i18n-aria="nutritionHint" aria-describedby="rm-macros-note"><i aria-hidden="true">i</i></button>
+                <p class="nutrition-hint__text" id="rm-macros-note" role="tooltip" data-i18n="rmRawNote">
+                  Сума сирих інгредієнтів. Вкажіть вагу готової страви, щоб побачити КБЖУ на 100 г.
+                </p>
+              </div>
 
               <div class="form-group">
                 <label for="rm-total-weight" data-i18n="rmTotalWeightLabel">Вага готової страви (г)</label>

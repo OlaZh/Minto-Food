@@ -1036,7 +1036,7 @@ export async function openRecipeView(recipeId) {
   const isOwn = isOwnRecipe(recipe);
   const savedEntry = recipe.entry_type === 'saved';
   renderRecipePhoto(recipe);
-  viewModal?.querySelectorAll('.recipe-rating, .nutrition-summary, .nutrition-summary-meta, .recipe-detail__tags').forEach(el => { el.hidden = savedEntry; });
+  viewModal?.querySelectorAll('.recipe-rating, .nutrition-summary, .nutrition-hint, .nutrition-summary-meta, .recipe-detail__tags').forEach(el => { el.hidden = savedEntry; });
   for (const id of ['view-ingredients-list', 'view-steps']) {
     const section = document.getElementById(id)?.closest('.recipe-section');
     if (section) section.hidden = savedEntry;

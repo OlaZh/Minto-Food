@@ -52,15 +52,6 @@
     }
   }
 
-  .recipe-macros-note {
-    margin: -2px 0 0;
-    padding: 0 4px;
-    font-size: 12px;
-    line-height: 1.45;
-    color: var(--color-text-secondary);
-    font-style: italic;
-  }
-
   // Інгредієнти + спосіб приготування: на мобільному — частина загального стеку,
   // на десктопі — окрема колонка (див. медіа-запити нижче).
   .preview-form__recipe-body {

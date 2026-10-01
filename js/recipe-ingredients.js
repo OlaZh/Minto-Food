@@ -32,6 +32,7 @@ const i18nIngredients = {
     notFound: 'Не розпізнано',
     found: 'Розпізнано',
     addIngredients: 'Розпізнавання необов’язкове. Натисніть «Розпізнати», якщо хочете розрахувати КБЖУ.',
+    recognitionHint: 'Підказка щодо розпізнавання',
     clearAll: 'Очистити',
     searchProduct: 'Пошук продукту...',
     productNotFound: 'Продукт не знайдено в базі',
@@ -56,6 +57,7 @@ const i18nIngredients = {
     notFound: 'Not recognized',
     found: 'Recognized',
     addIngredients: 'Recognition is optional. Click "Parse" to calculate calories and macros.',
+    recognitionHint: 'Ingredient recognition help',
     clearAll: 'Clear',
     searchProduct: 'Search product...',
     productNotFound: 'Product not found in database',
@@ -80,6 +82,7 @@ const i18nIngredients = {
     notFound: 'Nie rozpoznano',
     found: 'Rozpoznano',
     addIngredients: 'Rozpoznawanie jest opcjonalne. Kliknij „Rozpoznaj”, aby obliczyć kalorie i makroskładniki.',
+    recognitionHint: 'Pomoc w rozpoznawaniu składników',
     clearAll: 'Wyczyść',
     searchProduct: 'Szukaj produktu...',
     productNotFound: 'Produktu nie znaleziono w bazie',
@@ -157,6 +160,11 @@ export function initIngredientBuilder(containerSelector, onChange, lang = 'ua') 
             ${t('clearAll')}
           </button>
         </div>
+      </div>
+
+      <div class="nutrition-hint" id="ingredientEmptyHint">
+        <button type="button" class="nutrition-hint__trigger" id="ingredientHintTrigger" aria-label="${t('recognitionHint')}" aria-describedby="ingredientRecognitionHint"><i aria-hidden="true">i</i></button>
+        <p class="nutrition-hint__text" id="ingredientRecognitionHint" role="tooltip">${t('addIngredients')}</p>
       </div>
 
       <p class="ingredient-builder__check-hint" id="ingredientCheckHint" hidden>${t('checkHint')}</p>
@@ -382,8 +390,11 @@ function renderIngredientsList() {
   const hintEl = document.getElementById('ingredientCheckHint');
   if (hintEl) hintEl.hidden = ingredientsList.length === 0;
 
+  const emptyHintEl = document.getElementById('ingredientEmptyHint');
+  if (emptyHintEl) emptyHintEl.hidden = ingredientsList.length > 0;
+
   if (ingredientsList.length === 0) {
-    listEl.innerHTML = `<li class="ingredient-item ingredient-item--empty">${t('addIngredients')}</li>`;
+    listEl.innerHTML = '';
     return;
   }
 
@@ -643,6 +654,12 @@ export function setLanguage(lang) {
 
   const hintEl = document.getElementById('ingredientCheckHint');
   if (hintEl) hintEl.textContent = t('checkHint');
+
+  const recognitionHintEl = document.getElementById('ingredientRecognitionHint');
+  if (recognitionHintEl) recognitionHintEl.textContent = t('addIngredients');
+
+  const hintTrigger = document.getElementById('ingredientHintTrigger');
+  if (hintTrigger) hintTrigger.setAttribute('aria-label', t('recognitionHint'));
 
   const totalLabel = document.querySelector('.ingredient-builder__total-label');
   if (totalLabel) totalLabel.textContent = t('total');

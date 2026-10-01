@@ -314,11 +314,15 @@
                 </div>
               </div>
 
-              <div class="nutrition-summary-meta">
-                <p class="nutrition-summary-weight" id="view-total-weight" data-i18n="weightMissing">Вага готової страви не вказана</p>
-                <p class="nutrition-summary-note" id="view-nutrition-note" data-i18n="nutritionRaw">
+              <div class="nutrition-hint">
+                <button type="button" class="nutrition-hint__trigger" aria-label="Пояснення КБЖУ" data-i18n-aria="nutritionHint" aria-describedby="view-nutrition-note"><i aria-hidden="true">i</i></button>
+                <p class="nutrition-hint__text" id="view-nutrition-note" role="tooltip" data-i18n="nutritionRaw">
                   Сума сирих інгредієнтів. Вкажіть вагу готової страви, щоб побачити КБЖУ на 100 г.
                 </p>
+              </div>
+
+              <div class="nutrition-summary-meta">
+                <p class="nutrition-summary-weight" id="view-total-weight" data-i18n="weightMissing">Вага готової страви не вказана</p>
               </div>
 
             </div>
