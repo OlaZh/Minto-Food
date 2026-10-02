@@ -46,7 +46,7 @@ import {
     { tab: 'week', href: 'week-menu.html', label: t('navWeek') },
     { tab: 'recipes', href: 'recipes.html', label: t('navRecipes') },
     { tab: 'shopping', href: 'shopping-list.html', label: t('navShopping') },
-    { tab: 'cookbook', href: 'cookbook.html', label: t('navCookbook') },
+    { tab: 'cookbook', href: 'cookbook.html', label: t('navBooks') },
     { tab: 'more', href: null, label: t('navMore') },
   ];
 
