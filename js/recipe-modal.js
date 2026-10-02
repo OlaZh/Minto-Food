@@ -41,6 +41,7 @@ let modalGeneration = 0;
 let convertingSaved = false;
 let modalAuthUserId;
 let imagePreviewUrl = null;
+const MAX_RECIPE_IMAGE_BYTES = 3 * 1024 * 1024;
 
 function clearImagePreview() {
   if (imagePreviewUrl) URL.revokeObjectURL(imagePreviewUrl);
@@ -52,6 +53,11 @@ function clearImagePreview() {
 }
 
 function updateImagePreview() {
+  const fileInput = document.getElementById('rm-image-file');
+  if (fileInput?.files?.[0]?.size > MAX_RECIPE_IMAGE_BYTES) {
+    showToast(t('rmImageTooLarge'), 'error');
+    fileInput.value = '';
+  }
   clearImagePreview();
   const image = document.getElementById('rm-image-preview');
   if (!image) return;
@@ -781,6 +787,10 @@ async function saveRecipe() {
   let imageIsNew = false;
 
   if (fileInput?.files?.[0]) {
+    if (fileInput.files[0].size > MAX_RECIPE_IMAGE_BYTES) {
+      showToast(t('rmImageTooLarge'), 'error');
+      return;
+    }
     finalImage = await toBase64(fileInput.files[0]);
     if (generation !== modalGeneration) return;
     imageIsNew = true;

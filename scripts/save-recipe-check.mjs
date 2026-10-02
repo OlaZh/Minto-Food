@@ -326,5 +326,33 @@ scenario = { original: { id: 42, user_id: 'user-1', status: 'published', name_ua
   assert('older clients leave existing classification untouched', !('type' in omitted.p_direct) && !('cooking_method' in omitted.p_direct));
 }
 
+// Inline photos: exact file-size boundary, including base64 padding, and no
+// moderation-rate-limit bypass. Existing photos remain intact on text edits.
+for (const extra of [0, 1, 2, 3]) {
+  for (const overLimit of [false, true]) {
+    scenario = { score: 0.1, overLimit };
+    calls.length = 0;
+    const image = 'data:image/jpeg;base64,' + Buffer.alloc(3 * 1024 * 1024 + extra).toString('base64');
+    const res = mockRes();
+    await handler({ method: 'POST', headers: { authorization: 'Bearer x' },
+      body: { recipe: { name_ua: 'Photo', steps: 'Mix', image }, isPublicSubmission: true, imageIsNew: false } }, res);
+    const saved = calls.find(c => c.url.endsWith('/rest/v1/recipes') && c.method === 'POST');
+    if (extra === 0) {
+      assert(`3 MiB photo saves unchanged (moderation limit=${overLimit})`, res._status === 200 && JSON.parse(saved?.body || '{}').image === image);
+    } else {
+      assert(`3 MiB + ${extra} bytes rejected (moderation limit=${overLimit})`, res._status === 413 && res._json?.error === 'image_too_large');
+      assert('oversized photo cannot write a recipe or spend a moderation call', !saved && !calls.some(c => c.url.includes('sightengine.com')));
+    }
+  }
+}
+{
+  const image = 'data:image/jpeg;base64,' + Buffer.alloc(3 * 1024 * 1024 + 1).toString('base64');
+  scenario = { original: { id: 42, user_id: 'user-1', status: 'draft', image } };
+  const res = mockRes();
+  await handler({ method: 'POST', headers: { authorization: 'Bearer x' },
+    body: { recipe: { name_ua: 'Updated text', image }, editingRecipeId: 42 } }, res);
+  assert('unchanged legacy photo remains intact on text edits', res._status === 200 && res._json.recipe.image === image);
+}
+
 console.log(`\n${passed} passed, ${failed} failed`);
 process.exit(failed ? 1 : 0);

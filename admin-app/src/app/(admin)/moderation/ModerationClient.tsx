@@ -9,6 +9,7 @@ import ModerationReasonDialog, { type ModerationReason } from '@/components/mode
 import { approveRecipe, rejectRecipe, banUser, addStrike, clearImageFlag, rejectImage } from '@/app/actions/moderation'
 import { detectFlags } from '@/lib/autoFlag'
 import AutoFlagBadges from '@/components/moderation/AutoFlagBadges'
+import { DownloadRecipeImage } from '@/components/recipes/ImageUpload'
 
 type ModerationAuthor = {
   id: string
@@ -144,6 +145,7 @@ export default function ModerationClient({
                     {stepsCount > 0 && <span>{stepsCount} кроків</span>}
                     <span suppressHydrationWarning>{recipe.created_at?.slice(0, 10)}</span>
                   </div>
+                  {reviewImage && <DownloadRecipeImage image={reviewImage} className="mt-2" />}
                   {author && (
                     <div className="flex gap-x-3 mt-0.5 text-xs text-gray-400">
                       <span>{author.recipe_count ?? 0} рецептів</span>

@@ -35,7 +35,7 @@ const SERVICE_KEY  = process.env.SUPABASE_SERVICE_ROLE_KEY;
 // Roadmap said "> 0.8"; we flag at ">= threshold" — the stricter reading, so a
 // borderline photo scoring exactly 0.8 is queued rather than auto-published.
 const NSFW_THRESHOLD = Number(process.env.IMAGE_NSFW_THRESHOLD || '0.8');
-const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
+const MAX_IMAGE_BYTES = 3 * 1024 * 1024;
 
 // Rate limit on provider calls per user, to protect the moderation quota from a
 // single authenticated abuser. Over the limit we DON'T call the provider — the
@@ -163,11 +163,6 @@ async function scoreImage(image) {
     if (!m || m[1].replace(/\s/g, '').length < 16) {
       return { flagged: false, score: null, provider: 'invalid', raw: { note: 'unscorable data URI' } };
     }
-    if (image.length * 0.75 > MAX_IMAGE_BYTES) {
-      const err = new Error('image too large');
-      err.tooLarge = true;
-      throw err;
-    }
   } else if (!/^https?:\/\//i.test(image)) {
     // A non-empty value that is neither a data URI nor an http(s) URL is not a
     // real image — mark it 'invalid' so the handler rejects it (we won't store
@@ -236,8 +231,8 @@ function finalizeReservation(reservation, recipeId, provider, score, decision, r
   }, { Prefer: 'return=minimal' }).catch((err) => console.error('finalize_moderation_slot failed:', err));
 }
 
-// Release a reserved slot when the request aborts before saving (invalid/too
-// large) — rewrite it as a terminal error row so it still counts as usage but
+// Release a reserved slot when an invalid photo aborts the request before
+// saving — rewrite it as a terminal error row so it still counts as usage but
 // carries no recipe.
 function releaseReservation(reservation, decision, note) {
   if (!reservation || reservation === 'unreserved') return Promise.resolve();
@@ -331,6 +326,16 @@ export default async function handler(req, res) {
     ? newPhoto.length > 0
     : newPhoto !== ((original.image ?? '').trim());
 
+  // Check the original file size, excluding the data URI header and base64
+  // padding. Enforce this even when moderation is rate-limited.
+  if (imageIsNew && /^data:image\/[^;,]+;base64,/i.test(newPhoto)) {
+    const encoded = newPhoto.slice(newPhoto.indexOf(',') + 1).replace(/\s/g, '');
+    const padding = encoded.endsWith('==') ? 2 : encoded.endsWith('=') ? 1 : 0;
+    if (Math.floor(encoded.length * 3 / 4) - padding > MAX_IMAGE_BYTES) {
+      return res.status(413).json({ error: 'image_too_large' });
+    }
+  }
+
   // Shadow-banned authors always go to the queue.
   const profile = (await rest('GET', `profiles?id=eq.${uid}&select=is_shadow_banned`))?.[0];
   const isShadowBanned = profile?.is_shadow_banned === true;
@@ -350,7 +355,6 @@ export default async function handler(req, res) {
       try {
         moderation = await scoreImage(fields.image);
       } catch (err) {
-        if (err.tooLarge) { await releaseReservation(reservation, 'error', 'too_large'); return res.status(413).json({ error: 'image_too_large' }); }
         console.error('Image moderation failed:', err);
         moderation = { flagged: false, score: null, provider: 'error', raw: { message: String(err).slice(0, 200) } };
       }

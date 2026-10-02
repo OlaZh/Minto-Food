@@ -11,6 +11,12 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  experimental: {
+    serverActions: {
+      // A 3 MiB photo takes 4 MiB in base64; leave room for the recipe fields.
+      bodySizeLimit: 4_400_000,
+    },
+  },
   async headers() {
     return [
       {

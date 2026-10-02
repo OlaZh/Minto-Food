@@ -83,6 +83,7 @@ export default function RecipeForm({ recipe, initialIngredients = [] }: RecipeFo
     isEdit ? recipeTagCodes : null
   )
   const [saving, setSaving] = useState(false)
+  const [imageReading, setImageReading] = useState(false)
 
   const { register, control, handleSubmit, setValue } = useForm<FormValues>({
     defaultValues: {
@@ -211,6 +212,7 @@ export default function RecipeForm({ recipe, initialIngredients = [] }: RecipeFo
   }
 
   async function onSubmit(data: FormValues) {
+    if (imageReading || saving) return
     if (!data.name_ua.trim()) { toast.error('Назва (UA) обовʼязкова'); return }
     if (ingredients.some(i => !i.product_id)) {
       toast.error('Деякі інгредієнти не мають продукту'); return
@@ -249,7 +251,7 @@ export default function RecipeForm({ recipe, initialIngredients = [] }: RecipeFo
         recipe_yield: toNum(data.recipe_yield),
         status: data.status,
         is_public: data.is_public,
-        image: data.image || undefined,
+        image: isEdit && data.image === recipe.image ? undefined : data.image || undefined,
         available_locales: data.available_locales,
         publish_at: data.publish_at ? new Date(data.publish_at).toISOString() : null,
         author_profile_id: data.author_profile_id || null,
@@ -265,6 +267,8 @@ export default function RecipeForm({ recipe, initialIngredients = [] }: RecipeFo
         toast.success(isEdit ? 'Рецепт оновлено' : 'Рецепт створено')
         router.push('/recipes')
       }
+    } catch {
+      toast.error('Не вдалося зберегти рецепт. Спробуйте ще раз.')
     } finally {
       setSaving(false)
     }
@@ -281,7 +285,7 @@ export default function RecipeForm({ recipe, initialIngredients = [] }: RecipeFo
           <Button type="button" variant="outline" size="sm" onClick={() => router.back()}>
             Скасувати
           </Button>
-          <Button type="submit" size="sm" disabled={saving}>
+          <Button type="submit" size="sm" disabled={saving || imageReading}>
             {saving && <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />}
             {isEdit ? 'Зберегти' : 'Створити'}
           </Button>
@@ -563,6 +567,8 @@ export default function RecipeForm({ recipe, initialIngredients = [] }: RecipeFo
                 <ImageUpload
                   currentUrl={field.value || null}
                   onUpload={field.onChange}
+                  onReadingChange={setImageReading}
+                  disabled={saving}
                 />
               )}
             />

@@ -4,6 +4,7 @@ import { assertAdmin } from '@/lib/admin'
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import type { IngredientRow } from '@/lib/types'
+import { isRecipeImageTooLarge, IMAGE_TOO_LARGE_MESSAGE } from '@/lib/recipe-image'
 
 export interface RecipePayload {
   name_ua: string
@@ -45,6 +46,8 @@ export async function createRecipe(
   const supabase = await createClient()
   await assertAdmin(supabase)
 
+  if (isRecipeImageTooLarge(payload.image)) return { error: IMAGE_TOO_LARGE_MESSAGE }
+
   const { data: recipe, error } = await supabase
     .from('recipes')
     .insert({ ...payload, user_id: null })
@@ -68,6 +71,8 @@ export async function updateRecipe(
 ): Promise<{ ok: true } | { error: string }> {
   const supabase = await createClient()
   await assertAdmin(supabase)
+
+  if (isRecipeImageTooLarge(payload.image)) return { error: IMAGE_TOO_LARGE_MESSAGE }
 
   const { error } = await supabase
     .from('recipes')
