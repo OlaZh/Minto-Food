@@ -71,6 +71,13 @@ interface FormValues {
 
 function toNum(v: string) { return v ? parseFloat(v) : undefined }
 
+function normalizeSavedSteps(value: string | null | undefined) {
+  return (value ?? '')
+    .split(/\\n|\r?\n/)
+    .filter(step => step.trim())
+    .join('\n')
+}
+
 export default function RecipeForm({ recipe, initialIngredients = [] }: RecipeFormProps) {
   const router = useRouter()
   const isEdit = !!recipe
@@ -94,9 +101,9 @@ export default function RecipeForm({ recipe, initialIngredients = [] }: RecipeFo
       short_desc: recipe?.short_desc ?? '',
       short_desc_en: recipe?.short_desc_en ?? '',
       short_desc_pl: recipe?.short_desc_pl ?? '',
-      steps: recipe?.steps ?? '',
-      steps_en: recipe?.steps_en ?? '',
-      steps_pl: recipe?.steps_pl ?? '',
+      steps: normalizeSavedSteps(recipe?.steps),
+      steps_en: normalizeSavedSteps(recipe?.steps_en),
+      steps_pl: normalizeSavedSteps(recipe?.steps_pl),
       type: recipe?.type ?? '',
       category: recipe?.category ?? '',
       cuisine: recipe?.cuisine ?? '',
@@ -434,7 +441,11 @@ export default function RecipeForm({ recipe, initialIngredients = [] }: RecipeFo
               <span className="w-20 text-center">Одиниця</span>
               <span className="w-8" />
             </div>
-            <IngredientBuilder value={ingredients} onChange={setIngredients} />
+            <IngredientBuilder
+              value={ingredients}
+              onChange={setIngredients}
+              initialBulkText={initialIngredients.length ? '' : recipe?.ingredients ?? ''}
+            />
           </section>
 
           <Separator />

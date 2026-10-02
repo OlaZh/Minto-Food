@@ -14,6 +14,7 @@ import { UNITS } from '@/lib/types'
 interface IngredientBuilderProps {
   value: IngredientRow[]
   onChange: (rows: IngredientRow[]) => void
+  initialBulkText?: string
 }
 
 interface ParsedBulkIngredient {
@@ -371,8 +372,8 @@ function ProductSearch({
   )
 }
 
-export default function IngredientBuilder({ value, onChange }: IngredientBuilderProps) {
-  const [bulkText, setBulkText] = useState('')
+export default function IngredientBuilder({ value, onChange, initialBulkText = '' }: IngredientBuilderProps) {
+  const [bulkText, setBulkText] = useState(initialBulkText)
   const [isParsing, setIsParsing] = useState(false)
 
   function update(idx: number, patch: Partial<IngredientRow>) {
@@ -456,7 +457,6 @@ export default function IngredientBuilder({ value, onChange }: IngredientBuilder
         <Textarea
           value={bulkText}
           onChange={e => setBulkText(e.target.value)}
-          placeholder={`Інгредієнти для тіста:\nМолоко: 170 мл\nБорошно: 530 г\n\nДля начинки:\nСир: 150 г`}
           rows={6}
           className="min-h-[132px] resize-y"
         />

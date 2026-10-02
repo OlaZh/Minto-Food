@@ -39,6 +39,7 @@ export interface Recipe {
   short_desc: string | null
   short_desc_en: string | null
   short_desc_pl: string | null
+  ingredients: string | null
   steps: string | null
   steps_en: string | null
   steps_pl: string | null
