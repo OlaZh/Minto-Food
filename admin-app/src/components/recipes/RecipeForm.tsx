@@ -45,6 +45,9 @@ interface FormValues {
   short_desc: string
   short_desc_en: string
   short_desc_pl: string
+  ingredients: string
+  ingredients_en: string
+  ingredients_pl: string
   steps: string
   steps_en: string
   steps_pl: string
@@ -101,6 +104,9 @@ export default function RecipeForm({ recipe, initialIngredients = [] }: RecipeFo
       short_desc: recipe?.short_desc ?? '',
       short_desc_en: recipe?.short_desc_en ?? '',
       short_desc_pl: recipe?.short_desc_pl ?? '',
+      ingredients: recipe?.ingredients ?? '',
+      ingredients_en: recipe?.ingredients_en ?? '',
+      ingredients_pl: recipe?.ingredients_pl ?? '',
       steps: normalizeSavedSteps(recipe?.steps),
       steps_en: normalizeSavedSteps(recipe?.steps_en),
       steps_pl: normalizeSavedSteps(recipe?.steps_pl),
@@ -239,6 +245,9 @@ export default function RecipeForm({ recipe, initialIngredients = [] }: RecipeFo
         short_desc: data.short_desc || undefined,
         short_desc_en: data.short_desc_en || undefined,
         short_desc_pl: data.short_desc_pl || undefined,
+        ingredients: data.ingredients,
+        ingredients_en: data.ingredients_en,
+        ingredients_pl: data.ingredients_pl,
         steps: data.steps || undefined,
         steps_en: data.steps_en || undefined,
         steps_pl: data.steps_pl || undefined,
@@ -435,17 +444,39 @@ export default function RecipeForm({ recipe, initialIngredients = [] }: RecipeFo
                 Розрахувати КБЖУ
               </Button>
             </div>
-            <div className="text-xs text-gray-400 flex gap-4 font-medium px-8">
-              <span className="flex-1">Продукт</span>
-              <span className="w-20 text-center">Кількість</span>
-              <span className="w-20 text-center">Одиниця</span>
-              <span className="w-8" />
-            </div>
-            <IngredientBuilder
-              value={ingredients}
-              onChange={setIngredients}
-              initialBulkText={initialIngredients.length ? '' : recipe?.ingredients ?? ''}
-            />
+            <Tabs defaultValue="ua">
+              <TabsList className="h-8">
+                <TabsTrigger value="ua" className="text-xs h-7">UA</TabsTrigger>
+                <TabsTrigger value="en" className="text-xs h-7">EN</TabsTrigger>
+                <TabsTrigger value="pl" className="text-xs h-7">PL</TabsTrigger>
+              </TabsList>
+              <TabsContent value="ua" className="mt-3">
+                <div className="text-xs text-gray-400 flex gap-4 font-medium px-8 mb-3">
+                  <span className="flex-1">Продукт</span>
+                  <span className="w-20 text-center">Кількість</span>
+                  <span className="w-20 text-center">Одиниця</span>
+                  <span className="w-8" />
+                </div>
+                <Controller
+                  name="ingredients"
+                  control={control}
+                  render={({ field }) => (
+                    <IngredientBuilder
+                      value={ingredients}
+                      onChange={setIngredients}
+                      bulkText={field.value}
+                      onBulkTextChange={field.onChange}
+                    />
+                  )}
+                />
+              </TabsContent>
+              <TabsContent value="en" className="mt-3">
+                <Textarea {...register('ingredients_en')} aria-label="Інгредієнти (EN)" rows={6} className="min-h-[132px] resize-y" />
+              </TabsContent>
+              <TabsContent value="pl" className="mt-3">
+                <Textarea {...register('ingredients_pl')} aria-label="Інгредієнти (PL)" rows={6} className="min-h-[132px] resize-y" />
+              </TabsContent>
+            </Tabs>
           </section>
 
           <Separator />

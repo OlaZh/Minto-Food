@@ -8,6 +8,7 @@ import { initAuth, isLoggedIn, openAuthModal } from './auth.js';
 import { iconShare, iconPlate, iconLeaf, iconBookOpen, iconStar } from './icons.js';
 import { safeImageUrl } from './utils.js';
 import { getRecipeSource, renderSourcePanel } from './recipe-sources.js';
+import { getRecipeDisplayIngredients, getRecipeDisplaySteps } from './recipe-utils.js';
 
 const CATEGORY_LABELS = {
   breakfast: 'Сніданок', lunch: 'Обід',    dinner: 'Вечеря',
@@ -122,7 +123,7 @@ async function init() {
   // Отримуємо рецепт по slug
   const { data: recipe, error } = await supabase
     .from('recipes')
-    .select('id, name_ua, name_en, name_pl, slug, image, kcal, protein, fat, carbs, steps, steps_en, steps_pl, category, user_id, created_at, prep_time_min, cook_time_min, total_time_min, recipe_yield')
+    .select('id, name_ua, name_en, name_pl, slug, image, kcal, protein, fat, carbs, ingredients, ingredients_en, ingredients_pl, steps, steps_en, steps_pl, category, user_id, created_at, prep_time_min, cook_time_min, total_time_min, recipe_yield')
     .eq('slug', _slug)
     .eq('status', 'published')
     .is('deleted_at', null)
@@ -227,25 +228,31 @@ function _renderRecipe(recipe, authorName, ingredients) {
       </div>
     </div>` : '';
 
-  const ingsHtml = ingredients.length
+  const ingredientLines = getRecipeDisplayIngredients(recipe, _getLang())
+    .split(/\r?\n/).map(line => line.trim()).filter(Boolean);
+  const ingredientRows = ingredientLines.length
+    ? ingredientLines.map(name => ({ name, amount: '' }))
+    : ingredients.map(i => {
+      const ing = i.ingredient ?? {};
+      const lang = _getLang();
+      const name =
+        (lang === 'pl' && ing.name_pl) ? ing.name_pl :
+        (lang === 'en' && ing.name_en) ? ing.name_en :
+        ing.name_ua || ing.name_en || '—';
+      // Show a measure only when one is present (e.g. "to taste" has no amount).
+      const amount = (i.amount != null && i.amount !== '')
+        ? `${i.amount}${i.unit || _t('gram')}`
+        : (i.unit || '');
+      return { name, amount };
+    });
+  const ingsHtml = ingredientRows.length
     ? `<h2 class="rp-h2">${_t('ingredients')}</h2>
        <ul class="rp-ings">
-         ${ingredients.map(i => {
-           const ing = i.ingredient ?? {};
-           const lang = _getLang();
-           const ingName =
-             (lang === 'pl' && ing.name_pl) ? ing.name_pl :
-             (lang === 'en' && ing.name_en) ? ing.name_en :
-             ing.name_ua || ing.name_en || '—';
-           // Показуємо міру лише коли є кількість. Інакше (напр. "за смаком")
-           // нічого не показуємо замість фейкового "1 шт"/"null г".
-           const amountLabel = (i.amount != null && i.amount !== '')
-             ? `${i.amount}${i.unit || _t('gram')}`
-             : (i.unit || '');
+         ${ingredientRows.map(i => {
            return `<li class="rp-ing">
              <span class="rp-ing__dot"></span>
-             <span>${_esc(ingName)}</span>
-             <span class="rp-ing__amount">${_esc(amountLabel)}</span>
+             <span>${_esc(i.name)}</span>
+             <span class="rp-ing__amount">${_esc(i.amount)}</span>
            </li>`;
          }).join('')}
        </ul>`
@@ -433,9 +440,7 @@ function _getLocalizedName(recipe, lang) {
 
 // steps = UA (база), steps_pl/steps_en — переклади; фолбек на UA
 function _getLocalizedSteps(recipe, lang) {
-  if (lang === 'pl') return recipe.steps_pl || recipe.steps || '';
-  if (lang === 'en') return recipe.steps_en || recipe.steps || '';
-  return recipe.steps || '';
+  return getRecipeDisplaySteps(recipe, lang);
 }
 
 function _getCategoryLabel(category, lang) {
@@ -485,8 +490,10 @@ function _setMeta(attr, key, value) {
 // ── SEO: Schema.org JSON-LD ───────────────────────────────────
 
 function _injectSchemaOrg(recipe, authorName, ingredients) {
-  const name  = recipe.name_ua || recipe.name_en || 'Рецепт';
-  const steps = (recipe.steps || '').split(/\\n|\n/).map(s => s.replace(/^\d+\.\s*/, '').trim()).filter(Boolean);
+  const lang = _getLang();
+  const name = _getLocalizedName(recipe, lang);
+  const ingredientText = getRecipeDisplayIngredients(recipe, lang);
+  const steps = getRecipeDisplaySteps(recipe, lang).split(/\\n|\n/).map(s => s.replace(/^\d+\.\s*/, '').trim()).filter(Boolean);
 
   const schema = {
     '@context': 'https://schema.org',
@@ -495,24 +502,29 @@ function _injectSchemaOrg(recipe, authorName, ingredients) {
     ...(_safeImage(recipe.image) && { image: [_safeImage(recipe.image)] }),
     author:     { '@type': 'Person', name: authorName || 'Minto' },
     ...(recipe.created_at && { datePublished: recipe.created_at.slice(0, 10) }),
-    description: _buildDescription(recipe, authorName, 'uk'),
+    description: _buildDescription(recipe, authorName, lang),
     ...(recipe.prep_time_min  && { prepTime:  `PT${recipe.prep_time_min}M`  }),
     ...(recipe.cook_time_min  && { cookTime:  `PT${recipe.cook_time_min}M`  }),
     ...(recipe.total_time_min && { totalTime: `PT${recipe.total_time_min}M` }),
     ...(recipe.recipe_yield   && { recipeYield: String(recipe.recipe_yield) }),
     ...(recipe.category && { recipeCategory: CATEGORY_LABELS[recipe.category] ?? recipe.category }),
     recipeCuisine: 'Ukrainian',
-    recipeIngredient: ingredients.map(i => {
-      const n = i.ingredient?.name_ua || i.ingredient?.name_en || '';
-      const amountLabel = (i.amount != null && i.amount !== '')
-        ? `${i.amount}${i.unit || 'г'}`
-        : (i.unit || '');
-      return `${amountLabel} ${n}`.trim();
-    }),
+    recipeIngredient: ingredientText.trim()
+      ? ingredientText.split(/\r?\n/).map(line => line.trim()).filter(Boolean)
+      : ingredients.map(i => {
+        const product = i.ingredient ?? {};
+        const n = (lang === 'pl' && product.name_pl) ? product.name_pl
+          : (lang === 'en' && product.name_en) ? product.name_en
+          : product.name_ua || product.name_en || '';
+        const amountLabel = (i.amount != null && i.amount !== '')
+          ? `${i.amount}${i.unit || _t('gram')}`
+          : (i.unit || '');
+        return `${amountLabel} ${n}`.trim();
+      }),
     recipeInstructions: steps.map((text, idx) => ({
       '@type':    'HowToStep',
       position:   idx + 1,
-      name:       `Крок ${idx + 1}`,
+      name:       `${lang === 'en' ? 'Step' : lang === 'pl' ? 'Krok' : 'Крок'} ${idx + 1}`,
       text,
     })),
     ...(recipe.kcal != null && {

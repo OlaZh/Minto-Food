@@ -14,7 +14,8 @@ import { UNITS } from '@/lib/types'
 interface IngredientBuilderProps {
   value: IngredientRow[]
   onChange: (rows: IngredientRow[]) => void
-  initialBulkText?: string
+  bulkText: string
+  onBulkTextChange: (text: string) => void
 }
 
 interface ParsedBulkIngredient {
@@ -372,8 +373,7 @@ function ProductSearch({
   )
 }
 
-export default function IngredientBuilder({ value, onChange, initialBulkText = '' }: IngredientBuilderProps) {
-  const [bulkText, setBulkText] = useState(initialBulkText)
+export default function IngredientBuilder({ value, onChange, bulkText, onBulkTextChange }: IngredientBuilderProps) {
   const [isParsing, setIsParsing] = useState(false)
 
   function update(idx: number, patch: Partial<IngredientRow>) {
@@ -426,7 +426,6 @@ export default function IngredientBuilder({ value, onChange, initialBulkText = '
 
       const unresolvedCount = rows.filter(row => row.product_id === 0).length
       onChange([...value, ...rows])
-      setBulkText('')
 
       if (unresolvedCount > 0) {
         toast.warning(`Розпізнано частково: ${unresolvedCount} рядк. потрібно виправити вручну`)
@@ -456,7 +455,8 @@ export default function IngredientBuilder({ value, onChange, initialBulkText = '
         </div>
         <Textarea
           value={bulkText}
-          onChange={e => setBulkText(e.target.value)}
+          onChange={e => onBulkTextChange(e.target.value)}
+          aria-label="Інгредієнти (UA)"
           rows={6}
           className="min-h-[132px] resize-y"
         />

@@ -13,6 +13,9 @@ export interface RecipePayload {
   short_desc?: string
   short_desc_en?: string
   short_desc_pl?: string
+  ingredients?: string
+  ingredients_en?: string
+  ingredients_pl?: string
   steps?: string
   steps_en?: string
   steps_pl?: string

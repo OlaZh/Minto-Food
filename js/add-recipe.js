@@ -4,7 +4,7 @@ import { initAuth } from './auth.js';
 import { showToast, escapeHTML, safeImageUrl, withButtonLoading } from './utils.js';
 import { getLang } from './storage.js';
 import { i18n } from './i18n.js';
-import { getRecipeDisplayName } from './recipe-utils.js';
+import { getRecipeDisplayName, getRecipeDisplayIngredients, getRecipeDisplaySteps } from './recipe-utils.js';
 import { lockScroll, unlockScroll } from './scroll-lock.js';
 import { showLoading, showConfirmModal } from './ui-components.js';
 import { initRecipeModal, openRecipeModal, openRecipeModalForEdit } from './recipe-modal.js';
@@ -1122,8 +1122,9 @@ export async function openRecipeView(recipeId) {
     // Показуємо текст автора як є, але розкладаємо назву зліва / міру справа.
     // parseFoodInput надійно витягує число+одиницю незалежно від розділювача
     // ("молоко 1 л", "молоко — 1 л", "300 г борошна").
-    if (recipe.ingredients) {
-      const ingLines = recipe.ingredients.split('\n').filter((l) => l.trim().length > 0);
+    const ingredientsText = getRecipeDisplayIngredients(recipe);
+    if (ingredientsText.trim()) {
+      const ingLines = ingredientsText.split('\n').filter((l) => l.trim().length > 0);
       ingLines.forEach((line) => {
         const { name, measure } = splitIngredientLine(line.trim());
         if (!name) return;
@@ -1171,7 +1172,7 @@ export async function openRecipeView(recipeId) {
   if (stepsContainer) {
     stepsContainer.innerHTML = '';
 
-    const stepLines = (recipe.steps || '')
+    const stepLines = getRecipeDisplaySteps(recipe)
       .split('\n')
       .map((s) => s.trim())
       .filter((s) => /[a-zA-Zа-яА-ЯіїєґІЇЄҐ0-9]/.test(s));
