@@ -62,11 +62,13 @@ export default async function handler(req, res) {
   // включно з health-даними (user_profiles, meals, water, weight_records, user_activities)
   let profile, healthProfile, recipes, cookbooks, meals, water, weekMeals,
       weightRecords, userActivities, streaks, shoppingLists, shoppingItems, gdprRequests,
-      scannedCorrections, scannedNameCorrections, pendingUpdates, recipeReports;
+      scannedCorrections, scannedNameCorrections, pendingUpdates, recipeReports,
+      recipeRatings, apiRateLimits;
   try {
     [profile, healthProfile, recipes, cookbooks, meals, water, weekMeals,
      weightRecords, userActivities, streaks, shoppingLists, shoppingItems, gdprRequests,
-     scannedCorrections, scannedNameCorrections, pendingUpdates, recipeReports] = await Promise.all([
+     scannedCorrections, scannedNameCorrections, pendingUpdates, recipeReports,
+     recipeRatings, apiRateLimits] = await Promise.all([
       query('profiles', `id=eq.${uid}`, SERVICE_KEY),
       query('user_profiles', uidFilter, SERVICE_KEY),
       query('recipes',  `${uidFilter}&deleted_at=is.null`, SERVICE_KEY),
@@ -84,6 +86,8 @@ export default async function handler(req, res) {
       query('scanned_product_name_corrections', uidFilter, SERVICE_KEY),
       query('recipe_pending_updates', uidFilter, SERVICE_KEY),
       query('recipe_reports', uidFilter, SERVICE_KEY),
+      query('recipe_ratings', uidFilter, SERVICE_KEY),
+      query('api_rate_limits', uidFilter, SERVICE_KEY),
     ]);
   } catch (err) {
     console.error('GDPR export failed:', err);
@@ -116,6 +120,8 @@ export default async function handler(req, res) {
     scanned_product_name_corrections: scannedNameCorrections,
     recipe_pending_updates: pendingUpdates,
     recipe_reports: recipeReports,
+    recipe_ratings: recipeRatings,
+    api_rate_limits: apiRateLimits,
   };
 
   res.setHeader('Content-Type', 'application/json; charset=utf-8');

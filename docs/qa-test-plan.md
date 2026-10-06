@@ -401,12 +401,12 @@
 ### GDPR export — поточний контракт
 
 - [ ] **GDPR-01:** download має ім'я `mintofood-export-XXXXXXXX.json`, `Content-Type: application/json`, `Cache-Control: no-store`.
-- [ ] **GDPR-02:** export містить `exported_at`, `user_id`, `email`, `profile`, `health_profile`, `recipes`, `cookbooks`, `meals`, `water`, `week_meals`, `weight_records`, `activities`, `streaks`, `shopping_lists`, `shopping_items`, `gdpr_requests`, `scanned_product_corrections`, `scanned_product_name_corrections`, `recipe_pending_updates`, `recipe_reports`.
+- [ ] **GDPR-02:** export містить `exported_at`, `user_id`, `email`, `profile`, `health_profile`, `recipes`, `cookbooks`, `meals`, `water`, `week_meals`, `weight_records`, `activities`, `streaks`, `shopping_lists`, `shopping_items`, `gdpr_requests`, `scanned_product_corrections`, `scanned_product_name_corrections`, `recipe_pending_updates`, `recipe_reports`, `recipe_ratings`, `api_rate_limits`.
 - [ ] **GDPR-03:** у `gdpr_requests` створено `type='export'`, `status='completed'`; failed export не повертає частковий JSON як success.
 
 ### GDPR export — блокери до повного PASS
 
-- **BLOCKED-GDPR-01:** `recipe_ratings` і `api_rate_limits` уже user-linked та очищаються hard-delete v3, але `gdpr-export.js` їх не експортує.
+- **BLOCKED-GDPR-01 — FIXED LOCAL, 06.10.2026:** після погодження користувачкою `gdpr-export.js` додає секції `recipe_ratings` і `api_rate_limits`, обидві з фільтром `user_id` власника перевіреного токена. `node --no-warnings --test scripts/gdpr-export-check.mjs` — 5/5 PASS: власник, відхилення відсутнього/невалідного токена та відмова від часткового експорту при помилці кожної нової таблиці. Запити Supabase імітовані; deployment і GDPR-04 на реальних рядках ще не підтверджені.
 - **DECISION-GDPR-01:** погодити й задокументувати export/retention для `cookbook_recipes`, recipe ingredient relations, `image_moderation_log`, archived recipes (`deleted_at != null`) і admin audit data. До цього не писати “експорт містить усі персональні дані”.
 - [ ] **GDPR-04:** після погодженого виправлення повторити export і підтвердити нові секції реальними seeded rows.
 
