@@ -1,10 +1,9 @@
 // =============================================================
-// Генератор брендових іконок MintoFood — "матове скло + пульс-М"
-// (стиль затверджено 18.07.2026 за референсом власниці)
+// Генератор брендових іконок Minto Food і зображення для посилань
 //
 // Запуск:  node scripts/gen-icons.mjs
 // Пише в img/: favicon.ico (16/32/48), favicon-32.png,
-//   apple-touch-icon.png (180), icon-192.png, icon-512.png,
+//   apple-touch-icon.png (180), icon-192.png, icon-512.png, icon-maskable-512.png,
 //   og-default.png (1200x630)
 //
 // sharp береться з admin-app/node_modules (окремо не ставити).
@@ -70,6 +69,17 @@ const bigIcon = `
   <text x="262" y="469" text-anchor="middle"
         font-family="'Segoe UI',Verdana,sans-serif" font-size="30"
         font-weight="400" letter-spacing="20" fill="${OUTLINE}">FOOD</text>
+</svg>`;
+
+// Беремо листок зі світлого логотипа і тримаємо його в безпечному колі маски.
+const logoArtwork = fs.readFileSync(path.join(OUT, 'logo-light.svg'), 'utf8')
+  .match(/<svg\b[^>]*>([\s\S]*?)<\/svg>/)[1];
+const appIcon = (radius) => `
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="${radius}" fill="#2c5b47"/>
+  <svg x="104" y="131" width="304" height="250" viewBox="2208 0 1824 1500" overflow="hidden">
+    ${logoArtwork}
+  </svg>
 </svg>`;
 
 // Малі фавікони: 1-в-1 SVG фавікона Minto Fit (наданий власницею 18.07.2026);
@@ -164,8 +174,9 @@ const frames = [
 fs.writeFileSync(path.join(OUT, 'favicon.ico'), buildIco(frames));
 fs.writeFileSync(path.join(OUT, 'favicon-32.png'), frames[1].buf);
 fs.writeFileSync(path.join(OUT, 'apple-touch-icon.png'), await render(bigIcon, 180));
-fs.writeFileSync(path.join(OUT, 'icon-192.png'), await render(bigIcon, 192));
-fs.writeFileSync(path.join(OUT, 'icon-512.png'), await render(bigIcon, 512));
+fs.writeFileSync(path.join(OUT, 'icon-192.png'), await render(appIcon(116), 192));
+fs.writeFileSync(path.join(OUT, 'icon-512.png'), await render(appIcon(116), 512));
+fs.writeFileSync(path.join(OUT, 'icon-maskable-512.png'), await render(appIcon(0), 512));
 fs.writeFileSync(path.join(OUT, 'og-default.png'), await render(ogImage, 1200, 630));
 
 console.log('OK — img/ оновлено');
