@@ -72,6 +72,9 @@ let savedRecipeIdsCache = [];
 
 // Пошук/browsing state
 let searchCommunityShowAll = false;
+let recipeListRequestId = 0;
+let recipeSearchTimer;
+const RECIPE_SEARCH_DELAY_MS = 300;
 const SEARCH_PREVIEW_LIMIT = 4;
 
 // =============================================================
@@ -239,10 +242,29 @@ function initOwnFilter() {
 // 4. ЗАВАНТАЖЕННЯ ТА ВІДОБРАЖЕННЯ РЕЦЕПТІВ З SUPABASE
 // =============================================================
 
+function startRecipeListRequest() {
+  clearTimeout(recipeSearchTimer);
+  return ++recipeListRequestId;
+}
+
 function showRecipesLoading() {
-  const grid = document.getElementById('community-grid');
-  if (!grid) return;
-  grid.innerHTML = `<p class="recipe-loading" role="status">${t('loading')}</p>`;
+  document.querySelectorAll('#recipesCatalog > .recipe-section').forEach((section) => {
+    section.hidden = true;
+  });
+  const status = document.getElementById('recipes-empty-state');
+  status.hidden = false;
+  status.innerHTML = `<p class="recipe-loading" role="status">${t('loading')}</p>`;
+}
+
+function showRecipesLoadError(error) {
+  console.error('Помилка завантаження рецептів:', error);
+  const status = document.getElementById('recipes-empty-state');
+  status.innerHTML = `
+    <div class="recipe-empty-state">
+      <div class="recipe-empty-state__icon">${iconAlert}</div>
+      <p class="recipe-empty-state__title">${t('recipesLoadError')}</p>
+      <p class="recipe-empty-state__text">${t('checkConnectionRetry')}</p>
+    </div>`;
 }
 
 function showRecipesWelcomeState() {
@@ -256,6 +278,7 @@ function showRecipesWelcomeState() {
   if (sectionSearchOwn)      sectionSearchOwn.hidden = true;
   if (sectionSearchCommunity)sectionSearchCommunity.hidden = true;
   if (sectionCommunity)      sectionCommunity.hidden = false;
+  document.getElementById('recipes-empty-state').hidden = true;
 
   if (communityGrid) {
     communityGrid.innerHTML = `
@@ -273,13 +296,19 @@ function showRecipesWelcomeState() {
 
 async function loadAndDisplayRecipes(force = false) {
   if (recipeParam) return;
-  const searchQuery = document.getElementById('recipe-search-input')?.value?.trim() || '';
+  const requestId = startRecipeListRequest();
+  const searchQuery = searchInput?.value.trim();
 
-  if (!force && !searchQuery && !hasActiveFilters()) {
+  if (searchQuery) {
+    showRecipesLoading();
+    return filterRecipes(searchQuery, requestId);
+  }
+
+  if (!force && !hasActiveFilters()) {
     showRecipesWelcomeState();
     if (!currentUser) {
       const { data: { user } } = await supabase.auth.getUser();
-      currentUser = user;
+      if (requestId === recipeListRequestId) currentUser = user;
     }
     return;
   }
@@ -290,6 +319,7 @@ async function loadAndDisplayRecipes(force = false) {
     data: { user },
   } = await supabase.auth.getUser();
 
+  if (requestId !== recipeListRequestId) return;
   currentUser = user;
 
   let query = supabase.from('recipes').select('*');
@@ -300,19 +330,13 @@ async function loadAndDisplayRecipes(force = false) {
 
   const { data, error } = await query;
 
+  if (requestId !== recipeListRequestId) return;
   if (error) {
-    console.error('Помилка завантаження рецептів:', error);
-    const grid = document.getElementById('community-grid');
-    if (grid) grid.innerHTML = `
-      <div class="recipe-empty-state">
-        <div class="recipe-empty-state__icon">${iconAlert}</div>
-        <p class="recipe-empty-state__title">${t('recipesLoadError')}</p>
-        <p class="recipe-empty-state__text">${t('checkConnectionRetry')}</p>
-      </div>`;
+    showRecipesLoadError(error);
     return;
   }
 
-  displayRecipes(data || [], false);
+  return displayRecipes(data || [], false, requestId);
 }
 
 function t(key) {
@@ -415,10 +439,14 @@ function hasActiveFilters() {
 }
 
 async function applyRecipeFilters() {
+  const requestId = startRecipeListRequest();
+  showRecipesLoading();
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
+  if (requestId !== recipeListRequestId) return;
+  currentUser = user;
   const statusFilter = user
     ? `status.eq.published,user_id.eq.${user.id}`
     : 'status.eq.published';
@@ -439,13 +467,13 @@ async function applyRecipeFilters() {
         return new Set((data || []).map((r) => r.recipe_id));
       }),
     );
+    if (requestId !== recipeListRequestId) return;
     tagMatchingIds = recipeSets[0];
     for (let i = 1; i < recipeSets.length; i++) {
       tagMatchingIds = new Set([...tagMatchingIds].filter((id) => recipeSets[i].has(id)));
     }
     if (tagMatchingIds.size === 0) {
-      displayRecipes([], false);
-      return;
+      return displayRecipes([], false, requestId);
     }
   }
 
@@ -466,7 +494,12 @@ async function applyRecipeFilters() {
   }
 
   const { data, error } = await query;
-  if (!error) displayRecipes(data || [], false);
+  if (requestId !== recipeListRequestId) return;
+  if (error) {
+    showRecipesLoadError(error);
+    return;
+  }
+  return displayRecipes(data || [], false, requestId);
 }
 
 function resetSearch() {
@@ -776,12 +809,15 @@ function buildRecipeCard(recipe, savedRecipeIds) {
 // 4.1 ВІДОБРАЖЕННЯ РЕЦЕПТІВ: browsing і search режими
 // =============================================================
 
-async function displayRecipes(recipes, isSearch = false) {
+async function displayRecipes(recipes, isSearch, requestId) {
   const sourceUserId = currentUser?.id;
+  const isCurrentRequest = () =>
+    requestId === recipeListRequestId && sourceUserId === currentUser?.id;
+
   await attachPrivateCovers(recipes);
-  if (sourceUserId !== currentUser?.id) return;
+  if (!isCurrentRequest()) return;
   await attachRatingSummaries(recipes);
-  if (sourceUserId !== currentUser?.id) return;
+  if (!isCurrentRequest()) return;
 
   // --- Завантажити збережені рецепти ---
   let savedRecipeIds = [];
@@ -792,7 +828,7 @@ async function displayRecipes(recipes, isSearch = false) {
       .eq('cookbooks.user_id', currentUser.id);
     if (savedData) savedRecipeIds = savedData.map((d) => d.recipe_id);
   }
-  if (sourceUserId !== currentUser?.id) return;
+  if (!isCurrentRequest()) return;
 
   // --- Показати/сховати секції залежно від режиму ---
   const sectionOwn = document.getElementById('section-own');
@@ -885,8 +921,9 @@ async function displayRecipes(recipes, isSearch = false) {
       ? t('collapse')
       : formatText('showAllCount', { count: communityResults.length });
     searchCommunityShowAllBtn.onclick = () => {
+      if (!isCurrentRequest()) return;
       searchCommunityShowAll = !searchCommunityShowAll;
-      displayRecipes(recipes, true);
+      displayRecipes(recipes, true, requestId);
     };
   }
 
@@ -1414,45 +1451,51 @@ const clearSearchBtn = document.getElementById('clear-search-btn');
 
 if (searchModeBtn) searchModeBtn.innerHTML = iconSearch;
 
-async function filterRecipes(query) {
+function normalizeRecipeSearchText(text) {
+  return text.normalize().replace(/[’ʼ]/g, "'");
+}
+
+async function filterRecipes(query, requestId) {
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // Будуємо запит з одним .or() для статусу — так само як applyRecipeFilters.
-  // Текстовий пошук робимо клієнтськи, щоб уникнути проблеми з двома .or() у Supabase JS,
-  // де другий виклик може перезаписати перший замість AND.
-  let dbQuery = supabase.from('recipes').select('*');
+  if (requestId !== recipeListRequestId) return;
+  currentUser = user;
+  let dbQuery = supabase.from('recipes').select('*').is('deleted_at', null);
 
   if (user) {
-    dbQuery = dbQuery.or(`status.eq.published,user_id.eq.${user.id}`);
+    dbQuery = dbQuery.or(`and(status.eq.published,is_public.is.true),user_id.eq.${user.id}`);
   } else {
-    dbQuery = dbQuery.eq('status', 'published');
+    dbQuery = dbQuery.eq('status', 'published').eq('is_public', true);
   }
 
   const { data, error } = await dbQuery;
 
+  if (requestId !== recipeListRequestId) return;
   if (error) {
-    console.error('Помилка пошуку:', error);
+    showRecipesLoadError(error);
     return;
   }
 
-  // Клієнтський текстовий фільтр
-  const q = query.toLowerCase();
-  const filtered = (data || []).filter((r) =>
-    (r.name_ua   || '').toLowerCase().includes(q) ||
-    (r.name_en   || '').toLowerCase().includes(q) ||
-    (r.name_pl   || '').toLowerCase().includes(q) ||
-    (r.ingredients || '').toLowerCase().includes(q)
-  );
+  const escapedQuery = normalizeRecipeSearchText(query).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const wordCharacters = '\\p{L}\\p{M}\\p{N}';
+  // Апостроф усередині слова з'єднує літери, а лапки навколо слова є межами.
+  const wordStart = `(?:^|[^${wordCharacters}']|(?:^|[^${wordCharacters}])')`;
+  const wordEnd = `(?=$|[^${wordCharacters}']|'(?:$|[^${wordCharacters}]))`;
+  const wholeWord = new RegExp(`${wordStart}${escapedQuery}${wordEnd}`, 'iu');
+  const filtered = (data || []).filter((recipe) => [
+    recipe.name_ua, recipe.name_en, recipe.name_pl,
+    recipe.ingredients, recipe.ingredients_en, recipe.ingredients_pl,
+  ].some((text) => text && wholeWord.test(normalizeRecipeSearchText(text))));
 
   searchCommunityShowAll = false;
-  displayRecipes(filtered, true);
+  return displayRecipes(filtered, true, requestId);
 }
 
 if (searchInput) {
   searchInput.addEventListener('input', () => {
-    const query = searchInput.value.trim().toLowerCase();
+    const query = searchInput.value.trim();
     if (clearSearchBtn) clearSearchBtn.style.display = query.length > 0 ? 'flex' : 'none';
 
     if (query.length > 0) {
@@ -1460,7 +1503,9 @@ if (searchInput) {
         searchModeBtn.innerHTML = iconGlobal;
         searchModeBtn.classList.add('is-active');
       }
-      filterRecipes(query);
+      const requestId = startRecipeListRequest();
+      showRecipesLoading();
+      recipeSearchTimer = setTimeout(() => filterRecipes(query, requestId), RECIPE_SEARCH_DELAY_MS);
     } else {
       if (searchModeBtn) {
         searchModeBtn.innerHTML = iconSearch;
@@ -1473,12 +1518,7 @@ if (searchInput) {
 
 if (clearSearchBtn) {
   clearSearchBtn.addEventListener('click', () => {
-    searchInput.value = '';
-    clearSearchBtn.style.display = 'none';
-    if (searchModeBtn) {
-      searchModeBtn.innerHTML = iconSearch;
-      searchModeBtn.classList.remove('is-active');
-    }
+    resetSearch();
     loadAndDisplayRecipes();
     searchInput.focus();
   });
