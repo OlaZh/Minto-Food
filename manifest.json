@@ -1,13 +1,13 @@
 {
-  "name": "MintoFood — харчові звички набувають форми",
+  "name": "Minto Food",
   "short_name": "MintoFood",
   "description": "Меню на день і тиждень, рецепти з КБЖУ, список покупок і путівник по продуктах.",
   "lang": "uk",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
-  "background_color": "#a6d6b8",
-  "theme_color": "#4ab584",
+  "background_color": "#18382b",
+  "theme_color": "#18382b",
   "icons": [
     {
       "src": "/img/icon-192.png",
