@@ -23,12 +23,20 @@
    ============================================================= */
 
 .page {
+  --page-background-image: url('/img/terms-botanical-bg.webp');
+
   min-height: 100vh;
   background:
     linear-gradient(rgba(7, 29, 20, 0.28), rgba(7, 29, 20, 0.42)),
-    url('/img/terms-botanical-bg.webp') center top / cover fixed;
+    var(--page-background-image) center top / cover fixed;
+  background-color: #18382b;
   display: flex;
   flex-direction: column;
+
+  // Портретний файл містить центральну частину оригіналу у форматі 2:3.
+  @media (max-width: 768px) and (max-aspect-ratio: 2/3) {
+    --page-background-image: url('/img/terms-botanical-bg-mobile.webp');
+  }
 }
 
 // Sticky footer: main grows to push footer to the bottom
