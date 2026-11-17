@@ -2,6 +2,17 @@
 // Підключається СИНХРОННО в <head> (без defer/async), щоб уникнути мигання.
 document.documentElement.classList.add('no-transition');
 
+if (document.currentScript?.hasAttribute('data-launch-splash')) {
+  const navigation = performance.getEntriesByType('navigation')[0];
+  const fromMinto = document.referrer.startsWith(location.origin + '/');
+  if (!fromMinto && navigation?.type !== 'back_forward') {
+    document.documentElement.classList.add('show-launch-splash');
+    window.addEventListener('pagehide', () => {
+      document.documentElement.classList.remove('show-launch-splash');
+    }, { once: true });
+  }
+}
+
 (function () {
   const theme = localStorage.getItem('theme');
   if (theme === 'dark') {

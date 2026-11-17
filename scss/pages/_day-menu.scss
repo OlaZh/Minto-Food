@@ -1,3 +1,41 @@
+/* ================= MOBILE LAUNCH SPLASH ================= */
+
+@media (prefers-reduced-motion: no-preference) {
+  @media (max-width: 768px), (pointer: coarse) and (max-width: 1024px) {
+    .show-launch-splash .launch-splash {
+      position: fixed;
+      inset: 0;
+      z-index: calc(var(--z-toast) + 1);
+      display: grid;
+      place-items: center;
+      background: inherit;
+      background-color: #18382b;
+      pointer-events: none;
+      animation: launch-splash-exit 1050ms ease-in-out both;
+    }
+
+    .show-launch-splash .launch-splash__logo {
+      display: block;
+      width: min(76vw, 29rem);
+      height: auto;
+      filter: drop-shadow(0 8px 18px rgba(7, 29, 20, 0.72));
+      animation: launch-splash-float 1050ms ease-in-out both;
+    }
+  }
+}
+
+@keyframes launch-splash-exit {
+  0%, 76% { opacity: 1; visibility: visible; }
+  100% { opacity: 0; visibility: hidden; }
+}
+
+@keyframes launch-splash-float {
+  0% { transform: translateY(7px) scale(0.96); }
+  43% { transform: translateY(-7px) scale(1.045); }
+  78% { transform: translateY(1px) scale(1); }
+  100% { transform: translateY(-2px) scale(1.01); }
+}
+
 /* ================= DAY WEEK NAV ================= */
 
 @media (min-width: 1025px) {
