@@ -52,14 +52,15 @@ export default async function ModerationPage({
   searchParams: Promise<{ status?: string | string[]; page?: string | string[] }>
 }) {
   const params = await searchParams
-  const filter: ModerationFilter = params.status === 'published' ? 'published' : 'review'
+  const status = params.status
+  const filter: ModerationFilter = status === 'published' || status === 'unpublished' ? status : 'review'
   const supabase = await createClient()
   const parsedPage = typeof params.page === 'string' ? Number.parseInt(params.page, 10) : 1
   const page = Number.isSafeInteger(parsedPage) && parsedPage > 0 ? parsedPage : 1
   const from = (page - 1) * PAGE_SIZE
   const to = from + PAGE_SIZE - 1
 
-  const activeRecipes = supabase
+  let query = supabase
     .from('recipes')
     .select(
       'id, slug, name_ua, name_en, image, status, created_at, category, user_id, kcal, steps, is_public, is_image_flagged, image_nsfw_score, has_pending_update',
@@ -67,12 +68,15 @@ export default async function ModerationPage({
     )
     .is('deleted_at', null)
 
-  // Flagged photos and staged edits still need review, including on live recipes.
-  const filteredRecipes = filter === 'published'
-    ? activeRecipes.eq('status', 'published')
-    : activeRecipes.or('status.eq.pending,is_image_flagged.eq.true,has_pending_update.eq.true')
+  if (filter === 'published') {
+    query = query.eq('status', 'published')
+  } else {
+    // The full queue includes flagged photos and staged edits on live recipes.
+    query = query.or('status.eq.pending,is_image_flagged.eq.true,has_pending_update.eq.true')
+    if (filter === 'unpublished') query = query.neq('status', 'published')
+  }
 
-  const { data: recipes, count } = await filteredRecipes
+  const { data: recipes, count } = await query
     .order('created_at', { ascending: false })
     .order('id', { ascending: false })
     .range(from, to)
