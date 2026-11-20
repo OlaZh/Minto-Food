@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import ModerationClient from './ModerationClient'
+import { moderationHref, type ModerationFilter } from './filters'
 
 type ModerationRecipeRow = {
   id: string
@@ -48,34 +49,42 @@ const PAGE_SIZE = 100
 export default async function ModerationPage({
   searchParams,
 }: {
-  searchParams: Promise<{ page?: string }>
+  searchParams: Promise<{ status?: string | string[]; page?: string | string[] }>
 }) {
   const params = await searchParams
+  const status = params.status
+  const filter: ModerationFilter = status === 'published' || status === 'unpublished' ? status : 'review'
   const supabase = await createClient()
-  const parsedPage = Number.parseInt(params.page ?? '1', 10)
-  const page = Number.isFinite(parsedPage) && parsedPage > 0 ? parsedPage : 1
+  const parsedPage = typeof params.page === 'string' ? Number.parseInt(params.page, 10) : 1
+  const page = Number.isSafeInteger(parsedPage) && parsedPage > 0 ? parsedPage : 1
   const from = (page - 1) * PAGE_SIZE
   const to = from + PAGE_SIZE - 1
 
-  // Queue = everything pending, PLUS any auto-flagged photo (even a private
-  // draft), PLUS any recipe with staged changes awaiting review
-  // (has_pending_update) — a clean new photo or edited name/steps on a published
-  // recipe must be visible to the admin, not silently stuck in the DB.
-  const { data: recipes, count } = await supabase
+  let query = supabase
     .from('recipes')
     .select(
       'id, slug, name_ua, name_en, image, status, created_at, category, user_id, kcal, steps, is_public, is_image_flagged, image_nsfw_score, has_pending_update',
       { count: 'exact' }
     )
-    .or('status.eq.pending,is_image_flagged.eq.true,has_pending_update.eq.true')
     .is('deleted_at', null)
+
+  if (filter === 'published') {
+    query = query.eq('status', 'published')
+  } else {
+    // The full queue includes flagged photos and staged edits on live recipes.
+    query = query.or('status.eq.pending,is_image_flagged.eq.true,has_pending_update.eq.true')
+    if (filter === 'unpublished') query = query.neq('status', 'published')
+  }
+
+  const { data: recipes, count } = await query
     .order('created_at', { ascending: false })
+    .order('id', { ascending: false })
     .range(from, to)
 
   const totalCount = count ?? 0
   const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE))
   if (page > totalPages) {
-    redirect(totalPages === 1 ? '/moderation' : `/moderation?page=${totalPages}`)
+    redirect(moderationHref(filter, totalPages))
   }
 
   const userIds = [...new Set((recipes ?? []).map((recipe: ModerationRecipeRow) => recipe.user_id).filter((value): value is string => Boolean(value)))]
@@ -155,6 +164,7 @@ export default async function ModerationPage({
   return (
     <ModerationClient
       recipes={enriched}
+      filter={filter}
       page={page}
       totalCount={totalCount}
       totalPages={totalPages}

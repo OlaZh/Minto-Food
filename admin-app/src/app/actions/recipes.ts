@@ -63,6 +63,7 @@ export async function createRecipe(
   await syncTags(recipe.id, selectedTagCodes)
 
   revalidatePath('/recipes')
+  revalidatePath('/moderation')
   return { id: recipe.id }
 }
 
@@ -88,6 +89,7 @@ export async function updateRecipe(
   await syncTags(id, selectedTagCodes)
 
   revalidatePath('/recipes')
+  revalidatePath('/moderation')
   revalidatePath(`/recipes/${id}/edit`)
   return { ok: true }
 }
@@ -148,6 +150,7 @@ export async function deleteRecipe(id: string): Promise<{ ok: true } | { error: 
     .eq('id', id)
   if (error) return { error: error.message }
   revalidatePath('/recipes')
+  revalidatePath('/moderation')
   return { ok: true }
 }
 
@@ -157,5 +160,6 @@ export async function publishScheduledRecipes(): Promise<{ count: number } | { e
   const { data, error } = await supabase.rpc('publish_scheduled_recipes')
   if (error) return { error: error.message }
   revalidatePath('/recipes')
+  revalidatePath('/moderation')
   return { count: data ?? 0 }
 }

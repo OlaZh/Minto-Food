@@ -4,14 +4,7 @@ import { Clock, Edit, Plus } from 'lucide-react'
 import { publishScheduledRecipes } from '@/app/actions/recipes'
 import { Button } from '@/components/ui/button'
 import { createClient } from '@/lib/supabase/server'
-
-const STATUS_LABELS: Record<string, { label: string; class: string }> = {
-  draft: { label: 'Чернетка', class: 'bg-gray-100 text-gray-600' },
-  scheduled: { label: 'Заплановано', class: 'bg-blue-100 text-blue-700' },
-  published: { label: 'Опубліковано', class: 'bg-green-100 text-green-700' },
-  pending: { label: 'На модерації', class: 'bg-yellow-100 text-yellow-700' },
-  rejected: { label: 'Відхилено', class: 'bg-red-100 text-red-700' },
-}
+import { RECIPE_STATUS_LABELS } from '@/lib/recipe-status'
 
 const STATUS_TABS = [
   { value: 'all', label: 'Всі' },
@@ -211,7 +204,7 @@ export default async function RecipesPage({
 
       <div className="divide-y divide-gray-100">
         {(recipes as RecipeRow[] | null)?.map(recipe => {
-          const status = STATUS_LABELS[recipe.status] ?? STATUS_LABELS.draft
+          const status = RECIPE_STATUS_LABELS[recipe.status] ?? RECIPE_STATUS_LABELS.draft
           const author = getAuthorProfile(recipe.author_profile)
           const recipeName = recipe.name_ua || recipe.name_en || recipe.name_pl || '(без назви)'
 
