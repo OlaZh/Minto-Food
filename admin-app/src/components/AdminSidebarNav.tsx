@@ -14,7 +14,6 @@ import {
   Package,
   ScanBarcode,
   SlidersHorizontal,
-  Shield,
   Tag,
   UserCheck,
   Users,
@@ -29,7 +28,6 @@ const editorialNav = [
 
 const moderationNav = [
   { href: '/reports', label: 'Скарги', icon: AlertTriangle },
-  { href: '/moderation', label: 'Модерація', icon: Shield },
   { href: '/users', label: 'Юзери', icon: Users },
   { href: '/products', label: 'Продукти', icon: Package },
   { href: '/scanned-products', label: 'Відскановані', icon: Barcode },
