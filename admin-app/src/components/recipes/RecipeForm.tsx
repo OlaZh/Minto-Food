@@ -14,7 +14,9 @@ import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Separator } from '@/components/ui/separator'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 
+import AuthorForm from '@/components/authors/AuthorForm'
 import ImageUpload from './ImageUpload'
 import StepsEditor from './StepsEditor'
 import IngredientBuilder from './IngredientBuilder'
@@ -23,8 +25,9 @@ import { createClient } from '@/lib/supabase/client'
 import { createRecipe, updateRecipe } from '@/app/actions/recipes'
 import { generateRecipeTags } from '@/lib/auto-tags'
 import { calculateNutrition } from '@/lib/nutrition'
+import { MINTO_FOOD_TEAM_AUTHOR, type RecipeAuthorOption } from '@/lib/recipe-authors'
 import type {
-  Recipe, IngredientRow, RecipeAuthorProfile, Product, Tag,
+  Recipe, IngredientRow, Product, Tag,
   RecipeStatus,
 } from '@/lib/types'
 import {
@@ -87,13 +90,15 @@ export default function RecipeForm({ recipe, initialIngredients = [] }: RecipeFo
   const recipeTagCodes = recipe?.tags?.map(tag => tag.code) ?? []
 
   const [ingredients, setIngredients] = useState<IngredientRow[]>(initialIngredients)
-  const [authors, setAuthors] = useState<RecipeAuthorProfile[]>([])
+  const [authors, setAuthors] = useState<RecipeAuthorOption[]>(recipe?.author_profile ? [recipe.author_profile] : [])
+  const [authorDialogOpen, setAuthorDialogOpen] = useState(false)
   const [allTags, setAllTags] = useState<Tag[]>([])
   const [manualSelectedTagCodes, setManualSelectedTagCodes] = useState<string[] | null>(
     isEdit ? recipeTagCodes : null
   )
   const [saving, setSaving] = useState(false)
   const [imageReading, setImageReading] = useState(false)
+  const teamAuthor = authors.find(author => author.slug === MINTO_FOOD_TEAM_AUTHOR.slug)
 
   const { register, control, handleSubmit, setValue } = useForm<FormValues>({
     defaultValues: {
@@ -128,7 +133,7 @@ export default function RecipeForm({ recipe, initialIngredients = [] }: RecipeFo
       is_public: recipe?.is_public ?? true,
       image: recipe?.image ?? '',
       publish_at: recipe?.publish_at ? recipe.publish_at.slice(0, 16) : '',
-      author_profile_id: recipe?.author_profile_id ?? '',
+      author_profile_id: recipe ? (recipe.author_profile_id ?? '') : MINTO_FOOD_TEAM_AUTHOR.slug,
     },
   })
 
@@ -142,10 +147,10 @@ export default function RecipeForm({ recipe, initialIngredients = [] }: RecipeFo
   useEffect(() => {
     async function load() {
       const supabase = createClient()
-      const [{ data: authorRows }, { data: tagRows }] = await Promise.all([
+      const [{ data: authorRows, error: authorError }, { data: tagRows }] = await Promise.all([
         supabase
           .from('recipe_author_profiles')
-          .select('*')
+          .select('id, display_name, slug')
           .order('display_name'),
         supabase
           .from('tags')
@@ -154,11 +159,20 @@ export default function RecipeForm({ recipe, initialIngredients = [] }: RecipeFo
           .in('type', ['dietary', 'lifestyle'])
           .order('code'),
       ])
-      setAuthors(authorRows ?? [])
+      if (authorRows) {
+        const loadedIds = new Set(authorRows.map(author => author.id))
+        setAuthors(current => [...authorRows, ...current.filter(author => !loadedIds.has(author.id))])
+      }
+      if (authorError) toast.error('Не вдалося завантажити список авторів')
       setAllTags(tagRows ?? [])
     }
     load()
   }, [])
+
+  function selectNewAuthor(author: RecipeAuthorOption) {
+    setAuthors(current => [...current.filter(existing => existing.id !== author.id), author])
+    setValue('author_profile_id', author.id, { shouldDirty: true })
+  }
 
   const suggestedTagCodes = generateRecipeTags(
     ingredients,
@@ -290,7 +304,7 @@ export default function RecipeForm({ recipe, initialIngredients = [] }: RecipeFo
     }
   }
 
-  return (
+  const recipeForm = (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-0">
       <div className="flex items-center justify-between px-8 py-4 border-b border-gray-200 bg-white sticky top-0 z-10">
         <div>
@@ -620,18 +634,37 @@ export default function RecipeForm({ recipe, initialIngredients = [] }: RecipeFo
 
           {/* Author */}
           <section className="space-y-3">
-            <h2 className="text-sm font-semibold text-gray-900 uppercase tracking-wide">Автор</h2>
-            <div className="space-y-1.5">
-              <select
-                {...register('author_profile_id')}
-                className="w-full h-9 text-sm border border-gray-200 rounded-md px-2 bg-white focus:outline-none focus:ring-2 focus:ring-ring"
-              >
-                <option value="">— Без автора —</option>
-                {authors.map(a => (
-                  <option key={a.id} value={a.id}>{a.display_name}</option>
-                ))}
-              </select>
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <Label htmlFor="author_profile_id" className="text-sm font-semibold text-gray-900 uppercase tracking-wide">
+                Автор
+              </Label>
+              <DialogTrigger render={
+                <Button type="button" size="sm" variant="outline" disabled={saving}>
+                  Додати автора
+                </Button>
+              } />
             </div>
+            <Controller
+              name="author_profile_id"
+              control={control}
+              render={({ field }) => (
+                <select
+                  {...field}
+                  value={field.value === teamAuthor?.id ? MINTO_FOOD_TEAM_AUTHOR.slug : field.value}
+                  id="author_profile_id"
+                  disabled={saving}
+                  className="w-full h-9 text-sm border border-gray-200 rounded-md px-2 bg-white focus:outline-none focus:ring-2 focus:ring-ring"
+                >
+                  {isEdit && <option value="">— Без автора —</option>}
+                  <option value={MINTO_FOOD_TEAM_AUTHOR.slug}>
+                    {teamAuthor?.display_name ?? MINTO_FOOD_TEAM_AUTHOR.display_name}
+                  </option>
+                  {authors.filter(author => author.id !== teamAuthor?.id).map(author => (
+                    <option key={author.id} value={author.id}>{author.display_name}</option>
+                  ))}
+                </select>
+              )}
+            />
           </section>
 
           <Separator />
@@ -752,6 +785,18 @@ export default function RecipeForm({ recipe, initialIngredients = [] }: RecipeFo
         </div>
       </div>
     </form>
+  )
+
+  return (
+    <Dialog open={authorDialogOpen} onOpenChange={setAuthorDialogOpen}>
+      {recipeForm}
+      <DialogContent className="max-h-[calc(100dvh-2rem)] max-w-md overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>Новий автор</DialogTitle>
+        </DialogHeader>
+        <AuthorForm onCreated={selectNewAuthor} onDone={() => setAuthorDialogOpen(false)} />
+      </DialogContent>
+    </Dialog>
   )
 }
 
