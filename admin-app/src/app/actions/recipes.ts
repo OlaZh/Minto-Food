@@ -4,6 +4,7 @@ import { assertAdmin } from '@/lib/admin'
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import type { IngredientRow } from '@/lib/types'
+import { MINTO_FOOD_TEAM_AUTHOR } from '@/lib/recipe-authors'
 import { isRecipeImageTooLarge, IMAGE_TOO_LARGE_MESSAGE } from '@/lib/recipe-image'
 
 export interface RecipePayload {
@@ -41,6 +42,30 @@ export interface RecipePayload {
   author_profile_id?: string | null
 }
 
+async function resolveAuthorProfileId(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  authorId: string | null | undefined,
+): Promise<{ id: string | null | undefined } | { error: string }> {
+  if (authorId !== MINTO_FOOD_TEAM_AUTHOR.slug) return { id: authorId }
+
+  const authors = supabase.from('recipe_author_profiles')
+  const findTeam = () => authors.select('id').eq('slug', MINTO_FOOD_TEAM_AUTHOR.slug).maybeSingle()
+  const { data: existing, error } = await findTeam()
+  if (error) return { error: error.message }
+  if (existing) return { id: existing.id }
+
+  const { error: createError } = await authors.upsert(
+    { ...MINTO_FOOD_TEAM_AUTHOR, is_virtual: true, is_editorial: true },
+    { onConflict: 'slug', ignoreDuplicates: true },
+  )
+  if (createError) return { error: createError.message }
+  revalidatePath('/authors')
+
+  const { data: team, error: lookupError } = await findTeam()
+  if (!team) return { error: lookupError?.message ?? 'Не вдалося знайти профіль команди Minto Food' }
+  return { id: team.id }
+}
+
 export async function createRecipe(
   payload: RecipePayload,
   ingredients: IngredientRow[],
@@ -51,9 +76,12 @@ export async function createRecipe(
 
   if (isRecipeImageTooLarge(payload.image)) return { error: IMAGE_TOO_LARGE_MESSAGE }
 
+  const author = await resolveAuthorProfileId(supabase, payload.author_profile_id || MINTO_FOOD_TEAM_AUTHOR.slug)
+  if ('error' in author) return author
+
   const { data: recipe, error } = await supabase
     .from('recipes')
-    .insert({ ...payload, user_id: null })
+    .insert({ ...payload, author_profile_id: author.id, user_id: null })
     .select('id')
     .single()
 
@@ -78,9 +106,12 @@ export async function updateRecipe(
 
   if (isRecipeImageTooLarge(payload.image)) return { error: IMAGE_TOO_LARGE_MESSAGE }
 
+  const author = await resolveAuthorProfileId(supabase, payload.author_profile_id)
+  if ('error' in author) return author
+
   const { error } = await supabase
     .from('recipes')
-    .update(payload)
+    .update({ ...payload, author_profile_id: author.id })
     .eq('id', id)
 
   if (error) return { error: error.message }

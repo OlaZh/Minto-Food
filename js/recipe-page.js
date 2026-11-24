@@ -123,7 +123,12 @@ async function init() {
   // Отримуємо рецепт по slug
   const { data: recipe, error } = await supabase
     .from('recipes')
-    .select('id, name_ua, name_en, name_pl, slug, image, kcal, protein, fat, carbs, ingredients, ingredients_en, ingredients_pl, steps, steps_en, steps_pl, category, user_id, created_at, prep_time_min, cook_time_min, total_time_min, recipe_yield')
+    .select(`
+      id, name_ua, name_en, name_pl, slug, image, kcal, protein, fat, carbs,
+      ingredients, ingredients_en, ingredients_pl, steps, steps_en, steps_pl, category,
+      user_id, created_at, prep_time_min, cook_time_min, total_time_min, recipe_yield,
+      author_profile:recipe_author_profiles(display_name)
+    `)
     .eq('slug', _slug)
     .eq('status', 'published')
     .is('deleted_at', null)
@@ -147,7 +152,9 @@ async function init() {
     }),
   ]);
 
-  const authorName  = profileRes.data?.display_name || profileRes.data?.full_name || null;
+  const authorName  = recipe.user_id
+    ? profileRes.data?.display_name || profileRes.data?.full_name || null
+    : recipe.author_profile?.display_name || null;
   const ingredients = ingRes.data ?? [];
   const ratingSummary = ratingRes.data?.[0];
   if (ratingRes.error) {

@@ -12,11 +12,13 @@ import { Textarea } from '@/components/ui/textarea'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Controller } from 'react-hook-form'
 import { createAuthor, updateAuthor } from '@/app/actions/authors'
+import type { RecipeAuthorOption } from '@/lib/recipe-authors'
 import type { RecipeAuthorProfile } from '@/lib/types'
 
 interface AuthorFormProps {
   author?: RecipeAuthorProfile
   onDone?: () => void
+  onCreated?: (author: RecipeAuthorOption) => void
 }
 
 interface FormValues {
@@ -37,7 +39,7 @@ function toSlug(v: string) {
     .slice(0, 60)
 }
 
-export default function AuthorForm({ author, onDone }: AuthorFormProps) {
+export default function AuthorForm({ author, onDone, onCreated }: AuthorFormProps) {
   const router = useRouter()
   const [saving, setSaving] = useState(false)
   const isEdit = !!author
@@ -54,11 +56,17 @@ export default function AuthorForm({ author, onDone }: AuthorFormProps) {
   })
 
   async function onSubmit(data: FormValues) {
+    const displayName = data.display_name.trim()
+    if (!displayName) {
+      toast.error('Вкажіть ім’я автора')
+      return
+    }
+
     setSaving(true)
     try {
       const payload = {
-        display_name: data.display_name,
-        slug: data.slug || toSlug(data.display_name),
+        display_name: displayName,
+        slug: data.slug.trim() || toSlug(displayName) || `author-${crypto.randomUUID()}`,
         avatar: data.avatar || null,
         bio: data.bio || null,
         country: data.country || null,
@@ -74,9 +82,15 @@ export default function AuthorForm({ author, onDone }: AuthorFormProps) {
         toast.error(result.error)
       } else {
         toast.success(isEdit ? 'Автора оновлено' : 'Автора створено')
+        if ('id' in result && onCreated) {
+          onCreated({ id: result.id, display_name: payload.display_name, slug: payload.slug })
+        } else {
+          router.refresh()
+        }
         onDone?.()
-        router.refresh()
       }
+    } catch {
+      toast.error('Не вдалося зберегти автора. Спробуйте ще раз.')
     } finally {
       setSaving(false)
     }
