@@ -38,6 +38,7 @@ export default function MobileNav() {
             <Link
               key={href}
               href={href}
+              prefetch={false}
               aria-current={isActive ? 'page' : undefined}
               className="min-w-[78px] flex flex-col items-center justify-center rounded-xl px-3 py-2 transition-colors"
               style={{

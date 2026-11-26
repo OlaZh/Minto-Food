@@ -1,10 +1,11 @@
 import Image from 'next/image'
 import Link from 'next/link'
-import { Clock, Edit, Plus } from 'lucide-react'
+import { Clock, Edit } from 'lucide-react'
 import { publishScheduledRecipes } from '@/app/actions/recipes'
 import { Button } from '@/components/ui/button'
 import { createClient } from '@/lib/supabase/server'
 import { RECIPE_STATUS_LABELS } from '@/lib/recipe-status'
+import NewRecipeLink from './NewRecipeLink'
 
 const STATUS_TABS = [
   { value: 'all', label: 'Всі' },
@@ -16,6 +17,12 @@ const STATUS_TABS = [
 ]
 
 const PAGE_SIZE = 100
+const RECIPE_LIST_COLUMNS = `
+  id, name_ua, name_en, name_pl, status, created_at, is_public,
+  kcal, category, type, available_locales, author_profile_id,
+  author_profile:recipe_author_profiles(display_name)
+`
+
 
 type RecipeAuthor = {
   display_name: string | null
@@ -26,7 +33,7 @@ type RecipeRow = {
   name_ua: string | null
   name_en: string | null
   name_pl: string | null
-  image: string | null
+  image?: string | null
   status: string
   created_at: string
   is_public: boolean | null
@@ -92,31 +99,33 @@ export default async function RecipesPage({
     return queryString ? `/recipes?${queryString}` : '/recipes'
   }
 
-  let query = supabase
-    .from('recipes')
-    .select(
-      `
-      id, name_ua, name_en, name_pl, image, status, created_at, is_public,
-      kcal, category, type, available_locales, author_profile_id,
-      author_profile:recipe_author_profiles(display_name)
-    `,
-      { count: 'exact' }
-    )
-    .is('deleted_at', null)
-    .order('created_at', { ascending: false })
-    .range(from, to)
+  function loadRecipes(compact = false) {
+    let query = supabase
+      .from('recipes')
+      .select(compact ? RECIPE_LIST_COLUMNS : `${RECIPE_LIST_COLUMNS}, image`, compact ? undefined : { count: 'exact' })
+      .is('deleted_at', null)
+      .order('created_at', { ascending: false })
+      .order('id', { ascending: false })
 
-  if (activeStatus !== 'all') {
-    query = query.eq('status', activeStatus)
-  }
-  if (activeQuery) {
-    query = query.or(
-      `name_ua.ilike.%${activeQuery}%,name_en.ilike.%${activeQuery}%,name_pl.ilike.%${activeQuery}%`
-    )
+    if (activeStatus !== 'all') {
+      query = query.eq('status', activeStatus)
+    }
+    if (activeQuery) {
+      query = query.or(
+        `name_ua.ilike.%${activeQuery}%,name_en.ilike.%${activeQuery}%,name_pl.ilike.%${activeQuery}%`
+      )
+    }
+
+    return query.range(from, compact ? to + 1 : to)
   }
 
-  const { data: recipes, error, count } = await query
-  const totalPages = Math.max(1, Math.ceil((count ?? 0) / PAGE_SIZE))
+  const result = await loadRecipes()
+  // Retry a canceled list query with less data and one extra row for pagination.
+  const { data, error, count } = result.error?.code === '57014' ? await loadRecipes(true) : result
+  const recipes = (data as RecipeRow[] | null)?.slice(0, PAGE_SIZE) ?? []
+  const totalPages = count == null ? null : Math.max(1, Math.ceil(count / PAGE_SIZE))
+  const hasNextPage = totalPages == null ? (data?.length ?? 0) > PAGE_SIZE : page < totalPages
+  const showPagination = totalPages == null ? page > 1 || hasNextPage : totalPages > 1
 
   return (
     <div>
@@ -134,12 +143,7 @@ export default async function RecipesPage({
               Опублікувати заплановані
             </Button>
           </form>
-          <Link href="/recipes/new" className="hidden md:inline-flex">
-            <Button size="sm">
-              <Plus className="h-3.5 w-3.5 mr-1.5" />
-              Новий рецепт
-            </Button>
-          </Link>
+          <NewRecipeLink />
         </div>
       </div>
 
@@ -148,6 +152,7 @@ export default async function RecipesPage({
           <Link
             key={tab.value}
             href={buildRecipesHref({ status: tab.value, nextPage: 1 })}
+            prefetch={false}
             className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${
               activeStatus === tab.value
                 ? 'bg-[#4ab584] text-white border-[#4ab584]'
@@ -171,7 +176,7 @@ export default async function RecipesPage({
             Знайти
           </Button>
           {activeQuery && (
-            <Link href={buildRecipesHref({ query: '', nextPage: 1 })}>
+            <Link href={buildRecipesHref({ query: '', nextPage: 1 })} prefetch={false}>
               <Button type="button" variant="ghost" size="sm">
                 Очистити
               </Button>
@@ -182,28 +187,28 @@ export default async function RecipesPage({
 
       {error && (
         <div className="px-4 md:px-8 py-6 text-sm text-red-500">
-          Помилка: {error.message}
+          {error.code === '57014' ? 'База даних не встигла відповісти. Спробуйте оновити сторінку.' : `Помилка: ${error.message}`}
         </div>
       )}
 
-      {!error && (!recipes || recipes.length === 0) && (
+      {!error && recipes.length === 0 && (
         <div className="px-4 md:px-8 py-16 text-center text-gray-400">
           <p className="text-sm">Рецептів не знайдено</p>
-          <Link href="/recipes/new" className="mt-3 inline-block">
+          <Link href="/recipes/new" prefetch={false} className="mt-3 inline-block">
             <Button variant="outline" size="sm">Створити перший</Button>
           </Link>
         </div>
       )}
 
-      {!error && count != null && (
+      {!error && (totalPages != null || recipes.length > 0) && (
         <div className="px-4 md:px-8 py-2 text-xs text-gray-400 border-b border-gray-100">
-          {count} рецептів · сторінка {page} з {totalPages}
+          {totalPages == null ? `Сторінка ${page}` : `${count} рецептів · сторінка ${page} з ${totalPages}`}
           {activeQuery && <span> · фільтр: “{activeQuery}”</span>}
         </div>
       )}
 
       <div className="divide-y divide-gray-100">
-        {(recipes as RecipeRow[] | null)?.map(recipe => {
+        {recipes.map(recipe => {
           const status = RECIPE_STATUS_LABELS[recipe.status] ?? RECIPE_STATUS_LABELS.draft
           const author = getAuthorProfile(recipe.author_profile)
           const recipeName = recipe.name_ua || recipe.name_en || recipe.name_pl || '(без назви)'
@@ -212,6 +217,7 @@ export default async function RecipesPage({
             <Link
               key={recipe.id}
               href={`/recipes/${recipe.id}/edit`}
+              prefetch={false}
               className="flex items-center gap-4 px-4 md:px-8 py-3 hover:bg-gray-50 group cursor-pointer"
             >
               <div className="relative w-12 h-12 rounded-md overflow-hidden bg-gray-100 shrink-0">
@@ -259,10 +265,11 @@ export default async function RecipesPage({
         })}
       </div>
 
-      {totalPages > 1 && (
+      {!error && showPagination && (
         <div className="px-4 md:px-8 py-4 border-t border-gray-100 flex items-center justify-between gap-2">
           <Link
             href={buildRecipesHref({ nextPage: page - 1 })}
+            prefetch={false}
             className={`text-xs px-3 py-1.5 rounded-md border transition-colors ${
               page <= 1
                 ? 'pointer-events-none opacity-30 border-gray-200'
@@ -274,17 +281,18 @@ export default async function RecipesPage({
           </Link>
 
           <span className="text-xs text-gray-400">
-            {from + 1}–{Math.min(to + 1, count ?? 0)} з {count}
+            {count == null ? `Сторінка ${page}` : `${from + 1}–${Math.min(to + 1, count)} з ${count}`}
           </span>
 
           <Link
             href={buildRecipesHref({ nextPage: page + 1 })}
+            prefetch={false}
             className={`text-xs px-3 py-1.5 rounded-md border transition-colors ${
-              page >= totalPages
+              !hasNextPage
                 ? 'pointer-events-none opacity-30 border-gray-200'
                 : 'border-gray-200 hover:border-gray-400'
             }`}
-            aria-disabled={page >= totalPages}
+            aria-disabled={!hasNextPage}
           >
             Наступна →
           </Link>
