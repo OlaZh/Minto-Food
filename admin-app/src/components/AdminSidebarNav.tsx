@@ -63,6 +63,7 @@ function NavSection({
             <Link
               key={href}
               href={href}
+              prefetch={false}
               className="admin-nav-link flex items-center gap-2.5 px-3 py-2 rounded-md text-sm transition-colors"
               style={{
                 color: '#0f2818',

@@ -1,10 +1,12 @@
-import Image from 'next/image'
 import Link from 'next/link'
-import { Clock, Edit, Plus } from 'lucide-react'
+import { Suspense } from 'react'
+import { Clock, Edit } from 'lucide-react'
 import { publishScheduledRecipes } from '@/app/actions/recipes'
 import { Button } from '@/components/ui/button'
 import { createClient } from '@/lib/supabase/server'
 import { RECIPE_STATUS_LABELS } from '@/lib/recipe-status'
+import NewRecipeLink from './NewRecipeLink'
+import { RecipeListPhotos, RecipeThumbnail } from './RecipeListPhotos'
 
 const STATUS_TABS = [
   { value: 'all', label: 'Всі' },
@@ -16,6 +18,11 @@ const STATUS_TABS = [
 ]
 
 const PAGE_SIZE = 100
+const RECIPE_LIST_COLUMNS = `
+  id, name_ua, name_en, name_pl, status, created_at, is_public,
+  kcal, category, type, available_locales, author_profile_id,
+  author_profile:recipe_author_profiles(display_name)
+`
 
 type RecipeAuthor = {
   display_name: string | null
@@ -26,7 +33,6 @@ type RecipeRow = {
   name_ua: string | null
   name_en: string | null
   name_pl: string | null
-  image: string | null
   status: string
   created_at: string
   is_public: boolean | null
@@ -54,69 +60,26 @@ function getAuthorProfile(value: unknown): RecipeAuthor | null {
   return null
 }
 
+function buildRecipesHref(status: string, query: string, page = 1) {
+  const search = new URLSearchParams()
+
+  if (status && status !== 'all') search.set('status', status)
+  if (query) search.set('q', query)
+  if (page > 1) search.set('page', String(page))
+
+  const queryString = search.toString()
+  return queryString ? `/recipes?${queryString}` : '/recipes'
+}
+
 export default async function RecipesPage({
   searchParams,
 }: {
   searchParams: Promise<{ status?: string; q?: string; page?: string }>
 }) {
   const params = await searchParams
-  const supabase = await createClient()
   const page = Math.max(1, parseInt(params.page ?? '1', 10))
-  const from = (page - 1) * PAGE_SIZE
-  const to = from + PAGE_SIZE - 1
   const activeStatus = params.status ?? 'all'
   const activeQuery = params.q?.trim() ?? ''
-
-  const buildRecipesHref = ({
-    status = activeStatus,
-    query = activeQuery,
-    nextPage = 1,
-  }: {
-    status?: string
-    query?: string
-    nextPage?: number
-  }) => {
-    const search = new URLSearchParams()
-
-    if (status && status !== 'all') {
-      search.set('status', status)
-    }
-    if (query) {
-      search.set('q', query)
-    }
-    if (nextPage > 1) {
-      search.set('page', String(nextPage))
-    }
-
-    const queryString = search.toString()
-    return queryString ? `/recipes?${queryString}` : '/recipes'
-  }
-
-  let query = supabase
-    .from('recipes')
-    .select(
-      `
-      id, name_ua, name_en, name_pl, image, status, created_at, is_public,
-      kcal, category, type, available_locales, author_profile_id,
-      author_profile:recipe_author_profiles(display_name)
-    `,
-      { count: 'exact' }
-    )
-    .is('deleted_at', null)
-    .order('created_at', { ascending: false })
-    .range(from, to)
-
-  if (activeStatus !== 'all') {
-    query = query.eq('status', activeStatus)
-  }
-  if (activeQuery) {
-    query = query.or(
-      `name_ua.ilike.%${activeQuery}%,name_en.ilike.%${activeQuery}%,name_pl.ilike.%${activeQuery}%`
-    )
-  }
-
-  const { data: recipes, error, count } = await query
-  const totalPages = Math.max(1, Math.ceil((count ?? 0) / PAGE_SIZE))
 
   return (
     <div>
@@ -134,12 +97,7 @@ export default async function RecipesPage({
               Опублікувати заплановані
             </Button>
           </form>
-          <Link href="/recipes/new" className="hidden md:inline-flex">
-            <Button size="sm">
-              <Plus className="h-3.5 w-3.5 mr-1.5" />
-              Новий рецепт
-            </Button>
-          </Link>
+          <NewRecipeLink />
         </div>
       </div>
 
@@ -147,7 +105,8 @@ export default async function RecipesPage({
         {STATUS_TABS.map(tab => (
           <Link
             key={tab.value}
-            href={buildRecipesHref({ status: tab.value, nextPage: 1 })}
+            href={buildRecipesHref(tab.value, activeQuery)}
+            prefetch={false}
             className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${
               activeStatus === tab.value
                 ? 'bg-[#4ab584] text-white border-[#4ab584]'
@@ -171,7 +130,7 @@ export default async function RecipesPage({
             Знайти
           </Button>
           {activeQuery && (
-            <Link href={buildRecipesHref({ query: '', nextPage: 1 })}>
+            <Link href={buildRecipesHref(activeStatus, '')} prefetch={false}>
               <Button type="button" variant="ghost" size="sm">
                 Очистити
               </Button>
@@ -180,30 +139,71 @@ export default async function RecipesPage({
         </form>
       </div>
 
+      <Suspense
+        key={buildRecipesHref(activeStatus, activeQuery, page)}
+        fallback={<p role="status" className="px-4 py-6 text-sm text-gray-500 md:px-8">Завантажуємо рецепти…</p>}
+      >
+        <RecipesResults status={activeStatus} search={activeQuery} page={page} />
+      </Suspense>
+    </div>
+  )
+}
+
+async function RecipesResults({ status, search, page }: { status: string; search: string; page: number }) {
+  const supabase = await createClient()
+  const from = (page - 1) * PAGE_SIZE
+  const to = from + PAGE_SIZE - 1
+
+  function loadRecipes(withCount: boolean) {
+    let query = supabase
+      .from('recipes')
+      .select(RECIPE_LIST_COLUMNS, withCount ? { count: 'exact' } : undefined)
+      .is('deleted_at', null)
+      .order('created_at', { ascending: false })
+      .order('id', { ascending: false })
+
+    if (status !== 'all') query = query.eq('status', status)
+    if (search) {
+      query = query.or(`name_ua.ilike.%${search}%,name_en.ilike.%${search}%,name_pl.ilike.%${search}%`)
+    }
+
+    return query.range(from, withCount ? to : to + 1)
+  }
+
+  const result = await loadRecipes(true)
+  // Retry without the exact total and use one extra row for pagination.
+  const { data, error, count } = result.error?.code === '57014' ? await loadRecipes(false) : result
+  const recipes = (data as RecipeRow[] | null)?.slice(0, PAGE_SIZE) ?? []
+  const totalPages = count == null ? null : Math.max(1, Math.ceil(count / PAGE_SIZE))
+  const hasNextPage = totalPages == null ? (data?.length ?? 0) > PAGE_SIZE : page < totalPages
+  const showPagination = totalPages == null ? page > 1 || hasNextPage : totalPages > 1
+
+  return (
+    <>
       {error && (
         <div className="px-4 md:px-8 py-6 text-sm text-red-500">
-          Помилка: {error.message}
+          {error.code === '57014' ? 'База даних не встигла відповісти. Спробуйте оновити сторінку.' : `Помилка: ${error.message}`}
         </div>
       )}
 
-      {!error && (!recipes || recipes.length === 0) && (
+      {!error && recipes.length === 0 && (
         <div className="px-4 md:px-8 py-16 text-center text-gray-400">
           <p className="text-sm">Рецептів не знайдено</p>
-          <Link href="/recipes/new" className="mt-3 inline-block">
+          <Link href="/recipes/new" prefetch={false} className="mt-3 inline-block">
             <Button variant="outline" size="sm">Створити перший</Button>
           </Link>
         </div>
       )}
 
-      {!error && count != null && (
+      {!error && (totalPages != null || recipes.length > 0) && (
         <div className="px-4 md:px-8 py-2 text-xs text-gray-400 border-b border-gray-100">
-          {count} рецептів · сторінка {page} з {totalPages}
-          {activeQuery && <span> · фільтр: “{activeQuery}”</span>}
+          {totalPages == null ? `Сторінка ${page}` : `${count} рецептів · сторінка ${page} з ${totalPages}`}
+          {search && <span> · фільтр: “{search}”</span>}
         </div>
       )}
 
-      <div className="divide-y divide-gray-100">
-        {(recipes as RecipeRow[] | null)?.map(recipe => {
+      <RecipeListPhotos>
+        {recipes.map(recipe => {
           const status = RECIPE_STATUS_LABELS[recipe.status] ?? RECIPE_STATUS_LABELS.draft
           const author = getAuthorProfile(recipe.author_profile)
           const recipeName = recipe.name_ua || recipe.name_en || recipe.name_pl || '(без назви)'
@@ -212,22 +212,10 @@ export default async function RecipesPage({
             <Link
               key={recipe.id}
               href={`/recipes/${recipe.id}/edit`}
+              prefetch={false}
               className="flex items-center gap-4 px-4 md:px-8 py-3 hover:bg-gray-50 group cursor-pointer"
             >
-              <div className="relative w-12 h-12 rounded-md overflow-hidden bg-gray-100 shrink-0">
-                {recipe.image ? (
-                  <Image
-                    src={recipe.image}
-                    alt={recipeName}
-                    fill
-                    sizes="48px"
-                    unoptimized
-                    className="object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center text-gray-300 text-lg">🍽</div>
-                )}
-              </div>
+              <RecipeThumbnail id={String(recipe.id)} name={recipeName} />
 
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium truncate">{recipeName}</p>
@@ -257,12 +245,13 @@ export default async function RecipesPage({
             </Link>
           )
         })}
-      </div>
+      </RecipeListPhotos>
 
-      {totalPages > 1 && (
+      {!error && showPagination && (
         <div className="px-4 md:px-8 py-4 border-t border-gray-100 flex items-center justify-between gap-2">
           <Link
-            href={buildRecipesHref({ nextPage: page - 1 })}
+            href={buildRecipesHref(status, search, page - 1)}
+            prefetch={false}
             className={`text-xs px-3 py-1.5 rounded-md border transition-colors ${
               page <= 1
                 ? 'pointer-events-none opacity-30 border-gray-200'
@@ -274,22 +263,23 @@ export default async function RecipesPage({
           </Link>
 
           <span className="text-xs text-gray-400">
-            {from + 1}–{Math.min(to + 1, count ?? 0)} з {count}
+            {count == null ? `Сторінка ${page}` : `${from + 1}–${Math.min(to + 1, count)} з ${count}`}
           </span>
 
           <Link
-            href={buildRecipesHref({ nextPage: page + 1 })}
+            href={buildRecipesHref(status, search, page + 1)}
+            prefetch={false}
             className={`text-xs px-3 py-1.5 rounded-md border transition-colors ${
-              page >= totalPages
+              !hasNextPage
                 ? 'pointer-events-none opacity-30 border-gray-200'
                 : 'border-gray-200 hover:border-gray-400'
             }`}
-            aria-disabled={page >= totalPages}
+            aria-disabled={!hasNextPage}
           >
             Наступна →
           </Link>
         </div>
       )}
-    </div>
+    </>
   )
 }
